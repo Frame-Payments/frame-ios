@@ -3,7 +3,6 @@
 //  Frame-iOS
 //
 //  Created by Frame Payments on 9/26/24.
-//
 
 // https://docs.framepayments.com/authentication
 
