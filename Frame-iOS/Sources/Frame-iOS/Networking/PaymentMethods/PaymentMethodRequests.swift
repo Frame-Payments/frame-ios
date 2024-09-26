@@ -5,8 +5,8 @@
 //  Created by Eric Townsend on 9/26/24.
 //
 
-class PaymentMethodRequest {
-    struct CreatePaymentMethodRequest: Encodable {
+public class PaymentMethodRequest {
+    public struct CreatePaymentMethodRequest: Encodable {
         let type: String
         let cardNumber: String
         let expMonth: String
@@ -15,7 +15,7 @@ class PaymentMethodRequest {
         let customer: String?
         let billing: FramePaymentObjects.PaymentBilling?
         
-        init(type: String, cardNumber: String, expMonth: String, expYear: String, cvc: String, customer: String?, billing: FramePaymentObjects.PaymentBilling?) {
+        public init(type: String, cardNumber: String, expMonth: String, expYear: String, cvc: String, customer: String?, billing: FramePaymentObjects.PaymentBilling?) {
             self.type = type
             self.cardNumber = cardNumber
             self.expMonth = expMonth
@@ -25,7 +25,7 @@ class PaymentMethodRequest {
             self.billing = billing
         }
         
-        enum CodingKeys: String, CodingKey {
+        public enum CodingKeys: String, CodingKey {
             case type, cvc, customer, billing
             case cardNumber = "card_number"
             case expMonth = "exp_month"
@@ -33,29 +33,44 @@ class PaymentMethodRequest {
         }
     }
     
-    struct UpdatePaymentMethodRequest: Encodable {
+    public struct UpdatePaymentMethodRequest: Encodable {
         let expMonth: String?
         let expYear: String?
         let billing: FramePaymentObjects.PaymentBilling?
         
-        enum CodingKeys: String, CodingKey {
+        public init(expMonth: String?, expYear: String?, billing: FramePaymentObjects.PaymentBilling?) {
+            self.expMonth = expMonth
+            self.expYear = expYear
+            self.billing = billing
+        }
+        
+        public enum CodingKeys: String, CodingKey {
             case billing
             case expMonth = "exp_month"
             case expYear = "exp_year"
         }
     }
     
-    struct GetPaymentMethodsRequest: Encodable {
-        let perPage: Int = 50
+    public struct GetPaymentMethodsRequest: Encodable {
+        let perPage: Int
         let page: Int?
         
-        enum CodingKeys: String, CodingKey {
+        public init(perPage: Int = 50, page: Int?) {
+            self.perPage = perPage
+            self.page = page
+        }
+        
+        public enum CodingKeys: String, CodingKey {
             case page
             case perPage = "per_page"
         }
     }
     
-    struct AttachPaymentMethodRequest: Encodable {
+    public struct AttachPaymentMethodRequest: Encodable {
         let customer: String
+        
+        public init(customer: String) {
+            self.customer = customer
+        }
     }
 }

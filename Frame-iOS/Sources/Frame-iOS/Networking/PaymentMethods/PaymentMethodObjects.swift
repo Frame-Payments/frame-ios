@@ -17,7 +17,7 @@ struct FrameMetadata: Decodable {
     }
 }
 
-class FramePaymentObjects {
+public class FramePaymentObjects {
     public class PaymentMethod: Decodable {
         let id: String
         let customer: String? // ID of the Customer
@@ -27,10 +27,22 @@ class FramePaymentObjects {
         let created: Int // Timestamp
         let updated: Int // Timestamp
         let livemode: Bool
-        let card: PaymentCard
+        let card: PaymentCard?
+        
+        public init(id: String, customer: String?, billing: PaymentBilling?, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard?) {
+            self.id = id
+            self.customer = customer
+            self.billing = billing
+            self.type = type
+            self.object = object
+            self.created = created
+            self.updated = updated
+            self.livemode = livemode
+            self.card = card
+        }
     }
     
-    class PaymentBilling: Codable {
+    public class PaymentBilling: Codable {
         let city: String?
         let country: String?
         let state: String?
@@ -38,7 +50,16 @@ class FramePaymentObjects {
         let addressLine1: String?
         let addressLine2: String?
         
-        enum CodingKeys: String, CodingKey {
+        public init(city: String?, country: String?, state: String?, postalCode: String?, addressLine1: String?, addressLine2: String?) {
+            self.city = city
+            self.country = country
+            self.state = state
+            self.postalCode = postalCode
+            self.addressLine1 = addressLine1
+            self.addressLine2 = addressLine2
+        }
+        
+        public enum CodingKeys: String, CodingKey {
             case city, country, state
             case postalCode = "postal_code"
             case addressLine1 = "line_1"
@@ -47,7 +68,7 @@ class FramePaymentObjects {
     }
     
     //TODO: Get real types for mark objects as optional
-    class PaymentCard: Codable {
+    public class PaymentCard: Codable {
         let brand: String
         let expirationMonth: String
         let expirationYear: String
@@ -57,7 +78,7 @@ class FramePaymentObjects {
         let type: String?
         let lastFourDigits: String
         
-        init(brand: String, expirationMonth: String, expirationYear: String, issuer: String?, currency: String?, segment: String?, type: String?, lastFourDigits: String) {
+        public init(brand: String, expirationMonth: String, expirationYear: String, issuer: String?, currency: String?, segment: String?, type: String?, lastFourDigits: String) {
             self.brand = brand
             self.expirationMonth = expirationMonth
             self.expirationYear = expirationYear
@@ -68,7 +89,7 @@ class FramePaymentObjects {
             self.lastFourDigits = lastFourDigits
         }
         
-        enum CodingKeys: String, CodingKey {
+        public enum CodingKeys: String, CodingKey {
             case brand, issuer, currency, segment, type
             case expirationMonth = "exp_month"
             case expirationYear = "exp_year"
