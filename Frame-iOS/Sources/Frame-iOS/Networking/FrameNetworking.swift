@@ -14,8 +14,8 @@ import SwiftUI
 // TODO: Add Pagination for Network Request
 
 protocol FrameNetworkingEndpoints {
-    var endpointURL: String { get set }
-    var httpMethod: String { get set }
+    var endpointURL: String { get }
+    var httpMethod: String { get }
 }
 
 public class FrameNetworking: ObservableObject {
