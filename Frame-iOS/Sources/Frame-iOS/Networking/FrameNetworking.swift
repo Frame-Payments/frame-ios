@@ -2,7 +2,8 @@
 //  FrameAuth.swift
 //  Frame-iOS
 //
-//  Created by Frame Payments on 9/26/24.
+//  Created by Eric Townsend on 9/26/24.
+//
 
 // https://docs.framepayments.com/authentication
 
@@ -13,8 +14,8 @@ import SwiftUI
 // TODO: Add Pagination for Network Request
 
 protocol FrameNetworkingEndpoints {
-    var endpointURL: String { get }
-    var httpMethod: String { get }
+    var endpointURL: String { get set }
+    var httpMethod: String { get set }
 }
 
 public class FrameNetworking: ObservableObject {
@@ -36,7 +37,6 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         return (data, response)
@@ -52,7 +52,6 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         URLSession.shared.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
