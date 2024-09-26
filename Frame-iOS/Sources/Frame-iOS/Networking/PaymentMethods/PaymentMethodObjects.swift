@@ -46,7 +46,7 @@ class FramePaymentObjects {
         }
     }
     
-    //TODO: Get real types for mark as optional
+    //TODO: Get real types for mark objects as optional
     class PaymentCard: Codable {
         let brand: String
         let expirationMonth: String

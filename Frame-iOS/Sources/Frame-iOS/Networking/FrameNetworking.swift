@@ -13,17 +13,47 @@ import SwiftUI
 
 // TODO: Add Pagination for Network Request
 
+protocol FrameNetworkingEndpoints {
+    var endpointURL: String { get set }
+    var httpMethod: String { get set }
+}
+
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) static let shared = FrameNetworking()
     
-    let apiKey: String? // API Key used to authenticate each request - Bearer Token
+    var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     
-    init(_ apiKey: String? = nil) {
-        self.apiKey = apiKey
+    public func initializeWithAPIKey(_ key: String) {
+        self.apiKey = key
     }
     
-    func performDataTask(request: URLRequest, completion: @escaping (Data?, URLResponse?, (any Error)?) -> Void) {
-        URLSession(configuration: .default).dataTask(with: request) { data, response, error in
+    // Async/Await
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
+        guard let url = URL(string: endpoint.endpointURL) else { return (nil, nil) }
+        
+        var urlRequest = URLRequest(url: url,
+                                    cachePolicy: .useProtocolCachePolicy,
+                                    timeoutInterval: 10.0)
+        urlRequest.httpMethod = endpoint.httpMethod
+        urlRequest.httpBody = requestBody
+        urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        return (data, response)
+    }
+    
+    // Completion Handler
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
+        guard let url = URL(string: endpoint.endpointURL) else { return completion(nil, nil, nil) }
+        
+        var urlRequest = URLRequest(url: url,
+                                    cachePolicy: .useProtocolCachePolicy,
+                                    timeoutInterval: 10.0)
+        urlRequest.httpMethod = endpoint.httpMethod
+        urlRequest.httpBody = requestBody
+        urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
         }.resume()
     }

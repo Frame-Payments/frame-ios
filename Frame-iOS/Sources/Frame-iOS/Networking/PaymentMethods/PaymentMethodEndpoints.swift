@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PaymentMethodEndpoints {
+enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     //MARK: Payment Method Endpoints
     case getPaymentMethods
     case getPaymentMethodWith(id: String)
@@ -20,25 +20,25 @@ enum PaymentMethodEndpoints {
     var endpointURL: String {
         switch self {
         case .getPaymentMethods, .createPaymentMethod:
-            return "/v1/payment_methods"
+            return NetworkingConstants.endpoint + "/v1/payment_methods"
         case .getPaymentMethodWith(let id), .updatePaymentMethodWith(let id):
-            return "/v1/payment_methods/\(id)"
+            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(id)"
         case .getPaymentMethodsWithCustomer(let id):
-            return "/v1/customers/\(id)/payment_methods"
+            return  NetworkingConstants.endpoint + "/v1/customers/\(id)/payment_methods"
         case .attachPaymentMethodWith(let id):
-            return "/v1/payment_methods/\(id)/attach"
+            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(id)/attach"
         case .detachPaymentMethodWith(let id):
-            return "/v1/payment_methods/:id/detach"
+            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(id)/detach"
         }
     }
     
-    var requestType: String {
+    var httpMethod: String {
         switch self {
         case .getPaymentMethods, .getPaymentMethodWith, .getPaymentMethodsWithCustomer:
             return "GET"
         case .createPaymentMethod, .attachPaymentMethodWith, .detachPaymentMethodWith:
             return "POST"
-        case .updatePaymentMethodWith(let id):
+        case .updatePaymentMethodWith:
             return "PATCH"
         }
     }
