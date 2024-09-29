@@ -17,7 +17,7 @@ struct FrameMetadata: Decodable {
     }
 }
 
-public class FramePaymentObjects {
+public class FrameObjects {
     public class PaymentMethod: Decodable {
         let id: String
         let customer: String? // ID of the Customer

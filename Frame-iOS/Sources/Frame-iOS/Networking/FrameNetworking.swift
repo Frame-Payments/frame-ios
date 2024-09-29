@@ -19,7 +19,7 @@ protocol FrameNetworkingEndpoints {
 }
 
 public class FrameNetworking: ObservableObject {
-    nonisolated(unsafe) static let shared = FrameNetworking()
+    nonisolated(unsafe) public static let shared = FrameNetworking()
     
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     

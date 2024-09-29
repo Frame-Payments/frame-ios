@@ -34,12 +34,12 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     
     var httpMethod: String {
         switch self {
-        case .getPaymentMethods, .getPaymentMethodWith, .getPaymentMethodsWithCustomer:
-            return "GET"
         case .createPaymentMethod, .attachPaymentMethodWith, .detachPaymentMethodWith:
             return "POST"
         case .updatePaymentMethodWith:
             return "PATCH"
+        default:
+            return "GET"
         }
     }
 }
