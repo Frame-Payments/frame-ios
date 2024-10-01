@@ -10,25 +10,25 @@ import Foundation
 enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     //MARK: Payment Method Endpoints
     case getPaymentMethods
-    case getPaymentMethodWith(id: String)
-    case getPaymentMethodsWithCustomer(id: String)
+    case getPaymentMethodWith(paymentMethodId: String)
+    case getPaymentMethodsWithCustomer(customerId: String)
     case createPaymentMethod
-    case updatePaymentMethodWith(id: String)
-    case attachPaymentMethodWith(id: String)
-    case detachPaymentMethodWith(id: String)
+    case updatePaymentMethodWith(paymentMethodId: String)
+    case attachPaymentMethodWith(paymentMethodId: String)
+    case detachPaymentMethodWith(paymentMethodId: String)
     
     var endpointURL: String {
         switch self {
         case .getPaymentMethods, .createPaymentMethod:
             return NetworkingConstants.endpoint + "/v1/payment_methods"
-        case .getPaymentMethodWith(let id), .updatePaymentMethodWith(let id):
-            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(id)"
-        case .getPaymentMethodsWithCustomer(let id):
-            return  NetworkingConstants.endpoint + "/v1/customers/\(id)/payment_methods"
-        case .attachPaymentMethodWith(let id):
-            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(id)/attach"
-        case .detachPaymentMethodWith(let id):
-            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(id)/detach"
+        case .getPaymentMethodWith(let paymentMethodId), .updatePaymentMethodWith(let paymentMethodId):
+            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(paymentMethodId)"
+        case .getPaymentMethodsWithCustomer(let customerId):
+            return  NetworkingConstants.endpoint + "/v1/customers/\(customerId)/payment_methods"
+        case .attachPaymentMethodWith(let paymentMethodId):
+            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(paymentMethodId)/attach"
+        case .detachPaymentMethodWith(let paymentMethodId):
+            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(paymentMethodId)/detach"
         }
     }
     
