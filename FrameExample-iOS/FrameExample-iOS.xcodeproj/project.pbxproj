@@ -172,6 +172,7 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1600;
+				ORGANIZATIONNAME = "Frame Payments";
 				TargetAttributes = {
 					9CED70922CA5868700C3B45B = {
 						CreatedOnToolsVersion = 16.0;

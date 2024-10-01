@@ -2,7 +2,7 @@
 //  PaymentMethodRequest.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 9/26/24.
+//  Created by Frame Payments on 9/26/24.
 //
 
 public class PaymentMethodRequest {

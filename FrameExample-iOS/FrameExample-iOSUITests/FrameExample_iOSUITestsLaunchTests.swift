@@ -2,7 +2,7 @@
 //  FrameExample_iOSUITestsLaunchTests.swift
 //  FrameExample-iOSUITests
 //
-//  Created by Eric Townsend on 9/26/24.
+//  Created by Frame Payments on 9/26/24.
 //
 
 import XCTest
