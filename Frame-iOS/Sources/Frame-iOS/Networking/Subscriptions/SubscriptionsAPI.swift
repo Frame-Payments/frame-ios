@@ -13,19 +13,19 @@ import Foundation
 protocol SubscriptionsProtocol {
     //MARK: Methods using async/await
     func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> FrameObjects.Subscription?
-    func updateSubscription(id: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription?
+    func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription?
     func getSubscriptions() async throws -> [FrameObjects.Subscription]?
-    func getSubscription(id: String) async throws -> FrameObjects.Subscription?
+    func getSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription?
     func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?) async throws -> [FrameObjects.Subscription]?
-    func cancelSubscription(id: String) async throws -> FrameObjects.Subscription?
+    func cancelSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription?
     
     //MARK: Methods using completionHandler
     func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
-    func updateSubscription(id: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
+    func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
     func getSubscriptions(completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?) -> Void)
-    func getSubscription(id: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
+    func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
     func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?) -> Void)
-    func cancelSubscription(id: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
+    func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
 }
 
 // Payments Methods API
@@ -45,8 +45,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol {
         }
     }
     
-    public func updateSubscription(id: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
-        let endpoint = SubscriptionEndpoints.updateSubscription(id: id)
+    public func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
+        let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? JSONEncoder().encode(request)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
@@ -68,8 +68,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol {
         }
     }
     
-    public func getSubscription(id: String) async throws -> FrameObjects.Subscription? {
-        let endpoint = SubscriptionEndpoints.getSubscription(id: id)
+    public func getSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription? {
+        let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Subscription.self, from: data) {
@@ -91,8 +91,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol {
         }
     }
     
-    public func cancelSubscription(id: String) async throws -> FrameObjects.Subscription? {
-        let endpoint = SubscriptionEndpoints.cancelSubscription(id: id)
+    public func cancelSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription? {
+        let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Subscription.self, from: data) {
@@ -114,8 +114,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol {
         }
     }
     
-    public func updateSubscription(id: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
-        let endpoint = SubscriptionEndpoints.updateSubscription(id: id)
+    public func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+        let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? JSONEncoder().encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
@@ -135,8 +135,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol {
         }
     }
     
-    public  func getSubscription(id: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
-        let endpoint = SubscriptionEndpoints.getSubscription(id: id)
+    public  func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+        let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Subscription.self, from: data) {
@@ -156,8 +156,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol {
         }
     }
     
-    public func cancelSubscription(id: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
-        let endpoint = SubscriptionEndpoints.cancelSubscription(id: id)
+    public func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+        let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Subscription.self, from: data) {

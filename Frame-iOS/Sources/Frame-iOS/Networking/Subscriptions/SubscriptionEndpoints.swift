@@ -10,22 +10,22 @@ import Foundation
 enum SubscriptionEndpoints: FrameNetworkingEndpoints {
     //MARK: Subscription Endpoints
     case createSubscription
-    case updateSubscription(id: String)
+    case updateSubscription(subscriptionId: String)
     case getSubscriptions
-    case getSubscription(id: String)
+    case getSubscription(subscriptionId: String)
     case searchSubscriptions
-    case cancelSubscription(id: String)
+    case cancelSubscription(subscriptionId: String)
     
     var endpointURL: String {
         switch self {
         case .createSubscription, .getSubscriptions:
             return NetworkingConstants.endpoint + "/v1/subscriptions"
-        case .getSubscription(let id), .updateSubscription(let id):
-            return NetworkingConstants.endpoint + "/v1/subscriptions/\(id)"
+        case .getSubscription(let subscriptionId), .updateSubscription(let subscriptionId):
+            return NetworkingConstants.endpoint + "/v1/subscriptions/\(subscriptionId)"
         case .searchSubscriptions:
             return NetworkingConstants.endpoint + "/v1/subscriptions/search"
-        case .cancelSubscription(let id):
-            return NetworkingConstants.endpoint + "/v1/subscriptions/\(id)/cancel"
+        case .cancelSubscription(let subscriptionId):
+            return NetworkingConstants.endpoint + "/v1/subscriptions/\(subscriptionId)/cancel"
         }
     }
     
@@ -33,7 +33,7 @@ enum SubscriptionEndpoints: FrameNetworkingEndpoints {
         switch self {
         case .createSubscription, .cancelSubscription:
             return "POST"
-        case .updateSubscription(let id):
+        case .updateSubscription:
             return "PATCH"
         default:
             return "GET"
