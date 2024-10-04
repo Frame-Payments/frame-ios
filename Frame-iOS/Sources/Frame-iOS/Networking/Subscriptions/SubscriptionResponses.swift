@@ -2,7 +2,7 @@
 //  SubscriptionResponses.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 9/27/24.
+//  Created by Frame Payments on 9/27/24.
 //
 
 class SubscriptionResponses {
