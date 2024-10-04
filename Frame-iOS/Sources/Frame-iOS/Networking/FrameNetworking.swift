@@ -37,6 +37,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         return (data, response)
@@ -52,6 +53,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         URLSession.shared.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
