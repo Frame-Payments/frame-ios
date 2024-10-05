@@ -21,7 +21,7 @@ public class FrameObjects {
     public class PaymentMethod: Decodable {
         let id: String
         let customer: String? // ID of the Customer
-        let billing: PaymentBilling? //Billing information associated with the PaymentMethod
+        let billing: BillingAddress? //Billing information associated with the PaymentMethod
         let type: String
         let object: String
         let created: Int // Timestamp
@@ -29,7 +29,7 @@ public class FrameObjects {
         let livemode: Bool
         let card: PaymentCard?
         
-        public init(id: String, customer: String?, billing: PaymentBilling?, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard?) {
+        public init(id: String, customer: String?, billing: BillingAddress?, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard?) {
             self.id = id
             self.customer = customer
             self.billing = billing
@@ -42,7 +42,7 @@ public class FrameObjects {
         }
     }
     
-    public class PaymentBilling: Codable {
+    public class BillingAddress: Codable {
         let city: String?
         let country: String?
         let state: String?
