@@ -8,6 +8,6 @@
 class PaymentMethodResponses {
     struct ListPaymentMethodsResponse: Decodable {
         let meta: FrameMetadata?
-        let data: [FramePaymentObjects.PaymentMethod]?
+        let data: [FrameObjects.PaymentMethod]?
     }
 }

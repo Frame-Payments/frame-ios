@@ -7,7 +7,6 @@
 
 // https://docs.framepayments.com/authentication
 
-import Foundation
 import SwiftUI
 
 // Create Network Request Here That Return Callbacks With User Data, This is the "Router"
@@ -20,7 +19,7 @@ protocol FrameNetworkingEndpoints {
 }
 
 public class FrameNetworking: ObservableObject {
-    nonisolated(unsafe) static let shared = FrameNetworking()
+    nonisolated(unsafe) public static let shared = FrameNetworking()
     
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     

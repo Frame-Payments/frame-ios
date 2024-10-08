@@ -13,9 +13,9 @@ public class PaymentMethodRequest {
         let expYear: String
         let cvc: String
         let customer: String?
-        let billing: FramePaymentObjects.PaymentBilling?
+        let billing: FrameObjects.PaymentBilling?
         
-        public init(type: String, cardNumber: String, expMonth: String, expYear: String, cvc: String, customer: String?, billing: FramePaymentObjects.PaymentBilling?) {
+        public init(type: String, cardNumber: String, expMonth: String, expYear: String, cvc: String, customer: String?, billing: FrameObjects.PaymentBilling?) {
             self.type = type
             self.cardNumber = cardNumber
             self.expMonth = expMonth
@@ -36,9 +36,9 @@ public class PaymentMethodRequest {
     public struct UpdatePaymentMethodRequest: Encodable {
         let expMonth: String?
         let expYear: String?
-        let billing: FramePaymentObjects.PaymentBilling?
+        let billing: FrameObjects.PaymentBilling?
         
-        public init(expMonth: String?, expYear: String?, billing: FramePaymentObjects.PaymentBilling?) {
+        public init(expMonth: String?, expYear: String?, billing: FrameObjects.PaymentBilling?) {
             self.expMonth = expMonth
             self.expYear = expYear
             self.billing = billing
