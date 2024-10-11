@@ -11,6 +11,7 @@ import Frame_iOS
 struct ContentView: View {
     @State var paymentMethods: [FrameObjects.PaymentMethod]?
     @State var subscriptions: [FrameObjects.Subscription]?
+    @State var customers: [FrameObjects.Customer]?
     
     var body: some View {
         VStack {
@@ -48,6 +49,14 @@ struct ContentView: View {
         }
     }
     
+    func getCustomers() {
+        CustomersAPI().getCustomers { customers in
+            if let customers {
+                self.customers = customers
+            }
+        }
+    }
+    
     //async await
     func getPaymentMethodsAsync() async {
         let request = PaymentMethodRequest.GetPaymentMethodsRequest(perPage: 20, page: 2)
@@ -56,6 +65,10 @@ struct ContentView: View {
     
     func getSubscriptionsAsync() async {
         self.subscriptions = try? await SubscriptionsAPI().getSubscriptions()
+    }
+    
+    func getCustomers() async {
+        self.customers = try? await CustomersAPI().getCustomers()
     }
 }
 
