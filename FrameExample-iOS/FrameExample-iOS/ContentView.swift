@@ -59,7 +59,7 @@ struct ContentView: View {
     }
     
     func getChargeIntents() {
-        ChargeIntentsAPI().getAllCharges { chargeIntents in
+        ChargeIntentsAPI().getAllChargeIntents() { chargeIntents in
             if let chargeIntents {
                 self.chargeIntents = chargeIntents
             }
@@ -81,7 +81,7 @@ struct ContentView: View {
     }
     
     func getChargeIntents() async {
-        self.chargeIntents = try? await ChargeIntentsAPI().getAllCharges()
+        self.chargeIntents = try? await ChargeIntentsAPI().getAllChargeIntents()
     }
 }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ChargeResponses {
+class ChargeIntentResponses {
     struct ListChargeIntentsResponse: Decodable {
         let meta: FrameMetadata?
         let data: [FrameObjects.ChargeIntent]?

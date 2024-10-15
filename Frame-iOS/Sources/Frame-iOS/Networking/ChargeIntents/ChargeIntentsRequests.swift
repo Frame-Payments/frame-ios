@@ -7,8 +7,8 @@
 
 import Foundation
 
-public class ChargeRequests {
-    public struct CreateChargeRequest: Encodable {
+public class ChargeIntentsRequests {
+    public struct CreateChargeIntentRequest: Encodable {
         let amount: Int
         let currency: String
         let customer: String?
@@ -43,7 +43,7 @@ public class ChargeRequests {
         }
     }
     
-    public struct UpdateChargeRequest: Encodable {
+    public struct UpdateChargeIntentRequest: Encodable {
         let amount: Int?
         let currency: String?
         let customer: String?
@@ -69,7 +69,7 @@ public class ChargeRequests {
         }
     }
     
-    public struct CaptureChargeRequest: Encodable {
+    public struct CaptureChargeIntentRequest: Encodable {
         let amountCapturedCents: Int
         
         public init(amount_captured_cents: Int) {
