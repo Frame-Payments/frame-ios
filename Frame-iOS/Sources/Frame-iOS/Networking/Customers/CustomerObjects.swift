@@ -8,7 +8,7 @@
 import Foundation
 
 extension FrameObjects {
-    public class Customer: Codable {
+    public struct Customer: Codable {
         let id: String
         let created: Int?
         let shippingAddress: BillingAddress?

@@ -12,6 +12,7 @@ struct ContentView: View {
     @State var paymentMethods: [FrameObjects.PaymentMethod]?
     @State var subscriptions: [FrameObjects.Subscription]?
     @State var customers: [FrameObjects.Customer]?
+    @State var chargeIntents: [FrameObjects.ChargeIntent]?
     
     var body: some View {
         VStack {
@@ -57,6 +58,14 @@ struct ContentView: View {
         }
     }
     
+    func getChargeIntents() {
+        ChargeIntentsAPI().getAllChargeIntents() { chargeIntents in
+            if let chargeIntents {
+                self.chargeIntents = chargeIntents
+            }
+        }
+    }
+    
     //async await
     func getPaymentMethodsAsync() async {
         let request = PaymentMethodRequest.GetPaymentMethodsRequest(perPage: 20, page: 2)
@@ -69,6 +78,10 @@ struct ContentView: View {
     
     func getCustomers() async {
         self.customers = try? await CustomersAPI().getCustomers()
+    }
+    
+    func getChargeIntents() async {
+        self.chargeIntents = try? await ChargeIntentsAPI().getAllChargeIntents()
     }
 }
 

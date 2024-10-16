@@ -29,13 +29,16 @@ protocol PaymentMethodProtocol {
 }
 
 // Payments Methods API
-public class PaymentMethodsAPI: PaymentMethodProtocol {
+public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public init() {}
+    
+    let jsonEncoder = JSONEncoder()
+    let jsonDecoder = JSONDecoder()
     
     //MARK: Methods using async/await
     public func getPaymentMethods(request: PaymentMethodRequest.GetPaymentMethodsRequest?) async throws -> [FrameObjects.PaymentMethod]? {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? JSONDecoder().decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
@@ -58,10 +61,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func getPaymentMethodsWithCustomer(customerId: String, request: PaymentMethodRequest.GetPaymentMethodsRequest?) async throws -> [FrameObjects.PaymentMethod]? {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+        if let data, let decodedResponse = try? jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             return decodedResponse.data
         } else {
             return nil
@@ -70,10 +73,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -82,10 +85,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.updatePaymentMethodWith(paymentMethodId: paymentMethodId)
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -94,10 +97,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -108,7 +111,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -119,10 +122,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     //MARK: Methods using completion handler
     public func getPaymentMethods(request: PaymentMethodRequest.GetPaymentMethodsRequest?, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
         }
@@ -132,7 +135,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -143,7 +146,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
         let requestBody = try? JSONEncoder().encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
         }
@@ -151,10 +154,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -162,10 +165,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.updatePaymentMethodWith(paymentMethodId: paymentMethodId)
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -173,10 +176,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
     
     public func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
-        let requestBody = try? JSONEncoder().encode(request)
+        let requestBody = try? jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -186,7 +189,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol {
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.PaymentMethod.self, from: data) {
+            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
