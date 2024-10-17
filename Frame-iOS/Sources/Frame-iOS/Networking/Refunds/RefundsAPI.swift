@@ -33,7 +33,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     let jsonDecoder = JSONDecoder()
     
     //async/await
-    func createRefund(request: RefundRequests.CreateRefundRequest) async throws -> FrameObjects.Refund? {
+    public func createRefund(request: RefundRequests.CreateRefundRequest) async throws -> FrameObjects.Refund? {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? jsonEncoder.encode(request)
         
@@ -45,7 +45,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         }
     }
     
-    func getRefunds(chargeId: String?, chargeIntentId: String?, perPage: Int?, page: Int?) async throws -> [FrameObjects.Refund]? {
+    public func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil) async throws -> [FrameObjects.Refund]? {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -56,7 +56,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         }
     }
     
-    func getRefundWith(refundId: String) async throws -> FrameObjects.Refund? {
+    public func getRefundWith(refundId: String) async throws -> FrameObjects.Refund? {
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -67,7 +67,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         }
     }
     
-    func cancelRefund(refundId: String) async throws -> FrameObjects.Refund? {
+    public func cancelRefund(refundId: String) async throws -> FrameObjects.Refund? {
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -79,7 +79,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     }
     
     // completionHandlers
-    func createRefund(request: RefundRequests.CreateRefundRequest, completionHandler: @escaping @Sendable (FrameObjects.Refund?) -> Void) {
+    public  func createRefund(request: RefundRequests.CreateRefundRequest, completionHandler: @escaping @Sendable (FrameObjects.Refund?) -> Void) {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? jsonEncoder.encode(request)
         
@@ -90,7 +90,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         }
     }
     
-    func getRefunds(chargeId: String?, chargeIntentId: String?, perPage: Int?, page: Int?, completionHandler: @escaping @Sendable ([FrameObjects.Refund]?) -> Void) {
+    public func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable ([FrameObjects.Refund]?) -> Void) {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -100,7 +100,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         }
     }
     
-    func getRefundWith(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?) -> Void) {
+    public func getRefundWith(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?) -> Void) {
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -110,7 +110,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         }
     }
     
-    func cancelRefund(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?) -> Void) {
+    public func cancelRefund(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?) -> Void) {
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in

@@ -13,6 +13,7 @@ struct ContentView: View {
     @State var subscriptions: [FrameObjects.Subscription]?
     @State var customers: [FrameObjects.Customer]?
     @State var chargeIntents: [FrameObjects.ChargeIntent]?
+    @State var refunds: [FrameObjects.Refund]?
     
     var body: some View {
         VStack {
@@ -34,8 +35,7 @@ struct ContentView: View {
     
     //completionHandler
     func getPaymentMethods() {
-        let request = PaymentMethodRequest.GetPaymentMethodsRequest(perPage: 20, page: 2)
-        PaymentMethodsAPI().getPaymentMethods(request: request) { paymentMethods in
+        PaymentMethodsAPI().getPaymentMethods() { paymentMethods in
             if let paymentMethods {
                 self.paymentMethods = paymentMethods
             }
@@ -66,10 +66,17 @@ struct ContentView: View {
         }
     }
     
+    func getRefunds() {
+        RefundsAPI().getRefunds { refunds in
+            if let refunds {
+                self.refunds = refunds
+            }
+        }
+    }
+    
     //async await
     func getPaymentMethodsAsync() async {
-        let request = PaymentMethodRequest.GetPaymentMethodsRequest(perPage: 20, page: 2)
-        self.paymentMethods = try? await PaymentMethodsAPI().getPaymentMethods(request: request)
+        self.paymentMethods = try? await PaymentMethodsAPI().getPaymentMethods()
     }
     
     func getSubscriptionsAsync() async {
@@ -82,6 +89,10 @@ struct ContentView: View {
     
     func getChargeIntents() async {
         self.chargeIntents = try? await ChargeIntentsAPI().getAllChargeIntents()
+    }
+    
+    func getRefunds() async {
+        self.refunds = try? await RefundsAPI().getRefunds()
     }
 }
 

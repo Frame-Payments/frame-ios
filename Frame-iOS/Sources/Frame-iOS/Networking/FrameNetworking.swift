@@ -37,7 +37,9 @@ public class FrameNetworking: ObservableObject {
                                     timeoutInterval: 10.0)
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
-        urlRequest.url?.append(queryItems: endpoint.queryItems ?? [])
+        if let queryItems = endpoint.queryItems {
+            urlRequest.url?.append(queryItems: queryItems)
+        }
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
@@ -54,7 +56,9 @@ public class FrameNetworking: ObservableObject {
                                     timeoutInterval: 10.0)
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
-        urlRequest.url?.append(queryItems: endpoint.queryItems ?? [])
+        if let queryItems = endpoint.queryItems {
+            urlRequest.url?.append(queryItems: queryItems)
+        }
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
