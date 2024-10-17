@@ -16,6 +16,7 @@ import SwiftUI
 protocol FrameNetworkingEndpoints {
     var endpointURL: String { get }
     var httpMethod: String { get }
+    var queryItems: [URLQueryItem]? { get }
 }
 
 public class FrameNetworking: ObservableObject {
@@ -36,6 +37,7 @@ public class FrameNetworking: ObservableObject {
                                     timeoutInterval: 10.0)
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
+        urlRequest.url?.append(queryItems: endpoint.queryItems ?? [])
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
@@ -52,6 +54,7 @@ public class FrameNetworking: ObservableObject {
                                     timeoutInterval: 10.0)
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
+        urlRequest.url?.append(queryItems: endpoint.queryItems ?? [])
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
