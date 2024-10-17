@@ -11,7 +11,7 @@ enum CustomerEndpoints: FrameNetworkingEndpoints {
     //MARK: Customer Endpoints
     case createCustomer
     case updateCustomer(customerId: String)
-    case getCustomers
+    case getCustomers(perPage: Int?, page : Int?)
     case getCustomerWith(customerId: String)
     case searchCustomers
     case deleteCustomer(customerId: String)
@@ -37,6 +37,18 @@ enum CustomerEndpoints: FrameNetworkingEndpoints {
             return "DELETE"
         default:
             return "GET"
+        }
+    }
+    
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .getCustomers(let perPage, let page):
+            var queryItems: [URLQueryItem] = []
+            if let perPage { queryItems.append(URLQueryItem(name: "per_page", value: "\(perPage)")) }
+            if let page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
+            return queryItems
+        default:
+            return []
         }
     }
 }
