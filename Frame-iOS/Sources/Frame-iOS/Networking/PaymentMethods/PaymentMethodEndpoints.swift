@@ -9,7 +9,7 @@ import Foundation
 
 enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     //MARK: Payment Method Endpoints
-    case getPaymentMethods
+    case getPaymentMethods(perPage: Int?, page : Int?)
     case getPaymentMethodWith(paymentMethodId: String)
     case getPaymentMethodsWithCustomer(customerId: String)
     case createPaymentMethod
@@ -40,6 +40,18 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
             return "PATCH"
         default:
             return "GET"
+        }
+    }
+    
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .getPaymentMethods(let perPage, let page):
+            var queryItems: [URLQueryItem] = []
+            if let perPage { queryItems.append(URLQueryItem(name: "per_page", value: "\(perPage)")) }
+            if let page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
+            return queryItems
+        default:
+            return []
         }
     }
 }

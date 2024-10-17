@@ -51,21 +51,6 @@ public class PaymentMethodRequest {
         }
     }
     
-    public struct GetPaymentMethodsRequest: Encodable {
-        let perPage: Int
-        let page: Int?
-        
-        public init(perPage: Int = 50, page: Int?) {
-            self.perPage = perPage
-            self.page = page
-        }
-        
-        public enum CodingKeys: String, CodingKey {
-            case page
-            case perPage = "per_page"
-        }
-    }
-    
     public struct AttachPaymentMethodRequest: Encodable {
         let customer: String
         

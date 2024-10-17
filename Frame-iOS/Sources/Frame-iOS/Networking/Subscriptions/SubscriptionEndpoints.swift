@@ -11,7 +11,7 @@ enum SubscriptionEndpoints: FrameNetworkingEndpoints {
     //MARK: Subscription Endpoints
     case createSubscription
     case updateSubscription(subscriptionId: String)
-    case getSubscriptions
+    case getSubscriptions(perPage: Int?, page : Int?)
     case getSubscription(subscriptionId: String)
     case searchSubscriptions
     case cancelSubscription(subscriptionId: String)
@@ -37,6 +37,18 @@ enum SubscriptionEndpoints: FrameNetworkingEndpoints {
             return "PATCH"
         default:
             return "GET"
+        }
+    }
+    
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .getSubscriptions(let perPage, let page):
+            var queryItems: [URLQueryItem] = []
+            if let perPage { queryItems.append(URLQueryItem(name: "per_page", value: "\(perPage)")) }
+            if let page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
+            return queryItems
+        default:
+            return []
         }
     }
 }

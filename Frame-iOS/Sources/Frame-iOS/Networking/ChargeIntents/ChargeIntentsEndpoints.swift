@@ -14,7 +14,7 @@ enum ChargeIntentEndpoints: FrameNetworkingEndpoints {
     case confirmChargeIntent(intentId: String)
     case createChargeIntent
     case getChargeIntent(intentId: String)
-    case getAllChargeIntents
+    case getAllChargeIntents(perPage: Int?, page : Int?)
     case updateChargeIntent(intentId: String)
     
     var endpointURL: String {
@@ -40,6 +40,18 @@ enum ChargeIntentEndpoints: FrameNetworkingEndpoints {
             return "PATCH"
         default:
             return "GET"
+        }
+    }
+    
+    var queryItems: [URLQueryItem]? {
+        switch self {
+        case .getAllChargeIntents(let perPage, let page):
+            var queryItems: [URLQueryItem] = []
+            if let perPage { queryItems.append(URLQueryItem(name: "per_page", value: "\(perPage)")) }
+            if let page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
+            return queryItems
+        default:
+            return []
         }
     }
 }
