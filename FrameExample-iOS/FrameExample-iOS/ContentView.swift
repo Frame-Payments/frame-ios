@@ -8,19 +8,44 @@
 import SwiftUI
 import Frame_iOS
 
+struct ExampleCartItem: FrameCartItem {
+    var id: String
+    var imageURL: String
+    var title: String
+    var amountInCents: Int
+}
+
 struct ContentView: View {
+    // Test variables. Will use later in tandom with UI to show functionality.
     @State var paymentMethods: [FrameObjects.PaymentMethod]?
     @State var subscriptions: [FrameObjects.Subscription]?
     @State var customers: [FrameObjects.Customer]?
     @State var chargeIntents: [FrameObjects.ChargeIntent]?
     @State var refunds: [FrameObjects.Refund]?
     
+    @State var showCheckoutView: Bool = false
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("Frame Payments Playground")
+            
+            Button {
+                self.showCheckoutView = true
+            } label: {
+                Text("Cart View (Sheet)")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+            .frame(height: 45.0)
+            .frame(maxWidth: .infinity)
+            .background(.black)
+            .cornerRadius(10.0)
+            .padding()
+
         }
         .padding()
         .task {
@@ -30,6 +55,19 @@ struct ContentView: View {
             
             await self.getSubscriptionsAsync()
             self.getSubscriptions()
+        }
+        .sheet(isPresented: $showCheckoutView) {
+            FrameCartView(cartItems: [ExampleCartItem(id: "1",
+                                                      imageURL: "https://messinahembry.com/cdn/shop/files/38c90b7b-e8dd-4d6d-ad17-d97b72c7c35f.jpg?v=1727534281",
+                                                      title: "Vintage Track Jacket",
+                                                      amountInCents: 10000),
+                                      ExampleCartItem(id: "2",
+                                                      imageURL: "https://cdn.shopify.com/s/files/1/0573/6433/files/4f311c56-b5aa-4136-89d1-c820f8494ecc_large.jpg?v=1730108286",
+                                                      title: "Zip Up Hoodie",
+                                                      amountInCents: 25000)],
+                          shippingAmountInCents: 4000,
+                          cartViewTitle: "Messina Clothing")
+                .presentationDragIndicator(.visible)
         }
     }
     
