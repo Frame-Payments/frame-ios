@@ -107,7 +107,6 @@ public struct FrameCartView: View {
                     .padding()
                 Spacer()
             }
-            Divider()
             ForEach(cartItems, id: \.id) { item in
                 cartItemView(item)
                     .frame(height: cartItemHeight)
@@ -152,6 +151,7 @@ public struct FrameCartView: View {
             AsyncImage(url: URL(string: item.imageURL)) { image in
                 image
                     .resizable()
+                    .frame(width: 40.0, height: 40.0)
                     .aspectRatio(contentMode: .fill)
                     .padding()
             } placeholder: {
@@ -168,11 +168,12 @@ public struct FrameCartView: View {
                 .foregroundColor(cartItemForegroundColor)
                 .padding(.trailing)
         }
+        .frame(height: cartItemHeight)
         .cornerRadius(10.0)
         .overlay(
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(cartItemBackgroundColor)
-                .stroke(.gray.opacity(0.3), lineWidth: 2)
+                .stroke(.gray.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
     }
