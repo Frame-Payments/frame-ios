@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "Frame-iOS",
     platforms: [
-            .macOS(.v14), .iOS(.v16), .tvOS(.v16)
+            .macOS(.v14), .iOS(.v17), .tvOS(.v16)
         ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
