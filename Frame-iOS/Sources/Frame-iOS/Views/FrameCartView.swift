@@ -82,7 +82,7 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView(customerId: "")
+                FrameCheckoutView(customerId: "", paymentAmount: cartViewModel.finalTotal)
             }
         }
     }

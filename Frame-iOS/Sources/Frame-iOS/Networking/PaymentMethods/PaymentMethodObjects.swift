@@ -18,8 +18,8 @@ struct FrameMetadata: Decodable {
 }
 
 public class FrameObjects {
-    public struct PaymentMethod: Codable, Sendable {
-        let id: String
+    public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
+        public let id: String
         let customer: String? // ID of the Customer
         let billing: BillingAddress? //Billing information associated with the PaymentMethod
         let type: String
@@ -42,7 +42,7 @@ public class FrameObjects {
         }
     }
     
-    public struct BillingAddress: Codable, Sendable {
+    public struct BillingAddress: Codable, Sendable, Equatable {
         let city: String?
         let country: String?
         let state: String?
@@ -68,7 +68,7 @@ public class FrameObjects {
     }
     
     //TODO: Get real types for mark objects as optional
-    public struct PaymentCard: Codable, Sendable {
+    public struct PaymentCard: Codable, Sendable, Equatable {
         let brand: String
         let expirationMonth: String
         let expirationYear: String
