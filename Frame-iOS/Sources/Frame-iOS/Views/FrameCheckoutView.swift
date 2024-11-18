@@ -25,6 +25,7 @@ public struct FrameCheckoutView: View {
             paymentDivider
             if checkoutViewModel.customerPaymentOptions != nil {
                 existingPaymentCardScroll
+                    .padding([.leading, .bottom])
             }
             cardInformation
                 .padding(.bottom)
@@ -95,10 +96,9 @@ public struct FrameCheckoutView: View {
             .stroke(checkoutViewModel.selectedCustomerPaymentOption == option ? Color.black : Color.gray.opacity(0.3))
             .frame(width: 110.0, height: 55.0)
             .overlay {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        if let image = UIImage(named: "CreditCardIcon",
-                                               in: Bundle.module, with: nil) {
+                        if let image = UIImage(named: "CreditCardIcon", in: Bundle.module, with: nil) {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFit()
@@ -108,7 +108,10 @@ public struct FrameCheckoutView: View {
                     }
                     Text("\(option.card?.brand ?? "") \(option.card?.lastFourDigits ?? "")")
                         .font(.subheadline)
+                        .fontWeight(.semibold)
                 }
+                .frame(height: 50.0)
+                .padding(.horizontal)
             }
             .onTapGesture {
                 checkoutViewModel.selectedCustomerPaymentOption = option

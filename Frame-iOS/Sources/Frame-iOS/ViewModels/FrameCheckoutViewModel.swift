@@ -28,6 +28,7 @@ class FrameCheckoutViewModel: ObservableObject {
         self.customerPaymentOptions = try? await PaymentMethodsAPI().getPaymentMethodsWithCustomer(customerId: customerId)
     }
     
+    //TODO: Integrate for Apple Pay and Google Pay
     func payWithApplePay() { }
     func payWithGooglePay() { }
     
@@ -95,6 +96,4 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       billing: billingAddress)
         return try? await PaymentMethodsAPI().createPaymentMethod(request: request)
     }
-    
-    func createCustomerBeforeCheckout() { }
 }
