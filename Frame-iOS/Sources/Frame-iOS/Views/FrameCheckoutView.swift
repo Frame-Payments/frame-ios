@@ -73,10 +73,10 @@ public struct FrameCheckoutView: View {
     @ViewBuilder
     var paymentButtons: some View {
         FramePaymentButton(blackButton: useBlackButtons, paymentOption: .apple) {
-            // TODO: Apple Action
+            checkoutViewModel.payWithApplePay()
         }
         FramePaymentButton(blackButton: useBlackButtons, paymentOption: .google) {
-            // TODO: Google Action
+            checkoutViewModel.payWithGooglePay()
         }
     }
     
