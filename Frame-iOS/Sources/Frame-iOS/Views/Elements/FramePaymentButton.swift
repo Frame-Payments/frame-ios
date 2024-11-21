@@ -10,6 +10,15 @@ import SwiftUI
 public enum PaymentButtonOption {
     case apple
     case google
+    
+    func imageName(blackButton: Bool) -> String {
+        switch self {
+        case .apple:
+            blackButton ? "ApplePayWhite": "ApplePayBlack"
+        case .google:
+            blackButton ? "GooglePayWhite" : "GooglePayBlack"
+        }
+    }
 }
 
 public struct FramePaymentButton: View {
@@ -24,23 +33,12 @@ public struct FramePaymentButton: View {
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(blackButton ? .black : .white)
                 .overlay {
-                    switch paymentOption {
-                    case .apple:
-                        if let image = UIImage(named: blackButton ? "ApplePayWhite" : "ApplePayBlack",
-                                               in: Bundle.module, with: nil) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 30)
-                        }
-                    case .google:
-                        if let image = UIImage(named: blackButton ? "GooglePayWhite" : "GooglePayBlack",
-                                               in: Bundle.module, with: nil) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 30)
-                        }
+                    if let image = UIImage(named: paymentOption.imageName(blackButton: blackButton),
+                                           in: Bundle.module, with: nil) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 30)
                     }
                 }
         }
