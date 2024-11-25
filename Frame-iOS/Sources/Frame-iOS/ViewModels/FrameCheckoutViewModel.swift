@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import EvervaultInputs
 
 @MainActor
 class FrameCheckoutViewModel: ObservableObject {
@@ -18,6 +19,7 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var customerZipCode: String = ""
     
     @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
+    @Published var cardData = PaymentCardData()
     
     var customerId: String = ""
     var amount: Int = 0

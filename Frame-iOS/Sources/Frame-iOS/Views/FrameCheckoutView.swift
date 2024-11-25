@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import EvervaultInputs
 
 public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
@@ -124,9 +125,9 @@ public struct FrameCheckoutView: View {
             .font(.headline)
             .foregroundColor(.gray)
             .padding(.horizontal)
-        PaymentCardInfoInput(inputCardNumber: $checkoutViewModel.cardNumber,
-                             inputExpirationDate: $checkoutViewModel.cardExpiration,
-                             inputCVC: $checkoutViewModel.cardCVCNumber)
+        // Evervault Card Input
+        PaymentCardInput(cardData: $checkoutViewModel.cardData)
+            .paymentCardInputStyle(PaymentCardInfoInput())
     }
     
     @ViewBuilder

@@ -21,7 +21,7 @@ public class FrameObjects {
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
         let customer: String? // ID of the Customer
-        let billing: BillingAddress? //Billing information associated with the PaymentMethod
+        let billing: BillingAddress? // Billing information associated with the PaymentMethod
         let type: String
         let object: String
         let created: Int // Timestamp

@@ -14,11 +14,18 @@ let package = Package(
             name: "Frame-iOS",
             targets: ["Frame-iOS"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0")
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "Frame-iOS",
+            dependencies: [
+                .product(name: "EvervaultInputs", package: "evervault-ios"),
+                .product(name: "EvervaultEnclaves", package: "evervault-ios")
+            ],
             resources: [.process("Resources")]),
         .testTarget(
             name: "Frame-iOSTests",
