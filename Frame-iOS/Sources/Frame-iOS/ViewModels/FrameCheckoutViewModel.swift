@@ -11,10 +11,6 @@ import EvervaultInputs
 @MainActor
 class FrameCheckoutViewModel: ObservableObject {
     @Published var customerPaymentOptions: [FrameObjects.PaymentMethod]?
-    
-    @Published var cardNumber: String = ""
-    @Published var cardExpiration: String = ""
-    @Published var cardCVCNumber: String = ""
     @Published var customerCountry: String = "United States"
     @Published var customerZipCode: String = ""
     
@@ -38,8 +34,7 @@ class FrameCheckoutViewModel: ObservableObject {
         var paymentMethod: FrameObjects.PaymentMethod?
         
         if selectedCustomerPaymentOption == nil {
-            // Validate Card Info
-            guard validateCardInformation() else { return }
+            guard customerZipCode.count == 5 else { return }
             
             // Create Payment Method
             paymentMethod = try? await createPaymentMethod()
@@ -72,14 +67,6 @@ class FrameCheckoutViewModel: ObservableObject {
         }
     }
     
-    func validateCardInformation() -> Bool {
-        guard cardNumber.count == 16 else { return false }
-        guard cardExpiration.count == 5 else { return false }
-        guard cardCVCNumber.count == 3 else { return false }
-        guard customerZipCode.count == 5 else { return false }
-        return true
-    }
-    
     func createPaymentMethod() async throws -> FrameObjects.PaymentMethod?  {
         //TODO: Where do we get card type?
         //TODO: Do we need the full address for the payment card?
@@ -89,11 +76,11 @@ class FrameCheckoutViewModel: ObservableObject {
                                                   postalCode: customerZipCode,
                                                   addressLine1: nil,
                                                   addressLine2: nil)
-        let request = PaymentMethodRequest.CreatePaymentMethodRequest(type: "",
-                                                                      cardNumber: cardNumber,
-                                                                      expMonth: cardExpiration.prefix(2).description,
-                                                                      expYear: cardExpiration.suffix(2).description,
-                                                                      cvc: cardCVCNumber,
+        let request = PaymentMethodRequest.CreatePaymentMethodRequest(type: cardData.card.type?.brand ?? "",
+                                                                      cardNumber: cardData.card.number,
+                                                                      expMonth: cardData.card.expMonth,
+                                                                      expYear: cardData.card.expYear,
+                                                                      cvc: cardData.card.cvc,
                                                                       customer: customerId,
                                                                       billing: billingAddress)
         return try? await PaymentMethodsAPI().createPaymentMethod(request: request)
