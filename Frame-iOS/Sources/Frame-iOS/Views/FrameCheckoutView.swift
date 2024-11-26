@@ -127,7 +127,7 @@ public struct FrameCheckoutView: View {
             .padding(.horizontal)
         // Evervault Card Input
         PaymentCardInput(cardData: $checkoutViewModel.cardData)
-            .paymentCardInputStyle(PaymentCardInfoInput())
+            .paymentCardInputStyle(EncryptedPaymentCardInput())
     }
     
     @ViewBuilder
