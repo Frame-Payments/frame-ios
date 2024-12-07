@@ -10,6 +10,7 @@ import SwiftUI
 public struct FrameCartView: View {
     @ObservedObject var cartViewModel: FrameCartViewModel
     
+    @State var customer: FrameObjects.Customer
     @State var cartItems: [any FrameCartItem]
     
     // Customizable Attributes
@@ -48,9 +49,10 @@ public struct FrameCartView: View {
     
     @State var continueToCheckout: Bool = false
     
-    public init(cartItems: [any FrameCartItem], shippingAmountInCents: Int, backgroundColor: Color = .white, cartViewTitle: String = "Frame Payments", cartViewTitleFont: Font = .title, cartViewTitleForegroundColor: Color = .black, subtitle: String = "Cart", subtitleFont: Font = .headline, subtitleForegroundColor: Color = .black, cartItemFont: Font = .headline, cartItemForegroundColor: Color = .black, cartItemBackgroundColor: Color = .clear, cartItemBorderColor: Color = .gray, cartItemHeight: CGFloat = 65.0, auxiliaryTitleFont: Font = .headline, auxiliaryTitleForegroundColor: Color = .gray, totalFont: Font = .headline, totalForegroundColor: Color = .black, checkoutButtonTitle: String = "Checkout", checkoutButtonFont: Font = .headline, checkoutButtonBackgroundColor: Color = .black, checkoutButtonForegroundColor: Color = .white) {
+    public init(customer: FrameObjects.Customer, cartItems: [any FrameCartItem], shippingAmountInCents: Int, backgroundColor: Color = .white, cartViewTitle: String = "Frame Payments", cartViewTitleFont: Font = .title, cartViewTitleForegroundColor: Color = .black, subtitle: String = "Cart", subtitleFont: Font = .headline, subtitleForegroundColor: Color = .black, cartItemFont: Font = .headline, cartItemForegroundColor: Color = .black, cartItemBackgroundColor: Color = .clear, cartItemBorderColor: Color = .gray, cartItemHeight: CGFloat = 65.0, auxiliaryTitleFont: Font = .headline, auxiliaryTitleForegroundColor: Color = .gray, totalFont: Font = .headline, totalForegroundColor: Color = .black, checkoutButtonTitle: String = "Checkout", checkoutButtonFont: Font = .headline, checkoutButtonBackgroundColor: Color = .black, checkoutButtonForegroundColor: Color = .white) {
         
         self.cartViewModel = FrameCartViewModel(cartItems: cartItems, shippingAmount: shippingAmountInCents)
+        self.customer = customer
         self.cartItems = cartItems
         self.backgroundColor = backgroundColor
         self.cartViewTitle = cartViewTitle
@@ -82,7 +84,7 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView()
+                FrameCheckoutView(customerId: customer.id, paymentAmount: cartViewModel.finalTotal)
             }
         }
     }
@@ -196,5 +198,9 @@ public struct FrameCartView: View {
 }
 
 #Preview {
-    FrameCartView(cartItems: [], shippingAmountInCents: 1000)
+    FrameCartView(customer: FrameObjects.Customer(id: "1", created: nil, shippingAddress: nil,
+                                                  updated: nil, livemode: false, name: "", phone: nil, email: nil,
+                                                  description: nil, object: nil, metadata: nil, billingAddress: nil),
+                  cartItems: [],
+                  shippingAmountInCents: 1000)
 }

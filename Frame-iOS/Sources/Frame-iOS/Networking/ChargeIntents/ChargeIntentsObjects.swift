@@ -8,12 +8,12 @@
 import Foundation
 
 extension FrameObjects {
-    public enum AuthorizationMode: Codable {
+    public enum AuthorizationMode: Codable, Sendable {
         case automatic
         case manual
     }
     
-    public enum ChargeIntentStatus: Codable {
+    public enum ChargeIntentStatus: Codable, Sendable {
         case canceled
         case disputed
         case failed
@@ -24,7 +24,7 @@ extension FrameObjects {
         case succeeded
     }
     
-    public struct ChargeIntent: Codable {
+    public struct ChargeIntent: Codable, Sendable {
         let id: String
         let currency: String
         let latestCharge: String?

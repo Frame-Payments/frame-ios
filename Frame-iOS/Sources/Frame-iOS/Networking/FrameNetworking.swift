@@ -8,6 +8,7 @@
 // https://docs.framepayments.com/authentication
 
 import SwiftUI
+import EvervaultCore
 
 // Create Network Request Here That Return Callbacks With User Data, This is the "Router"
 
@@ -26,6 +27,7 @@ public class FrameNetworking: ObservableObject {
     
     public func initializeWithAPIKey(_ key: String) {
         self.apiKey = key
+        Evervault.shared.configure(teamId: "team_7b6ce5e75d40", appId: "app_933b505c5939")
     }
     
     // Async/Await

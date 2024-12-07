@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import EvervaultCore
 
 // Protocol for Mock Testing
 protocol PaymentMethodProtocol {
@@ -13,7 +14,7 @@ protocol PaymentMethodProtocol {
     func getPaymentMethods(page: Int?, perPage: Int?) async throws -> [FrameObjects.PaymentMethod]?
     func getPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod?
     func getPaymentMethodsWithCustomer(customerId: String) async throws -> [FrameObjects.PaymentMethod]?
-    func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod?
+    func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool) async throws -> FrameObjects.PaymentMethod?
     func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest)  async throws -> FrameObjects.PaymentMethod?
     func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest)  async throws -> FrameObjects.PaymentMethod?
     func detachPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod?
@@ -69,9 +70,17 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
+    public func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = false) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
-        let requestBody = try? jsonEncoder.encode(request)
+        
+        var encryptedRequest = request
+        if encryptData {
+            encryptedRequest.cardNumber = try await Evervault.shared.encrypt(request.cardNumber) as! String
+            encryptedRequest.cvc = try await Evervault.shared.encrypt(request.cvc) as! String
+            encryptedRequest.expMonth = try await Evervault.shared.encrypt(request.expMonth) as! String
+            encryptedRequest.expYear = try await Evervault.shared.encrypt(request.expYear) as! String
+        }
+        let requestBody = try? jsonEncoder.encode(encryptedRequest)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {

@@ -8,10 +8,10 @@
 public class PaymentMethodRequest {
     public struct CreatePaymentMethodRequest: Encodable {
         let type: String
-        let cardNumber: String
-        let expMonth: String
-        let expYear: String
-        let cvc: String
+        var cardNumber: String
+        var expMonth: String
+        var expYear: String
+        var cvc: String
         let customer: String?
         let billing: FrameObjects.BillingAddress?
         
