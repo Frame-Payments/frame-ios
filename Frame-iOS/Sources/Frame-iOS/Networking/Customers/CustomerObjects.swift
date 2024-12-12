@@ -22,7 +22,7 @@ extension FrameObjects {
         let metadata: [String: String]?
         let billingAddress: BillingAddress?
         
-        public init(id: String, created: Int?, shippingAddress: BillingAddress?, updated: Int?, livemode: Bool, name: String, phone: String?, email: String?, description: String?, object: String?, metadata: [String : String]?, billingAddress: BillingAddress?) {
+        public init(id: String, created: Int? = nil, shippingAddress: BillingAddress? = nil, updated: Int? = nil, livemode: Bool, name: String, phone: String? = nil, email: String? = nil, description: String? = nil, object: String? = nil, metadata: [String : String]? = nil, billingAddress: BillingAddress? = nil) {
             self.id = id
             self.created = created
             self.shippingAddress = shippingAddress
