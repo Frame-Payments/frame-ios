@@ -26,18 +26,20 @@ protocol RefundsProtocol {
 
 // Refunds API
 public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
-    
-    public init() {}
+    public init(mockSession: URLSessionProtocol? = nil) {
+        self.urlSession = mockSession ?? URLSession.shared
+    }
     
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
+    let urlSession: URLSessionProtocol
     
     //async/await
     public func createRefund(request: RefundRequests.CreateRefundRequest) async throws -> FrameObjects.Refund? {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
             return decodedResponse
         } else {
@@ -48,7 +50,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     public func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil) async throws -> [FrameObjects.Refund]? {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? JSONDecoder().decode(RefundResponses.ListRefundsResponse.self, from: data) {
             return decodedResponse.data
         } else {
@@ -57,9 +59,10 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     }
     
     public func getRefundWith(refundId: String) async throws -> FrameObjects.Refund? {
+        guard !refundId.isEmpty else { return nil }
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
             return decodedResponse
         } else {
@@ -68,9 +71,10 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     }
     
     public func cancelRefund(refundId: String) async throws -> FrameObjects.Refund? {
+        guard !refundId.isEmpty else { return nil }
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
             return decodedResponse
         } else {
