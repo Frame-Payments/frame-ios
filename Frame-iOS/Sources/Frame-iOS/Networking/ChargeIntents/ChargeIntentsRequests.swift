@@ -20,7 +20,7 @@ public class ChargeIntentsRequests {
         let customerData: CustomerData?
         let paymentMethodData: PaymentMethodData?
         
-        public init(amount: Int, currency: String, customer: String?, description: String?, paymentMethod: String?, confirm: Bool, receiptEmail: String?, authorizationMode: FrameObjects.AuthorizationMode?, customerData: CustomerData?, paymentMethodData: PaymentMethodData?) {
+        public init(amount: Int, currency: String, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil) {
             self.amount = amount
             self.currency = currency
             self.customer = customer
@@ -52,7 +52,7 @@ public class ChargeIntentsRequests {
         let confirm: Bool?
         let receiptEmail: String?
         
-        public init(amount: Int?, currency: String?, customer: String?, description: String?, paymentMethod: String?, confirm: Bool?, receiptEmail: String?) {
+        public init(amount: Int? = nil, currency: String? = nil, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool? = nil, receiptEmail: String? = nil) {
             self.amount = amount
             self.currency = currency
             self.customer = customer
@@ -72,8 +72,8 @@ public class ChargeIntentsRequests {
     public struct CaptureChargeIntentRequest: Encodable {
         let amountCapturedCents: Int
         
-        public init(amount_captured_cents: Int) {
-            self.amountCapturedCents = amount_captured_cents
+        public init(amountCapturedCents: Int) {
+            self.amountCapturedCents = amountCapturedCents
         }
         
         enum CodingKeys: String, CodingKey {
