@@ -9,7 +9,7 @@ import XCTest
 @testable import Frame_iOS
 
 final class SubscriptionsAPITests: XCTestCase {
-    let session = MockURLAsyncSession(data: nil, response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/customers")!,
+    let session = MockURLAsyncSession(data: nil, response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/subscriptions")!,
                                                                            statusCode: 200,
                                                                            httpVersion: nil,
                                                                            headerFields: nil), error: nil)
@@ -26,7 +26,7 @@ final class SubscriptionsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(subscription)
             let createdSecondSubscription = try await SubscriptionsAPI(mockSession: session).createSubscription(request: request)
             XCTAssertNotNil(createdSecondSubscription)
-            XCTAssertEqual(createdSecondSubscription?.currency, "USD")
+            XCTAssertEqual(createdSecondSubscription?.currency, subscription.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -47,7 +47,7 @@ final class SubscriptionsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(subscription)
             let thirdUpdatedSubscription = try await SubscriptionsAPI(mockSession: session).updateSubscription(subscriptionId: "1234", request: request)
             XCTAssertNotNil(thirdUpdatedSubscription)
-            XCTAssertEqual(thirdUpdatedSubscription?.currency, "USD")
+            XCTAssertEqual(thirdUpdatedSubscription?.currency, subscription.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -66,8 +66,8 @@ final class SubscriptionsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(SubscriptionResponses.ListSubscriptionsResponse(meta: nil, data: [firstSubscription, secondSubscription]))
             let secondReceivedSubscriptions = try? await SubscriptionsAPI(mockSession: session).getSubscriptions()
             XCTAssertNotNil(secondReceivedSubscriptions)
-            XCTAssertEqual(secondReceivedSubscriptions?[0].currency, "USD")
-            XCTAssertEqual(secondReceivedSubscriptions?[1].currency, "CAD")
+            XCTAssertEqual(secondReceivedSubscriptions?[0].currency, firstSubscription.currency)
+            XCTAssertEqual(secondReceivedSubscriptions?[1].currency, secondSubscription.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -87,7 +87,7 @@ final class SubscriptionsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(subscription)
             let thirdReceivedSubscription = try? await SubscriptionsAPI(mockSession: session).getSubscription(subscriptionId: "1234")
             XCTAssertNotNil(thirdReceivedSubscription)
-            XCTAssertEqual(thirdReceivedSubscription?.currency, "USD")
+            XCTAssertEqual(thirdReceivedSubscription?.currency, subscription.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -107,8 +107,8 @@ final class SubscriptionsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(SubscriptionResponses.ListSubscriptionsResponse(meta: nil, data: [firstSubscription, secondSubscription]))
             let secondSearch = try await SubscriptionsAPI(mockSession: session).searchSubscription(request: request)
             XCTAssertNotNil(secondSearch)
-            XCTAssertEqual(secondSearch?[0].currency, "USD")
-            XCTAssertEqual(secondSearch?[1].currency, "CAD")
+            XCTAssertEqual(secondSearch?[0].currency, firstSubscription.currency)
+            XCTAssertEqual(secondSearch?[1].currency, secondSubscription.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -128,7 +128,7 @@ final class SubscriptionsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(subscription)
             let thirdCancelledSubscription = try await SubscriptionsAPI(mockSession: session).getSubscription(subscriptionId: "1234")
             XCTAssertNotNil(thirdCancelledSubscription)
-            XCTAssertEqual(thirdCancelledSubscription?.currency, "USD")
+            XCTAssertEqual(thirdCancelledSubscription?.currency, subscription.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }

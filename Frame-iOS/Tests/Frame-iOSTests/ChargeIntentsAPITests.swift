@@ -26,10 +26,13 @@ final class ChargeIntentsAPITests: XCTestCase {
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
                                                      object: "", amount: 10, created: 0, updated: 0, livemode: true)
+        XCTAssertNotNil(chargeIntent.shipping)
+        
         do {
             session.data = try JSONEncoder().encode(chargeIntent)
             let secondIntent = try await ChargeIntentsAPI(mockSession: session).createChargeIntent(request: request)
             XCTAssertNotNil(secondIntent)
+            XCTAssertEqual(secondIntent?.shipping, chargeIntent.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -52,6 +55,7 @@ final class ChargeIntentsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(chargeIntent)
             let thirdCapture = try await ChargeIntentsAPI(mockSession: session).captureChargeIntent(intentId: "1234", request: request)
             XCTAssertNotNil(thirdCapture)
+            XCTAssertEqual(thirdCapture?.shipping, chargeIntent.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -72,6 +76,7 @@ final class ChargeIntentsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(chargeIntent)
             let confirmationThree = try await ChargeIntentsAPI(mockSession: session).confirmChargeIntent(intentId: "1234")
             XCTAssertNotNil(confirmationThree)
+            XCTAssertEqual(confirmationThree?.shipping, chargeIntent.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -92,6 +97,7 @@ final class ChargeIntentsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(chargeIntent)
             let cancellationThree = try await ChargeIntentsAPI(mockSession: session).cancelChargeIntent(intentId: "1234")
             XCTAssertNotNil(cancellationThree)
+            XCTAssertEqual(cancellationThree?.shipping, chargeIntent.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -111,7 +117,8 @@ final class ChargeIntentsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(ChargeIntentResponses.ListChargeIntentsResponse(meta: nil, data: [chargeIntent, chargeIntentTwo]))
             let intentsTwo = try await ChargeIntentsAPI(mockSession: session).getAllChargeIntents()
             XCTAssertNotNil(intentsTwo)
-            XCTAssertEqual(intentsTwo?.count, 2)
+            XCTAssertEqual(intentsTwo?[0].currency, chargeIntent.currency)
+            XCTAssertEqual(intentsTwo?[1].currency, chargeIntentTwo.currency)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -132,6 +139,7 @@ final class ChargeIntentsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(chargeIntent)
             let intentThree = try await ChargeIntentsAPI(mockSession: session).getChargeIntent(intentId: "1234")
             XCTAssertNotNil(intentThree)
+            XCTAssertEqual(intentThree?.shipping, chargeIntent.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -153,6 +161,7 @@ final class ChargeIntentsAPITests: XCTestCase {
             session.data = try JSONEncoder().encode(chargeIntent)
             let intentThree = try await ChargeIntentsAPI(mockSession: session).updateChargeIntent(intentId: "1234", request: request)
             XCTAssertNotNil(intentThree)
+            XCTAssertEqual(intentThree?.shipping, chargeIntent.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }

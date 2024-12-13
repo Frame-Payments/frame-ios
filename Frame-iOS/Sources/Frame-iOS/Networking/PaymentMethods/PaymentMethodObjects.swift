@@ -20,14 +20,14 @@ struct FrameMetadata: Codable {
 public class FrameObjects {
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
-        let customer: String? // ID of the Customer
-        let billing: BillingAddress? // Billing information associated with the PaymentMethod
+        var customer: String? // ID of the Customer
+        var billing: BillingAddress? // Billing information associated with the PaymentMethod
         let type: String
         let object: String
         let created: Int // Timestamp
         let updated: Int // Timestamp
         let livemode: Bool
-        let card: PaymentCard?
+        var card: PaymentCard?
         
         public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil) {
             self.id = id

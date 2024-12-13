@@ -6,7 +6,7 @@
 //
 
 class PaymentMethodResponses {
-    struct ListPaymentMethodsResponse: Decodable {
+    struct ListPaymentMethodsResponse: Codable {
         let meta: FrameMetadata?
         let data: [FrameObjects.PaymentMethod]?
     }
