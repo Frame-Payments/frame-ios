@@ -2,7 +2,7 @@
 //  Test.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 12/6/24.
+//  Created by Frame Payments on 12/6/24.
 //
 
 import XCTest
