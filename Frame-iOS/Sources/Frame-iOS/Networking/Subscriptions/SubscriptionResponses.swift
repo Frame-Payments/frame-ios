@@ -6,7 +6,7 @@
 //
 
 class SubscriptionResponses {
-    struct ListSubscriptionsResponse: Decodable {
+    struct ListSubscriptionsResponse: Codable {
         let meta: FrameMetadata?
         let data: [FrameObjects.Subscription]?
     }

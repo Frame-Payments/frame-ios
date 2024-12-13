@@ -29,7 +29,7 @@ public class FrameObjects {
         let livemode: Bool
         let card: PaymentCard?
         
-        public init(id: String, customer: String?, billing: BillingAddress?, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard?) {
+        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil) {
             self.id = id
             self.customer = customer
             self.billing = billing
@@ -78,7 +78,8 @@ public class FrameObjects {
         let type: String?
         let lastFourDigits: String
         
-        public init(brand: String, expirationMonth: String, expirationYear: String, issuer: String?, currency: String?, segment: String?, type: String?, lastFourDigits: String) {
+        public init(brand: String, expirationMonth: String, expirationYear: String, issuer: String? = nil, currency: String?, segment: String? = nil,
+                    type: String? = nil, lastFourDigits: String) {
             self.brand = brand
             self.expirationMonth = expirationMonth
             self.expirationYear = expirationYear
