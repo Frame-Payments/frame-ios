@@ -57,7 +57,10 @@ struct ContentView: View {
             self.getSubscriptions()
         }
         .sheet(isPresented: $showCheckoutView) {
-            FrameCartView(cartItems: [ExampleCartItem(id: "1",
+            FrameCartView(customer: FrameObjects.Customer(id: "1",
+                                                          livemode: true,
+                                                          name: "Example Customer"),
+                          cartItems: [ExampleCartItem(id: "1",
                                                       imageURL: "https://messinahembry.com/cdn/shop/files/38c90b7b-e8dd-4d6d-ad17-d97b72c7c35f.jpg?v=1727534281",
                                                       title: "Vintage Track Jacket",
                                                       amountInCents: 10000),
@@ -73,7 +76,7 @@ struct ContentView: View {
     
     //completionHandler
     func getPaymentMethods() {
-        PaymentMethodsAPI().getPaymentMethods() { paymentMethods in
+        PaymentMethodsAPI.getPaymentMethods() { paymentMethods in
             if let paymentMethods {
                 self.paymentMethods = paymentMethods
             }
@@ -81,7 +84,7 @@ struct ContentView: View {
     }
     
     func getSubscriptions() {
-        SubscriptionsAPI().getSubscriptions { subscriptions in
+        SubscriptionsAPI.getSubscriptions { subscriptions in
             if let subscriptions {
                 self.subscriptions = subscriptions
             }
@@ -89,7 +92,7 @@ struct ContentView: View {
     }
     
     func getCustomers() {
-        CustomersAPI().getCustomers { customers in
+        CustomersAPI.getCustomers { customers in
             if let customers {
                 self.customers = customers
             }
@@ -97,7 +100,7 @@ struct ContentView: View {
     }
     
     func getChargeIntents() {
-        ChargeIntentsAPI().getAllChargeIntents() { chargeIntents in
+        ChargeIntentsAPI.getAllChargeIntents() { chargeIntents in
             if let chargeIntents {
                 self.chargeIntents = chargeIntents
             }
@@ -105,7 +108,7 @@ struct ContentView: View {
     }
     
     func getRefunds() {
-        RefundsAPI().getRefunds { refunds in
+        RefundsAPI.getRefunds { refunds in
             if let refunds {
                 self.refunds = refunds
             }
@@ -114,23 +117,23 @@ struct ContentView: View {
     
     //async await
     func getPaymentMethodsAsync() async {
-        self.paymentMethods = try? await PaymentMethodsAPI().getPaymentMethods()
+        self.paymentMethods = try? await PaymentMethodsAPI.getPaymentMethods()
     }
     
     func getSubscriptionsAsync() async {
-        self.subscriptions = try? await SubscriptionsAPI().getSubscriptions()
+        self.subscriptions = try? await SubscriptionsAPI.getSubscriptions()
     }
     
     func getCustomers() async {
-        self.customers = try? await CustomersAPI().getCustomers()
+        self.customers = try? await CustomersAPI.getCustomers()
     }
     
     func getChargeIntents() async {
-        self.chargeIntents = try? await ChargeIntentsAPI().getAllChargeIntents()
+        self.chargeIntents = try? await ChargeIntentsAPI.getAllChargeIntents()
     }
     
     func getRefunds() async {
-        self.refunds = try? await RefundsAPI().getRefunds()
+        self.refunds = try? await RefundsAPI.getRefunds()
     }
 }
 

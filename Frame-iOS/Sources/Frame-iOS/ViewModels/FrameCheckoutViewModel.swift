@@ -23,7 +23,7 @@ class FrameCheckoutViewModel: ObservableObject {
     func loadCustomerPaymentMethods(customerId: String, amount: Int) async {
         self.customerId = customerId
         self.amount = amount
-        self.customerPaymentOptions = try? await PaymentMethodsAPI().getPaymentMethodsWithCustomer(customerId: customerId)
+        self.customerPaymentOptions = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
     }
     
     //TODO: Integrate for Apple Pay and Google Pay
@@ -63,7 +63,7 @@ class FrameCheckoutViewModel: ObservableObject {
         // Save Payment Method
         if saveMethod, let id = paymentMethod?.id {
             let attachmentRequest = PaymentMethodRequest.AttachPaymentMethodRequest(customer: customerId)
-            _ = try? await PaymentMethodsAPI().attachPaymentMethodWith(paymentMethodId: id, request: attachmentRequest)
+            _ = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: id, request: attachmentRequest)
         }
     }
     
@@ -83,6 +83,6 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       cvc: cardData.card.cvc,
                                                                       customer: customerId,
                                                                       billing: billingAddress)
-        return try? await PaymentMethodsAPI().createPaymentMethod(request: request)
+        return try? await PaymentMethodsAPI.createPaymentMethod(request: request)
     }
 }

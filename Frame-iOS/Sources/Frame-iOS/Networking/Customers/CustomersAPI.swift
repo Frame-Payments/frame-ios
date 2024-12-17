@@ -10,20 +10,20 @@ import Foundation
 // Protocol for Mock Testing
 protocol CustomersProtocol {
     //async/await
-    func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer?
-    func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse?
-    func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer?
-    func getCustomers(page: Int?, perPage: Int?) async throws -> [FrameObjects.Customer]?
-    func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer?
-    func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> [FrameObjects.Customer]?
+    static func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer?
+    static func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse?
+    static func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer?
+    static func getCustomers(page: Int?, perPage: Int?) async throws -> [FrameObjects.Customer]?
+    static func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer?
+    static func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> [FrameObjects.Customer]?
     
     // completionHandlers
-    func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
-    func deleteCustomer(customerId: String, completionHandler: @escaping @Sendable (CustomerResponses.DeleteCustomerResponse?) -> Void)
-    func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
-    func getCustomers(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void)
-    func getCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
-    func searchCustomers(request: CustomerRequest.SearchCustomersRequest, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void)
+    static func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
+    static func deleteCustomer(customerId: String, completionHandler: @escaping @Sendable (CustomerResponses.DeleteCustomerResponse?) -> Void)
+    static func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
+    static func getCustomers(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void)
+    static func getCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
+    static func searchCustomers(request: CustomerRequest.SearchCustomersRequest, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void)
 }
 
 // Customers API
@@ -33,7 +33,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     //MARK: Methods using async/await
-    public func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer? {
+    public static func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.createCustomer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -45,7 +45,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse? {
+    public static func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse? {
         let endpoint = CustomerEndpoints.deleteCustomer(customerId: customerId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -56,7 +56,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer? {
+    public static func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.updateCustomer(customerId: customerId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -73,7 +73,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func getCustomers(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Customer]? {
+    public static func getCustomers(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Customer]? {
         let endpoint = CustomerEndpoints.getCustomers(perPage: perPage, page: page)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -84,7 +84,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
+    public static func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -95,7 +95,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> [FrameObjects.Customer]? {
+    public static func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> [FrameObjects.Customer]? {
         let endpoint = CustomerEndpoints.searchCustomers
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -108,7 +108,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     //MARK: Methods using completion handler
-    public func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
+    public static func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
         let endpoint = CustomerEndpoints.createCustomer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -119,7 +119,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func deleteCustomer(customerId: String, completionHandler: @escaping @Sendable (CustomerResponses.DeleteCustomerResponse?) -> Void) {
+    public static func deleteCustomer(customerId: String, completionHandler: @escaping @Sendable (CustomerResponses.DeleteCustomerResponse?) -> Void) {
         let endpoint = CustomerEndpoints.deleteCustomer(customerId: customerId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -129,7 +129,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
+    public static func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
         let endpoint = CustomerEndpoints.updateCustomer(customerId: customerId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -140,7 +140,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func getCustomers(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void) {
+    public static func getCustomers(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void) {
         let endpoint = CustomerEndpoints.getCustomers(perPage: perPage, page: page)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -150,7 +150,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func getCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
+    public static func getCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -160,7 +160,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public func searchCustomers(request: CustomerRequest.SearchCustomersRequest, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void) {
+    public static func searchCustomers(request: CustomerRequest.SearchCustomersRequest, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void) {
         let endpoint = CustomerEndpoints.searchCustomers
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         

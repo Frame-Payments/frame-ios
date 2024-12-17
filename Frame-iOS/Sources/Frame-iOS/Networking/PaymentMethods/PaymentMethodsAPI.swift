@@ -11,22 +11,22 @@ import EvervaultCore
 // Protocol for Mock Testing
 protocol PaymentMethodProtocol {
     //MARK: Methods using async/await
-    func getPaymentMethods(page: Int?, perPage: Int?) async throws -> [FrameObjects.PaymentMethod]?
-    func getPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod?
-    func getPaymentMethodsWithCustomer(customerId: String) async throws -> [FrameObjects.PaymentMethod]?
-    func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool) async throws -> FrameObjects.PaymentMethod?
-    func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest)  async throws -> FrameObjects.PaymentMethod?
-    func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest)  async throws -> FrameObjects.PaymentMethod?
-    func detachPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod?
+    static func getPaymentMethods(page: Int?, perPage: Int?) async throws -> [FrameObjects.PaymentMethod]?
+    static func getPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod?
+    static func getPaymentMethodsWithCustomer(customerId: String) async throws -> [FrameObjects.PaymentMethod]?
+    static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool) async throws -> FrameObjects.PaymentMethod?
+    static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest)  async throws -> FrameObjects.PaymentMethod?
+    static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest)  async throws -> FrameObjects.PaymentMethod?
+    static func detachPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod?
     
     //MARK: Methods using completionHandler
-    func getPaymentMethods(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void)
-    func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
-    func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void)
-    func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
-    func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
-    func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
-    func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
+    static func getPaymentMethods(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void)
+    static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
+    static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void)
+    static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
+    static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
+    static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
+    static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
 }
 
 // Payments Methods API
@@ -36,7 +36,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     }
     
     //MARK: Methods using async/await
-    public func getPaymentMethods(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.PaymentMethod]? {
+    public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.PaymentMethod]? {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -47,7 +47,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func getPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod? {
+    public static func getPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -58,7 +58,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func getPaymentMethodsWithCustomer(customerId: String) async throws -> [FrameObjects.PaymentMethod]? {
+    public static func getPaymentMethodsWithCustomer(customerId: String) async throws -> [FrameObjects.PaymentMethod]? {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -69,7 +69,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = false) async throws -> FrameObjects.PaymentMethod? {
+    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = false) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         
         var encryptedRequest = request
@@ -89,7 +89,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
+    public static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.updatePaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -101,7 +101,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
+    public static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -113,7 +113,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func detachPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod? {
+    public static func detachPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod? {
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -126,7 +126,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     
     
     //MARK: Methods using completion handler
-    public func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void) {
+    public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -136,7 +136,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
+    public static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -146,7 +146,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void) {
+    public static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -156,7 +156,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
+    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -167,7 +167,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
+    public static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.updatePaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -178,7 +178,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
+    public static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -189,7 +189,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
+    public static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
