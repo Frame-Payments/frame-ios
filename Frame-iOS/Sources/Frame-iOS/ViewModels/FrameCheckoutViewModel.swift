@@ -58,7 +58,7 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       paymentMethodData: nil)
         
         // Create Charge Intent
-        let chargeIntent = try? await ChargeIntentsAPI().createChargeIntent(request: request)
+        let chargeIntent = try? await ChargeIntentsAPI.createChargeIntent(request: request)
         
         // Save Payment Method
         if saveMethod, let id = paymentMethod?.id {

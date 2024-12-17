@@ -38,6 +38,10 @@ enum NetworkingError: Error {
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
+    let jsonEncoder = JSONEncoder()
+    let jsonDecoder = JSONDecoder()
+    var urlSession: URLSessionProtocol = URLSession.shared
+    
     let mainAPIURL: String = "https://api.framepayments.com"
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     
@@ -50,7 +54,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Async/Await
-    func performDataTask(urlSession: URLSessionProtocol = URLSession.shared, endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
         guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
         var urlRequest = URLRequest(url: url,
@@ -82,7 +86,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Completion Handler
-    func performDataTask(urlSession: URLSession = URLSession.shared, endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
         guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url,
@@ -96,7 +100,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
-        urlSession.dataTask(with: urlRequest) { data, response, error in
+        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
         }.resume()
     }

@@ -29,20 +29,16 @@ protocol CustomersProtocol {
 // Customers API
 public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     public init(mockSession: URLSessionProtocol? = nil) {
-        self.urlSession = mockSession ?? URLSession.shared
+        FrameNetworking.shared.urlSession = mockSession ?? URLSession.shared
     }
-    
-    let jsonEncoder = JSONEncoder()
-    let jsonDecoder = JSONDecoder()
-    let urlSession: URLSessionProtocol
     
     //MARK: Methods using async/await
     public func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.createCustomer
-        let requestBody = try? jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -50,11 +46,10 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse? {
-        guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.deleteCustomer(customerId: customerId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
-        if let data, let decodedResponse = try? jsonDecoder.decode(CustomerResponses.DeleteCustomerResponse.self, from: data) {
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.DeleteCustomerResponse.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -62,14 +57,13 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer? {
-        guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.updateCustomer(customerId: customerId)
-        let requestBody = try? jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         do {
-            let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
+            let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
             if let data {
-                let decodedResponse = try jsonDecoder.decode(FrameObjects.Customer.self, from: data)
+                let decodedResponse = try FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data)
                 return decodedResponse
             } else {
                 return nil
@@ -82,8 +76,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     public func getCustomers(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Customer]? {
         let endpoint = CustomerEndpoints.getCustomers(perPage: perPage, page: page)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
-        if let data, let decodedResponse = try? jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
             return decodedResponse.data
         } else {
             return nil
@@ -93,8 +87,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     public func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
-        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
             return decodedResponse
         } else {
             return nil
@@ -103,10 +97,10 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     
     public func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> [FrameObjects.Customer]? {
         let endpoint = CustomerEndpoints.searchCustomers
-        let requestBody = try? jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
             return decodedResponse.data
         } else {
             return nil
@@ -116,10 +110,10 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     //MARK: Methods using completion handler
     public func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
         let endpoint = CustomerEndpoints.createCustomer
-        let requestBody = try? jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -129,7 +123,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         let endpoint = CustomerEndpoints.deleteCustomer(customerId: customerId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? self.jsonDecoder.decode(CustomerResponses.DeleteCustomerResponse.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.DeleteCustomerResponse.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -137,10 +131,10 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     
     public func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
         let endpoint = CustomerEndpoints.updateCustomer(customerId: customerId)
-        let requestBody = try? jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -150,7 +144,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         let endpoint = CustomerEndpoints.getCustomers(perPage: perPage, page: page)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? self.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
         }
@@ -160,7 +154,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? self.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
                 completionHandler(decodedResponse)
             }
         }
@@ -168,10 +162,10 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     
     public func searchCustomers(request: CustomerRequest.SearchCustomersRequest, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void) {
         let endpoint = CustomerEndpoints.searchCustomers
-        let requestBody = try? jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? self.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
         }
