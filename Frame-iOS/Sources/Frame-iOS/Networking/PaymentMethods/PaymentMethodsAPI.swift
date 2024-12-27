@@ -31,10 +31,6 @@ protocol PaymentMethodProtocol {
 
 // Payments Methods API
 public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
-    public init(mockSession: URLSessionProtocol? = nil) {
-        FrameNetworking.shared.urlSession = mockSession ?? URLSession.shared
-    }
-    
     //MARK: Methods using async/await
     public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.PaymentMethod]? {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)

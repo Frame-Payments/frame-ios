@@ -30,10 +30,6 @@ protocol ChargeIntentsProtocol {
 
 // Charge Intents API
 public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
-    public init(mockSession: URLSessionProtocol? = nil) {
-        FrameNetworking.shared.urlSession = mockSession ?? URLSession.shared
-    }
-    
     //async/await
     public static func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest) async throws -> FrameObjects.ChargeIntent? {
         let endpoint = ChargeIntentEndpoints.createChargeIntent

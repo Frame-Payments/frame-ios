@@ -28,9 +28,6 @@ protocol CustomersProtocol {
 
 // Customers API
 public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
-    public init(mockSession: URLSessionProtocol? = nil) {
-        FrameNetworking.shared.urlSession = mockSession ?? URLSession.shared
-    }
     
     //MARK: Methods using async/await
     public static func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer? {

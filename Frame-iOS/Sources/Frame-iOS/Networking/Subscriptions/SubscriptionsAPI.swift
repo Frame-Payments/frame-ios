@@ -30,10 +30,6 @@ protocol SubscriptionsProtocol {
 
 // Subscriptions API
 public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
-    public init(mockSession: URLSessionProtocol? = nil) {
-        FrameNetworking.shared.urlSession = mockSession ?? URLSession.shared
-    }
-    
     //MARK: Methods using async/await
     public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
         let endpoint = SubscriptionEndpoints.createSubscription

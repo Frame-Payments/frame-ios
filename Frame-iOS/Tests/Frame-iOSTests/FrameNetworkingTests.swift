@@ -79,7 +79,7 @@ final class FrameNetworkingTests: XCTestCase {
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         do {
-            let (data, response) = try await networking.performDataTask(urlSession: mockSession, endpoint: endpoint)
+            let (data, response) = try await networking.performDataTask(endpoint: endpoint)
             XCTAssertNotNil(data)
             XCTAssertNotNil(response)
         } catch {
@@ -97,10 +97,11 @@ final class FrameNetworkingTests: XCTestCase {
         mockSession.error = nil
         
         let networking = FrameNetworking.shared
+        networking.asyncURLSession = mockSession
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         do {
-            let (data, response) = try await networking.performDataTask(urlSession: mockSession, endpoint: endpoint)
+            let (data, response) = try await networking.performDataTask(endpoint: endpoint)
             XCTAssertNil(data)
             XCTAssertNotNil(response)
         } catch let error {
@@ -117,10 +118,11 @@ final class FrameNetworkingTests: XCTestCase {
         mockSession.error = nil
         
         let networking = FrameNetworking.shared
+        networking.asyncURLSession = mockSession
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         do {
-            let (data, response) = try await networking.performDataTask(urlSession: mockSession, endpoint: endpoint)
+            let (data, response) = try await networking.performDataTask(endpoint: endpoint)
             XCTAssertNotNil(data)
             XCTAssertNil(response)
         } catch {
@@ -141,11 +143,12 @@ final class FrameNetworkingTests: XCTestCase {
         mockSession.error = nil
         
         let networking = FrameNetworking.shared
+        networking.urlSession = mockSession
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         let expectation = self.expectation(description: "Completion handler called")
         
-        networking.performDataTask(urlSession: mockSession, endpoint: endpoint) { data, response, error in
+        networking.performDataTask(endpoint: endpoint) { data, response, error in
             XCTAssertNotNil(data)
             XCTAssertNotNil(response)
             XCTAssertNil(error)
@@ -165,11 +168,12 @@ final class FrameNetworkingTests: XCTestCase {
         mockSession.error = nil
         
         let networking = FrameNetworking.shared
+        networking.urlSession = mockSession
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         let expectation = self.expectation(description: "Completion handler called")
         
-        networking.performDataTask(urlSession: mockSession, endpoint: endpoint) { data, response, error in
+        networking.performDataTask(endpoint: endpoint) { data, response, error in
             XCTAssertNil(data)
             XCTAssertNotNil(response)
             XCTAssertNil(error)
@@ -186,11 +190,12 @@ final class FrameNetworkingTests: XCTestCase {
         mockSession.error = nil
         
         let networking = FrameNetworking.shared
+        networking.urlSession = mockSession
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         let expectation = self.expectation(description: "Completion handler called")
         
-        networking.performDataTask(urlSession: mockSession, endpoint: endpoint) { data, response, error in
+        networking.performDataTask(endpoint: endpoint) { data, response, error in
             XCTAssertNil(data)
             XCTAssertNil(response)
             XCTAssertNil(error)

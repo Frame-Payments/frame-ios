@@ -40,7 +40,8 @@ public class FrameNetworking: ObservableObject {
     
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
-    var urlSession: URLSessionProtocol = URLSession.shared
+    var asyncURLSession: URLSessionProtocol = URLSession.shared
+    var urlSession: URLSession = URLSession.shared
     
     let mainAPIURL: String = "https://api.framepayments.com"
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
@@ -69,7 +70,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         do {
-            let (data, response) = try await urlSession.data(for: urlRequest)
+            let (data, response) = try await asyncURLSession.data(for: urlRequest)
             
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 throw NetworkingError.serverError(statusCode: httpResponse.statusCode)
@@ -100,7 +101,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
-        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+        urlSession.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
         }.resume()
     }

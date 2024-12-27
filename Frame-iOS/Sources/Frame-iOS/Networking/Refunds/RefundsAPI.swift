@@ -26,10 +26,6 @@ protocol RefundsProtocol {
 
 // Refunds API
 public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
-    public init(mockSession: URLSessionProtocol? = nil) {
-        FrameNetworking.shared.urlSession = mockSession ?? URLSession.shared
-    }
-    
     //async/await
     public static func createRefund(request: RefundRequests.CreateRefundRequest) async throws -> FrameObjects.Refund? {
         let endpoint = RefundEndpoints.createRefund
