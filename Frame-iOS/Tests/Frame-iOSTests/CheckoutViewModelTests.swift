@@ -37,21 +37,6 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.customerPaymentOptions?.first?.id, "1")
     }
     
-//    @MainActor func testCheckoutWithSelectedPaymentMethod() {
-//        FrameNetworking.shared.asyncURLSession = session
-//        
-//        // Test with no valid zip code for payment method
-//        let viewModel = FrameCheckoutViewModel()
-//        viewModel.customerZipCode = ""
-//        
-//        
-//        // Test with valid zip code, but payment method doesn't create correctly
-//        
-//        // Test with invalid charge amount
-//        viewModel.amount = 0
-//        
-//    }
-    
     @MainActor func testCreatePaymentMethod() async {
         FrameNetworking.shared.asyncURLSession = session
         
