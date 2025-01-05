@@ -8,7 +8,7 @@
 import XCTest
 @testable import Frame_iOS
 
-final class CartViewModelTest: XCTestCase {
+final class CartViewModelTests: XCTestCase {
     struct TestCartItem: FrameCartItem {
         var id: String
         var imageURL: String

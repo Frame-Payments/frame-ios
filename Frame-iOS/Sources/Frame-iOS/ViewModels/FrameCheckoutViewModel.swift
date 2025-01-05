@@ -21,8 +21,11 @@ class FrameCheckoutViewModel: ObservableObject {
     var amount: Int = 0
     
     func loadCustomerPaymentMethods(customerId: String, amount: Int) async {
-        self.customerId = customerId
         self.amount = amount
+        
+        guard !customerId.isEmpty else { return }
+        self.customerId = customerId
+        
         self.customerPaymentOptions = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
     }
     
@@ -31,6 +34,7 @@ class FrameCheckoutViewModel: ObservableObject {
     func payWithGooglePay() { }
     
     func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async {
+        guard amount != 0 else { return }
         var paymentMethod: FrameObjects.PaymentMethod?
         
         if selectedCustomerPaymentOption == nil {
@@ -68,7 +72,8 @@ class FrameCheckoutViewModel: ObservableObject {
     }
     
     func createPaymentMethod() async throws -> FrameObjects.PaymentMethod?  {
-        //TODO: Where do we get card type?
+        guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return nil }
+        
         //TODO: Do we need the full address for the payment card?
         let billingAddress = FrameObjects.BillingAddress(city: nil,
                                                   country: customerCountry,
