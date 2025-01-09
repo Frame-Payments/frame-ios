@@ -43,6 +43,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public static func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse? {
+       guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.deleteCustomer(customerId: customerId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -54,6 +55,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public static func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer? {
+        guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.updateCustomer(customerId: customerId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -82,6 +84,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public static func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
+       guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)

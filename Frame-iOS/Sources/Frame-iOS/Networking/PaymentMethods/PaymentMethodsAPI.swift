@@ -42,8 +42,9 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             return nil
         }
     }
-    
+   
     public static func getPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod? {
+      guard !paymentMethodId.isEmpty else { return nil }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -55,6 +56,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     }
     
     public static func getPaymentMethodsWithCustomer(customerId: String) async throws -> [FrameObjects.PaymentMethod]? {
+      guard !customerId.isEmpty else { return nil }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -86,6 +88,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     }
     
     public static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
+        guard !paymentMethodId.isEmpty else { return nil }
         let endpoint = PaymentMethodEndpoints.updatePaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -98,6 +101,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     }
     
     public static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> FrameObjects.PaymentMethod? {
+    guard !paymentMethodId.isEmpty else { return nil }
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -110,6 +114,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     }
     
     public static func detachPaymentMethodWith(paymentMethodId: String) async throws -> FrameObjects.PaymentMethod? {
+      guard !paymentMethodId.isEmpty else { return nil }
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)

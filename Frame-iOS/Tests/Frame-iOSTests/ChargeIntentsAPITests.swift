@@ -121,6 +121,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         do {
             session.data = try JSONEncoder().encode(ChargeIntentResponses.ListChargeIntentsResponse(meta: nil, data: [chargeIntent, chargeIntentTwo]))
             let intentsTwo = try await ChargeIntentsAPI.getAllChargeIntents()
+
             XCTAssertNotNil(intentsTwo)
             XCTAssertEqual(intentsTwo?[0].currency, chargeIntent.currency)
             XCTAssertEqual(intentsTwo?[1].currency, chargeIntentTwo.currency)

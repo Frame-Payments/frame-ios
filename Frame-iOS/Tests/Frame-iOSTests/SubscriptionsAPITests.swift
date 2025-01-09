@@ -77,6 +77,7 @@ final class SubscriptionsAPITests: XCTestCase {
     }
     
     func testGetSubscription() async {
+
         FrameNetworking.shared.asyncURLSession = session
         let receivedSubscription = try? await SubscriptionsAPI.getSubscription(subscriptionId: "")
         XCTAssertNil(receivedSubscription)
