@@ -22,7 +22,7 @@ extension FrameObjects {
         let created: Int
         let startDate: Int
         
-        public init(id: String, description: String, currentPeriodStart: Int, currentPeriodEnd: Int, livemode: Bool, plan: SubscriptionPlan?, currency: String, status: String, quantity: Int, customer: String?, defaultPaymentMethod: String, object: String, created: Int, startDate: Int) {
+        public init(id: String, description: String, currentPeriodStart: Int, currentPeriodEnd: Int, livemode: Bool, plan: SubscriptionPlan? = nil, currency: String, status: String, quantity: Int, customer: String? = nil, defaultPaymentMethod: String, object: String, created: Int, startDate: Int) {
             self.id = id
             self.description = description
             self.currentPeriodStart = currentPeriodStart

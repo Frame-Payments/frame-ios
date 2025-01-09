@@ -20,19 +20,38 @@ protocol FrameNetworkingEndpoints {
     var queryItems: [URLQueryItem]? { get }
 }
 
+// Custom protocol for URLSession
+public protocol URLSessionProtocol {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+// Extend URLSession to conform to the protocol
+extension URLSession: URLSessionProtocol {}
+
+enum NetworkingError: Error {
+    case invalidURL
+    case decodingFailed
+    case serverError(statusCode: Int)
+    case unknownError
+}
+
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
+    let mainAPIURL: String = "https://api.framepayments.com"
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     
-    public func initializeWithAPIKey(_ key: String) {
-        self.apiKey = key
+    init() {
         Evervault.shared.configure(teamId: "team_7b6ce5e75d40", appId: "app_933b505c5939")
     }
     
+    public func initializeWithAPIKey(_ key: String) {
+        self.apiKey = key
+    }
+    
     // Async/Await
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
-        guard let url = URL(string: endpoint.endpointURL) else { return (nil, nil) }
+    func performDataTask(urlSession: URLSessionProtocol = URLSession.shared, endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
+        guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
         var urlRequest = URLRequest(url: url,
                                     cachePolicy: .useProtocolCachePolicy,
@@ -45,13 +64,26 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
-        let (data, response) = try await URLSession.shared.data(for: urlRequest)
-        return (data, response)
+        do {
+            let (data, response) = try await urlSession.data(for: urlRequest)
+            
+            if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+                throw NetworkingError.serverError(statusCode: httpResponse.statusCode)
+            }
+
+            return (data, response)
+        } catch URLError.cannotFindHost {
+            throw NetworkingError.invalidURL
+        } catch URLError.cannotDecodeRawData {
+            throw NetworkingError.decodingFailed
+        } catch {
+            throw NetworkingError.unknownError
+        }
     }
     
     // Completion Handler
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
-        guard let url = URL(string: endpoint.endpointURL) else { return completion(nil, nil, nil) }
+    func performDataTask(urlSession: URLSession = URLSession.shared, endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
+        guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url,
                                     cachePolicy: .useProtocolCachePolicy,
@@ -64,7 +96,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
-        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+        urlSession.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
         }.resume()
     }

@@ -8,12 +8,17 @@
 import Foundation
 
 public class CustomerResponses {
-    struct ListCustomersResponse: Decodable {
+    struct ListCustomersResponse: Codable {
         let meta: FrameMetadata?
         let data: [FrameObjects.Customer]?
+        
+        init(meta: FrameMetadata? = nil, data: [FrameObjects.Customer]?) {
+            self.meta = meta
+            self.data = data
+        }
     }
     
-    public struct DeleteCustomerResponse: Decodable {
+    public struct DeleteCustomerResponse: Codable {
         let id: String?
         let object: String?
         let deleted: Bool?

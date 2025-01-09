@@ -28,17 +28,20 @@ protocol CustomersProtocol {
 
 // Customers API
 public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
-    public init() {}
+    public init(mockSession: URLSessionProtocol? = nil) {
+        self.urlSession = mockSession ?? URLSession.shared
+    }
     
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
+    let urlSession: URLSessionProtocol
     
     //MARK: Methods using async/await
     public func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.createCustomer
         let requestBody = try? jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
             return decodedResponse
         } else {
@@ -47,9 +50,10 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public func deleteCustomer(customerId: String) async throws -> CustomerResponses.DeleteCustomerResponse? {
+        guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.deleteCustomer(customerId: customerId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? jsonDecoder.decode(CustomerResponses.DeleteCustomerResponse.self, from: data) {
             return decodedResponse
         } else {
@@ -58,21 +62,27 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     }
     
     public func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> FrameObjects.Customer? {
+        guard !customerId.isEmpty else { return nil }
         let endpoint = CustomerEndpoints.updateCustomer(customerId: customerId)
         let requestBody = try? jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
-            return decodedResponse
-        } else {
-            return nil
+        do {
+            let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
+            if let data {
+                let decodedResponse = try jsonDecoder.decode(FrameObjects.Customer.self, from: data)
+                return decodedResponse
+            } else {
+                return nil
+            }
+        } catch let error {
+            throw error
         }
     }
     
     public func getCustomers(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Customer]? {
         let endpoint = CustomerEndpoints.getCustomers(perPage: perPage, page: page)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
             return decodedResponse.data
         } else {
@@ -83,7 +93,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     public func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
             return decodedResponse
         } else {
@@ -95,7 +105,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         let endpoint = CustomerEndpoints.searchCustomers
         let requestBody = try? jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
             return decodedResponse.data
         } else {

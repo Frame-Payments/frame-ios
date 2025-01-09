@@ -6,7 +6,7 @@
 //
 
 //TODO: Move Later To Other Common Objects Folder
-struct FrameMetadata: Decodable {
+struct FrameMetadata: Codable {
     let page: Int
     let url: String
     let hasMore: Bool
@@ -20,16 +20,16 @@ struct FrameMetadata: Decodable {
 public class FrameObjects {
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
-        let customer: String? // ID of the Customer
-        let billing: BillingAddress? // Billing information associated with the PaymentMethod
+        var customer: String? // ID of the Customer
+        var billing: BillingAddress? // Billing information associated with the PaymentMethod
         let type: String
         let object: String
         let created: Int // Timestamp
         let updated: Int // Timestamp
         let livemode: Bool
-        let card: PaymentCard?
+        var card: PaymentCard?
         
-        public init(id: String, customer: String?, billing: BillingAddress?, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard?) {
+        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil) {
             self.id = id
             self.customer = customer
             self.billing = billing
@@ -46,11 +46,11 @@ public class FrameObjects {
         let city: String?
         let country: String?
         let state: String?
-        let postalCode: String?
+        let postalCode: String
         let addressLine1: String?
         let addressLine2: String?
         
-        public init(city: String?, country: String?, state: String?, postalCode: String?, addressLine1: String?, addressLine2: String?) {
+        public init(city: String? = nil, country: String? = nil, state: String? = nil, postalCode: String, addressLine1: String? = nil, addressLine2: String? = nil) {
             self.city = city
             self.country = country
             self.state = state
@@ -78,7 +78,8 @@ public class FrameObjects {
         let type: String?
         let lastFourDigits: String
         
-        public init(brand: String, expirationMonth: String, expirationYear: String, issuer: String?, currency: String?, segment: String?, type: String?, lastFourDigits: String) {
+        public init(brand: String, expirationMonth: String, expirationYear: String, issuer: String? = nil, currency: String?, segment: String? = nil,
+                    type: String? = nil, lastFourDigits: String) {
             self.brand = brand
             self.expirationMonth = expirationMonth
             self.expirationYear = expirationYear

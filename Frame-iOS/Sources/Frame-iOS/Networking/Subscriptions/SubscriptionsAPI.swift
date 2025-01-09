@@ -30,17 +30,20 @@ protocol SubscriptionsProtocol {
 
 // Subscriptions API
 public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
-    public init() {}
+    public init(mockSession: URLSessionProtocol? = nil) {
+        self.urlSession = mockSession ?? URLSession.shared
+    }
     
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
+    let urlSession: URLSessionProtocol
     
     //MARK: Methods using async/await
     public func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return decodedResponse
         } else {
@@ -49,10 +52,11 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     }
     
     public func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
+        guard !subscriptionId.isEmpty else { return nil }
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? JSONEncoder().encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return decodedResponse
         } else {
@@ -63,7 +67,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     public func getSubscriptions(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Subscription]? {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
             return decodedResponse.data
         } else {
@@ -72,9 +76,10 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     }
     
     public func getSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription? {
+        guard !subscriptionId.isEmpty else { return nil }
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return decodedResponse
         } else {
@@ -86,7 +91,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
             return decodedResponse.data
         } else {
@@ -95,9 +100,10 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     }
     
     public func cancelSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription? {
+        guard !subscriptionId.isEmpty else { return nil }
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(urlSession: urlSession, endpoint: endpoint)
         if let data, let decodedResponse = try? jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return decodedResponse
         } else {

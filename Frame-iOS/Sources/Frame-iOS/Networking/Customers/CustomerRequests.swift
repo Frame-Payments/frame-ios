@@ -8,16 +8,16 @@
 import Foundation
 
 public class CustomerRequest {
-    public struct CreateCustomerRequest: Encodable {
-        let billingAddress: FrameObjects.BillingAddress?
-        let shippingAddress: FrameObjects.BillingAddress?
+    public struct CreateCustomerRequest: Codable {
+        var billingAddress: FrameObjects.BillingAddress?
+        var shippingAddress: FrameObjects.BillingAddress?
         let name: String
-        let phone: String?
+        var phone: String?
         let email: String
-        let description: String?
-        let metadata: [String: String]?
+        var description: String?
+        var metadata: [String: String]?
         
-        public init(billingAddress: FrameObjects.BillingAddress?, shippingAddress: FrameObjects.BillingAddress?, name: String, phone: String?, email: String, description: String?, metadata: [String : String]?) {
+        public init(billingAddress: FrameObjects.BillingAddress? = nil, shippingAddress: FrameObjects.BillingAddress? = nil, name: String, phone: String? = nil, email: String, description: String? = nil, metadata: [String : String]? = nil) {
             self.billingAddress = billingAddress
             self.shippingAddress = shippingAddress
             self.name = name
@@ -34,16 +34,16 @@ public class CustomerRequest {
         }
     }
     
-    public struct UpdateCustomerRequest: Encodable {
-        let billingAddress: FrameObjects.BillingAddress?
-        let shippingAddress: FrameObjects.BillingAddress?
-        let name: String?
-        let phone: String?
-        let email: String?
-        let description: String?
-        let metadata: [String: String]?
+    public struct UpdateCustomerRequest: Codable {
+        var billingAddress: FrameObjects.BillingAddress?
+        var shippingAddress: FrameObjects.BillingAddress?
+        var name: String?
+        var phone: String?
+        var email: String?
+        var description: String?
+        var metadata: [String: String]?
         
-        public init(billingAddress: FrameObjects.BillingAddress?, shippingAddress: FrameObjects.BillingAddress?, name: String?, phone: String?, email: String?, description: String?, metadata: [String : String]?) {
+        public init(billingAddress: FrameObjects.BillingAddress? = nil, shippingAddress: FrameObjects.BillingAddress? = nil, name: String? = nil, phone: String? = nil, email: String? = nil, description: String? = nil, metadata: [String : String]? = nil) {
             self.billingAddress = billingAddress
             self.shippingAddress = shippingAddress
             self.name = name
@@ -60,14 +60,14 @@ public class CustomerRequest {
         }
     }
     
-    public struct SearchCustomersRequest: Encodable {
-        let name: String?
-        let phone: String?
-        let email: String?
-        let createdBefore: Int?
-        let createdAfter: Int?
+    public struct SearchCustomersRequest: Codable {
+        var name: String?
+        var phone: String?
+        var email: String?
+        var createdBefore: Int?
+        var createdAfter: Int?
         
-        public init(name: String?, phone: String?, email: String?, createdBefore: Int?, createdAfter: Int?) {
+        public init(name: String? = nil, phone: String? = nil, email: String? = nil, createdBefore: Int? = nil, createdAfter: Int? = nil) {
             self.name = name
             self.phone = phone
             self.email = email

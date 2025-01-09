@@ -21,6 +21,21 @@ extension FrameObjects {
         let created: Int
         let updated: Int
         
+        init(id: String, amount: Int, charge: String? = nil, currency: String? = nil, description: String? = nil, chargeIntent: String? = nil,
+             status: String? = nil, failureReason: String? = nil, object: String, created: Int, updated: Int) {
+            self.id = id
+            self.amount = amount
+            self.charge = charge
+            self.currency = currency
+            self.description = description
+            self.chargeIntent = chargeIntent
+            self.status = status
+            self.failureReason = failureReason
+            self.object = object
+            self.created = created
+            self.updated = updated
+        }
+        
         enum CodingKeys: String, CodingKey {
             case id, amount, charge, currency, description, status, object, created, updated
             case chargeIntent = "charge_intent"

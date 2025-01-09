@@ -38,7 +38,7 @@ public class PaymentMethodRequest {
         let expYear: String?
         let billing: FrameObjects.BillingAddress?
         
-        public init(expMonth: String?, expYear: String?, billing: FrameObjects.BillingAddress?) {
+        public init(expMonth: String? = nil, expYear: String? = nil, billing: FrameObjects.BillingAddress? = nil) {
             self.expMonth = expMonth
             self.expYear = expYear
             self.billing = billing

@@ -30,11 +30,11 @@ public class SubscriptionRequest {
         }
     }
     
-    public struct UpdateSubscriptionRequest: Encodable {
+    public struct UpdateSubscriptionRequest: Codable {
         let description: String?
         let defaultPaymentMethod: String?
         
-        public init(description: String?, defaultPaymentMethod: String?) {
+        public init(description: String? = nil, defaultPaymentMethod: String? = nil) {
             self.description = description
             self.defaultPaymentMethod = defaultPaymentMethod
         }
@@ -45,12 +45,12 @@ public class SubscriptionRequest {
         }
     }
     
-    public struct SearchSubscriptionRequest: Encodable {
+    public struct SearchSubscriptionRequest: Codable {
         let status: String?
         let createdBefore: Int?
         let createdAfter: Int?
         
-        public init(status: String?, createdBefore: Int?, createdAfter: Int?) {
+        public init(status: String? = nil, createdBefore: Int? = nil, createdAfter: Int? = nil) {
             self.status = status
             self.createdBefore = createdBefore
             self.createdAfter = createdAfter

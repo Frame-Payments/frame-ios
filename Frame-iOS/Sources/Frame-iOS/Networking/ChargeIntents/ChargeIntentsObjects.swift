@@ -41,7 +41,7 @@ extension FrameObjects {
         let updated: Int
         let livemode: Bool
         
-        public init(id: String, currency: String, latestCharge: String?, customer: FrameObjects.Customer?, paymentMethod: FrameObjects.PaymentMethod?, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String?, authorizationMode: FrameObjects.AuthorizationMode?, failureDescription: String?, object: String, amount: Int, created: Int, updated: Int, livemode: Bool) {
+        public init(id: String, currency: String, latestCharge: String? = nil, customer: FrameObjects.Customer? = nil, paymentMethod: FrameObjects.PaymentMethod? = nil, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, failureDescription: String? = nil, object: String, amount: Int, created: Int, updated: Int, livemode: Bool) {
             self.id = id
             self.currency = currency
             self.latestCharge = latestCharge
