@@ -21,9 +21,12 @@ class FrameCheckoutViewModel: ObservableObject {
     var amount: Int = 0
     
     func loadCustomerPaymentMethods(customerId: String, amount: Int) async {
-        self.customerId = customerId
         self.amount = amount
-        self.customerPaymentOptions = try? await PaymentMethodsAPI().getPaymentMethodsWithCustomer(customerId: customerId)
+        
+        guard !customerId.isEmpty else { return }
+        self.customerId = customerId
+        
+        self.customerPaymentOptions = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
     }
     
     //TODO: Integrate for Apple Pay and Google Pay
@@ -31,6 +34,7 @@ class FrameCheckoutViewModel: ObservableObject {
     func payWithGooglePay() { }
     
     func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async {
+        guard amount != 0 else { return }
         var paymentMethod: FrameObjects.PaymentMethod?
         
         if selectedCustomerPaymentOption == nil {
@@ -58,17 +62,18 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       paymentMethodData: nil)
         
         // Create Charge Intent
-        let chargeIntent = try? await ChargeIntentsAPI().createChargeIntent(request: request)
+        let chargeIntent = try? await ChargeIntentsAPI.createChargeIntent(request: request)
         
         // Save Payment Method
         if saveMethod, let id = paymentMethod?.id {
             let attachmentRequest = PaymentMethodRequest.AttachPaymentMethodRequest(customer: customerId)
-            _ = try? await PaymentMethodsAPI().attachPaymentMethodWith(paymentMethodId: id, request: attachmentRequest)
+            _ = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: id, request: attachmentRequest)
         }
     }
     
     func createPaymentMethod() async throws -> FrameObjects.PaymentMethod?  {
-        //TODO: Where do we get card type?
+        guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return nil }
+        
         //TODO: Do we need the full address for the payment card?
         let billingAddress = FrameObjects.BillingAddress(city: nil,
                                                   country: customerCountry,
@@ -83,6 +88,6 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       cvc: cardData.card.cvc,
                                                                       customer: customerId,
                                                                       billing: billingAddress)
-        return try? await PaymentMethodsAPI().createPaymentMethod(request: request)
+        return try? await PaymentMethodsAPI.createPaymentMethod(request: request)
     }
 }

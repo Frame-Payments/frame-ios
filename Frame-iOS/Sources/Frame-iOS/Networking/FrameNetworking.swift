@@ -38,6 +38,11 @@ enum NetworkingError: Error {
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
+    let jsonEncoder = JSONEncoder()
+    let jsonDecoder = JSONDecoder()
+    var asyncURLSession: URLSessionProtocol = URLSession.shared
+    var urlSession: URLSession = URLSession.shared
+    
     let mainAPIURL: String = "https://api.framepayments.com"
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     
@@ -50,7 +55,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Async/Await
-    func performDataTask(urlSession: URLSessionProtocol = URLSession.shared, endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
         guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
         var urlRequest = URLRequest(url: url,
@@ -65,7 +70,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         do {
-            let (data, response) = try await urlSession.data(for: urlRequest)
+            let (data, response) = try await asyncURLSession.data(for: urlRequest)
             
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 throw NetworkingError.serverError(statusCode: httpResponse.statusCode)
@@ -82,7 +87,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Completion Handler
-    func performDataTask(urlSession: URLSession = URLSession.shared, endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
         guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url,

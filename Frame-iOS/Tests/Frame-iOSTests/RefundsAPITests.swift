@@ -15,15 +15,16 @@ final class RefundsAPITests: XCTestCase {
                                                                            headerFields: nil), error: nil)
     
     func testCreateRefund() async {
+        FrameNetworking.shared.asyncURLSession = session
         let request = RefundRequests.CreateRefundRequest(amount: 100, charge: "", chargeIntent: "", reason: "")
-        let creation = try? await RefundsAPI(mockSession: session).createRefund(request: request)
+        let creation = try? await RefundsAPI.createRefund(request: request)
         XCTAssertNil(creation)
         
         let refund = FrameObjects.Refund(id: "1", amount: 100, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(refund)
-            let creationTwo = try await RefundsAPI(mockSession: session).createRefund(request: request)
+            let creationTwo = try await RefundsAPI.createRefund(request: request)
             XCTAssertNotNil(creationTwo)
             XCTAssertEqual(creationTwo?.amount, refund.amount)
         } catch {
@@ -32,10 +33,11 @@ final class RefundsAPITests: XCTestCase {
     }
     
     func testGetRefunds() async {
-        let refundResponse = try? await RefundsAPI(mockSession: session).getRefunds(chargeId: "", chargeIntentId: "")
+        FrameNetworking.shared.asyncURLSession = session
+        let refundResponse = try? await RefundsAPI.getRefunds(chargeId: "", chargeIntentId: "")
         XCTAssertNil(refundResponse)
         
-        let refundResponseTwo = try? await RefundsAPI(mockSession: session).getRefunds(chargeId: "1", chargeIntentId: "2")
+        let refundResponseTwo = try? await RefundsAPI.getRefunds(chargeId: "1", chargeIntentId: "2")
         XCTAssertNil(refundResponseTwo)
         
         let refund = FrameObjects.Refund(id: "1", amount: 100, object: "", created: 0, updated: 0)
@@ -43,7 +45,7 @@ final class RefundsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(RefundResponses.ListRefundsResponse(meta: nil, data: [refund, refundTwo]))
-            let refunds = try await RefundsAPI(mockSession: session).getRefunds(chargeId: "1", chargeIntentId: "2")
+            let refunds = try await RefundsAPI.getRefunds(chargeId: "1", chargeIntentId: "2")
             XCTAssertNotNil(refunds)
             XCTAssertEqual(refunds?[0].amount, refund.amount)
             XCTAssertEqual(refunds?[1].amount, refundTwo.amount)
@@ -53,17 +55,18 @@ final class RefundsAPITests: XCTestCase {
     }
     
     func testGetRefund() async {
-        let refundResponse = try? await RefundsAPI(mockSession: session).getRefundWith(refundId: "")
+        FrameNetworking.shared.asyncURLSession = session
+        let refundResponse = try? await RefundsAPI.getRefundWith(refundId: "")
         XCTAssertNil(refundResponse)
         
-        let refundResponseTwo = try? await RefundsAPI(mockSession: session).getRefundWith(refundId: "123")
+        let refundResponseTwo = try? await RefundsAPI.getRefundWith(refundId: "123")
         XCTAssertNil(refundResponseTwo)
         
         let refund = FrameObjects.Refund(id: "1234", amount: 100, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(refund)
-            let refundThree = try await RefundsAPI(mockSession: session).getRefundWith(refundId: "1234")
+            let refundThree = try await RefundsAPI.getRefundWith(refundId: "1234")
             XCTAssertNotNil(refundThree)
             XCTAssertEqual(refundThree?.amount, refund.amount)
         } catch {
@@ -72,17 +75,18 @@ final class RefundsAPITests: XCTestCase {
     }
     
     func testCancelRefund() async {
-        let cancellation = try? await RefundsAPI(mockSession: session).cancelRefund(refundId: "")
+        FrameNetworking.shared.asyncURLSession = session
+        let cancellation = try? await RefundsAPI.cancelRefund(refundId: "")
         XCTAssertNil(cancellation)
         
-        let cancellationTwo = try? await RefundsAPI(mockSession: session).cancelRefund(refundId: "123")
+        let cancellationTwo = try? await RefundsAPI.cancelRefund(refundId: "123")
         XCTAssertNil(cancellationTwo)
         
         let refund = FrameObjects.Refund(id: "1234", amount: 100, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(refund)
-            let cancellationThree = try await RefundsAPI(mockSession: session).cancelRefund(refundId: "1234")
+            let cancellationThree = try await RefundsAPI.cancelRefund(refundId: "1234")
             XCTAssertNotNil(cancellationThree)
             XCTAssertEqual(cancellationThree?.amount, refund.amount)
         } catch {
