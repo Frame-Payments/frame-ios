@@ -2,7 +2,7 @@
 //  ConfigurationAPI.swift
 //  Frame-iOS
 //
-//  Created by Frame Payments on 10/11/24.
+//  Created by Frame Payments on 1/11/24.
 //
 
 import Foundation
