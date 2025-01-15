@@ -20,15 +20,15 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     var endpointURL: String {
         switch self {
         case .getPaymentMethods, .createPaymentMethod:
-            return NetworkingConstants.endpoint + "/v1/payment_methods"
+            return "/v1/payment_methods"
         case .getPaymentMethodWith(let paymentMethodId), .updatePaymentMethodWith(let paymentMethodId):
-            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(paymentMethodId)"
+            return "/v1/payment_methods/\(paymentMethodId)"
         case .getPaymentMethodsWithCustomer(let customerId):
-            return  NetworkingConstants.endpoint + "/v1/customers/\(customerId)/payment_methods"
+            return "/v1/customers/\(customerId)/payment_methods"
         case .attachPaymentMethodWith(let paymentMethodId):
-            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(paymentMethodId)/attach"
+            return "/v1/payment_methods/\(paymentMethodId)/attach"
         case .detachPaymentMethodWith(let paymentMethodId):
-            return  NetworkingConstants.endpoint + "/v1/payment_methods/\(paymentMethodId)/detach"
+            return "/v1/payment_methods/\(paymentMethodId)/detach"
         }
     }
     

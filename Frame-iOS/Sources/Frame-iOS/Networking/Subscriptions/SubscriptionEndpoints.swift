@@ -19,13 +19,13 @@ enum SubscriptionEndpoints: FrameNetworkingEndpoints {
     var endpointURL: String {
         switch self {
         case .createSubscription, .getSubscriptions:
-            return NetworkingConstants.endpoint + "/v1/subscriptions"
+            return "/v1/subscriptions"
         case .getSubscription(let subscriptionId), .updateSubscription(let subscriptionId):
-            return NetworkingConstants.endpoint + "/v1/subscriptions/\(subscriptionId)"
+            return "/v1/subscriptions/\(subscriptionId)"
         case .searchSubscriptions:
-            return NetworkingConstants.endpoint + "/v1/subscriptions/search"
+            return "/v1/subscriptions/search"
         case .cancelSubscription(let subscriptionId):
-            return NetworkingConstants.endpoint + "/v1/subscriptions/\(subscriptionId)/cancel"
+            return "/v1/subscriptions/\(subscriptionId)/cancel"
         }
     }
     
