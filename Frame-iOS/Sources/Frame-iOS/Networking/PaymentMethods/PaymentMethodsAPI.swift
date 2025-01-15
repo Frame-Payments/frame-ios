@@ -68,6 +68,9 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     }
     
     public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = false) async throws -> FrameObjects.PaymentMethod? {
+        // Ensure evervault is configured before continuing
+        FrameNetworking.shared.configureEvervault()
+        
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         
         var encryptedRequest = request

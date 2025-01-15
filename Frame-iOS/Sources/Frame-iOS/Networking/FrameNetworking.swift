@@ -46,8 +46,10 @@ public class FrameNetworking: ObservableObject {
     let mainAPIURL: String = "https://api.framepayments.com"
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     
+    var isEvervaultConfigured: Bool = false
+    
     init() {
-        Evervault.shared.configure(teamId: "team_7b6ce5e75d40", appId: "app_933b505c5939")
+        self.configureEvervault()
     }
     
     public func initializeWithAPIKey(_ key: String) {
@@ -104,5 +106,16 @@ public class FrameNetworking: ObservableObject {
         urlSession.dataTask(with: urlRequest) { data, response, error in
             completion(data, response, error)
         }.resume()
+    }
+    
+    func configureEvervault() {
+        guard !FrameNetworking.shared.isEvervaultConfigured else { return }
+        
+        Task {
+            if let configResponse = try? await ConfigurationAPI.getEvervaultConfiguration() {
+                Evervault.shared.configure(teamId: configResponse.teamId ?? "", appId: configResponse.appId ?? "")
+                FrameNetworking.shared.isEvervaultConfigured = true
+            }
+        }
     }
 }
