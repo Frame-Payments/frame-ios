@@ -115,6 +115,11 @@ public class FrameNetworking: ObservableObject {
             if let configResponse = try? await ConfigurationAPI.getEvervaultConfiguration() {
                 Evervault.shared.configure(teamId: configResponse.teamId ?? "", appId: configResponse.appId ?? "")
                 FrameNetworking.shared.isEvervaultConfigured = true
+            } else if let data = ConfigurationAPI.retrieveFromKeychain(key: ConfigurationKeys.evervault.rawValue) {
+                if let response = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetConfigurationResponse.self, from: data) {
+                    Evervault.shared.configure(teamId: response.teamId ?? "", appId: response.appId ?? "")
+                    FrameNetworking.shared.isEvervaultConfigured = true
+                }
             }
         }
     }
