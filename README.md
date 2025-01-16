@@ -9,32 +9,34 @@ Table of contents
    * [Requirements](#Requirements)
    * [Features](#Features)
    * [Getting started](#Getting-started)
+   * [Examples](#Examples)
    * [Privacy](#Privacy)
 
 
 ## Requirements
 
-The Frame iOS SDK requires Xcode 15 or later and is compatible with apps targeting iOS 17 or above. We support Catalyst on macOS 11 or later.
-
-For iOS 12 support, please use [v22.8.4](https://github.com/stripe/stripe-ios/tree/v22.8.4). For iOS 11 support, please use [v21.13.0](https://github.com/stripe/stripe-ios/tree/v21.13.0). For iOS 10, please use [v19.4.0](https://github.com/stripe/stripe-ios/tree/v19.4.0). If you need to support iOS 9, use [v17.0.2](https://github.com/stripe/stripe-ios/tree/v17.0.2).
-
+The Frame iOS SDK requires Xcode 15 or later and is compatible with apps targeting iOS 17 or above and tvOS 16 or above. We support Catalyst on macOS 14 or later.
 
 ## Features
 
-**Simplified security**: We make it simple for you to collect sensitive data such as credit card numbers and remain [PCI compliant](https://stripe.com/docs/security#pci-dss-guidelines). This means the sensitive data is sent directly to Stripe instead of passing through your server. For more information, see our [integration security guide](https://stripe.com/docs/security).
+* **Reusable UI Components** We have built two ready-to-use UI components for your payment to make it easy to allow customers to check out with your products and enter
+their payment details with encryption.
 
-**Apple Pay**: [StripeApplePay](StripeApplePay/README.md) provides a [seamless integration with Apple Pay](https://stripe.com/docs/apple-pay).
+* **Pre Packaged API Calls** This SDK has built in support for  all available Frame API calls. Each API endpoint has it's own initialization-less class that you can call directly within your code and supports either async/await or completion handlers. See our [API Documentation](https://docs.framepayments.com) here.
+
+* **Payment Card Encryption** Frame supports payment card encryption using Evervault. It's integrated directly into our CREATE payment method API call to ensure all data transmitted is encrypted before hitting our servers.
 
 ## Getting started
 
-### Integration
-
-Get started with our [📚 integration guides](https://stripe.com/docs/payments/accept-a-payment?platform=ios) and [example projects](/Example), or [📘 browse the SDK reference](https://stripe.dev/stripe-ios/docs/index.html) for fine-grained documentation of all the classes and methods in the SDK.
+// TODO: How to integrate the SDK with Swift Package Manager
 
 ### Examples
 
-- [Prebuilt UI](Example/PaymentSheet%20Example) (Recommended)
-  - This example demonstrates how to build a payment flow using [`PaymentSheet`](https://stripe.com/docs/payments/accept-a-payment?platform=ios), an embeddable native UI component that lets you accept [10+ payment methods](https://stripe.com/docs/payments/payment-methods/integration-options#payment-method-product-support) with a single integration.
+See our Example project within this project that contains:
+- How to use our Cart and Checkout Prebuilt UI
+- Standard Initialization-less API Usage for all available Frame Payments API calls.
+ 
+#### Privacy
 
-- [Non-Card Payment Examples](Example/Non-Card%20Payment%20Examples)
-  - This example demonstrates how to manually accept various payment methods using the Stripe API.
+Our privacy policy can be found at [https://framepayments.com/privacy](https://framepayments.com/privacy).
+
