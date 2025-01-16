@@ -8,7 +8,7 @@ Table of contents
 <!--ts-->
    * [Requirements](#Requirements)
    * [Features](#Features)
-   * [Getting started](#Getting-started)
+   * [Usage](#Usage)
    * [Examples](#Examples)
    * [Privacy](#Privacy)
 
@@ -26,9 +26,13 @@ their payment details with encryption.
 
 * **Payment Card Encryption** Frame supports payment card encryption using Evervault. It's integrated directly into our CREATE payment method API call to ensure all data transmitted is encrypted before hitting our servers.
 
-## Getting started
+## Usage
 
-// TODO: How to integrate the SDK with Swift Package Manager
+1. Swift Package Manager: add a dependency to your Project.swift: **.package(url: "https://github.com/Frame-Payments/frame-ios", from: "1.0.0")**
+
+2. In your App Delegate or main App file, initialize the SDK with: **FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_KEY_HERE}")**
+
+3. Start calling any available API within your app: **CustomersAPI.getCustomers { customers in }**
 
 ### Examples
 
