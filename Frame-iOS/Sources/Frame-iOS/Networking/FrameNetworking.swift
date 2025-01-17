@@ -107,8 +107,6 @@ public class FrameNetworking: ObservableObject {
     }
     
     func configureEvervault() {
-        guard !FrameNetworking.shared.isEvervaultConfigured else { return }
-        
         Task {
             if let configResponse = try? await ConfigurationAPI.getEvervaultConfiguration() {
                 Evervault.shared.configure(teamId: configResponse.teamId ?? "", appId: configResponse.appId ?? "")
