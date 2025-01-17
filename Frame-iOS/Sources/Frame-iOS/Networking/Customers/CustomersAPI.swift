@@ -116,6 +116,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -126,6 +128,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.DeleteCustomerResponse.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -137,6 +141,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -147,6 +153,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -157,6 +165,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -168,6 +178,8 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
 }

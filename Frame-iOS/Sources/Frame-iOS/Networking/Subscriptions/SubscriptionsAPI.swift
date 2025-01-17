@@ -112,6 +112,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -123,6 +125,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -133,6 +137,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -143,6 +149,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -154,6 +162,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -164,6 +174,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
 }

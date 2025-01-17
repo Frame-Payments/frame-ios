@@ -124,6 +124,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -135,6 +137,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -145,6 +149,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -155,6 +161,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -165,6 +173,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ChargeIntentResponses.ListChargeIntentsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -175,6 +185,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -186,6 +198,8 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
 }

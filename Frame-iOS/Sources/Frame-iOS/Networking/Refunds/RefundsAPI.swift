@@ -83,6 +83,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -93,6 +95,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(RefundResponses.ListRefundsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -103,6 +107,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -113,6 +119,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
 }

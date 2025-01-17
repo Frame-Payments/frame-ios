@@ -139,6 +139,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -149,6 +151,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -159,6 +163,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -170,6 +176,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -181,6 +189,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -192,6 +202,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -202,6 +214,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse)
             }
+            
+            completionHandler(nil)
         }
     }
 }
