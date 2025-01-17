@@ -8,7 +8,7 @@
 import Foundation
 
 extension FrameObjects {
-    public struct Refund: Codable {
+    public struct Refund: Codable, Sendable {
         let id: String
         let amount: Int
         let charge: String?

@@ -6,7 +6,7 @@
 //
 
 extension FrameObjects {
-    public struct Subscription: Codable {
+    public struct Subscription: Codable, Sendable {
         let id: String
         let description: String
         let currentPeriodStart: Int
@@ -48,7 +48,7 @@ extension FrameObjects {
         }
     }
     
-    public struct SubscriptionPlan: Codable {
+    public struct SubscriptionPlan: Codable, Sendable {
         let id: String
         let interval: String
         let product: String
