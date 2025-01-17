@@ -42,8 +42,6 @@ public class FrameNetworking: ObservableObject {
     let jsonDecoder = JSONDecoder()
     var asyncURLSession: URLSessionProtocol = URLSession.shared
     var urlSession: URLSession = URLSession.shared
-    
-    let mainAPIURL: String = "https://api.framepayments.com"
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     
     var isEvervaultConfigured: Bool = false
@@ -58,7 +56,7 @@ public class FrameNetworking: ObservableObject {
     
     // Async/Await
     func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
-        guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
+        guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
         var urlRequest = URLRequest(url: url,
                                     cachePolicy: .useProtocolCachePolicy,
@@ -90,7 +88,7 @@ public class FrameNetworking: ObservableObject {
     
     // Completion Handler
     func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
-        guard let url = URL(string: mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
+        guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url,
                                     cachePolicy: .useProtocolCachePolicy,
@@ -109,8 +107,6 @@ public class FrameNetworking: ObservableObject {
     }
     
     func configureEvervault() {
-        guard !FrameNetworking.shared.isEvervaultConfigured else { return }
-        
         Task {
             if let configResponse = try? await ConfigurationAPI.getEvervaultConfiguration() {
                 Evervault.shared.configure(teamId: configResponse.teamId ?? "", appId: configResponse.appId ?? "")

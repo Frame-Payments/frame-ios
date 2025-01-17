@@ -6,5 +6,5 @@
 //
 
 class NetworkingConstants {
-    static let endpoint: String = "https://api.framepayments.com/"
+    static let mainAPIURL: String = "https://api.framepayments.com/"
 }
