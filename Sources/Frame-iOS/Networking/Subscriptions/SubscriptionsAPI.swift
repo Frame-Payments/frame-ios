@@ -164,8 +164,6 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -178,8 +176,6 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
 }
