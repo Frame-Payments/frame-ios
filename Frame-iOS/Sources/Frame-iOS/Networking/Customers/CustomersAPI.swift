@@ -75,7 +75,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     public static func getCustomers(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Customer]? {
         let endpoint = CustomerEndpoints.getCustomers(perPage: perPage, page: page)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
             return decodedResponse.data
         } else {
