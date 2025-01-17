@@ -141,6 +141,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -153,6 +155,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -165,6 +169,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -193,6 +199,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } catch {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -206,6 +214,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } else {
                completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -219,6 +229,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -231,6 +243,8 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
 }

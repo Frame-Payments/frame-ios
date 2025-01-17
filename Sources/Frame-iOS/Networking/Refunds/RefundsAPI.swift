@@ -85,6 +85,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -97,6 +99,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -109,6 +113,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
     
@@ -121,6 +127,8 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
+            
+            completionHandler(nil)
         }
     }
 }
