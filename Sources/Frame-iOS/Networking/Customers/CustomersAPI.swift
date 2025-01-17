@@ -118,8 +118,6 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -132,8 +130,6 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -147,8 +143,6 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -161,8 +155,6 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -175,8 +167,6 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -190,8 +180,6 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
 }

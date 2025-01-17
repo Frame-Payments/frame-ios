@@ -126,8 +126,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -141,8 +139,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -155,8 +151,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -169,8 +163,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -183,8 +175,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -197,8 +187,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
     
@@ -212,8 +200,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
             } else {
                 completionHandler(nil)
             }
-            
-            completionHandler(nil)
         }
     }
 }
