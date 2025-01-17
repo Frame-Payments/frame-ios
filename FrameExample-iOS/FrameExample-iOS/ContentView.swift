@@ -16,46 +16,34 @@ struct ExampleCartItem: FrameCartItem {
 }
 
 struct ContentView: View {
-    // Test variables. Will use later in tandom with UI to show functionality.
-    @State var paymentMethods: [FrameObjects.PaymentMethod]?
-    @State var subscriptions: [FrameObjects.Subscription]?
-    @State var customers: [FrameObjects.Customer]?
-    @State var chargeIntents: [FrameObjects.ChargeIntent]?
-    @State var refunds: [FrameObjects.Refund]?
+    @ObservedObject var viewModel: ContentViewModel = ContentViewModel()
     
     @State var showCheckoutView: Bool = false
+    @State var showCustomersView: Bool = false
+    @State var showPaymentMethodsView: Bool = false
     
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Frame Payments Playground")
-            
-            Button {
-                self.showCheckoutView = true
-            } label: {
-                Text("Cart View (Sheet)")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .frame(height: 45.0)
-            .frame(maxWidth: .infinity)
-            .background(.black)
-            .cornerRadius(10.0)
-            .padding()
-
+            Text("Frame Payments \nSDK Playground")
+                .font(.title)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
+            Text("Tap a button below to view your Frame data after you have entered your API key!")
+                .multilineTextAlignment(.center)
+                .padding()
+            allCustomersButton
+                .disabled(viewModel.customers.isEmpty)
+                .opacity(viewModel.customers.isEmpty ? 0.3 : 1)
+            allPaymentMethodsButton
+                .disabled(viewModel.paymentMethods.isEmpty)
+                .opacity(viewModel.paymentMethods.isEmpty ? 0.3 : 1)
+            allSubscriptionsButton
+            allChargeIntentsButton
+            allRefundsButton
+            Spacer()
+            cartButton
         }
         .padding()
-        .task {
-            FrameNetworking.shared.initializeWithAPIKey("") // Step 1 to using the framework.
-            await self.getPaymentMethodsAsync()
-            self.getPaymentMethods()
-            
-            await self.getSubscriptionsAsync()
-            self.getSubscriptions()
-        }
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: FrameObjects.Customer(id: "1",
                                                           livemode: true,
@@ -72,68 +60,157 @@ struct ContentView: View {
                           cartViewTitle: "Messina Clothing")
                 .presentationDragIndicator(.visible)
         }
-    }
-    
-    //completionHandler
-    func getPaymentMethods() {
-        PaymentMethodsAPI.getPaymentMethods() { paymentMethods in
-            if let paymentMethods {
-                self.paymentMethods = paymentMethods
-            }
+        .sheet(isPresented: $showCustomersView) {
+            customersScrollView
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showPaymentMethodsView) {
+            paymentMethodScrollView
+                .presentationDragIndicator(.visible)
         }
     }
     
-    func getSubscriptions() {
-        SubscriptionsAPI.getSubscriptions { subscriptions in
-            if let subscriptions {
-                self.subscriptions = subscriptions
+    var customersScrollView: some View {
+        ScrollView {
+            VStack {
+                Text("Customers")
+                    .font(.largeTitle)
+                    .padding()
+                ForEach(viewModel.customers) { customer in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("Name: \(customer.name)")
+                                .font(.headline)
+                                .multilineTextAlignment(.leading)
+                            Text("Email: \(customer.email ?? "")")
+                            Text("Phone: \(customer.phone ?? "Not Found")")
+                        }
+                        Spacer()
+                    }
+                    Divider()
+                }
+                Spacer()
             }
+            .padding(.horizontal)
         }
     }
     
-    func getCustomers() {
-        CustomersAPI.getCustomers { customers in
-            if let customers {
-                self.customers = customers
+    var paymentMethodScrollView: some View {
+        ScrollView {
+            VStack {
+                Text("Payment Methods")
+                    .font(.largeTitle)
+                    .padding()
+                ForEach(viewModel.paymentMethods) { method in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("**Payment Method ID:** \n\(method.id)")
+                            Text("**Customer ID:** \n\(method.customer ?? "")")
+                        }
+                        Spacer()
+                    }
+                    Divider()
+                }
+                Spacer()
             }
+            .padding(.horizontal)
         }
     }
     
-    func getChargeIntents() {
-        ChargeIntentsAPI.getAllChargeIntents() { chargeIntents in
-            if let chargeIntents {
-                self.chargeIntents = chargeIntents
-            }
+    var cartButton: some View {
+        Button {
+            self.showCheckoutView = true
+        } label: {
+            Text("Checkout")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding()
     }
     
-    func getRefunds() {
-        RefundsAPI.getRefunds { refunds in
-            if let refunds {
-                self.refunds = refunds
-            }
+    var allCustomersButton: some View {
+        Button {
+            self.showCustomersView = true
+        } label: {
+            Text("View All Customers")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
     }
     
-    //async await
-    func getPaymentMethodsAsync() async {
-        self.paymentMethods = try? await PaymentMethodsAPI.getPaymentMethods()
+    var allPaymentMethodsButton: some View {
+        Button {
+            self.showPaymentMethodsView = true
+        } label: {
+            Text("View All Payment Methods")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
     }
     
-    func getSubscriptionsAsync() async {
-        self.subscriptions = try? await SubscriptionsAPI.getSubscriptions()
+    var allSubscriptionsButton: some View {
+        Button {
+//            self.showCheckoutView = true
+        } label: {
+            Text("View All Subscriptions")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
     }
     
-    func getCustomers() async {
-        self.customers = try? await CustomersAPI.getCustomers()
+    var allChargeIntentsButton: some View {
+        Button {
+//            self.showCheckoutView = true
+        } label: {
+            Text("View All Charge Intents")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
     }
     
-    func getChargeIntents() async {
-        self.chargeIntents = try? await ChargeIntentsAPI.getAllChargeIntents()
-    }
-    
-    func getRefunds() async {
-        self.refunds = try? await RefundsAPI.getRefunds()
+    var allRefundsButton: some View {
+        Button {
+//            self.showCheckoutView = true
+        } label: {
+            Text("View All Refunds")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
     }
 }
 
