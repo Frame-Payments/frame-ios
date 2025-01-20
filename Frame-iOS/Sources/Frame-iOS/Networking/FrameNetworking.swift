@@ -69,12 +69,10 @@ public class FrameNetworking: ObservableObject {
         
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
-            
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode))
             }
 
-            printDataForTesting(data: data)
             return (data, nil)
         } catch URLError.cannotFindHost {
             return (nil, NetworkingError.invalidURL)
