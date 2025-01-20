@@ -28,11 +28,19 @@ their payment details with encryption.
 
 ## Usage
 
-1. Swift Package Manager: add a dependency to your Project.swift: **.package(url: "https://github.com/Frame-Payments/frame-ios", from: "1.0.0")**
+1. Swift Package Manager: add a dependency to your Project.swift:
 
-2. In your App Delegate or main App file, initialize the SDK with: **FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_KEY_HERE}")**
+**.package(url: "https://github.com/Frame-Payments/frame-ios", from: "1.0.0")**
 
-3. Start calling any available API within your app: **CustomersAPI.getCustomers { customers in }**
+2. In your App Delegate or main App file, initialize the SDK with:
+
+**FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_SECRET_KEY_HERE}")**
+
+NOTE: In order to obtain your API key, you will need to sign up for a developer account at https://framepayments.com. Once you have obtained your key from the Developer section of your dashboard, please use the SECRET KEY with this SDK.
+
+3. Start calling any available API within your app:
+
+**CustomersAPI.getCustomers { customers in }**
 
 ### Examples
 
