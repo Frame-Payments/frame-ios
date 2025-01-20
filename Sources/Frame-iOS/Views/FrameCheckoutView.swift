@@ -18,6 +18,8 @@ public struct FrameCheckoutView: View {
     let customerId: String
     let paymentAmount: Int
     
+    var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
+    
     public var body: some View {
         VStack(alignment: .leading) {
             topHeaderBar
@@ -178,7 +180,10 @@ public struct FrameCheckoutView: View {
     var checkoutButton: some View {
         Button {
             Task {
-                await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
+                let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
+                if let chargeIntent {
+                    self.checkoutCallback(chargeIntent)
+                }
             }
         } label: {
             RoundedRectangle(cornerRadius: 10)
@@ -195,5 +200,7 @@ public struct FrameCheckoutView: View {
 }
 
 #Preview {
-    FrameCheckoutView(customerId: "", paymentAmount: 15000)
+    FrameCheckoutView(customerId: "", paymentAmount: 15000) { chargeIntent in
+        print(chargeIntent.description)
+    }
 }

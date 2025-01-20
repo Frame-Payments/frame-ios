@@ -33,12 +33,12 @@ class FrameCheckoutViewModel: ObservableObject {
     func payWithApplePay() { }
     func payWithGooglePay() { }
     
-    func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async {
-        guard amount != 0 else { return }
+    func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.ChargeIntent? {
+        guard amount != 0 else { return nil }
         var paymentMethod: FrameObjects.PaymentMethod?
         
         if selectedCustomerPaymentOption == nil {
-            guard customerZipCode.count == 5 else { return }
+            guard customerZipCode.count == 5 else { return nil }
             
             // Create Payment Method
             paymentMethod = try? await createPaymentMethod()
@@ -46,10 +46,8 @@ class FrameCheckoutViewModel: ObservableObject {
             paymentMethod = selectedCustomerPaymentOption
         }
         
-        //TODO: When do we need to support other currencies?
-        //TODO: What should the description be?
-        //TODO: Should we load the customer to get their email?
-        //TODO: Do we need both payment method data and payment method?
+        
+        //TODO: What should the description be? - Dev should be able to set this someone when using component.
         let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: amount,
                                                                       currency: "USD",
                                                                       customer: customerId,
@@ -61,14 +59,10 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       customerData: nil,
                                                                       paymentMethodData: nil)
         
-        // Create Charge Intent
+        // Create Charge Intent, return this on completion.
         let chargeIntent = try? await ChargeIntentsAPI.createChargeIntent(request: request)
-        
-        // Save Payment Method
-        if saveMethod, let id = paymentMethod?.id {
-            let attachmentRequest = PaymentMethodRequest.AttachPaymentMethodRequest(customer: customerId)
-            _ = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: id, request: attachmentRequest)
-        }
+        return chargeIntent
+        // Show API error for charge intent, and why it failed.
     }
     
     func createPaymentMethod() async throws -> FrameObjects.PaymentMethod?  {
