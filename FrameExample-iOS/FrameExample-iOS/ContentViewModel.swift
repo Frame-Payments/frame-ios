@@ -18,7 +18,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     init() {
         // Step 1 to using the framework.
-        FrameNetworking.shared.initializeWithAPIKey("sk_sandbox_UgLVWB47FrscWdjEvtGvZkm3")
+        FrameNetworking.shared.initializeWithAPIKey("sk_sandbox_WDmSrVpLbE3TUqLiF71DaATS")
         
         self.getCustomers()
         self.getPaymentMethods()

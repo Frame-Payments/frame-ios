@@ -17,13 +17,13 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
     @Published var cardData = PaymentCardData()
     
-    var customerId: String = ""
+    var customerId: String?
     var amount: Int = 0
     
-    func loadCustomerPaymentMethods(customerId: String, amount: Int) async {
+    func loadCustomerPaymentMethods(customerId: String?, amount: Int) async {
         self.amount = amount
         
-        guard !customerId.isEmpty else { return }
+        guard let customerId else { return }
         self.customerId = customerId
         
         self.customerPaymentOptions = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
@@ -39,13 +39,11 @@ class FrameCheckoutViewModel: ObservableObject {
         
         if selectedCustomerPaymentOption == nil {
             guard customerZipCode.count == 5 else { return nil }
-            
-            // Create Payment Method
             paymentMethod = try? await createPaymentMethod()
         } else {
             paymentMethod = selectedCustomerPaymentOption
         }
-        
+        guard paymentMethod != nil else { return nil }
         
         //TODO: What should the description be? - Dev should be able to set this someone when using component.
         let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: amount,

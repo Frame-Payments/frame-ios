@@ -23,7 +23,7 @@ protocol PaymentMethodProtocol {
     static func getPaymentMethods(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void)
     static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
     static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable ([FrameObjects.PaymentMethod]?) -> Void)
-    static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
+    static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
     static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
     static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
     static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void)
@@ -67,7 +67,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = false) async throws -> FrameObjects.PaymentMethod? {
+    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = true) async throws -> FrameObjects.PaymentMethod? {
         // Ensure evervault is configured before continuing
         if !FrameNetworking.shared.isEvervaultConfigured {
             FrameNetworking.shared.configureEvervault()
@@ -168,14 +168,29 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
-        let endpoint = PaymentMethodEndpoints.createPaymentMethod
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
-        
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
-                completionHandler(decodedResponse)
-            } else {
+    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
+        let immutableRequest = request // Capture as a local constant
+
+        Task {
+            do {
+                let endpoint = PaymentMethodEndpoints.createPaymentMethod
+                var encryptedRequest = immutableRequest
+                if encryptData {
+                    encryptedRequest.cardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as! String
+                    encryptedRequest.cvc = try await Evervault.shared.encrypt(immutableRequest.cvc) as! String
+                    encryptedRequest.expMonth = try await Evervault.shared.encrypt(immutableRequest.expMonth) as! String
+                    encryptedRequest.expYear = try await Evervault.shared.encrypt(immutableRequest.expYear) as! String
+                }
+
+                let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
+
+                let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+                if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
+                    completionHandler(decodedResponse)
+                } else {
+                    completionHandler(nil)
+                }
+            } catch {
                 completionHandler(nil)
             }
         }

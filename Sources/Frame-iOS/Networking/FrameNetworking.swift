@@ -72,7 +72,7 @@ public class FrameNetworking: ObservableObject {
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode))
             }
-
+            printDataForTesting(data: data)
             return (data, nil)
         } catch URLError.cannotFindHost {
             return (nil, NetworkingError.invalidURL)

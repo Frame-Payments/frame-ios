@@ -45,9 +45,7 @@ struct ContentView: View {
         }
         .padding()
         .sheet(isPresented: $showCheckoutView) {
-            FrameCartView(customer: FrameObjects.Customer(id: "1",
-                                                          livemode: true,
-                                                          name: "Example Customer"),
+            FrameCartView(customer: nil,
                           cartItems: [ExampleCartItem(id: "1",
                                                       imageURL: "https://messinahembry.com/cdn/shop/files/38c90b7b-e8dd-4d6d-ad17-d97b72c7c35f.jpg?v=1727534281",
                                                       title: "Vintage Track Jacket",

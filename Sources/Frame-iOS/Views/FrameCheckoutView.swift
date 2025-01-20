@@ -15,7 +15,7 @@ public struct FrameCheckoutView: View {
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
     
-    let customerId: String
+    let customerId: String?
     let paymentAmount: Int
     
     var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
