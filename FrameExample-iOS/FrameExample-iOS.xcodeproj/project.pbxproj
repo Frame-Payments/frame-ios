@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */; };
+		9C1EBA032D3E0DE900E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EBA022D3E0DE900E6A301 /* Frame-iOS */; };
 		9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9CED70D22CA6BED500C3B45B /* Frame-iOS */; };
 /* End PBXBuildFile section */
 
@@ -56,6 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C1EBA032D3E0DE900E6A301 /* Frame-iOS in Frameworks */,
+				9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */,
 				9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,6 +122,8 @@
 			name = "FrameExample-iOS";
 			packageProductDependencies = (
 				9CED70D22CA6BED500C3B45B /* Frame-iOS */,
+				9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */,
+				9C1EBA022D3E0DE900E6A301 /* Frame-iOS */,
 			);
 			productName = "FrameExample-iOS";
 			productReference = 9CED70932CA5868700C3B45B /* FrameExample-iOS.app */;
@@ -177,7 +183,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1620;
 				ORGANIZATIONNAME = "Frame Payments";
 				TargetAttributes = {
 					9CED70922CA5868700C3B45B = {
@@ -203,7 +209,7 @@
 			mainGroup = 9CED708A2CA5868700C3B45B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9CED70D12CA6BED500C3B45B /* XCLocalSwiftPackageReference "../Frame-iOS" */,
+				9C1EBA012D3E0DE800E6A301 /* XCRemoteSwiftPackageReference "frame-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9CED70942CA5868700C3B45B /* Products */;
@@ -313,6 +319,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -374,6 +381,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -401,6 +409,7 @@
 				CODE_SIGN_ENTITLEMENTS = "FrameExample-iOS/FrameExample_iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"FrameExample-iOS/Preview Content\"";
 				DEVELOPMENT_TEAM = MD2AM4B85J;
 				ENABLE_PREVIEWS = YES;
@@ -420,7 +429,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Townsendeb.FrameExample-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Frame.FrameExample-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -439,6 +448,7 @@
 				CODE_SIGN_ENTITLEMENTS = "FrameExample-iOS/FrameExample_iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"FrameExample-iOS/Preview Content\"";
 				DEVELOPMENT_TEAM = MD2AM4B85J;
 				ENABLE_PREVIEWS = YES;
@@ -458,7 +468,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Townsendeb.FrameExample-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.Frame.FrameExample-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -475,6 +485,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -497,6 +508,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -518,6 +530,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -539,6 +552,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -596,14 +610,27 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		9CED70D12CA6BED500C3B45B /* XCLocalSwiftPackageReference "../Frame-iOS" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../Frame-iOS";
+/* Begin XCRemoteSwiftPackageReference section */
+		9C1EBA012D3E0DE800E6A301 /* XCRemoteSwiftPackageReference "frame-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Frame-Payments/frame-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "Frame-iOS";
+		};
+		9C1EBA022D3E0DE900E6A301 /* Frame-iOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C1EBA012D3E0DE800E6A301 /* XCRemoteSwiftPackageReference "frame-ios" */;
+			productName = "Frame-iOS";
+		};
 		9CED70D22CA6BED500C3B45B /* Frame-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Frame-iOS";

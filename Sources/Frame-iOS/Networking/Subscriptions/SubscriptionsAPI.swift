@@ -111,6 +111,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
+            } else {
+                completionHandler(nil)
             }
         }
     }
@@ -122,6 +124,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
+            } else {
+                completionHandler(nil)
             }
         }
     }
@@ -132,6 +136,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
+            } else {
+                completionHandler(nil)
             }
         }
     }
@@ -142,6 +148,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
+            } else {
+                completionHandler(nil)
             }
         }
     }
@@ -153,6 +161,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
+            } else {
+                completionHandler(nil)
             }
         }
     }
@@ -163,6 +173,8 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse)
+            } else {
+                completionHandler(nil)
             }
         }
     }

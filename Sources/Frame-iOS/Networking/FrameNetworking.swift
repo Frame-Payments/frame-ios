@@ -55,12 +55,10 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Async/Await
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, URLResponse?) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
-        var urlRequest = URLRequest(url: url,
-                                    cachePolicy: .useProtocolCachePolicy,
-                                    timeoutInterval: 10.0)
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
@@ -71,18 +69,17 @@ public class FrameNetworking: ObservableObject {
         
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
-            
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-                throw NetworkingError.serverError(statusCode: httpResponse.statusCode)
+                return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode))
             }
 
-            return (data, response)
+            return (data, nil)
         } catch URLError.cannotFindHost {
-            throw NetworkingError.invalidURL
+            return (nil, NetworkingError.invalidURL)
         } catch URLError.cannotDecodeRawData {
-            throw NetworkingError.decodingFailed
+            return (nil, NetworkingError.decodingFailed)
         } catch {
-            throw NetworkingError.unknownError
+            return (nil, NetworkingError.unknownError)
         }
     }
     
@@ -90,9 +87,7 @@ public class FrameNetworking: ObservableObject {
     func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
-        var urlRequest = URLRequest(url: url,
-                                    cachePolicy: .useProtocolCachePolicy,
-                                    timeoutInterval: 10.0)
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
@@ -117,6 +112,16 @@ public class FrameNetworking: ObservableObject {
                     FrameNetworking.shared.isEvervaultConfigured = true
                 }
             }
+        }
+    }
+    
+    func printDataForTesting(data: Data) {
+        do {
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print(jsonString)
+            }
+        } catch {
+            print("Error converting data to JSON: \(error.localizedDescription)")
         }
     }
 }
