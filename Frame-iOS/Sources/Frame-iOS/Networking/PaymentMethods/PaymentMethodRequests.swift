@@ -6,7 +6,7 @@
 //
 
 public class PaymentMethodRequest {
-    public struct CreatePaymentMethodRequest: Encodable {
+    public struct CreatePaymentMethodRequest: Encodable, Sendable {
         let type: String
         var cardNumber: String
         var expMonth: String
