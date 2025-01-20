@@ -1,5 +1,5 @@
 {
-  "originHash" : "3538e01731725916ed9ca324f0d6df0271b8e28370cc4f69727d29e5a52a2e36",
+  "originHash" : "4d7ffe9876d2593381b73a203906cc16e35caae1f30753eedb434dde681d2455",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "3d2c269babcd760203e5ced03282eda6863c09b5",
         "version" : "1.3.0"
+      }
+    },
+    {
+      "identity" : "frame-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Frame-Payments/frame-ios",
+      "state" : {
+        "branch" : "package-setup",
+        "revision" : "4e2d3d9d7326482030faaa6b1ddcad4f4a3cfccc"
       }
     }
   ],
