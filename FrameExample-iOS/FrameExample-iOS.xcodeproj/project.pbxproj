@@ -206,7 +206,6 @@
 			mainGroup = 9CED708A2CA5868700C3B45B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9C1EB9FE2D3E0D9400E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9CED70942CA5868700C3B45B /* Products */;
@@ -606,13 +605,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		9C1EB9FE2D3E0D9400E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../frame-ios";
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */ = {
