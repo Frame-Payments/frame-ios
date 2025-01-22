@@ -47,7 +47,7 @@ struct ContentView: View {
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,
                           cartItems: [ExampleCartItem(id: "1",
-                                                      imageURL: "https://messinahembry.com/cdn/shop/files/38c90b7b-e8dd-4d6d-ad17-d97b72c7c35f.jpg?v=1727534281",
+                                                      imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
                                                       title: "Vintage Track Jacket",
                                                       amountInCents: 10000),
                                       ExampleCartItem(id: "2",

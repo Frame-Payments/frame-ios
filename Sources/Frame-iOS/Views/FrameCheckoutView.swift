@@ -24,17 +24,19 @@ public struct FrameCheckoutView: View {
         VStack(alignment: .leading) {
             topHeaderBar
             Divider()
-            paymentButtons
-            paymentDivider
-            if checkoutViewModel.customerPaymentOptions != nil {
-                existingPaymentCardScroll
-                    .padding([.leading, .bottom])
+            ScrollView {
+                paymentButtons
+                paymentDivider
+                if checkoutViewModel.customerPaymentOptions != nil {
+                    existingPaymentCardScroll
+                        .padding([.leading, .bottom])
+                }
+                cardInformation
+                    .padding(.bottom)
+                regionInformation
+                checkoutButton
+                Spacer()
             }
-            cardInformation
-                .padding(.bottom)
-            regionInformation
-            checkoutButton
-            Spacer()
         }
         .task {
             await checkoutViewModel.loadCustomerPaymentMethods(customerId: customerId, amount: paymentAmount)
@@ -60,6 +62,7 @@ public struct FrameCheckoutView: View {
                 }
             }
         }
+        .padding(.top)
     }
     
     var paymentDivider: some View {
@@ -124,6 +127,7 @@ public struct FrameCheckoutView: View {
     @ViewBuilder
     var cardInformation: some View {
         Text("Card Information")
+            .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
             .foregroundColor(.gray)
             .padding(.horizontal)
@@ -135,26 +139,56 @@ public struct FrameCheckoutView: View {
     @ViewBuilder
     var regionInformation: some View {
         Text("Country Or Region")
+            .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
             .foregroundColor(.gray)
             .padding(.horizontal)
         RoundedRectangle(cornerRadius: 10.0)
             .fill(.white)
             .stroke(.gray.opacity(0.3))
-            .frame(height: 99.0)
+            .frame(height: 245.0)
             .overlay {
                 VStack(spacing: 0) {
-                    Button {
-                        //TODO: Change Country Drawer
-                    } label: {
-                        HStack {
-                            Text(checkoutViewModel.customerCountry)
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            Spacer()
-                        }
-                        .padding()
+                    TextField("",
+                              text: $checkoutViewModel.customerAddressLine1,
+                              prompt: Text("Address Line 1"))
+                    .frame(height: 49.0)
+                    .keyboardType(.numberPad)
+                    .padding(.horizontal)
+                    Divider()
+                    TextField("",
+                              text: $checkoutViewModel.customerAddressLine2,
+                              prompt: Text("Address Line 2"))
+                    .frame(height: 49.0)
+                    .keyboardType(.numberPad)
+                    .padding(.horizontal)
+                    Divider()
+                    HStack {
+                        TextField("",
+                                  text: $checkoutViewModel.customerCity,
+                                  prompt: Text("City"))
+                        .frame(height: 49.0)
+                        .keyboardType(.numberPad)
+                        .padding(.horizontal)
+                        TextField("",
+                                  text: $checkoutViewModel.customerState,
+                                  prompt: Text("State"))
+                        .frame(height: 49.0)
+                        .keyboardType(.numberPad)
+                        .padding(.horizontal)
                     }
+                    .frame(height: 49.0)
+                    Divider()
+                    Button {
+                        //TODO: Change Country Drawer when other countries are supported.
+                    } label: {
+                        Text(checkoutViewModel.customerCountry)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.headline)
+                            .foregroundColor(.black)
+                            .padding(.horizontal)
+                    }
+                    .frame(height: 49.0)
                     Divider()
                     TextField("",
                               text: $checkoutViewModel.customerZipCode.max(5),

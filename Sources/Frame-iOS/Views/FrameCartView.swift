@@ -85,6 +85,7 @@ public struct FrameCartView: View {
             }
             .navigationDestination(isPresented: $continueToCheckout) {
                 FrameCheckoutView(customerId: customer?.id, paymentAmount: cartViewModel.finalTotal) { _ in }
+                    .toolbar(.hidden)
             }
         }
     }

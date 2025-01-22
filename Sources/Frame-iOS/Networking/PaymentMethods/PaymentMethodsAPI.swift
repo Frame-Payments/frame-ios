@@ -79,8 +79,6 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         if encryptData {
             encryptedRequest.cardNumber = try await Evervault.shared.encrypt(request.cardNumber) as! String
             encryptedRequest.cvc = try await Evervault.shared.encrypt(request.cvc) as! String
-            encryptedRequest.expMonth = try await Evervault.shared.encrypt(request.expMonth) as! String
-            encryptedRequest.expYear = try await Evervault.shared.encrypt(request.expYear) as! String
         }
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
         
@@ -178,8 +176,6 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
                 if encryptData {
                     encryptedRequest.cardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as! String
                     encryptedRequest.cvc = try await Evervault.shared.encrypt(immutableRequest.cvc) as! String
-                    encryptedRequest.expMonth = try await Evervault.shared.encrypt(immutableRequest.expMonth) as! String
-                    encryptedRequest.expYear = try await Evervault.shared.encrypt(immutableRequest.expYear) as! String
                 }
 
                 let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)

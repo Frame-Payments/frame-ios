@@ -11,6 +11,10 @@ import EvervaultInputs
 @MainActor
 class FrameCheckoutViewModel: ObservableObject {
     @Published var customerPaymentOptions: [FrameObjects.PaymentMethod]?
+    @Published var customerAddressLine1: String = ""
+    @Published var customerAddressLine2: String = ""
+    @Published var customerCity: String = ""
+    @Published var customerState: String = ""
     @Published var customerCountry: String = "United States"
     @Published var customerZipCode: String = ""
     
@@ -45,7 +49,7 @@ class FrameCheckoutViewModel: ObservableObject {
         }
         guard paymentMethod != nil else { return nil }
         
-        //TODO: What should the description be? - Dev should be able to set this someone when using component.
+        //TODO: Allow developers to pass description here of charge.
         let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: amount,
                                                                       currency: "USD",
                                                                       customer: customerId,
@@ -67,13 +71,13 @@ class FrameCheckoutViewModel: ObservableObject {
         guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return nil }
         
         //TODO: Do we need the full address for the payment card?
-        let billingAddress = FrameObjects.BillingAddress(city: nil,
-                                                  country: customerCountry,
-                                                  state: nil,
-                                                  postalCode: customerZipCode,
-                                                  addressLine1: nil,
-                                                  addressLine2: nil)
-        let request = PaymentMethodRequest.CreatePaymentMethodRequest(type: cardData.card.type?.brand ?? "",
+        let billingAddress = FrameObjects.BillingAddress(city: customerCity,
+                                                         country: convertCustomerCountry(),
+                                                         state: customerState,
+                                                         postalCode: customerZipCode,
+                                                         addressLine1: customerAddressLine1,
+                                                         addressLine2: customerAddressLine2)
+        let request = PaymentMethodRequest.CreatePaymentMethodRequest(type: "card",
                                                                       cardNumber: cardData.card.number,
                                                                       expMonth: cardData.card.expMonth,
                                                                       expYear: cardData.card.expYear,
@@ -81,5 +85,14 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       customer: customerId,
                                                                       billing: billingAddress)
         return try? await PaymentMethodsAPI.createPaymentMethod(request: request)
+    }
+    
+    func convertCustomerCountry() -> String {
+        // Will be configured in the future when more countries are supported
+//        if customerCountry.localizedCaseInsensitiveContains("united states") {
+//            return "US"
+//        }
+        
+        return "US"
     }
 }

@@ -43,6 +43,7 @@ public class FrameNetworking: ObservableObject {
     var asyncURLSession: URLSessionProtocol = URLSession.shared
     var urlSession: URLSession = URLSession.shared
     var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
+    public var debugMode: Bool = false // Print API data on task calls.
     
     var isEvervaultConfigured: Bool = false
     
@@ -60,19 +61,28 @@ public class FrameNetworking: ObservableObject {
         
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod
+        if endpoint.httpMethod == "POST" || endpoint.httpMethod == "PATCH" {
+            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
+        
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
+            if debugMode {
+                print(response.url?.absoluteString ?? "")
+                printDataForTesting(data: requestBody)
+                printDataForTesting(data: data)
+            }
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode))
             }
-            printDataForTesting(data: data)
             return (data, nil)
         } catch URLError.cannotFindHost {
             return (nil, NetworkingError.invalidURL)
@@ -89,10 +99,15 @@ public class FrameNetworking: ObservableObject {
         
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod
+        if endpoint.httpMethod == "POST" || endpoint.httpMethod == "PATCH" {
+            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
+        
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
@@ -115,9 +130,9 @@ public class FrameNetworking: ObservableObject {
         }
     }
     
-    func printDataForTesting(data: Data) {
+    func printDataForTesting(data: Data?) {
         do {
-            if let jsonString = String(data: data, encoding: .utf8) {
+            if let data, let jsonString = String(data: data, encoding: .utf8) {
                 print(jsonString)
             }
         } catch {

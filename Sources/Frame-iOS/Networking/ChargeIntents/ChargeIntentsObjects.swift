@@ -8,12 +8,12 @@
 import Foundation
 
 extension FrameObjects {
-    public enum AuthorizationMode: Codable, Sendable {
+    public enum AuthorizationMode: String, Codable, Sendable {
         case automatic
         case manual
     }
     
-    public enum ChargeIntentStatus: Codable, Sendable {
+    public enum ChargeIntentStatus: String, Codable, Sendable {
         case canceled
         case disputed
         case failed
