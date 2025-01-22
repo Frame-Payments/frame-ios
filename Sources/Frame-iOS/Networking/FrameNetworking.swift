@@ -38,12 +38,12 @@ enum NetworkingError: Error {
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
-    let jsonEncoder = JSONEncoder()
-    let jsonDecoder = JSONDecoder()
-    var asyncURLSession: URLSessionProtocol = URLSession.shared
-    var urlSession: URLSession = URLSession.shared
-    var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
-    public var debugMode: Bool = false // Print API data on task calls.
+    private let jsonEncoder = JSONEncoder()
+    private let jsonDecoder = JSONDecoder()
+    private var asyncURLSession: URLSessionProtocol = URLSession.shared
+    private var urlSession: URLSession = URLSession.shared
+    private var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
+    private var debugMode: Bool = false // Print API data on task calls.
     
     var isEvervaultConfigured: Bool = false
     
@@ -51,8 +51,9 @@ public class FrameNetworking: ObservableObject {
         self.configureEvervault()
     }
     
-    public func initializeWithAPIKey(_ key: String) {
+    public func initializeWithAPIKey(_ key: String, debugMode: Bool = false) {
         self.apiKey = key
+        self.debugMode = debugMode
     }
     
     // Async/Await

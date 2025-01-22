@@ -18,8 +18,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     init() {
         // Step 1 to using the framework.
-        FrameNetworking.shared.initializeWithAPIKey("sk_sandbox_WDmSrVpLbE3TUqLiF71DaATS")
-        FrameNetworking.shared.debugMode = true
+        FrameNetworking.shared.initializeWithAPIKey("sk_sandbox_WDmSrVpLbE3TUqLiF71DaATS", debugMode: true)
         
         Task {
             await self.getCustomers()
