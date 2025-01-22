@@ -31,6 +31,8 @@ public struct FrameCheckoutView: View {
                     existingPaymentCardScroll
                         .padding([.leading, .bottom])
                 }
+                customerInformation
+                    .padding(.bottom)
                 cardInformation
                     .padding(.bottom)
                 regionInformation
@@ -137,8 +139,38 @@ public struct FrameCheckoutView: View {
     }
     
     @ViewBuilder
+    var customerInformation: some View {
+        Text("Customer Information")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.headline)
+            .foregroundColor(.gray)
+            .padding(.horizontal)
+        RoundedRectangle(cornerRadius: 10.0)
+            .fill(.white)
+            .stroke(.gray.opacity(0.3))
+            .frame(height: 99.0)
+            .overlay {
+                VStack(spacing: 0) {
+                    TextField("",
+                              text: $checkoutViewModel.customerName,
+                              prompt: Text("Customer Name"))
+                    .frame(height: 49.0)
+                    .padding(.horizontal)
+                    Divider()
+                    TextField("",
+                              text: $checkoutViewModel.customerEmail,
+                              prompt: Text("Customer Email"))
+                    .frame(height: 49.0)
+                    .keyboardType(.emailAddress)
+                    .padding(.horizontal)
+                }
+            }
+            .padding(.horizontal)
+    }
+    
+    @ViewBuilder
     var regionInformation: some View {
-        Text("Country Or Region")
+        Text("Customer Address")
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
             .foregroundColor(.gray)
@@ -153,14 +185,12 @@ public struct FrameCheckoutView: View {
                               text: $checkoutViewModel.customerAddressLine1,
                               prompt: Text("Address Line 1"))
                     .frame(height: 49.0)
-                    .keyboardType(.numberPad)
                     .padding(.horizontal)
                     Divider()
                     TextField("",
                               text: $checkoutViewModel.customerAddressLine2,
                               prompt: Text("Address Line 2"))
                     .frame(height: 49.0)
-                    .keyboardType(.numberPad)
                     .padding(.horizontal)
                     Divider()
                     HStack {
@@ -168,13 +198,11 @@ public struct FrameCheckoutView: View {
                                   text: $checkoutViewModel.customerCity,
                                   prompt: Text("City"))
                         .frame(height: 49.0)
-                        .keyboardType(.numberPad)
                         .padding(.horizontal)
                         TextField("",
                                   text: $checkoutViewModel.customerState,
                                   prompt: Text("State"))
                         .frame(height: 49.0)
-                        .keyboardType(.numberPad)
                         .padding(.horizontal)
                     }
                     .frame(height: 49.0)

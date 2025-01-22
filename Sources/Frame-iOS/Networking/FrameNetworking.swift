@@ -76,7 +76,7 @@ public class FrameNetworking: ObservableObject {
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
             if debugMode {
-                print(response.url?.absoluteString ?? "")
+                print("API Endpoint: " + (response.url?.absoluteString ?? ""))
                 printDataForTesting(data: requestBody)
                 printDataForTesting(data: data)
             }
