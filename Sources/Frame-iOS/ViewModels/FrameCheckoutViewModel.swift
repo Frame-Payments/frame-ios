@@ -71,7 +71,7 @@ class FrameCheckoutViewModel: ObservableObject {
         // Create Charge Intent, return this on completion.
         return try? await ChargeIntentsAPI.createChargeIntent(request: request)
         
-        // Show API error for charge intent, and why it failed.
+        //TODO: Show API error for charge intent, and why it failed.
     }
     
     func createPaymentMethod(customerId: String?) async throws -> (paymentId: String?, customerId: String?)  {

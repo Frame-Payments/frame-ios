@@ -8,6 +8,7 @@
 import SwiftUI
 
 public struct FrameCartView: View {
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var cartViewModel: FrameCartViewModel
     
     @State var customer: FrameObjects.Customer?
@@ -84,8 +85,10 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView(customerId: customer?.id, paymentAmount: cartViewModel.finalTotal) { _ in }
-                    .toolbar(.hidden)
+                FrameCheckoutView(customerId: customer?.id, paymentAmount: cartViewModel.finalTotal) { chargeIntent in
+                    self.dismiss()
+                }
+                .toolbar(.hidden)
             }
         }
     }

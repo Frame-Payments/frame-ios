@@ -21,8 +21,11 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         FrameNetworking.shared.initializeWithAPIKey("sk_sandbox_WDmSrVpLbE3TUqLiF71DaATS")
         FrameNetworking.shared.debugMode = true
         
-        self.getCustomers()
-        self.getPaymentMethods()
+        Task {
+            await self.getCustomers()
+            await self.getPaymentMethods()
+            await self.getRefunds()
+        }
     }
     
     //completionHandler
