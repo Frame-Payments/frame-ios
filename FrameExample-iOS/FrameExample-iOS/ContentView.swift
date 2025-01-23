@@ -21,6 +21,7 @@ struct ContentView: View {
     @State var showCheckoutView: Bool = false
     @State var showCustomersView: Bool = false
     @State var showPaymentMethodsView: Bool = false
+    @State var showRefundsView: Bool = false
     
     var body: some View {
         VStack {
@@ -40,6 +41,8 @@ struct ContentView: View {
             allSubscriptionsButton
             allChargeIntentsButton
             allRefundsButton
+                .disabled(viewModel.refunds.isEmpty)
+                .opacity(viewModel.refunds.isEmpty ? 0.3 : 1)
             Spacer()
             cartButton
         }
@@ -64,6 +67,10 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showPaymentMethodsView) {
             paymentMethodScrollView
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showRefundsView) {
+            refundsScrollView
                 .presentationDragIndicator(.visible)
         }
     }
@@ -104,6 +111,28 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text("**Payment Method ID:** \n\(method.id)")
                             Text("**Customer ID:** \n\(method.customer ?? "")")
+                        }
+                        Spacer()
+                    }
+                    Divider()
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    var refundsScrollView: some View {
+        ScrollView {
+            VStack {
+                Text("Refunds")
+                    .font(.largeTitle)
+                    .padding()
+                ForEach(viewModel.refunds) { refund in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("**Refund ID:** \n\(refund.id)")
+                            Text("**Charge Intent ID:** \n\(refund.chargeIntent ?? "")")
                         }
                         Spacer()
                     }
@@ -197,7 +226,7 @@ struct ContentView: View {
     
     var allRefundsButton: some View {
         Button {
-//            self.showCheckoutView = true
+            self.showRefundsView = true
         } label: {
             Text("View All Refunds")
                 .font(.headline)

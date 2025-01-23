@@ -38,8 +38,8 @@ enum NetworkingError: Error {
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
-    private let jsonEncoder = JSONEncoder()
-    private let jsonDecoder = JSONDecoder()
+    let jsonEncoder = JSONEncoder()
+    let jsonDecoder = JSONDecoder()
     private var asyncURLSession: URLSessionProtocol = URLSession.shared
     private var urlSession: URLSession = URLSession.shared
     private var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
