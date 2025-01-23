@@ -18,11 +18,11 @@ extension FrameObjects {
         public let chargeIntent: String?
         public let status: String?
         public let failureReason: String?
-        public let object: String
+        public let object: String?
         public let created: Int
         public let updated: Int
         
-        public init(id: String, amountCaptured: Int? = nil, amountRefunded: Int? = nil, charge: String? = nil, currency: String? = nil, description: String? = nil, chargeIntent: String? = nil, status: String? = nil, failureReason: String? = nil, object: String, created: Int, updated: Int) {
+        public init(id: String, amountCaptured: Int? = nil, amountRefunded: Int? = nil, charge: String? = nil, currency: String? = nil, description: String? = nil, chargeIntent: String? = nil, status: String? = nil, failureReason: String? = nil, object: String? = nil, created: Int, updated: Int) {
             self.id = id
             self.amountCaptured = amountCaptured
             self.amountRefunded = amountRefunded

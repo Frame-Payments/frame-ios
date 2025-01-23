@@ -23,6 +23,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         Task {
             await self.getCustomers()
             await self.getPaymentMethods()
+            await self.getSubscriptions()
+            await self.getChargeIntents()
             await self.getRefunds()
         }
     }
@@ -91,7 +93,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
     
-    func getSubscriptionsAsync() async {
+    func getSubscriptions() async {
         do {
             if let subscriptions = try await SubscriptionsAPI.getSubscriptions() {
                 DispatchQueue.main.async {

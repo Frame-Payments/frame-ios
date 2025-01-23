@@ -21,6 +21,8 @@ struct ContentView: View {
     @State var showCheckoutView: Bool = false
     @State var showCustomersView: Bool = false
     @State var showPaymentMethodsView: Bool = false
+    @State var showSubscriptionsView: Bool = false
+    @State var showChargeIntentsView: Bool = false
     @State var showRefundsView: Bool = false
     
     var body: some View {
@@ -69,6 +71,14 @@ struct ContentView: View {
             paymentMethodScrollView
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showSubscriptionsView, content: {
+            subscriptionsScrollView
+                .presentationDragIndicator(.visible)
+        })
+        .sheet(isPresented: $showChargeIntentsView, content: {
+            chargeIntentsScrollView
+                .presentationDragIndicator(.visible)
+        })
         .sheet(isPresented: $showRefundsView) {
             refundsScrollView
                 .presentationDragIndicator(.visible)
@@ -111,6 +121,51 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text("**Payment Method ID:** \n\(method.id)")
                             Text("**Customer ID:** \n\(method.customer ?? "")")
+                        }
+                        Spacer()
+                    }
+                    Divider()
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    var subscriptionsScrollView: some View {
+        ScrollView {
+            VStack {
+                Text("Subscriptions")
+                    .font(.largeTitle)
+                    .padding()
+                ForEach(viewModel.subscriptions) { subscription in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("**Subscription ID:** \n\(subscription.id)")
+                            Text("**Customer ID:** \n\(subscription.customer ?? "")")
+                        }
+                        Spacer()
+                    }
+                    Divider()
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    var chargeIntentsScrollView: some View {
+        ScrollView {
+            VStack {
+                Text("Charge Intents")
+                    .font(.largeTitle)
+                    .padding()
+                ForEach(viewModel.chargeIntents) { intent in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("**Charge Intent ID:** \n\(intent.id)")
+                            Text("**Customer ID:** \n\(intent.customer?.id ?? "")")
+                            Text("**Payment Method Id:** \n\(intent.paymentMethod?.id ?? "")")
                         }
                         Spacer()
                     }
@@ -210,7 +265,7 @@ struct ContentView: View {
     
     var allChargeIntentsButton: some View {
         Button {
-//            self.showCheckoutView = true
+            self.showChargeIntentsView = true
         } label: {
             Text("View All Charge Intents")
                 .font(.headline)

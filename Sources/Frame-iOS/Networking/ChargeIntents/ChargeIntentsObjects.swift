@@ -24,22 +24,22 @@ extension FrameObjects {
         case succeeded
     }
     
-    public struct ChargeIntent: Codable, Sendable {
-        let id: String
-        let currency: String
-        let latestCharge: LatestCharge?
-        let customer: FrameObjects.Customer?
-        let paymentMethod: FrameObjects.PaymentMethod?
-        let shipping: FrameObjects.BillingAddress?
-        let status: FrameObjects.ChargeIntentStatus
-        let description: String?
-        let authorizationMode: FrameObjects.AuthorizationMode
-        let failureDescription: String?
-        let object: String
-        let amount: Int
-        let created: Int
-        let updated: Int?
-        let livemode: Bool
+    public struct ChargeIntent: Codable, Sendable, Identifiable, Equatable {
+        public let id: String
+        public let currency: String
+        public let latestCharge: LatestCharge?
+        public let customer: FrameObjects.Customer?
+        public let paymentMethod: FrameObjects.PaymentMethod?
+        public let shipping: FrameObjects.BillingAddress?
+        public let status: FrameObjects.ChargeIntentStatus
+        public let description: String?
+        public let authorizationMode: FrameObjects.AuthorizationMode
+        public let failureDescription: String?
+        public let object: String
+        public let amount: Int
+        public let created: Int
+        public let updated: Int?
+        public let livemode: Bool
         
         public init(id: String, currency: String, latestCharge: FrameObjects.LatestCharge? = nil, customer: FrameObjects.Customer? = nil, paymentMethod: FrameObjects.PaymentMethod? = nil, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String? = nil, authorizationMode: FrameObjects.AuthorizationMode, failureDescription: String? = nil, object: String, amount: Int, created: Int,updated: Int? = nil, livemode: Bool) {
             self.id = id
@@ -68,25 +68,25 @@ extension FrameObjects {
         }
     }
     
-    public struct LatestCharge: Codable, Sendable {
-        let id: String
-        let currency: String
-        let amountCaptured: Int
-        let amountRefunded: Int
-        let created: Int
-        let updated: Int
-        let livemode: Bool
-        let captured: Bool
-        let disputed: Bool
-        let chargeIntent: String
-        let refunded: Bool
-        let failureMessage: String?
-        let description: String?
-        let status: FrameObjects.ChargeIntentStatus?
-        let paymentMethodDetails: FrameObjects.PaymentMethod?
-        let customer: String?
-        let paymentMethod: String?
-        let amount: Int
+    public struct LatestCharge: Codable, Sendable, Equatable {
+        public let id: String
+        public let currency: String
+        public let amountCaptured: Int
+        public let amountRefunded: Int
+        public let created: Int
+        public let updated: Int
+        public let livemode: Bool
+        public let captured: Bool
+        public let disputed: Bool
+        public let chargeIntent: String
+        public let refunded: Bool
+        public let failureMessage: String?
+        public  let description: String?
+        public let status: FrameObjects.ChargeIntentStatus?
+        public  let paymentMethodDetails: FrameObjects.PaymentMethod?
+        public let customer: String?
+        public let paymentMethod: String?
+        public let amount: Int
         
         public enum CodingKeys: String, CodingKey {
             case id, currency, created, updated, livemode, captured, disputed, refunded, description, status, customer, amount
