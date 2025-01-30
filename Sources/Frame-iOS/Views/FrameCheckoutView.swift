@@ -12,11 +12,15 @@ public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var checkoutViewModel: FrameCheckoutViewModel = FrameCheckoutViewModel()
     
+    @State private var rotationAngle = 0.0
+    @State var showLoadingState: Bool = false
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
     
     let customerId: String?
     let paymentAmount: Int
+    
+    var colors: [Color] = [Color.white, Color.white.opacity(0.3)]
     
     var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
     
@@ -242,22 +246,65 @@ public struct FrameCheckoutView: View {
     var checkoutButton: some View {
         Button {
             Task {
+                self.showLoadingState = true
                 let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
+                
                 if let chargeIntent {
                     self.checkoutCallback(chargeIntent)
                 }
+                self.showLoadingState = false
             }
         } label: {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.black)
                 .frame(height: 50.0)
                 .overlay {
-                    Text("Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))")
-                        .font(.headline)
-                        .foregroundColor(.white)
+                    if showLoadingState {
+                        HStack(spacing: 10.0) {
+                            loadingSpinner
+                            Text("Processing...")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                    } else {
+                        Text("Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
                 }
         }
         .padding(.horizontal)
+        .disabled(showLoadingState)
+    }
+    
+    var loadingSpinner: some View {
+        ZStack(alignment: .center) {
+            Circle()
+               .stroke(
+                   AngularGradient(
+                       gradient: Gradient(colors: colors),
+                       center: .center,
+                       startAngle: .degrees(0),
+                       endAngle: .degrees(360)
+                   ),
+                   style: StrokeStyle(lineWidth: 6, lineCap: .round)
+               )
+               .frame(width: 25, height: 25)
+
+            Circle()
+                .frame(width: 7, height: 7)
+                .foregroundColor(Color.white)
+                .offset(x: 25/2)
+        }
+        .rotationEffect(.degrees(rotationAngle))
+        .onAppear {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                rotationAngle = 360.0
+            }
+        }
+        .onDisappear{
+            rotationAngle = 0.0
+        }
     }
 }
 
