@@ -12,27 +12,37 @@ public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var checkoutViewModel: FrameCheckoutViewModel = FrameCheckoutViewModel()
     
+    @State private var rotationAngle = 0.0
+    @State var showLoadingState: Bool = false
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
     
-    let customerId: String
+    let customerId: String?
     let paymentAmount: Int
+    
+    var colors: [Color] = [Color.white, Color.white.opacity(0.3)]
+    
+    var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
     
     public var body: some View {
         VStack(alignment: .leading) {
             topHeaderBar
             Divider()
-            paymentButtons
-            paymentDivider
-            if checkoutViewModel.customerPaymentOptions != nil {
-                existingPaymentCardScroll
-                    .padding([.leading, .bottom])
+            ScrollView {
+                paymentButtons
+                paymentDivider
+                if checkoutViewModel.customerPaymentOptions != nil {
+                    existingPaymentCardScroll
+                        .padding([.leading, .bottom])
+                }
+                customerInformation
+                    .padding(.bottom)
+                cardInformation
+                    .padding(.bottom)
+                regionInformation
+                checkoutButton
+                Spacer()
             }
-            cardInformation
-                .padding(.bottom)
-            regionInformation
-            checkoutButton
-            Spacer()
         }
         .task {
             await checkoutViewModel.loadCustomerPaymentMethods(customerId: customerId, amount: paymentAmount)
@@ -58,6 +68,7 @@ public struct FrameCheckoutView: View {
                 }
             }
         }
+        .padding(.top)
     }
     
     var paymentDivider: some View {
@@ -122,6 +133,7 @@ public struct FrameCheckoutView: View {
     @ViewBuilder
     var cardInformation: some View {
         Text("Card Information")
+            .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
             .foregroundColor(.gray)
             .padding(.horizontal)
@@ -131,8 +143,9 @@ public struct FrameCheckoutView: View {
     }
     
     @ViewBuilder
-    var regionInformation: some View {
-        Text("Country Or Region")
+    var customerInformation: some View {
+        Text("Customer Information")
+            .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
             .foregroundColor(.gray)
             .padding(.horizontal)
@@ -142,17 +155,72 @@ public struct FrameCheckoutView: View {
             .frame(height: 99.0)
             .overlay {
                 VStack(spacing: 0) {
-                    Button {
-                        //TODO: Change Country Drawer
-                    } label: {
-                        HStack {
-                            Text(checkoutViewModel.customerCountry)
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            Spacer()
-                        }
-                        .padding()
+                    TextField("",
+                              text: $checkoutViewModel.customerName,
+                              prompt: Text("Customer Name"))
+                    .frame(height: 49.0)
+                    .padding(.horizontal)
+                    Divider()
+                    TextField("",
+                              text: $checkoutViewModel.customerEmail,
+                              prompt: Text("Customer Email"))
+                    .frame(height: 49.0)
+                    .keyboardType(.emailAddress)
+                    .padding(.horizontal)
+                }
+            }
+            .padding(.horizontal)
+    }
+    
+    @ViewBuilder
+    var regionInformation: some View {
+        Text("Customer Address")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.headline)
+            .foregroundColor(.gray)
+            .padding(.horizontal)
+        RoundedRectangle(cornerRadius: 10.0)
+            .fill(.white)
+            .stroke(.gray.opacity(0.3))
+            .frame(height: 245.0)
+            .overlay {
+                VStack(spacing: 0) {
+                    TextField("",
+                              text: $checkoutViewModel.customerAddressLine1,
+                              prompt: Text("Address Line 1"))
+                    .frame(height: 49.0)
+                    .padding(.horizontal)
+                    Divider()
+                    TextField("",
+                              text: $checkoutViewModel.customerAddressLine2,
+                              prompt: Text("Address Line 2"))
+                    .frame(height: 49.0)
+                    .padding(.horizontal)
+                    Divider()
+                    HStack {
+                        TextField("",
+                                  text: $checkoutViewModel.customerCity,
+                                  prompt: Text("City"))
+                        .frame(height: 49.0)
+                        .padding(.horizontal)
+                        TextField("",
+                                  text: $checkoutViewModel.customerState,
+                                  prompt: Text("State"))
+                        .frame(height: 49.0)
+                        .padding(.horizontal)
                     }
+                    .frame(height: 49.0)
+                    Divider()
+                    Button {
+                        //TODO: Change Country Drawer when other countries are supported.
+                    } label: {
+                        Text(checkoutViewModel.customerCountry)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.headline)
+                            .foregroundColor(.black)
+                            .padding(.horizontal)
+                    }
+                    .frame(height: 49.0)
                     Divider()
                     TextField("",
                               text: $checkoutViewModel.customerZipCode.max(5),
@@ -178,22 +246,70 @@ public struct FrameCheckoutView: View {
     var checkoutButton: some View {
         Button {
             Task {
-                await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
+                self.showLoadingState = true
+                let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
+                
+                if let chargeIntent {
+                    self.checkoutCallback(chargeIntent)
+                }
+                self.showLoadingState = false
             }
         } label: {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.black)
                 .frame(height: 50.0)
                 .overlay {
-                    Text("Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))")
-                        .font(.headline)
-                        .foregroundColor(.white)
+                    if showLoadingState {
+                        HStack(spacing: 10.0) {
+                            loadingSpinner
+                            Text("Processing...")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                    } else {
+                        Text("Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
                 }
         }
         .padding(.horizontal)
+        .disabled(showLoadingState)
+    }
+    
+    var loadingSpinner: some View {
+        ZStack(alignment: .center) {
+            Circle()
+               .stroke(
+                   AngularGradient(
+                       gradient: Gradient(colors: colors),
+                       center: .center,
+                       startAngle: .degrees(0),
+                       endAngle: .degrees(360)
+                   ),
+                   style: StrokeStyle(lineWidth: 6, lineCap: .round)
+               )
+               .frame(width: 25, height: 25)
+
+            Circle()
+                .frame(width: 7, height: 7)
+                .foregroundColor(Color.white)
+                .offset(x: 25/2)
+        }
+        .rotationEffect(.degrees(rotationAngle))
+        .onAppear {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                rotationAngle = 360.0
+            }
+        }
+        .onDisappear{
+            rotationAngle = 0.0
+        }
     }
 }
 
 #Preview {
-    FrameCheckoutView(customerId: "", paymentAmount: 15000)
+    FrameCheckoutView(customerId: "", paymentAmount: 15000) { chargeIntent in
+        print(chargeIntent.description)
+    }
 }

@@ -79,8 +79,6 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         if encryptData {
             encryptedRequest.cardNumber = try await Evervault.shared.encrypt(request.cardNumber) as! String
             encryptedRequest.cvc = try await Evervault.shared.encrypt(request.cvc) as! String
-            encryptedRequest.expMonth = try await Evervault.shared.encrypt(request.expMonth) as! String
-            encryptedRequest.expYear = try await Evervault.shared.encrypt(request.expYear) as! String
         }
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
         
@@ -170,7 +168,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     
     public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?) -> Void) {
         let immutableRequest = request // Capture as a local constant
-        
+
         Task {
             do {
                 let endpoint = PaymentMethodEndpoints.createPaymentMethod
@@ -178,12 +176,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
                 if encryptData {
                     encryptedRequest.cardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as! String
                     encryptedRequest.cvc = try await Evervault.shared.encrypt(immutableRequest.cvc) as! String
-                    encryptedRequest.expMonth = try await Evervault.shared.encrypt(immutableRequest.expMonth) as! String
-                    encryptedRequest.expYear = try await Evervault.shared.encrypt(immutableRequest.expYear) as! String
                 }
-                
+
                 let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
-                
+
                 let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
                 if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                     completionHandler(decodedResponse)
