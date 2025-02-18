@@ -30,7 +30,9 @@ their payment details with encryption.
 
 1. Swift Package Manager: add a dependency to your Project.swift:
 
-**.package(url: "https://github.com/Frame-Payments/frame-ios", from: "1.0.0")**
+```
+.package(url: "https://github.com/Frame-Payments/frame-ios", from: "1.0.0")
+```
 
 2. In your App Delegate or main App file, initialize the SDK with:
 
@@ -70,7 +72,6 @@ This package can be used with an iOS app within a React Native project. We have 
 import Foundation
 import Frame-iOS
 
-
 @objc(MySDKBridge)
 class MySDKBridge: NSObject {
   @objc static func requiresMainQueueSetup() -> Bool {
@@ -78,7 +79,7 @@ class MySDKBridge: NSObject {
   }
   
   @objc func initializeSDK(_ apiKey: String) {
-      FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_SECRET_KEY_HERE}")
+      FrameNetworking.shared.initializeWithAPIKey(apiKey)
   }
   
   @objc func doSomething(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping
@@ -87,6 +88,7 @@ class MySDKBridge: NSObject {
       resolve(result)
   }
 }
+
 ```
 **3. Register the Module in React Native**
 Modify `AppDelegate.swift` (Swift) to ensure the module is loaded.
@@ -103,9 +105,11 @@ MySDKBridge.doSomething()
   .then(result => console.log(result))
   .catch(error => console.error(error));
 ```
+
 **5. Link the Native Module**
 - If using React Native 0.60+, autolinking should work.
 - Otherwise, manually link the native module in Xcode.
+- 
 #### Privacy
 
 Our privacy policy can be found at [https://framepayments.com/privacy](https://framepayments.com/privacy).
