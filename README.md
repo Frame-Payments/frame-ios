@@ -34,20 +34,78 @@ their payment details with encryption.
 
 2. In your App Delegate or main App file, initialize the SDK with:
 
-**FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_SECRET_KEY_HERE}")**
+```
+FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_SECRET_KEY_HERE}")
+```
 
 NOTE: In order to obtain your API key, you will need to sign up for a developer account at https://framepayments.com. Once you have obtained your key from the Developer section of your dashboard, please use the SECRET KEY with this SDK.
 
 3. Start calling any available API within your app:
 
-**CustomersAPI.getCustomers { customers in }**
+Example:
+```
+CustomersAPI.getCustomers { customers in }
+```
 
 ### Examples
 
 See our Example project within this project that contains:
 - How to use our Cart and Checkout Prebuilt UI
 - Standard Initialization-less API Usage for all available Frame Payments API calls.
- 
+
+### React Native Support
+
+This package can be used with an iOS app within a React Native project. We have provided instructions below:
+
+**1. Create a Native Module**
+- Inside your React Native project, navigate to the `ios` folder.
+- Create a new Objective-C or Swift file (e.g., `MySDKBridge`).
+- Import your SDK inside this file.
+
+**2. Expose Your SDK to React Native**
+- Use `@objc` and `RCT_EXPORT_MODULE()` to expose your native module.
+- Use `RCT_EXPORT_METHOD` to expose functions to JavaScript.
+
+```
+import Foundation
+import Frame-iOS
+
+
+@objc(MySDKBridge)
+class MySDKBridge: NSObject {
+  @objc static func requiresMainQueueSetup() -> Bool {
+      return true
+  }
+  
+  @objc func initializeSDK(_ apiKey: String) {
+      FrameNetworking.shared.initializeWithAPIKey("{YOUR_API_SECRET_KEY_HERE}")
+  }
+  
+  @objc func doSomething(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping
+  RCTPromiseRejectBlock) {
+      let result = YourSDK.performAction()
+      resolve(result)
+  }
+}
+```
+**3. Register the Module in React Native**
+Modify `AppDelegate.swift` (Swift) to ensure the module is loaded.
+
+**4. Use the Native Module in React Native**
+In JavaScript, import the module and call the exposed functions:
+
+```
+import { NativeModules } from 'react-native';
+const { MySDKBridge } = NativeModules;
+
+MySDKBridge.initializeSDK('your-api-key');
+MySDKBridge.doSomething()
+  .then(result => console.log(result))
+  .catch(error => console.error(error));
+```
+**5. Link the Native Module**
+- If using React Native 0.60+, autolinking should work.
+- Otherwise, manually link the native module in Xcode.
 #### Privacy
 
 Our privacy policy can be found at [https://framepayments.com/privacy](https://framepayments.com/privacy).
