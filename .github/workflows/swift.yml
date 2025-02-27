@@ -25,6 +25,9 @@ jobs:
       - name: Verify Swift version
         run: swift --version
 
+      - name: Resolve Binary Dependencies
+        run: swift package resolve
+
       - name: Run Tests
         run: |
           export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
