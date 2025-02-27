@@ -26,4 +26,6 @@ jobs:
         run: swift --version
 
       - name: Run Tests
-        run: swift test
+        run: |
+          export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+          swift test -Xswiftc "-target" -Xswiftc "x86_64-apple-macos10.15"
