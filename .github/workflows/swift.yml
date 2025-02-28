@@ -49,3 +49,4 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 14,OS=17.2' \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
+            ONLY_ACTIVE_ARCH=YES
