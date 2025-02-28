@@ -42,6 +42,14 @@ jobs:
           xcodebuild -resolvePackageDependencies
           xcodebuild -scheme Frame-iOS -destination 'platform=macOS' build
 
+      - name: Run Tests on iOS Simulator
+        run: |
+          xcodebuild test \
+            -scheme Frame-iOS \
+            -destination 'platform=iOS Simulator,name=iPhone 14,OS=17.2' \
+            -sdk iphonesimulator \
+            -enableCodeCoverage YES
+            
       - name: Run Tests
         run: |
           export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
