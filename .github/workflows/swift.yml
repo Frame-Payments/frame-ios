@@ -49,8 +49,3 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 14,OS=17.2' \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
-            
-      - name: Run Tests
-        run: |
-          export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
-          swift test -Xswiftc "-target" -Xswiftc "x86_64-apple-macos10.15"
