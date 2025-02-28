@@ -16,6 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache SPM Dependencies
+        uses: actions/cache@v3
+        with:
+          path: .build
+          key: spm-${{ runner.os }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
       - name: List available Xcode versions
         run: ls /Applications | grep Xcode
 
@@ -26,7 +33,9 @@ jobs:
         run: swift --version
 
       - name: Resolve Binary Dependencies
-        run: swift package resolve
+        run: |
+          swift package reset
+          swift package resolve
 
       - name: Run Tests
         run: |
