@@ -29,9 +29,9 @@ final class CheckoutViewModelTests: XCTestCase {
         
         // Test with valid customer ID with payment method
         let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: "", object: "", created: 0, updated: 0, livemode: false)
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod])
-        session.data = try! JSONEncoder().encode(response)
+        let customer = FrameObjects.Customer(id: "1", livemode: false, name: "Tester", paymentMethods: [paymentMethod])
         
+        session.data = try? JSONEncoder().encode(customer)
         await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100)
         XCTAssertNotNil(viewModel.customerPaymentOptions)
         XCTAssertEqual(viewModel.customerPaymentOptions?.first?.id, "1")
@@ -59,7 +59,8 @@ final class CheckoutViewModelTests: XCTestCase {
         viewModel.customerCountry = ""
         viewModel.customerZipCode = ""
         let firstMethod = try? await viewModel.createPaymentMethod()
-        XCTAssertNil(firstMethod)
+        XCTAssertNil(firstMethod?.paymentId)
+        XCTAssertNil(firstMethod?.customerId)
         
         viewModel.customerCountry = "United Status"
         viewModel.customerZipCode = "75115"
@@ -68,7 +69,8 @@ final class CheckoutViewModelTests: XCTestCase {
         // Test with invalid/null card data
         session.data = nil
         let secondMethod = try? await viewModel.createPaymentMethod()
-        XCTAssertNil(secondMethod)
+        XCTAssertNil(secondMethod?.paymentId)
+        XCTAssertNil(secondMethod?.customerId)
         
         viewModel.cardData = paymentCardData
         viewModel.customerCountry = ""
@@ -77,7 +79,8 @@ final class CheckoutViewModelTests: XCTestCase {
         // Test with invalid country, invalid zipCode and valid card data
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: "", object: "", created: 0, updated: 0, livemode: true, card: paymentCard))
         let thirdMethod = try? await viewModel.createPaymentMethod()
-        XCTAssertNil(thirdMethod)
+        XCTAssertNil(thirdMethod?.paymentId)
+        XCTAssertNil(thirdMethod?.customerId)
         
         viewModel.customerCountry = "United Status"
         viewModel.customerZipCode = "75115"

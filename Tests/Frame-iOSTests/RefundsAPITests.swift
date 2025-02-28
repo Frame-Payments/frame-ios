@@ -20,13 +20,13 @@ final class RefundsAPITests: XCTestCase {
         let creation = try? await RefundsAPI.createRefund(request: request)
         XCTAssertNil(creation)
         
-        let refund = FrameObjects.Refund(id: "1", amount: 100, object: "", created: 0, updated: 0)
+        let refund = FrameObjects.Refund(id: "1", amountRefunded: 100, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(refund)
             let creationTwo = try await RefundsAPI.createRefund(request: request)
             XCTAssertNotNil(creationTwo)
-            XCTAssertEqual(creationTwo?.amount, refund.amount)
+            XCTAssertEqual(creationTwo?.amountRefunded, refund.amountRefunded)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -40,15 +40,15 @@ final class RefundsAPITests: XCTestCase {
         let refundResponseTwo = try? await RefundsAPI.getRefunds(chargeId: "1", chargeIntentId: "2")
         XCTAssertNil(refundResponseTwo)
         
-        let refund = FrameObjects.Refund(id: "1", amount: 100, object: "", created: 0, updated: 0)
-        let refundTwo = FrameObjects.Refund(id: "2", amount: 1000, object: "", created: 0, updated: 0)
+        let refund = FrameObjects.Refund(id: "1", amountRefunded: 100, object: "", created: 0, updated: 0)
+        let refundTwo = FrameObjects.Refund(id: "2", amountRefunded: 1000, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(RefundResponses.ListRefundsResponse(meta: nil, data: [refund, refundTwo]))
             let refunds = try await RefundsAPI.getRefunds(chargeId: "1", chargeIntentId: "2")
             XCTAssertNotNil(refunds)
-            XCTAssertEqual(refunds?[0].amount, refund.amount)
-            XCTAssertEqual(refunds?[1].amount, refundTwo.amount)
+            XCTAssertEqual(refunds?[0].amountRefunded, refund.amountRefunded)
+            XCTAssertEqual(refunds?[1].amountRefunded, refundTwo.amountRefunded)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -62,13 +62,13 @@ final class RefundsAPITests: XCTestCase {
         let refundResponseTwo = try? await RefundsAPI.getRefundWith(refundId: "123")
         XCTAssertNil(refundResponseTwo)
         
-        let refund = FrameObjects.Refund(id: "1234", amount: 100, object: "", created: 0, updated: 0)
+        let refund = FrameObjects.Refund(id: "1234", amountRefunded: 100, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(refund)
             let refundThree = try await RefundsAPI.getRefundWith(refundId: "1234")
             XCTAssertNotNil(refundThree)
-            XCTAssertEqual(refundThree?.amount, refund.amount)
+            XCTAssertEqual(refundThree?.amountRefunded, refund.amountRefunded)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -82,13 +82,13 @@ final class RefundsAPITests: XCTestCase {
         let cancellationTwo = try? await RefundsAPI.cancelRefund(refundId: "123")
         XCTAssertNil(cancellationTwo)
         
-        let refund = FrameObjects.Refund(id: "1234", amount: 100, object: "", created: 0, updated: 0)
+        let refund = FrameObjects.Refund(id: "1234", amountRefunded: 100, object: "", created: 0, updated: 0)
         
         do {
             session.data = try JSONEncoder().encode(refund)
             let cancellationThree = try await RefundsAPI.cancelRefund(refundId: "1234")
             XCTAssertNotNil(cancellationThree)
-            XCTAssertEqual(cancellationThree?.amount, refund.amount)
+            XCTAssertEqual(cancellationThree?.amountRefunded, refund.amountRefunded)
         } catch {
             XCTFail("Error should not be thrown")
         }

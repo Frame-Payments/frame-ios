@@ -76,12 +76,13 @@ final class FrameNetworkingTests: XCTestCase {
         mockSession.error = nil
         
         let networking = FrameNetworking.shared
+        networking.asyncURLSession = mockSession
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         do {
-            let (data, response) = try await networking.performDataTask(endpoint: endpoint)
+            let (data, error) = try await networking.performDataTask(endpoint: endpoint)
             XCTAssertNotNil(data)
-            XCTAssertNotNil(response)
+            XCTAssertNil(error)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -122,9 +123,10 @@ final class FrameNetworkingTests: XCTestCase {
         let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
         
         do {
-            let (data, response) = try await networking.performDataTask(endpoint: endpoint)
-            XCTAssertNotNil(data)
-            XCTAssertNil(response)
+            let (data, error) = try await networking.performDataTask(endpoint: endpoint)
+            XCTAssertNil(data)
+            XCTAssertNotNil(error)
+            XCTAssertEqual(error, .unknownError)
         } catch {
             if let error = error as? URLError {
                 XCTAssertEqual(error.code, .badURL)

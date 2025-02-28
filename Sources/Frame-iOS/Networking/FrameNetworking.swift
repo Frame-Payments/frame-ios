@@ -28,7 +28,7 @@ public protocol URLSessionProtocol {
 // Extend URLSession to conform to the protocol
 extension URLSession: URLSessionProtocol {}
 
-enum NetworkingError: Error {
+enum NetworkingError: Error, Equatable {
     case invalidURL
     case decodingFailed
     case serverError(statusCode: Int)
