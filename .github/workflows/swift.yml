@@ -37,6 +37,11 @@ jobs:
           swift package reset
           swift package resolve
 
+      - name: Force SPM to Link Binary Frameworks
+        run: |
+          xcodebuild -resolvePackageDependencies
+          xcodebuild -scheme Frame-iOS -destination 'platform=macOS' build
+
       - name: Run Tests
         run: |
           export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
