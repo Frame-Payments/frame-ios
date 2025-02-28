@@ -37,10 +37,10 @@ jobs:
           swift package reset
           swift package resolve
 
-      - name: Force SPM to Link Binary Frameworks
-        run: |
-          xcodebuild -resolvePackageDependencies
-          xcodebuild -scheme Frame-iOS -destination 'platform=iOS' build
+      # - name: Force SPM to Link Binary Frameworks
+      #   run: |
+      #     xcodebuild -resolvePackageDependencies
+      #     xcodebuild -scheme Frame-iOS -destination 'platform=iOS' build
 
       - name: Run Tests on iOS Simulator
         run: |
