@@ -74,7 +74,7 @@ class FrameCheckoutViewModel: ObservableObject {
         //TODO: Show API error for charge intent, and why it failed.
     }
     
-    func createPaymentMethod(customerId: String?) async throws -> (paymentId: String?, customerId: String?)  {
+    func createPaymentMethod(customerId: String? = nil) async throws -> (paymentId: String?, customerId: String?)  {
         guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
         let billingAddress = FrameObjects.BillingAddress(city: customerCity,
                                                          country: convertCustomerCountry(),
@@ -90,6 +90,8 @@ class FrameCheckoutViewModel: ObservableObject {
             let customer = try? await CustomersAPI.createCustomer(request: customerRequest)
             currentCustomerId = customer?.id ?? ""
             guard currentCustomerId != "" else { return (nil, nil) }
+        } else if let customerId {
+            currentCustomerId = customerId
         }
         
         //2. Create the payment method

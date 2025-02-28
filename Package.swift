@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "Frame-iOS",
     platforms: [
-        .macOS(.v14), .iOS(.v17), .tvOS(.v16)
+        .iOS(.v17)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -26,7 +26,11 @@ let package = Package(
                 .product(name: "EvervaultInputs", package: "evervault-ios"),
                 .product(name: "EvervaultEnclaves", package: "evervault-ios")
             ],
-            resources: [.process("Resources")]),
+            resources: [.process("Resources")],
+            swiftSettings: [
+                .define("EXCLUDE_MACOS", .when(platforms: [.macOS])) // 👈 Prevents macOS builds
+            ]
+        ),
         .testTarget(
             name: "Frame-iOSTests",
             dependencies: ["Frame-iOS"]

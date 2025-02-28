@@ -26,7 +26,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         XCTAssertNotNil(chargeIntent.shipping)
         
         do {
@@ -52,7 +52,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         do {
             session.data = try JSONEncoder().encode(chargeIntent)
             let thirdCapture = try await ChargeIntentsAPI.captureChargeIntent(intentId: "1234", request: request)
@@ -73,7 +73,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(chargeIntent)
@@ -95,7 +95,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(chargeIntent)
@@ -114,10 +114,10 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         
         let chargeIntentTwo = FrameObjects.ChargeIntent(id: "2", currency: "EUR", shipping: shippingAddress, status: .canceled,
-                                                     object: "", amount: 100, created: 0, updated: 0, livemode: false)
+                                                        authorizationMode: .automatic, object: "", amount: 100, created: 0, updated: 0, livemode: false)
         do {
             session.data = try JSONEncoder().encode(ChargeIntentResponses.ListChargeIntentsResponse(meta: nil, data: [chargeIntent, chargeIntentTwo]))
             let intentsTwo = try await ChargeIntentsAPI.getAllChargeIntents()
@@ -140,7 +140,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(chargeIntent)
@@ -163,7 +163,7 @@ final class ChargeIntentsAPITests: XCTestCase {
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
         let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(chargeIntent)

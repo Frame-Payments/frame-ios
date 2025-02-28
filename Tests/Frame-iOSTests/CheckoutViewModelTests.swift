@@ -86,10 +86,8 @@ final class CheckoutViewModelTests: XCTestCase {
         
         // Test with valid country, valid zipCode and valid card data
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", billing: billingAddress, type: "", object: "", created: 0, updated: 0, livemode: true, card: paymentCard))
-        let fourthMethod = try? await viewModel.createPaymentMethod()
+        let fourthMethod = try? await viewModel.createPaymentMethod(customerId: "111")
         XCTAssertNotNil(fourthMethod)
-        XCTAssertEqual(fourthMethod?.card?.lastFourDigits, paymentCardData.card.lastFour)
-        XCTAssertEqual(fourthMethod?.card?.currency, "USD")
-        XCTAssertEqual(fourthMethod?.billing?.country, billingAddress.country)
+        XCTAssertEqual(fourthMethod?.customerId, "111")
     }
 }

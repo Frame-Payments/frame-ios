@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */; };
-		9C1EBA032D3E0DE900E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EBA022D3E0DE900E6A301 /* Frame-iOS */; };
+		9C1EBA4D2D3E129600E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EBA4C2D3E129600E6A301 /* Frame-iOS */; };
 		9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9CED70D22CA6BED500C3B45B /* Frame-iOS */; };
 /* End PBXBuildFile section */
 
@@ -58,7 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9C1EBA032D3E0DE900E6A301 /* Frame-iOS in Frameworks */,
+				9C1EBA4D2D3E129600E6A301 /* Frame-iOS in Frameworks */,
 				9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */,
 				9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */,
 			);
@@ -123,7 +123,7 @@
 			packageProductDependencies = (
 				9CED70D22CA6BED500C3B45B /* Frame-iOS */,
 				9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */,
-				9C1EBA022D3E0DE900E6A301 /* Frame-iOS */,
+				9C1EBA4C2D3E129600E6A301 /* Frame-iOS */,
 			);
 			productName = "FrameExample-iOS";
 			productReference = 9CED70932CA5868700C3B45B /* FrameExample-iOS.app */;
@@ -209,7 +209,7 @@
 			mainGroup = 9CED708A2CA5868700C3B45B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9C1EBA012D3E0DE800E6A301 /* XCRemoteSwiftPackageReference "frame-ios" */,
+				9C1EBA4B2D3E129600E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9CED70942CA5868700C3B45B /* Products */;
@@ -610,25 +610,20 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		9C1EBA012D3E0DE800E6A301 /* XCRemoteSwiftPackageReference "frame-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Frame-Payments/frame-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		9C1EBA4B2D3E129600E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../frame-ios";
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Frame-iOS";
 		};
-		9C1EBA022D3E0DE900E6A301 /* Frame-iOS */ = {
+		9C1EBA4C2D3E129600E6A301 /* Frame-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9C1EBA012D3E0DE800E6A301 /* XCRemoteSwiftPackageReference "frame-ios" */;
 			productName = "Frame-iOS";
 		};
 		9CED70D22CA6BED500C3B45B /* Frame-iOS */ = {

@@ -40,8 +40,10 @@ public class FrameNetworking: ObservableObject {
     
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
-    private var asyncURLSession: URLSessionProtocol = URLSession.shared
-    private var urlSession: URLSession = URLSession.shared
+    
+    var asyncURLSession: URLSessionProtocol = URLSession.shared
+    var urlSession: URLSession = URLSession.shared
+    
     private var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
     private var debugMode: Bool = false // Print API data on task calls.
     
@@ -132,12 +134,8 @@ public class FrameNetworking: ObservableObject {
     }
     
     func printDataForTesting(data: Data?) {
-        do {
-            if let data, let jsonString = String(data: data, encoding: .utf8) {
-                print(jsonString)
-            }
-        } catch {
-            print("Error converting data to JSON: \(error.localizedDescription)")
+        if let data, let jsonString = String(data: data, encoding: .utf8) {
+            print(jsonString)
         }
     }
 }
