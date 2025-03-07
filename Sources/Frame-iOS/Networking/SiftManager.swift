@@ -1,8 +1,8 @@
 //
-//  File.swift
+//  SiftManager.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 3/3/25.
+//  Created by Frame Payments on 3/3/25.
 //
 
 import Foundation
