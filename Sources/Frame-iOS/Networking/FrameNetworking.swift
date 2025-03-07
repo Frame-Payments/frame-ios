@@ -9,6 +9,7 @@
 
 import SwiftUI
 import EvervaultCore
+import Sift
 
 // Create Network Request Here That Return Callbacks With User Data, This is the "Router"
 
@@ -56,6 +57,9 @@ public class FrameNetworking: ObservableObject {
     public func initializeWithAPIKey(_ key: String, debugMode: Bool = false) {
         self.apiKey = key
         self.debugMode = debugMode
+        
+        // Initializes Sift when the api key is set and the SDK is initialized.
+        SiftManager.initializeSift(userId: apiKey)
     }
     
     // Async/Await

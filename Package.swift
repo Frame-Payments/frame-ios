@@ -15,7 +15,8 @@ let package = Package(
             targets: ["Frame-iOS"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0")
+        .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
+        .package(url: "https://github.com/SiftScience/sift-ios.git", branch: "master")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -24,7 +25,8 @@ let package = Package(
             name: "Frame-iOS",
             dependencies: [
                 .product(name: "EvervaultInputs", package: "evervault-ios"),
-                .product(name: "EvervaultEnclaves", package: "evervault-ios")
+                .product(name: "EvervaultEnclaves", package: "evervault-ios"),
+                .product(name: "sift-ios", package: "sift-ios")
             ],
             resources: [.process("Resources")],
             swiftSettings: [
