@@ -16,18 +16,23 @@ class SiftManager {
         case refund = "$refund"
     }
     
-    class func initializeSift(userId: String) {
+    class func initializeSift(userId: String) async {
         guard let sift = Sift.sharedInstance() else { return }
         
-        #if targetEnvironment(simulator)
-            sift.accountId = "6650a1efc64b4a58e77998be"
-            sift.beaconKey = "e5c19d73a9"
-        #else
-            sift.accountId = "6650a1efc64b4a58e77998bb"
-            sift.beaconKey = "5d6de9cb04"
-        #endif
-        
-        sift.userId = userId // Frame API Key
+        do {
+            if let configResponse = try await ConfigurationAPI.getSiftConfiguration() {
+                sift.accountId = configResponse.accountId
+                sift.beaconKey = configResponse.beaconKey
+            } else if let data = ConfigurationAPI.retrieveFromKeychain(key: ConfigurationKeys.sift.rawValue) {
+                let response = try FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetSiftConfigurationResponse.self, from: data)
+                sift.accountId = response.accountId
+                sift.beaconKey = response.beaconKey
+            }
+            
+            sift.userId = userId // Frame API Key
+        } catch let error {
+            print(error.localizedDescription)
+        }
     }
     
     class func addNewSiftEvent(transactionType: SiftTransactionType, eventId: String) {

@@ -11,22 +11,36 @@ import Security
 // Protocol for Mock Testing
 protocol ConfigurationProtocol {
     //async/await
-    static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetConfigurationResponse?
+    static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?
+    static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?
 }
 
 enum ConfigurationKeys: String {
     case evervault
+    case sift
 }
 
 // Charge Intents API
 public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     //async/await
-    public static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetConfigurationResponse? {
-        let endpoint = ConfigurationEndpoints.getConfiguration
+    public static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse? {
+        let endpoint = ConfigurationEndpoints.getEvervaultConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetConfigurationResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetEvervaultConfigurationResponse.self, from: data) {
             // Save configuration to chain
             ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.evervault.rawValue, value: decodedResponse)
+            return decodedResponse
+        } else {
+            return nil
+        }
+    }
+    
+    public static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse? {
+        let endpoint = ConfigurationEndpoints.getSiftConfiguration
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetSiftConfigurationResponse.self, from: data) {
+            // Save configuration to chain
+            ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.sift.rawValue, value: decodedResponse)
             return decodedResponse
         } else {
             return nil
