@@ -10,6 +10,7 @@ Table of contents
    * [Features](#Features)
    * [Usage](#Usage)
    * [Examples](#Examples)
+   * [React Native](#ReactNativeSupport)
    * [Privacy](#Privacy)
 
 
@@ -49,13 +50,13 @@ Example:
 CustomersAPI.getCustomers { customers in }
 ```
 
-### Examples
+## Examples
 
 See our Example project within this project that contains:
 - How to use our Cart and Checkout Prebuilt UI
 - Standard Initialization-less API Usage for all available Frame Payments API calls.
 
-### React Native Support
+## React Native Support
 
 This package can be used with an iOS app within a React Native project. We have provided instructions below:
 
@@ -109,8 +110,8 @@ MySDKBridge.doSomething()
 **5. Link the Native Module**
 - If using React Native 0.60+, autolinking should work.
 - Otherwise, manually link the native module in Xcode.
-- 
-#### Privacy
+  
+## Privacy
 
 Our privacy policy can be found at [https://framepayments.com/privacy](https://framepayments.com/privacy).
 
