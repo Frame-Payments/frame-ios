@@ -64,7 +64,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
-            SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
+//            SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
             return decodedResponse
         } else {
             return nil
@@ -152,7 +152,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
-                SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
+//                SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
                 completionHandler(decodedResponse)
             } else {
                 completionHandler(nil)
