@@ -46,7 +46,7 @@ enum RefundEndpoints: FrameNetworkingEndpoints {
             
             return queryItems
         default:
-            return []
+            return nil
         }
     }
 }

@@ -9,12 +9,15 @@ import Foundation
 
 enum ConfigurationEndpoints: FrameNetworkingEndpoints {
     //MARK: Configuration Endpoints
-    case getConfiguration
+    case getEvervaultConfiguration
+    case getSiftConfiguration
     
     var endpointURL: String {
         switch self {
-        case .getConfiguration:
+        case .getEvervaultConfiguration:
             return "/v1/config/evervault"
+        case .getSiftConfiguration:
+            return "/v1/config/sift"
         }
     }
     
@@ -23,6 +26,6 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
     }
     
     var queryItems: [URLQueryItem]? {
-        return []
+        return nil
     }
 }

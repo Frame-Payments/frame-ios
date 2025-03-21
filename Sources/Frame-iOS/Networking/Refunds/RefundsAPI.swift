@@ -33,6 +33,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
+            SiftManager.addNewSiftEvent(transactionType: .refund, eventId: decodedResponse.id)
             return decodedResponse
         } else {
             return nil
@@ -81,6 +82,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
+                SiftManager.addNewSiftEvent(transactionType: .refund, eventId: decodedResponse.id)
                 completionHandler(decodedResponse)
             } else {
                 completionHandler(nil)

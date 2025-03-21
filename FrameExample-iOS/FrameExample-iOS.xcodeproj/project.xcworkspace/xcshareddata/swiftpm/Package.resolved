@@ -9,6 +9,15 @@
         "revision" : "3d2c269babcd760203e5ced03282eda6863c09b5",
         "version" : "1.3.0"
       }
+    },
+    {
+      "identity" : "sift-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SiftScience/sift-ios.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
+      }
     }
   ],
   "version" : 3

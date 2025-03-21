@@ -48,7 +48,7 @@ enum SubscriptionEndpoints: FrameNetworkingEndpoints {
             if let page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
             return queryItems
         default:
-            return []
+            return nil
         }
     }
 }

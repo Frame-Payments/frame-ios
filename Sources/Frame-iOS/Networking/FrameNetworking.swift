@@ -9,6 +9,7 @@
 
 import SwiftUI
 import EvervaultCore
+import Sift
 
 // Create Network Request Here That Return Callbacks With User Data, This is the "Router"
 
@@ -56,6 +57,11 @@ public class FrameNetworking: ObservableObject {
     public func initializeWithAPIKey(_ key: String, debugMode: Bool = false) {
         self.apiKey = key
         self.debugMode = debugMode
+        
+        // Initializes Sift when the api key is set and the SDK is initialized.
+        Task {
+            await SiftManager.initializeSift(userId: apiKey)
+        }
     }
     
     // Async/Await
@@ -125,7 +131,7 @@ public class FrameNetworking: ObservableObject {
                 Evervault.shared.configure(teamId: configResponse.teamId ?? "", appId: configResponse.appId ?? "")
                 FrameNetworking.shared.isEvervaultConfigured = true
             } else if let data = ConfigurationAPI.retrieveFromKeychain(key: ConfigurationKeys.evervault.rawValue) {
-                if let response = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetConfigurationResponse.self, from: data) {
+                if let response = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetEvervaultConfigurationResponse.self, from: data) {
                     Evervault.shared.configure(teamId: response.teamId ?? "", appId: response.appId ?? "")
                     FrameNetworking.shared.isEvervaultConfigured = true
                 }
