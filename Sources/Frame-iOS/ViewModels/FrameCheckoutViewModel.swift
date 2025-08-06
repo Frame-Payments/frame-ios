@@ -76,12 +76,8 @@ class FrameCheckoutViewModel: ObservableObject {
     
     func createPaymentMethod(customerId: String? = nil) async throws -> (paymentId: String?, customerId: String?)  {
         guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
-        let billingAddress = FrameObjects.BillingAddress(city: customerCity,
-                                                         country: convertCustomerCountry(),
-                                                         state: customerState,
-                                                         postalCode: customerZipCode,
-                                                         addressLine1: customerAddressLine1,
-                                                         addressLine2: customerAddressLine2)
+        let billingAddress = FrameObjects.BillingAddress(country: convertCustomerCountry(),
+                                                         postalCode: customerZipCode)
         
         var currentCustomerId: String = ""
         if customerId == nil {
