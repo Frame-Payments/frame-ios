@@ -35,6 +35,8 @@ public struct FrameCheckoutView: View {
                     existingPaymentCardScroll
                         .padding([.leading, .bottom])
                 }
+                customerInformation
+                    .padding(.bottom)
                 cardInformation
                     .padding(.bottom)
                 regionInformation
@@ -180,9 +182,35 @@ public struct FrameCheckoutView: View {
         RoundedRectangle(cornerRadius: 10.0)
             .fill(.white)
             .stroke(.gray.opacity(0.3))
-            .frame(height: 95.0)
+            .frame(height: 245.0)
             .overlay {
                 VStack(spacing: 0) {
+                    TextField("",
+                              text: $checkoutViewModel.customerAddressLine1,
+                              prompt: Text("Address Line 1"))
+                    .frame(height: 49.0)
+                    .padding(.horizontal)
+                    Divider()
+                    TextField("",
+                              text: $checkoutViewModel.customerAddressLine2,
+                              prompt: Text("Address Line 2"))
+                    .frame(height: 49.0)
+                    .padding(.horizontal)
+                    Divider()
+                    HStack {
+                        TextField("",
+                                  text: $checkoutViewModel.customerCity,
+                                  prompt: Text("City"))
+                        .frame(height: 49.0)
+                        .padding(.horizontal)
+                        TextField("",
+                                  text: $checkoutViewModel.customerState,
+                                  prompt: Text("State"))
+                        .frame(height: 49.0)
+                        .padding(.horizontal)
+                    }
+                    .frame(height: 49.0)
+                    Divider()
                     Button {
                         //TODO: Change Country Drawer when other countries are supported.
                     } label: {
