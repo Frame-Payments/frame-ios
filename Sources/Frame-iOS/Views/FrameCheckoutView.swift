@@ -29,8 +29,8 @@ public struct FrameCheckoutView: View {
             topHeaderBar
             Divider()
             ScrollView {
-                paymentButtons
-                paymentDivider
+//                paymentButtons - Hiding Apple & Google Pay buttons until we add the implementation
+//                paymentDivider
                 if checkoutViewModel.customerPaymentOptions != nil {
                     existingPaymentCardScroll
                         .padding([.leading, .bottom])
