@@ -17,7 +17,7 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var customerAddressLine2: String = ""
     @Published var customerCity: String = ""
     @Published var customerState: String = ""
-    @Published var customerCountry: String = "United States"
+    @Published var customerCountry: AvailableCountries = .US
     @Published var customerZipCode: String = ""
     
     @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
@@ -75,9 +75,9 @@ class FrameCheckoutViewModel: ObservableObject {
     }
     
     func createPaymentMethod(customerId: String? = nil) async throws -> (paymentId: String?, customerId: String?)  {
-        guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
+        guard !customerAddressLine1.isEmpty, !customerCity.isEmpty, !customerState.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
         let billingAddress = FrameObjects.BillingAddress(city: customerCity,
-                                                         country: convertCustomerCountry(),
+                                                         country: customerCountry.alpha2Code,
                                                          state: customerState,
                                                          postalCode: customerZipCode,
                                                          addressLine1: customerAddressLine1,
@@ -110,13 +110,41 @@ class FrameCheckoutViewModel: ObservableObject {
         let method = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethodId, request: attachRequest)
         return (method?.id, currentCustomerId)
     }
-    
-    func convertCustomerCountry() -> String {
-        // Will be configured in the future when more countries are supported
-//        if customerCountry.localizedCaseInsensitiveContains("united states") {
-//            return "US"
-//        }
-        
-        return "US"
+}
+
+public enum AvailableCountries: String, CaseIterable {
+    case AF, AX, AL, DZ, AS, AD, AO, AI, AQ, AG
+    case AR, AM, AW, AU, AT, AZ, BS, BH, BD, BB
+    case BY, BE, BZ, BJ, BM, BT, BO, BQ, BA, BW
+    case BV, BR, IO, BN, BG, BF, BI, KH, CM, CA
+    case CV, KY, CF, TD, CL, CN, CX, CC, CO, KM
+    case CG, CD, CK, CR, CI, HR, CU, CW, CY, CZ
+    case DK, DJ, DM, DO, EC, EG, SV, GQ, ER, EE
+    case SZ, ET, FK, FO, FJ, FI, FR, GF, PF, TF
+    case GA, GM, GE, DE, GH, GI, GR, GL, GD, GP
+    case GU, GT, GG, GN, GW, GY, HT, HM, VA, HN
+    case HK, HU, IS, IN, ID, IR, IQ, IE, IM, IL
+    case IT, JM, JP, JE, JO, KZ, KE, KI, KP, KR
+    case KW, KG, LA, LV, LB, LS, LR, LY, LI, LT
+    case LU, MO, MG, MW, MY, MV, ML, MT, MH, MQ
+    case MR, MU, YT, MX, FM, MD, MC, MN, ME, MS
+    case MA, MZ, MM, NA, NR, NP, NL, NC, NZ, NI
+    case NE, NG, NU, NF, MK, MP, NO, OM, PK, PW
+    case PS, PA, PG, PY, PE, PH, PN, PL, PT, PR
+    case QA, RE, RO, RU, RW, BL, SH, KN, LC, MF
+    case PM, VC, WS, SM, ST, SA, SN, RS, SC, SL
+    case SG, SX, SK, SI, SB, SO, ZA, GS, SS, ES
+    case LK, SD, SR, SJ, SE, CH, SY, TW, TJ, TZ
+    case TH, TL, TG, TK, TO, TT, TN, TR, TM, TC
+    case TV, UG, UA, AE, GB, US, UM, UY, UZ, VU
+    case VE, VN, VG, VI, WF, EH, YE, ZM, ZW
+
+    var alpha2Code: String {
+        return self.rawValue
+    }
+
+    var countryName: String {
+        let locale = Locale(identifier: "en_US")
+        return locale.localizedString(forRegionCode: self.rawValue) ?? self.rawValue
     }
 }

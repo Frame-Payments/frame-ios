@@ -16,6 +16,7 @@ public struct FrameCheckoutView: View {
     @State var showLoadingState: Bool = false
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
+    @State private var isShowingPicker = false
     
     let customerId: String?
     let paymentAmount: Int
@@ -46,6 +47,14 @@ public struct FrameCheckoutView: View {
         }
         .task {
             await checkoutViewModel.loadCustomerPaymentMethods(customerId: customerId, amount: paymentAmount)
+        }
+        .sheet(isPresented: $isShowingPicker) {
+            CountryPickerSheet(
+                selectedCountry: $checkoutViewModel.customerCountry,
+                isPresented: $isShowingPicker
+            )
+            .presentationDetents([.fraction(0.3)])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -212,9 +221,9 @@ public struct FrameCheckoutView: View {
                     .frame(height: 49.0)
                     Divider()
                     Button {
-                        //TODO: Change Country Drawer when other countries are supported.
+                        self.isShowingPicker = true
                     } label: {
-                        Text(checkoutViewModel.customerCountry)
+                        Text(checkoutViewModel.customerCountry.countryName)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .font(.headline)
                             .foregroundColor(.black)
