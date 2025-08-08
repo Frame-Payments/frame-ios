@@ -56,13 +56,12 @@ final class CheckoutViewModelTests: XCTestCase {
         // Test with no customer country or customer Zip Code
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: "", object: "", created: 0, updated: 0, livemode: true, card: paymentCard))
         let viewModel = FrameCheckoutViewModel()
-        viewModel.customerCountry = ""
         viewModel.customerZipCode = ""
         let firstMethod = try? await viewModel.createPaymentMethod()
         XCTAssertNil(firstMethod?.paymentId)
         XCTAssertNil(firstMethod?.customerId)
         
-        viewModel.customerCountry = "United Status"
+        viewModel.customerCountry = .US
         viewModel.customerZipCode = "75115"
         viewModel.cardData = PaymentCardData()
         
@@ -73,21 +72,23 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNil(secondMethod?.customerId)
         
         viewModel.cardData = paymentCardData
-        viewModel.customerCountry = ""
         viewModel.customerZipCode = ""
         
-        // Test with invalid country, invalid zipCode and valid card data
+        // Test invalid zipCode and valid card data
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: "", object: "", created: 0, updated: 0, livemode: true, card: paymentCard))
         let thirdMethod = try? await viewModel.createPaymentMethod()
         XCTAssertNil(thirdMethod?.paymentId)
         XCTAssertNil(thirdMethod?.customerId)
         
-        viewModel.customerCountry = "United Status"
+        viewModel.customerAddressLine1 = "123 Main St"
+        viewModel.customerCity = "Burbank"
+        viewModel.customerCountry = .US
+        viewModel.customerState = "California"
         viewModel.customerZipCode = "75115"
         
-        let billingAddress = FrameObjects.BillingAddress(country: viewModel.customerCountry, postalCode: viewModel.customerZipCode)
+        let billingAddress = FrameObjects.BillingAddress(country: viewModel.customerCountry.countryName, postalCode: viewModel.customerZipCode)
         
-        // Test with valid country, valid zipCode and valid card data
+        // Test with valid zipCode and valid card data
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", billing: billingAddress, type: "", object: "", created: 0, updated: 0, livemode: true, card: paymentCard))
         let fourthMethod = try? await viewModel.createPaymentMethod(customerId: "111")
         XCTAssertNotNil(fourthMethod)
