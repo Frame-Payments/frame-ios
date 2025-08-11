@@ -7,6 +7,7 @@
 
 import SwiftUI
 import EvervaultInputs
+import PassKit
 
 public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
@@ -22,6 +23,10 @@ public struct FrameCheckoutView: View {
     
     var colors: [Color] = [Color.white, Color.white.opacity(0.3)]
     
+    let defaultPaymentNetworks: [PKPaymentNetwork] = [.visa, .masterCard, .amex, .discover]
+    var applePayConfig: ApplePayConfig?
+    var applePaySummary: ApplePaySummaryProviding?
+    
     var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
     
     public var body: some View {
@@ -29,8 +34,10 @@ public struct FrameCheckoutView: View {
             topHeaderBar
             Divider()
             ScrollView {
-//                paymentButtons - Hiding Apple & Google Pay buttons until we add the implementation
-//                paymentDivider
+                if PKPaymentAuthorizationController.canMakePayments(usingNetworks: defaultPaymentNetworks), let applePaySummary, let applePayConfig {
+                    paymentButtons(config: applePayConfig, provider: applePaySummary)
+                    paymentDivider
+                }
                 if checkoutViewModel.customerPaymentOptions != nil {
                     existingPaymentCardScroll
                         .padding([.leading, .bottom])
@@ -83,13 +90,15 @@ public struct FrameCheckoutView: View {
     }
     
     @ViewBuilder
-    var paymentButtons: some View {
-        FramePaymentButton(blackButton: useBlackButtons, paymentOption: .apple) {
-            checkoutViewModel.payWithApplePay()
-        }
-        FramePaymentButton(blackButton: useBlackButtons, paymentOption: .google) {
-            checkoutViewModel.payWithGooglePay()
-        }
+    func paymentButtons(config: ApplePayConfig, provider: ApplePaySummaryProviding) -> some View {
+        // Apple Pay Button
+        ApplePayButtonView(config: config, provider: provider) { _ in }
+            .padding()
+        
+        // Google Pay Button - hidden until implementation is complete
+//        FramePaymentButton(blackButton: useBlackButtons, paymentOption: .google) {
+//            checkoutViewModel.payWithGooglePay()
+//        }
     }
     
     var existingPaymentCardScroll: some View {
@@ -309,7 +318,12 @@ public struct FrameCheckoutView: View {
 }
 
 #Preview {
-    FrameCheckoutView(customerId: "", paymentAmount: 15000) { chargeIntent in
+    FrameCheckoutView(customerId: "",
+                      paymentAmount: 15000,
+                      applePayConfig: ApplePayConfig(merchantIdentifier: "", countryCode: "US", currencyCode: "USD"),
+                      applePaySummary: ApplePayCartProvider(subtotal: PKPaymentSummaryItem(label: "Subtotal", amount: NSDecimalNumber(string: "100.00")),
+                                                            tax: PKPaymentSummaryItem(label: "Tax", amount: NSDecimalNumber(string: "8.65")),
+                                                            total: PKPaymentSummaryItem(label: "Total", amount: NSDecimalNumber(string: "108.65")))) { chargeIntent in
         print(chargeIntent.description)
     }
 }
