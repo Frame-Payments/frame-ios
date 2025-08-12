@@ -10,14 +10,14 @@ import Foundation
 enum CustomerIdentityEndpoints: FrameNetworkingEndpoints {
     //MARK: Customer Identity Endpoints
     case createCustomerIdentity
-    case getCustomerIdentityWith(customerId: String)
+    case getCustomerIdentityWith(customerIdentityId: String)
     
     var endpointURL: String {
         switch self {
         case .createCustomerIdentity:
             return "/v1/customer_identity_verifications"
-        case .getCustomerIdentityWith(let customerId):
-            return "/v1/customer_identity_verifications\(customerId)"
+        case .getCustomerIdentityWith(let customerIdentityId):
+            return "/v1/customer_identity_verifications\(customerIdentityId)"
         }
     }
     
