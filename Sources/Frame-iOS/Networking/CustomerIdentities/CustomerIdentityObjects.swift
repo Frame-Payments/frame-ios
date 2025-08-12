@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CustomerIdentity.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 8/12/25.
@@ -17,16 +17,16 @@ extension FrameObjects {
     
     public struct CustomerIdentity: Codable, Sendable, Identifiable, Equatable {
         public let id: String
-        public let status: CustomerIdentityStatus?
+        public let status: CustomerIdentityStatus
         public let verificationURL: String?
         public let object: String?
-        public let created: Int?
-        public let updated: Int?
+        public let created: Int
+        public let updated: Int
         public let pending: Int?
         public let verified: Int?
         public let failed: Int?
         
-        public init(id: String, status: CustomerIdentityStatus?, verificationURL: String?, object: String?, created: Int?, updated: Int?, pending: Int?, verified: Int?, failed: Int?) {
+        public init(id: String, status: CustomerIdentityStatus, verificationURL: String?, object: String?, created: Int, updated: Int, pending: Int?, verified: Int?, failed: Int?) {
             self.id = id
             self.status = status
             self.verificationURL = verificationURL
