@@ -17,7 +17,7 @@ enum CustomerIdentityEndpoints: FrameNetworkingEndpoints {
         case .createCustomerIdentity:
             return "/v1/customer_identity_verifications"
         case .getCustomerIdentityWith(let customerIdentityId):
-            return "/v1/customer_identity_verifications\(customerIdentityId)"
+            return "/v1/customer_identity_verifications/\(customerIdentityId)"
         }
     }
     
