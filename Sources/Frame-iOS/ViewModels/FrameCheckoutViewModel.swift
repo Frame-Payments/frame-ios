@@ -17,7 +17,7 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var customerAddressLine2: String = ""
     @Published var customerCity: String = ""
     @Published var customerState: String = ""
-    @Published var customerCountry: AvailableCountries = .US
+    @Published var customerCountry: AvailableCountry = AvailableCountry.defaultCountry
     @Published var customerZipCode: String = ""
     
     @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
@@ -112,39 +112,18 @@ class FrameCheckoutViewModel: ObservableObject {
     }
 }
 
-public enum AvailableCountries: String, CaseIterable {
-    case AF, AX, AL, DZ, AS, AD, AO, AI, AQ, AG
-    case AR, AM, AW, AU, AT, AZ, BS, BH, BD, BB
-    case BY, BE, BZ, BJ, BM, BT, BO, BQ, BA, BW
-    case BV, BR, IO, BN, BG, BF, BI, KH, CM, CA
-    case CV, KY, CF, TD, CL, CN, CX, CC, CO, KM
-    case CG, CD, CK, CR, CI, HR, CU, CW, CY, CZ
-    case DK, DJ, DM, DO, EC, EG, SV, GQ, ER, EE
-    case SZ, ET, FK, FO, FJ, FI, FR, GF, PF, TF
-    case GA, GM, GE, DE, GH, GI, GR, GL, GD, GP
-    case GU, GT, GG, GN, GW, GY, HT, HM, VA, HN
-    case HK, HU, IS, IN, ID, IR, IQ, IE, IM, IL
-    case IT, JM, JP, JE, JO, KZ, KE, KI, KP, KR
-    case KW, KG, LA, LV, LB, LS, LR, LY, LI, LT
-    case LU, MO, MG, MW, MY, MV, ML, MT, MH, MQ
-    case MR, MU, YT, MX, FM, MD, MC, MN, ME, MS
-    case MA, MZ, MM, NA, NR, NP, NL, NC, NZ, NI
-    case NE, NG, NU, NF, MK, MP, NO, OM, PK, PW
-    case PS, PA, PG, PY, PE, PH, PN, PL, PT, PR
-    case QA, RE, RO, RU, RW, BL, SH, KN, LC, MF
-    case PM, VC, WS, SM, ST, SA, SN, RS, SC, SL
-    case SG, SX, SK, SI, SB, SO, ZA, GS, SS, ES
-    case LK, SD, SR, SJ, SE, CH, SY, TW, TJ, TZ
-    case TH, TL, TG, TK, TO, TT, TN, TR, TM, TC
-    case TV, UG, UA, AE, GB, US, UM, UY, UZ, VU
-    case VE, VN, VG, VI, WF, EH, YE, ZM, ZW
-
-    var alpha2Code: String {
-        return self.rawValue
-    }
-
-    var countryName: String {
-        let locale = Locale(identifier: "en_US")
-        return locale.localizedString(forRegionCode: self.rawValue) ?? self.rawValue
-    }
+struct AvailableCountry: Hashable {
+    let alpha2Code: String
+    let displayName: String
+    
+    static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
+    
+    static let allCountries: [AvailableCountry] = {
+        Locale.isoRegionCodes.map { code in
+            let locale = Locale(identifier: Locale.identifier(fromComponents: [NSLocale.Key.countryCode.rawValue: code]))
+            let name = locale.localizedString(forRegionCode: code) ?? code
+            return AvailableCountry(alpha2Code: code, displayName: name)
+        }
+        .sorted { $0.displayName < $1.displayName }
+    }()
 }

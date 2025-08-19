@@ -61,7 +61,7 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNil(firstMethod?.paymentId)
         XCTAssertNil(firstMethod?.customerId)
         
-        viewModel.customerCountry = .US
+        viewModel.customerCountry = AvailableCountry.defaultCountry
         viewModel.customerZipCode = "75115"
         viewModel.cardData = PaymentCardData()
         
@@ -82,11 +82,11 @@ final class CheckoutViewModelTests: XCTestCase {
         
         viewModel.customerAddressLine1 = "123 Main St"
         viewModel.customerCity = "Burbank"
-        viewModel.customerCountry = .US
+        viewModel.customerCountry = AvailableCountry.defaultCountry
         viewModel.customerState = "California"
         viewModel.customerZipCode = "75115"
         
-        let billingAddress = FrameObjects.BillingAddress(country: viewModel.customerCountry.countryName, postalCode: viewModel.customerZipCode)
+        let billingAddress = FrameObjects.BillingAddress(country: viewModel.customerCountry.displayName, postalCode: viewModel.customerZipCode)
         
         // Test with valid zipCode and valid card data
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", billing: billingAddress, type: "", object: "", created: 0, updated: 0, livemode: true, card: paymentCard))

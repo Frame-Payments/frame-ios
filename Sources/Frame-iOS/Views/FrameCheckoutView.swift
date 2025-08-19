@@ -223,7 +223,7 @@ public struct FrameCheckoutView: View {
                     Button {
                         self.isShowingPicker = true
                     } label: {
-                        Text(checkoutViewModel.customerCountry.countryName)
+                        Text(checkoutViewModel.customerCountry.displayName)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .font(.headline)
                             .foregroundColor(.black)

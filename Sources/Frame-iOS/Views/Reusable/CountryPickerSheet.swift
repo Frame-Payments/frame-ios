@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct CountryPickerSheet: View {
-    @Binding var selectedCountry: AvailableCountries
+    @Binding var selectedCountry: AvailableCountry
     @Binding var isPresented: Bool
 
     var body: some View {
         NavigationView {
             VStack {
                 Picker("Select a Country", selection: $selectedCountry) {
-                    ForEach(AvailableCountries.allCases.sorted(by: { $0.countryName < $1.countryName }), id: \.self) { country in
-                        Text(country.countryName).tag(country)
+                    ForEach(AvailableCountry.allCountries.sorted(by: { $0.displayName < $1.displayName }), id: \.self) { country in
+                        Text(country.displayName).tag(country)
                     }
                 }
                 .labelsHidden()
