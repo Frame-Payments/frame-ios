@@ -17,7 +17,7 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var customerAddressLine2: String = ""
     @Published var customerCity: String = ""
     @Published var customerState: String = ""
-    @Published var customerCountry: String = "United States"
+    @Published var customerCountry: AvailableCountry = AvailableCountry.defaultCountry
     @Published var customerZipCode: String = ""
     
     @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
@@ -75,9 +75,9 @@ class FrameCheckoutViewModel: ObservableObject {
     }
     
     func createPaymentMethod(customerId: String? = nil) async throws -> (paymentId: String?, customerId: String?)  {
-        guard !customerCountry.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
+        guard !customerAddressLine1.isEmpty, !customerCity.isEmpty, !customerState.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
         let billingAddress = FrameObjects.BillingAddress(city: customerCity,
-                                                         country: convertCustomerCountry(),
+                                                         country: customerCountry.alpha2Code,
                                                          state: customerState,
                                                          postalCode: customerZipCode,
                                                          addressLine1: customerAddressLine1,
@@ -110,13 +110,20 @@ class FrameCheckoutViewModel: ObservableObject {
         let method = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethodId, request: attachRequest)
         return (method?.id, currentCustomerId)
     }
+}
+
+struct AvailableCountry: Hashable {
+    let alpha2Code: String
+    let displayName: String
     
-    func convertCustomerCountry() -> String {
-        // Will be configured in the future when more countries are supported
-//        if customerCountry.localizedCaseInsensitiveContains("united states") {
-//            return "US"
-//        }
-        
-        return "US"
-    }
+    static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
+    
+    static let allCountries: [AvailableCountry] = {
+        Locale.isoRegionCodes.map { code in
+            let locale = Locale(identifier: Locale.identifier(fromComponents: [NSLocale.Key.countryCode.rawValue: code]))
+            let name = locale.localizedString(forRegionCode: code) ?? code
+            return AvailableCountry(alpha2Code: code, displayName: name)
+        }
+        .sorted { $0.displayName < $1.displayName }
+    }()
 }
