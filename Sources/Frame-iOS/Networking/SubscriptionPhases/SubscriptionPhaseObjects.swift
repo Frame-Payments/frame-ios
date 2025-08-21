@@ -17,24 +17,24 @@ extension FrameObjects {
         case infinite
     }
     
-    public struct SubscriptionPhaseObject: Codable {
+    public struct SubscriptionPhase: Codable {
         let id: String
-        let ordinal: Int
+        let ordinal: Int?
         let name: String?
-        let pricingType: PhasePricingType
-        let durationType: PhaseDurationType
+        let pricingType: PhasePricingType?
+        let durationType: PhaseDurationType?
         let amount: Int?
-        let currency: String
+        let currency: String?
         let discountPercentage: Float?
         let periodCount: Int?
         let interval: String?
         let intervalCount: Int?
         let livemode: Bool?
-        let created: Int
-        let updated: Int
-        let object: String
+        let created: Int?
+        let updated: Int?
+        let object: String?
         
-        public init(id: String, ordinal: Int, name: String?, pricingType: PhasePricingType, durationType: PhaseDurationType, amount: Int?, currency: String, discountPercentage: Float?, periodCount: Int?, interval: String?, intervalCount: Int?, livemode: Bool?, created: Int, updated: Int, object: String) {
+        public init(id: String, ordinal: Int?, name: String?, pricingType: PhasePricingType?, durationType: PhaseDurationType?, amount: Int?, currency: String?, discountPercentage: Float?, periodCount: Int?, interval: String?, intervalCount: Int?, livemode: Bool?, created: Int?, updated: Int?, object: String?) {
             self.id = id
             self.ordinal = ordinal
             self.name = name

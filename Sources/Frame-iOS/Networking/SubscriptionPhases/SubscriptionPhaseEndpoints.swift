@@ -11,14 +11,14 @@ enum SubscriptionPhaseEndpoints: FrameNetworkingEndpoints {
     //MARK: Subscription Endpoints
     case createSubscriptionPhase(subscriptionId: String)
     case updateSubscriptionPhaseWith(subscriptionId: String, phaseId: String)
-    case getAllSubscriptionPhases(subscriptionId: String, perPage: Int?, page : Int?)
+    case getAllSubscriptionPhases(subscriptionId: String)
     case getSubscriptionPhaseWith(subscriptionId: String, phaseId: String)
     case deleteSubscriptionPhase(subscriptionId: String, phaseId: String)
     case bulkUpdateSubscriptionPhases(subscriptionId: String)
     
     var endpointURL: String {
         switch self {
-        case .createSubscriptionPhase(let subscriptionId), .getAllSubscriptionPhases(let subscriptionId, _, _):
+        case .createSubscriptionPhase(let subscriptionId), .getAllSubscriptionPhases(let subscriptionId):
             return "/v1/subscriptions/\(subscriptionId)/phases"
         case .getSubscriptionPhaseWith(let subscriptionId, let phaseId), .updateSubscriptionPhaseWith(let subscriptionId, let phaseId), .deleteSubscriptionPhase(let subscriptionId, let phaseId):
             return "/v1/subscriptions/\(subscriptionId)/phases/\(phaseId)"
@@ -41,14 +41,6 @@ enum SubscriptionPhaseEndpoints: FrameNetworkingEndpoints {
     }
     
     var queryItems: [URLQueryItem]? {
-        switch self {
-        case .getAllSubscriptionPhases(_, let perPage, let page):
-            var queryItems: [URLQueryItem] = []
-            if let perPage { queryItems.append(URLQueryItem(name: "per_page", value: "\(perPage)")) }
-            if let page { queryItems.append(URLQueryItem(name: "page", value: "\(page)")) }
-            return queryItems
-        default:
-            return nil
-        }
+        return nil
     }
 }

@@ -1,4 +1,3 @@
-/Users/Ricky/Desktop/frame-ios/Sources/Frame-iOS/Networking/SubscriptionPhases/File.swift//
 //  File.swift
 //  Frame-iOS
 //
@@ -6,3 +5,18 @@
 //
 
 import Foundation
+
+public class SubscriptionPhasesResponses {
+    struct ListSubscriptionPhasesResponse: Codable {
+        let meta: SubscriptionPhaseMeta?
+        let phases: [FrameObjects.SubscriptionPhase]?
+    }
+    
+    struct SubscriptionPhaseMeta: Codable {
+        let subscriptionId: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case subscriptionId = "subscription_id"
+        }
+    }
+}
