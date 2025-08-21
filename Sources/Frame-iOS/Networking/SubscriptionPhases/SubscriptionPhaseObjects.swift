@@ -18,21 +18,21 @@ extension FrameObjects {
     }
     
     public struct SubscriptionPhase: Codable {
-        let id: String
-        let ordinal: Int?
-        let name: String?
-        let pricingType: PhasePricingType?
-        let durationType: PhaseDurationType?
-        let amount: Int?
-        let currency: String?
-        let discountPercentage: Float?
-        let periodCount: Int?
-        let interval: String?
-        let intervalCount: Int?
-        let livemode: Bool?
-        let created: Int?
-        let updated: Int?
-        let object: String?
+        var id: String
+        var ordinal: Int?
+        var name: String?
+        var pricingType: PhasePricingType?
+        var durationType: PhaseDurationType?
+        var amount: Int?
+        var currency: String?
+        var discountPercentage: Float?
+        var periodCount: Int?
+        var interval: String?
+        var intervalCount: Int?
+        var livemode: Bool?
+        var created: Int?
+        var updated: Int?
+        var object: String?
         
         public init(id: String, ordinal: Int?, name: String?, pricingType: PhasePricingType?, durationType: PhaseDurationType?, amount: Int?, currency: String?, discountPercentage: Float?, periodCount: Int?, interval: String?, intervalCount: Int?, livemode: Bool?, created: Int?, updated: Int?, object: String?) {
             self.id = id
