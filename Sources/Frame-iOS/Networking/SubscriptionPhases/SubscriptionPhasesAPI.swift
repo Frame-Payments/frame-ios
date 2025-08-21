@@ -31,6 +31,7 @@ protocol SubscriptionPhasesProtocol {
 public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Sendable {
     // async/await
     static func listAllSubscriptionPhases(subscriptionId: String) async throws -> SubscriptionPhasesResponses.ListSubscriptionPhasesResponse? {
+        guard subscriptionId != "" else { return nil }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -42,6 +43,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func getSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> FrameObjects.SubscriptionPhase? {
+        guard subscriptionId != "" && phaseId != "" else { return nil }
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -53,6 +55,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase) async throws -> FrameObjects.SubscriptionPhase? {
+        guard subscriptionId != "" else { return nil }
         let endpoint = SubscriptionPhaseEndpoints.createSubscriptionPhase(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -65,6 +68,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase) async throws -> FrameObjects.SubscriptionPhase? {
+        guard subscriptionId != "" && phaseId != "" else { return nil }
         let endpoint = SubscriptionPhaseEndpoints.updateSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -77,6 +81,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> FrameObjects.SubscriptionPhase? {
+        guard subscriptionId != "" && phaseId != "" else { return nil }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -88,6 +93,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> SubscriptionPhasesResponses.ListSubscriptionPhasesResponse? {
+        guard subscriptionId != "" else { return nil }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
         
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -100,6 +106,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     
     // completionHandlers
     static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?) -> Void) {
+        guard subscriptionId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -112,6 +119,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func getSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?) -> Void) {
+        guard subscriptionId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -124,6 +132,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?) -> Void) {
+        guard subscriptionId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.createSubscriptionPhase(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -137,6 +146,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?) -> Void) {
+        guard subscriptionId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.updateSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -150,6 +160,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?) -> Void) {
+        guard subscriptionId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -162,6 +173,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?) -> Void) {
+        guard subscriptionId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         

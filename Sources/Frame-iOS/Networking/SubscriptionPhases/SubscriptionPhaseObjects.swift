@@ -8,7 +8,7 @@ import Foundation
 
 extension FrameObjects {
     public enum PhasePricingType: String, Codable {
-        case staticPricing = "static"
+        case staticType = "static"
         case relative
     }
     
