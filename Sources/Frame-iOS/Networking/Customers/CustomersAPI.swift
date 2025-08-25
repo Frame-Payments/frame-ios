@@ -16,6 +16,8 @@ protocol CustomersProtocol {
     static func getCustomers(page: Int?, perPage: Int?) async throws -> [FrameObjects.Customer]?
     static func getCustomerWith(customerId: String) async throws -> FrameObjects.Customer?
     static func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> [FrameObjects.Customer]?
+    static func blockCustomerWith(customerId: String) async throws -> FrameObjects.Customer?
+    static func unblockCustomerWith(customerId: String) async throws -> FrameObjects.Customer?
     
     // completionHandlers
     static func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
@@ -24,6 +26,8 @@ protocol CustomersProtocol {
     static func getCustomers(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void)
     static func getCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
     static func searchCustomers(request: CustomerRequest.SearchCustomersRequest, completionHandler: @escaping @Sendable ([FrameObjects.Customer]?) -> Void)
+    static func blockCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
+    static func unblockCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void)
 }
 
 // Customers API
@@ -107,6 +111,30 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
+    public static func blockCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
+       guard !customerId.isEmpty else { return nil }
+        let endpoint = CustomerEndpoints.blockCustomer(customerId: customerId)
+        
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            return decodedResponse
+        } else {
+            return nil
+        }
+    }
+    
+    public static func unblockCustomerWith(customerId: String) async throws -> FrameObjects.Customer? {
+       guard !customerId.isEmpty else { return nil }
+        let endpoint = CustomerEndpoints.unblockCustomer(customerId: customerId)
+        
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            return decodedResponse
+        } else {
+            return nil
+        }
+    }
+    
     //MARK: Methods using completion handler
     public static func createCustomer(request: CustomerRequest.CreateCustomerRequest, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
         let endpoint = CustomerEndpoints.createCustomer
@@ -177,6 +205,30 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(CustomerResponses.ListCustomersResponse.self, from: data) {
                 completionHandler(decodedResponse.data)
+            } else {
+                completionHandler(nil)
+            }
+        }
+    }
+    
+    public static func blockCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
+        let endpoint = CustomerEndpoints.blockCustomer(customerId: customerId)
+        
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+                completionHandler(decodedResponse)
+            } else {
+                completionHandler(nil)
+            }
+        }
+    }
+    
+    public static func unblockCustomerWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.Customer?) -> Void) {
+        let endpoint = CustomerEndpoints.unblockCustomer(customerId: customerId)
+        
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+                completionHandler(decodedResponse)
             } else {
                 completionHandler(nil)
             }

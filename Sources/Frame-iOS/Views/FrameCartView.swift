@@ -204,7 +204,7 @@ public struct FrameCartView: View {
 #Preview {
     FrameCartView(customer: FrameObjects.Customer(id: "1", created: nil, shippingAddress: nil,
                                                   updated: nil, livemode: false, name: "", phone: nil, email: nil,
-                                                  description: nil, object: nil, metadata: nil, billingAddress: nil),
+                                                  description: nil, object: nil, billingAddress: nil, metadata: nil),
                   cartItems: [],
                   shippingAmountInCents: 1000)
 }
