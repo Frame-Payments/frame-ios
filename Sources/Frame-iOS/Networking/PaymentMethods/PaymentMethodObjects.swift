@@ -20,6 +20,11 @@ struct FrameMetadata: Codable {
 }
 
 public class FrameObjects {
+    
+    public enum PaymentMethodStatus: String, Codable, Sendable {
+        case active, blocked
+    }
+    
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
         public var customer: String? // ID of the Customer
@@ -30,8 +35,9 @@ public class FrameObjects {
         public let updated: Int // Timestamp
         public let livemode: Bool
         public var card: PaymentCard?
+        public let status: PaymentMethodStatus?
         
-        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil) {
+        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil, status: PaymentMethodStatus? = nil) {
             self.id = id
             self.customer = customer
             self.billing = billing
@@ -41,6 +47,7 @@ public class FrameObjects {
             self.updated = updated
             self.livemode = livemode
             self.card = card
+            self.status = status
         }
     }
     

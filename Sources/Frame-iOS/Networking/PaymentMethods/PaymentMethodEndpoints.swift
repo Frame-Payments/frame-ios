@@ -16,6 +16,8 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     case updatePaymentMethodWith(paymentMethodId: String)
     case attachPaymentMethodWith(paymentMethodId: String)
     case detachPaymentMethodWith(paymentMethodId: String)
+    case blockPaymentMethodWith(paymentMethodId: String)
+    case unblockPaymentMethodWith(paymentMethodId: String)
     
     var endpointURL: String {
         switch self {
@@ -29,12 +31,16 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
             return "/v1/payment_methods/\(paymentMethodId)/attach"
         case .detachPaymentMethodWith(let paymentMethodId):
             return "/v1/payment_methods/\(paymentMethodId)/detach"
+        case .blockPaymentMethodWith(let paymentMethodId):
+            return "/v1/payment_methods/\(paymentMethodId)/block"
+        case .unblockPaymentMethodWith(let paymentMethodId):
+            return "/v1/payment_methods/\(paymentMethodId)/unblock"
         }
     }
     
     var httpMethod: String {
         switch self {
-        case .createPaymentMethod, .attachPaymentMethodWith, .detachPaymentMethodWith:
+        case .createPaymentMethod, .attachPaymentMethodWith, .detachPaymentMethodWith, .blockPaymentMethodWith, .unblockPaymentMethodWith:
             return "POST"
         case .updatePaymentMethodWith:
             return "PATCH"
