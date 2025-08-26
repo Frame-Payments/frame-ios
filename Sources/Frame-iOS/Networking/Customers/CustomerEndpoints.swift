@@ -15,6 +15,8 @@ enum CustomerEndpoints: FrameNetworkingEndpoints {
     case getCustomerWith(customerId: String)
     case searchCustomers
     case deleteCustomer(customerId: String)
+    case blockCustomer(customerId: String)
+    case unblockCustomer(customerId: String)
     
     var endpointURL: String {
         switch self {
@@ -24,12 +26,16 @@ enum CustomerEndpoints: FrameNetworkingEndpoints {
             return "/v1/customers/\(customerId)"
         case .searchCustomers:
             return "/v1/customers/search"
+        case .blockCustomer(let customerId):
+            return "/v1/customers/\(customerId)/block"
+        case .unblockCustomer(let customerId):
+            return "/v1/customers/\(customerId)/unblock"
         }
     }
     
     var httpMethod: String {
         switch self {
-        case .createCustomer:
+        case .createCustomer, .blockCustomer, .unblockCustomer:
             return "POST"
         case .updateCustomer:
             return "PATCH"

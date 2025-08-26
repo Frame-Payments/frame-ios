@@ -142,7 +142,7 @@ final class CustomerAPITests: XCTestCase {
         }
     }
     
-    func testGetCustomer() async {
+    func testGetCustomerWithId() async {
         FrameNetworking.shared.asyncURLSession = session
         let receivedCustomer = try? await CustomersAPI.getCustomerWith(customerId: "")
         XCTAssertNil(receivedCustomer)
@@ -191,6 +191,48 @@ final class CustomerAPITests: XCTestCase {
             XCTAssertNotNil(secondSearch)
             XCTAssertEqual(secondSearch?[0].name, customerOne.name)
             XCTAssertEqual(secondSearch?[1].name, customerTwo.name)
+        } catch {
+            XCTFail("Error should not be thrown")
+        }
+    }
+    
+    func testBlockCustomerWithId() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let receivedCustomer = try? await CustomersAPI.blockCustomerWith(customerId: "")
+        XCTAssertNil(receivedCustomer)
+        
+        let receivedCustomerTwo = try? await CustomersAPI.blockCustomerWith(customerId: "123")
+        XCTAssertNil(receivedCustomerTwo)
+        
+        let customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester", status: .blocked)
+        
+        do {
+            session.data = try JSONEncoder().encode(customer)
+            let receivedCustomerThree = try await CustomersAPI.blockCustomerWith(customerId: "1234")
+            XCTAssertNotNil(receivedCustomerThree)
+            XCTAssertEqual(receivedCustomerThree?.id, customer.id)
+            XCTAssertEqual(receivedCustomerThree?.status, customer.status)
+        } catch {
+            XCTFail("Error should not be thrown")
+        }
+    }
+    
+    func testUnblockCustomerWithId() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let receivedCustomer = try? await CustomersAPI.unblockCustomerWith(customerId: "")
+        XCTAssertNil(receivedCustomer)
+        
+        let receivedCustomerTwo = try? await CustomersAPI.unblockCustomerWith(customerId: "123")
+        XCTAssertNil(receivedCustomerTwo)
+        
+        let customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester", status: .active)
+        
+        do {
+            session.data = try JSONEncoder().encode(customer)
+            let receivedCustomerThree = try await CustomersAPI.unblockCustomerWith(customerId: "1234")
+            XCTAssertNotNil(receivedCustomerThree)
+            XCTAssertEqual(receivedCustomerThree?.id, customer.id)
+            XCTAssertEqual(receivedCustomerThree?.status, customer.status)
         } catch {
             XCTFail("Error should not be thrown")
         }
