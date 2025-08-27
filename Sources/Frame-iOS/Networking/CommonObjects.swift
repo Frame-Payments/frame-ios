@@ -29,7 +29,7 @@ public enum NetworkingError: Error, Equatable {
     case noData
     case invalidURL
     case decodingFailed
-    case serverError(statusCode: Int)
+    case serverError(statusCode: Int, errorDescription: String)
     case unknownError
 }
 

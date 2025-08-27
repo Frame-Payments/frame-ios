@@ -69,7 +69,7 @@ public class FrameNetworking: ObservableObject {
                 printDataForTesting(data: data)
             }
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-                return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode))
+                return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode, errorDescription: returnErrorString(data: data)))
             }
             return (data, nil)
         } catch URLError.cannotFindHost {
@@ -103,7 +103,7 @@ public class FrameNetworking: ObservableObject {
             var networkingError: NetworkingError?
             
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-                networkingError = NetworkingError.serverError(statusCode: httpResponse.statusCode)
+                networkingError = NetworkingError.serverError(statusCode: httpResponse.statusCode, errorDescription: error?.localizedDescription ?? "")
             } else if data == nil {
                 networkingError = NetworkingError.noData
             } else if let urlError = error as? URLError {
@@ -136,8 +136,14 @@ public class FrameNetworking: ObservableObject {
     }
     
     func printDataForTesting(data: Data?) {
+        print(returnErrorString(data: data))
+    }
+    
+    func returnErrorString(data: Data?) -> String {
         if let data, let jsonString = String(data: data, encoding: .utf8) {
-            print(jsonString)
+            return jsonString
         }
+        
+        return ""
     }
 }
