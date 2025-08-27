@@ -29,7 +29,8 @@ public protocol URLSessionProtocol {
 // Extend URLSession to conform to the protocol
 extension URLSession: URLSessionProtocol {}
 
-enum NetworkingError: Error, Equatable {
+public enum NetworkingError: Error, Equatable {
+    case noData
     case invalidURL
     case decodingFailed
     case serverError(statusCode: Int)
@@ -103,7 +104,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Completion Handler
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url)
@@ -121,7 +122,24 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         urlSession.dataTask(with: urlRequest) { data, response, error in
-            completion(data, response, error)
+            var networkingError: NetworkingError?
+            
+            if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+                networkingError = NetworkingError.serverError(statusCode: httpResponse.statusCode)
+            } else if data == nil {
+                networkingError = NetworkingError.noData
+            } else if let urlError = error as? URLError {
+                switch urlError {
+                case URLError.cannotFindHost:
+                    networkingError = NetworkingError.invalidURL
+                case URLError.cannotDecodeRawData:
+                    networkingError = NetworkingError.decodingFailed
+                default:
+                    networkingError = NetworkingError.unknownError
+                }
+            }
+            
+            completion(data, response, networkingError)
         }.resume()
     }
     
