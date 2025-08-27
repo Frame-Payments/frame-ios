@@ -30,7 +30,7 @@ protocol SubscriptionPhasesProtocol {
 // Subscription Phases API
 public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Sendable {
     // async/await
-    static func listAllSubscriptionPhases(subscriptionId: String) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
+    public static func listAllSubscriptionPhases(subscriptionId: String) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
         
@@ -42,7 +42,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func getSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
+    public static func getSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         
@@ -54,7 +54,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
+    public static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.createSubscriptionPhase(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -67,7 +67,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
+    public static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.updateSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -80,7 +80,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
+    public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
@@ -92,7 +92,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
+    public static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
         
@@ -105,7 +105,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     // completionHandlers
-    static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
+    public static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
         
@@ -118,7 +118,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func getSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
+    public static func getSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         
@@ -131,7 +131,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
+    public static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.createSubscriptionPhase(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -145,7 +145,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
+    public static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.updateSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -159,7 +159,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
+    public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
@@ -172,7 +172,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
+    public static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
