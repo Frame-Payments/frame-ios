@@ -37,7 +37,7 @@ final class CustomerAPITests: XCTestCase {
         request.shippingAddress = FrameObjects.BillingAddress(city: nil, country: nil, state: nil, postalCode: "99999", addressLine1: nil, addressLine2: nil)
         XCTAssertNotNil(request.shippingAddress)
         
-        let createdCustomer = try? await CustomersAPI.createCustomer(request: request)
+        let createdCustomer = try? await CustomersAPI.createCustomer(request: request).0
         XCTAssertNil(createdCustomer)
         
         var customer = FrameObjects.Customer(id: "1", livemode: false, name: "Tester")
@@ -48,7 +48,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let createdCustomerTwo = try await CustomersAPI.createCustomer(request: request)
+            let (createdCustomerTwo, error) = try await CustomersAPI.createCustomer(request: request)
             XCTAssertNotNil(createdCustomerTwo)
             XCTAssertEqual(createdCustomerTwo?.phone, customer.phone)
             XCTAssertEqual(createdCustomerTwo?.billingAddress, customer.billingAddress)
@@ -61,17 +61,21 @@ final class CustomerAPITests: XCTestCase {
     func testDeleteCustomer() async {
         FrameNetworking.shared.asyncURLSession = session
         
-        let customerResponse = try? await CustomersAPI.deleteCustomer(customerId: "")
+        let customerResponse = try? await CustomersAPI.deleteCustomer(customerId: "").0
         XCTAssertNil(customerResponse)
         
-        let customerTwoResponse = try? await CustomersAPI.deleteCustomer(customerId: "123")
+        let customerTwoResponse = try? await CustomersAPI.deleteCustomer(customerId: "123").0
         XCTAssertNil(customerTwoResponse)
         
         let response = CustomerResponses.DeleteCustomerResponse(id: "1234", object: nil, deleted: nil)
-        session.data = try? JSONEncoder().encode(response)
-        let customerThreeResponse = try? await CustomersAPI.deleteCustomer(customerId: "1234")
-        XCTAssertNotNil(customerThreeResponse)
-        XCTAssertEqual(customerThreeResponse?.id, response.id)
+        do {
+            session.data = try? JSONEncoder().encode(response)
+            let (customerThreeResponse, error) = try await CustomersAPI.deleteCustomer(customerId: "1234")
+            XCTAssertNotNil(customerThreeResponse)
+            XCTAssertEqual(customerThreeResponse?.id, response.id)
+        } catch {
+            XCTFail("Error shoud not be thrown")
+        }
     }
     
     func testUpdateCustomer() async {
@@ -98,10 +102,10 @@ final class CustomerAPITests: XCTestCase {
         request.shippingAddress = FrameObjects.BillingAddress(city: nil, country: nil, state: nil, postalCode: "11111", addressLine1: nil, addressLine2: nil)
         XCTAssertNotNil(request.shippingAddress)
         
-        let updatedCustomer = try? await CustomersAPI.updateCustomerWith(customerId: "", request: request)
+        let updatedCustomer = try? await CustomersAPI.updateCustomerWith(customerId: "", request: request).0
         XCTAssertNil(updatedCustomer)
         
-        let updatedCustomerTwo = try? await CustomersAPI.updateCustomerWith(customerId: "123", request: request)
+        let updatedCustomerTwo = try? await CustomersAPI.updateCustomerWith(customerId: "123", request: request).0
         XCTAssertNil(updatedCustomerTwo)
         
         var customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester")
@@ -112,7 +116,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let customerThree = try await CustomersAPI.updateCustomerWith(customerId: "1234", request: request)
+            let (customerThree, error) = try await CustomersAPI.updateCustomerWith(customerId: "1234", request: request)
             XCTAssertNotNil(customerThree)
             XCTAssertEqual(customerThree?.billingAddress, customer.billingAddress)
             XCTAssertEqual(customerThree?.shippingAddress, customer.shippingAddress)
@@ -124,7 +128,7 @@ final class CustomerAPITests: XCTestCase {
     
     func testGetCustomers() async {
         FrameNetworking.shared.asyncURLSession = session
-        let customers = try? await CustomersAPI.getCustomers()
+        let customers = try? await CustomersAPI.getCustomers().0
         XCTAssertNil(customers)
         
         let customerOne = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester")
@@ -133,10 +137,10 @@ final class CustomerAPITests: XCTestCase {
             let response = Frame_iOS.CustomerResponses.ListCustomersResponse(data: [customerOne, customerTwo])
             
             session.data = try JSONEncoder().encode(response)
-            let customersTwo = try await CustomersAPI.getCustomers()
+            let (customersTwo, error) = try await CustomersAPI.getCustomers()
             XCTAssertNotNil(customersTwo)
-            XCTAssertEqual(customersTwo?[0].id, customerOne.id)
-            XCTAssertEqual(customersTwo?[1].id, customerTwo.id)
+            XCTAssertEqual(customersTwo?.data?[0].id, customerOne.id)
+            XCTAssertEqual(customersTwo?.data?[1].id, customerTwo.id)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -144,17 +148,17 @@ final class CustomerAPITests: XCTestCase {
     
     func testGetCustomerWithId() async {
         FrameNetworking.shared.asyncURLSession = session
-        let receivedCustomer = try? await CustomersAPI.getCustomerWith(customerId: "")
+        let receivedCustomer = try? await CustomersAPI.getCustomerWith(customerId: "").0
         XCTAssertNil(receivedCustomer)
         
-        let receivedCustomerTwo = try? await CustomersAPI.getCustomerWith(customerId: "123")
+        let receivedCustomerTwo = try? await CustomersAPI.getCustomerWith(customerId: "123").0
         XCTAssertNil(receivedCustomerTwo)
         
         let customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester")
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let receivedCustomerThree = try await CustomersAPI.getCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, error) = try await CustomersAPI.getCustomerWith(customerId: "1234")
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
         } catch {
@@ -165,7 +169,7 @@ final class CustomerAPITests: XCTestCase {
     func testSearchCustomers() async {
         FrameNetworking.shared.asyncURLSession = session
         var request = CustomerRequest.SearchCustomersRequest()
-        let firstSearch = try? await CustomersAPI.searchCustomers(request: request)
+        let firstSearch = try? await CustomersAPI.searchCustomers(request: request).0
         XCTAssertNil(firstSearch)
         
         XCTAssertNil(request.name)
@@ -187,7 +191,7 @@ final class CustomerAPITests: XCTestCase {
             let response = Frame_iOS.CustomerResponses.ListCustomersResponse(data: [customerOne, customerTwo])
             
             session.data = try JSONEncoder().encode(response)
-            let secondSearch = try await CustomersAPI.searchCustomers(request: request)
+            let (secondSearch, error) = try await CustomersAPI.searchCustomers(request: request)
             XCTAssertNotNil(secondSearch)
             XCTAssertEqual(secondSearch?[0].name, customerOne.name)
             XCTAssertEqual(secondSearch?[1].name, customerTwo.name)
@@ -198,17 +202,17 @@ final class CustomerAPITests: XCTestCase {
     
     func testBlockCustomerWithId() async {
         FrameNetworking.shared.asyncURLSession = session
-        let receivedCustomer = try? await CustomersAPI.blockCustomerWith(customerId: "")
+        let receivedCustomer = try? await CustomersAPI.blockCustomerWith(customerId: "").0
         XCTAssertNil(receivedCustomer)
         
-        let receivedCustomerTwo = try? await CustomersAPI.blockCustomerWith(customerId: "123")
+        let receivedCustomerTwo = try? await CustomersAPI.blockCustomerWith(customerId: "123").0
         XCTAssertNil(receivedCustomerTwo)
         
         let customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester", status: .blocked)
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let receivedCustomerThree = try await CustomersAPI.blockCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, error) = try await CustomersAPI.blockCustomerWith(customerId: "1234")
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
             XCTAssertEqual(receivedCustomerThree?.status, customer.status)
@@ -219,17 +223,17 @@ final class CustomerAPITests: XCTestCase {
     
     func testUnblockCustomerWithId() async {
         FrameNetworking.shared.asyncURLSession = session
-        let receivedCustomer = try? await CustomersAPI.unblockCustomerWith(customerId: "")
+        let receivedCustomer = try? await CustomersAPI.unblockCustomerWith(customerId: "").0
         XCTAssertNil(receivedCustomer)
         
-        let receivedCustomerTwo = try? await CustomersAPI.unblockCustomerWith(customerId: "123")
+        let receivedCustomerTwo = try? await CustomersAPI.unblockCustomerWith(customerId: "123").0
         XCTAssertNil(receivedCustomerTwo)
         
         let customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester", status: .active)
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let receivedCustomerThree = try await CustomersAPI.unblockCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, error) = try await CustomersAPI.unblockCustomerWith(customerId: "1234")
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
             XCTAssertEqual(receivedCustomerThree?.status, customer.status)
