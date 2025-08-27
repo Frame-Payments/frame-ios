@@ -32,7 +32,7 @@ class FrameCheckoutViewModel: ObservableObject {
         guard let customerId else { return }
         self.customerId = customerId
         
-        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId)
+        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId).0
         self.customerPaymentOptions = customer?.paymentMethods
         self.customerName = customer?.name ?? ""
         self.customerEmail = customer?.email ?? ""
@@ -69,7 +69,7 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       paymentMethodData: nil)
         
         // Create Charge Intent, return this on completion.
-        return try? await ChargeIntentsAPI.createChargeIntent(request: request)
+        return try? await ChargeIntentsAPI.createChargeIntent(request: request).0
         
         //TODO: Show API error for charge intent, and why it failed.
     }
@@ -87,7 +87,7 @@ class FrameCheckoutViewModel: ObservableObject {
         if customerId == nil {
             //1. Create the new user to assign the payment method to.
             let customerRequest = CustomerRequest.CreateCustomerRequest(billingAddress: billingAddress, name: customerName, email: customerEmail)
-            let customer = try? await CustomersAPI.createCustomer(request: customerRequest)
+            let customer = try? await CustomersAPI.createCustomer(request: customerRequest).0
             currentCustomerId = customer?.id ?? ""
             guard currentCustomerId != "" else { return (nil, nil) }
         } else if let customerId {
@@ -102,12 +102,12 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       cvc: cardData.card.cvc,
                                                                       customer: nil,
                                                                       billing: billingAddress)
-        let paymentMethod = try? await PaymentMethodsAPI.createPaymentMethod(request: request, encryptData: false)
+        let paymentMethod = try? await PaymentMethodsAPI.createPaymentMethod(request: request, encryptData: false).0
         guard let paymentMethodId = paymentMethod?.id else { return (nil, nil) }
         
         //3. Attach the new payment method to the customer.
         let attachRequest = PaymentMethodRequest.AttachPaymentMethodRequest(customer: currentCustomerId)
-        let method = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethodId, request: attachRequest)
+        let method = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethodId, request: attachRequest).0
         return (method?.id, currentCustomerId)
     }
 }

@@ -12,169 +12,169 @@ import Foundation
 // Protocol for Mock Testing
 protocol SubscriptionsProtocol {
     //MARK: Methods using async/await
-    static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> FrameObjects.Subscription?
-    static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription?
-    static func getSubscriptions(page: Int?, perPage: Int?) async throws -> [FrameObjects.Subscription]?
-    static func getSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription?
-    static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?) async throws -> [FrameObjects.Subscription]?
-    static func cancelSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription?
+    static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> (FrameObjects.Subscription?, NetworkingError?)
+    static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> (FrameObjects.Subscription?, NetworkingError?)
+    static func getSubscriptions(page: Int?, perPage: Int?) async throws -> (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?)
+    static func getSubscription(subscriptionId: String) async throws -> (FrameObjects.Subscription?, NetworkingError?)
+    static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?) async throws -> ([FrameObjects.Subscription]?, NetworkingError?)
+    static func cancelSubscription(subscriptionId: String) async throws -> (FrameObjects.Subscription?, NetworkingError?)
     
     //MARK: Methods using completionHandler
-    static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
-    static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
-    static func getSubscriptions(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?) -> Void)
-    static func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
-    static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?) -> Void)
-    static func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void)
+    static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void)
+    static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void)
+    static func getSubscriptions(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void)
+    static func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void)
+    static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?, NetworkingError?) -> Void)
+    static func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void)
 }
 
 // Subscriptions API
 public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     //MARK: Methods using async/await
-    public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
+    public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-            return decodedResponse
+            return (decodedResponse, error)
         } else {
-            return nil
+            return (nil, error)
         }
     }
     
-    public static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> FrameObjects.Subscription? {
-        guard !subscriptionId.isEmpty else { return nil }
+    public static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
+        guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-            return decodedResponse
+            return (decodedResponse, error)
         } else {
-            return nil
+            return (nil, error)
         }
     }
     
-    public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil) async throws -> [FrameObjects.Subscription]? {
+    public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil) async throws -> (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
-            return decodedResponse.data
+            return (decodedResponse, error)
         } else {
-            return nil
+            return (nil, error)
         }
     }
     
-    public static func getSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription? {
-        guard !subscriptionId.isEmpty else { return nil }
+    public static func getSubscription(subscriptionId: String) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
+        guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-            return decodedResponse
+            return (decodedResponse, error)
         } else {
-            return nil
+            return (nil, error)
         }
     }
     
-    public static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?) async throws -> [FrameObjects.Subscription]? {
+    public static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?) async throws -> ([FrameObjects.Subscription]?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
-            return decodedResponse.data
+            return (decodedResponse.data, error)
         } else {
-            return nil
+            return (nil, error)
         }
     }
     
-    public static func cancelSubscription(subscriptionId: String) async throws -> FrameObjects.Subscription? {
-        guard !subscriptionId.isEmpty else { return nil }
+    public static func cancelSubscription(subscriptionId: String) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
+        guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
         
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-            return decodedResponse
+            return (decodedResponse, error)
         } else {
-            return nil
+            return (nil, error)
         }
     }
     
     //MARK: Methods using completion handler
-    public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+    public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-                completionHandler(decodedResponse)
+                completionHandler(decodedResponse, error)
             } else {
-                completionHandler(nil)
+                completionHandler(nil, error)
             }
         }
     }
     
-    public static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+    public static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-                completionHandler(decodedResponse)
+                completionHandler(decodedResponse, error)
             } else {
-                completionHandler(nil)
+                completionHandler(nil, error)
             }
         }
     }
     
-    public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?) -> Void) {
+    public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
-                completionHandler(decodedResponse.data)
+                completionHandler(decodedResponse, error)
             } else {
-                completionHandler(nil)
+                completionHandler(nil, error)
             }
         }
     }
     
-    public static func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+    public static func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-                completionHandler(decodedResponse)
+                completionHandler(decodedResponse, error)
             } else {
-                completionHandler(nil)
+                completionHandler(nil, error)
             }
         }
     }
     
-    public static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?) -> Void) {
+    public static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
-                completionHandler(decodedResponse.data)
+                completionHandler(decodedResponse.data, error)
             } else {
-                completionHandler(nil)
+                completionHandler(nil, error)
             }
         }
     }
     
-    public static func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?) -> Void) {
+    public static func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
-                completionHandler(decodedResponse)
+                completionHandler(decodedResponse, error)
             } else {
-                completionHandler(nil)
+                completionHandler(nil, error)
             }
         }
     }

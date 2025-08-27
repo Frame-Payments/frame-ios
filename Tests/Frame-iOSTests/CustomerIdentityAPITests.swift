@@ -28,7 +28,7 @@ final class CustomerIdentityAPITests: XCTestCase {
                                                                             ssn: "XXX-XXX-XXXX",
                                                                             address: billingAddress)
         
-        let createdCustomerIdentity = try? await CustomerIdentityAPI.createCustomerIdentity(request: request)
+        let createdCustomerIdentity = try? await CustomerIdentityAPI.createCustomerIdentity(request: request).0
         XCTAssertNil(createdCustomerIdentity)
         
         let customerIdentity = FrameObjects.CustomerIdentity(id: "1",
@@ -43,7 +43,7 @@ final class CustomerIdentityAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customerIdentity)
-            let createdCustomerIdentityTwo = try await CustomerIdentityAPI.createCustomerIdentity(request: request)
+            let (createdCustomerIdentityTwo, error) = try await CustomerIdentityAPI.createCustomerIdentity(request: request)
             XCTAssertNotNil(createdCustomerIdentityTwo)
             XCTAssertEqual(createdCustomerIdentityTwo?.status, customerIdentity.status)
             XCTAssertEqual(createdCustomerIdentityTwo?.id, customerIdentity.id)
@@ -54,10 +54,10 @@ final class CustomerIdentityAPITests: XCTestCase {
     
     func testGetCustomerIdentity() async {
         FrameNetworking.shared.asyncURLSession = session
-        let receivedCustomerIdentity = try? await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "")
+        let receivedCustomerIdentity = try? await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "").0
         XCTAssertNil(receivedCustomerIdentity)
         
-        let receivedCustomerIdentityTwo = try? await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "123")
+        let receivedCustomerIdentityTwo = try? await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "123").0
         XCTAssertNil(receivedCustomerIdentityTwo)
         
         let customerIdentity = FrameObjects.CustomerIdentity(id: "1234",
@@ -72,7 +72,7 @@ final class CustomerIdentityAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customerIdentity)
-            let receivedCustomerIdentityThree = try await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "1234")
+            let (receivedCustomerIdentityThree, error) = try await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "1234")
             XCTAssertNotNil(receivedCustomerIdentityThree)
             XCTAssertEqual(receivedCustomerIdentityThree?.id, customerIdentity.id)
             XCTAssertEqual(receivedCustomerIdentityThree?.status, customerIdentity.status)

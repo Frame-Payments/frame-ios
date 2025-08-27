@@ -7,18 +7,6 @@
 
 import Foundation
 
-//TODO: Move Later To Other Common Objects Folder
-struct FrameMetadata: Codable {
-    let page: Int
-    let url: String
-    let hasMore: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case page, url
-        case hasMore = "has_more"
-    }
-}
-
 public class FrameObjects {
     
     public enum PaymentMethodStatus: String, Codable, Sendable {

@@ -12,6 +12,8 @@ import Frame_iOS
 class ContentViewModel: ObservableObject, @unchecked Sendable {
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []
     @Published var subscriptions: [FrameObjects.Subscription] = []
+    @Published var subscriptionPhases: [FrameObjects.SubscriptionPhase] = []
+    @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var customers: [FrameObjects.Customer] = []
     @Published var chargeIntents: [FrameObjects.ChargeIntent] = []
     @Published var refunds: [FrameObjects.Refund] = []
@@ -26,13 +28,15 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
             await self.getSubscriptions()
             await self.getChargeIntents()
             await self.getRefunds()
+            await self.getSubscriptionPhases(subscriptionId: "")
+//            await self.getCustomerIdentity(customerIdentity: "")
         }
     }
     
     //completionHandler
     func getPaymentMethods() {
-        PaymentMethodsAPI.getPaymentMethods { paymentMethods in
-            if let paymentMethods {
+        PaymentMethodsAPI.getPaymentMethods { (paymentMethods, error) in
+            if let paymentMethods = paymentMethods?.data {
                 DispatchQueue.main.async {
                     self.paymentMethods = paymentMethods
                 }
@@ -41,8 +45,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getSubscriptions() {
-        SubscriptionsAPI.getSubscriptions { subscriptions in
-            if let subscriptions {
+        SubscriptionsAPI.getSubscriptions { subscriptions, error in
+            if let subscriptions = subscriptions?.data {
                 DispatchQueue.main.async {
                     self.subscriptions = subscriptions
                 }
@@ -50,9 +54,19 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
     
+    func getSubscriptionPhases(subscriptionId: String) {
+        SubscriptionPhasesAPI.listAllSubscriptionPhases(subscriptionId: subscriptionId) { subscriptionPhases, error in
+            if let subscriptionPhases = subscriptionPhases?.phases {
+                DispatchQueue.main.async {
+                    self.subscriptionPhases = subscriptionPhases
+                }
+            }
+        }
+    }
+    
     func getCustomers() {
-        CustomersAPI.getCustomers { customers in
-            if let customers {
+        CustomersAPI.getCustomers { (customers, error) in
+            if let customers = customers?.data {
                 DispatchQueue.main.async {
                     self.customers = customers
                 }
@@ -60,9 +74,19 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
     
+    func getCustomerIdentity(customerIdentity: String) {
+        CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: customerIdentity) { (customerIdentity, error) in
+            if let customerIdentity = customerIdentity {
+                DispatchQueue.main.async {
+                    self.customerIdentity = customerIdentity
+                }
+            }
+        }
+    }
+    
     func getChargeIntents() {
-        ChargeIntentsAPI.getAllChargeIntents() { chargeIntents in
-            if let chargeIntents {
+        ChargeIntentsAPI.getAllChargeIntents() { (chargeIntents, error) in
+            if let chargeIntents = chargeIntents?.data {
                 DispatchQueue.main.async {
                     self.chargeIntents = chargeIntents
                 }
@@ -71,8 +95,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getRefunds() {
-        RefundsAPI.getRefunds { refunds in
-            if let refunds {
+        RefundsAPI.getRefunds { (refunds, error) in
+            if let refunds = refunds?.data {
                 DispatchQueue.main.async {
                     self.refunds = refunds
                 }
@@ -83,9 +107,10 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     //async await
     func getPaymentMethods() async {
         do {
-            if let paymentMethods = try await PaymentMethodsAPI.getPaymentMethods() {
+            let (paymentMethods, _) = try await PaymentMethodsAPI.getPaymentMethods()
+            if let methods = paymentMethods?.data {
                 DispatchQueue.main.async {
-                    self.paymentMethods = paymentMethods
+                    self.paymentMethods = methods
                 }
             }
         } catch let error {
@@ -95,7 +120,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     func getSubscriptions() async {
         do {
-            if let subscriptions = try await SubscriptionsAPI.getSubscriptions() {
+            let (subscriptions, _) = try await SubscriptionsAPI.getSubscriptions()
+            if let subscriptions = subscriptions?.data {
                 DispatchQueue.main.async {
                     self.subscriptions = subscriptions
                 }
@@ -105,9 +131,36 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
     
+    func getSubscriptionPhases(subscriptionId: String) async {
+        do {
+            let (subscriptionPhases, _) = try await SubscriptionPhasesAPI.listAllSubscriptionPhases(subscriptionId: subscriptionId)
+            if let subscriptionPhases = subscriptionPhases?.phases {
+                DispatchQueue.main.async {
+                    self.subscriptionPhases = subscriptionPhases
+                }
+            }
+        } catch let error {
+            print (error.localizedDescription)
+        }
+    }
+    
+    func getCustomerIdentity(customerIdentity: String) async {
+        do {
+            let (identity, _) = try await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: customerIdentity)
+            if let identity {
+                DispatchQueue.main.async {
+                    self.customerIdentity = identity
+                }
+            }
+        } catch let error {
+            print (error.localizedDescription)
+        }
+    }
+    
     func getCustomers() async {
         do {
-            if let customers = try await CustomersAPI.getCustomers() {
+            let (customers, _) = try await CustomersAPI.getCustomers()
+            if let customers = customers?.data {
                 DispatchQueue.main.async {
                     self.customers = customers
                 }
@@ -118,18 +171,28 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getChargeIntents() async {
-        if let intents = try? await ChargeIntentsAPI.getAllChargeIntents() {
-            DispatchQueue.main.async {
-                self.chargeIntents = intents
+        do {
+            let (intents, _) = try await ChargeIntentsAPI.getAllChargeIntents()
+            if let intents = intents?.data {
+                DispatchQueue.main.async {
+                    self.chargeIntents = intents
+                }
             }
+        } catch let error {
+            print (error.localizedDescription)
         }
     }
     
     func getRefunds() async {
-        if let refunds = try? await RefundsAPI.getRefunds() {
-            DispatchQueue.main.async {
-                self.refunds = refunds
+        do {
+            let (refunds, _) = try await RefundsAPI.getRefunds()
+            if let refunds = refunds?.data {
+                DispatchQueue.main.async {
+                    self.refunds = refunds
+                }
             }
+        } catch let error {
+            print (error.localizedDescription)
         }
     }
 }

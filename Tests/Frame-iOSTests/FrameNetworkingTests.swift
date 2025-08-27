@@ -29,7 +29,8 @@ class MockURLSession: URLSession, @unchecked Sendable {
     
     override func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
         return MockURLSessionDataTask {
-            completionHandler(self.data, self.response, self.error)
+            var networkingError: NetworkingError?
+            completionHandler(self.data, self.response, networkingError)
         }
     }
 }
@@ -178,7 +179,7 @@ final class FrameNetworkingTests: XCTestCase {
         networking.performDataTask(endpoint: endpoint) { data, response, error in
             XCTAssertNil(data)
             XCTAssertNotNil(response)
-            XCTAssertNil(error)
+            XCTAssertEqual(error, .noData)
             expectation.fulfill()
         }
         
@@ -200,7 +201,7 @@ final class FrameNetworkingTests: XCTestCase {
         networking.performDataTask(endpoint: endpoint) { data, response, error in
             XCTAssertNil(data)
             XCTAssertNil(response)
-            XCTAssertNil(error)
+            XCTAssertEqual(error, .noData)
             expectation.fulfill()
         }
         
