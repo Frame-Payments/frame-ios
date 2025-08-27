@@ -31,8 +31,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     //completionHandler
     func getPaymentMethods() {
-        PaymentMethodsAPI.getPaymentMethods { paymentMethods in
-            if let paymentMethods {
+        PaymentMethodsAPI.getPaymentMethods { (paymentMethods, error) in
+            if let paymentMethods = paymentMethods?.data {
                 DispatchQueue.main.async {
                     self.paymentMethods = paymentMethods
                 }
@@ -41,8 +41,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getSubscriptions() {
-        SubscriptionsAPI.getSubscriptions { subscriptions in
-            if let subscriptions {
+        SubscriptionsAPI.getSubscriptions { subscriptions, error in
+            if let subscriptions = subscriptions?.data {
                 DispatchQueue.main.async {
                     self.subscriptions = subscriptions
                 }
@@ -51,8 +51,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getCustomers() {
-        CustomersAPI.getCustomers { customers in
-            if let customers {
+        CustomersAPI.getCustomers { (customers, error) in
+            if let customers = customers?.data {
                 DispatchQueue.main.async {
                     self.customers = customers
                 }
@@ -61,8 +61,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getChargeIntents() {
-        ChargeIntentsAPI.getAllChargeIntents() { chargeIntents in
-            if let chargeIntents {
+        ChargeIntentsAPI.getAllChargeIntents() { (chargeIntents, error) in
+            if let chargeIntents = chargeIntents?.data {
                 DispatchQueue.main.async {
                     self.chargeIntents = chargeIntents
                 }
@@ -71,8 +71,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getRefunds() {
-        RefundsAPI.getRefunds { refunds in
-            if let refunds {
+        RefundsAPI.getRefunds { (refunds, error) in
+            if let refunds = refunds?.data {
                 DispatchQueue.main.async {
                     self.refunds = refunds
                 }
@@ -83,7 +83,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     //async await
     func getPaymentMethods() async {
         do {
-            if let paymentMethods = try await PaymentMethodsAPI.getPaymentMethods() {
+            if let paymentMethods = try await PaymentMethodsAPI.getPaymentMethods().0?.data {
                 DispatchQueue.main.async {
                     self.paymentMethods = paymentMethods
                 }
@@ -95,7 +95,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     func getSubscriptions() async {
         do {
-            if let subscriptions = try await SubscriptionsAPI.getSubscriptions() {
+            if let subscriptions = try await SubscriptionsAPI.getSubscriptions().0?.data {
                 DispatchQueue.main.async {
                     self.subscriptions = subscriptions
                 }
@@ -107,7 +107,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     func getCustomers() async {
         do {
-            if let customers = try await CustomersAPI.getCustomers() {
+            if let customers = try await CustomersAPI.getCustomers().0?.data {
                 DispatchQueue.main.async {
                     self.customers = customers
                 }
@@ -118,7 +118,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getChargeIntents() async {
-        if let intents = try? await ChargeIntentsAPI.getAllChargeIntents() {
+        if let intents = try? await ChargeIntentsAPI.getAllChargeIntents().0?.data {
             DispatchQueue.main.async {
                 self.chargeIntents = intents
             }
@@ -126,7 +126,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     }
     
     func getRefunds() async {
-        if let refunds = try? await RefundsAPI.getRefunds() {
+        if let refunds = try? await RefundsAPI.getRefunds().0?.data {
             DispatchQueue.main.async {
                 self.refunds = refunds
             }
