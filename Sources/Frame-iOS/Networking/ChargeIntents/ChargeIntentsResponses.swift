@@ -7,8 +7,8 @@
 
 import Foundation
 
-class ChargeIntentResponses {
-    struct ListChargeIntentsResponse: Codable {
+public class ChargeIntentResponses {
+    public struct ListChargeIntentsResponse: Codable {
         let meta: FrameMetadata?
         let data: [FrameObjects.ChargeIntent]?
     }

@@ -8,7 +8,7 @@
 import Foundation
 
 public class CustomerResponses {
-    struct ListCustomersResponse: Codable {
+    public struct ListCustomersResponse: Codable {
         let meta: FrameMetadata?
         let data: [FrameObjects.Customer]?
         
