@@ -24,6 +24,7 @@ struct ContentView: View {
     @State var showSubscriptionsView: Bool = false
     @State var showChargeIntentsView: Bool = false
     @State var showRefundsView: Bool = false
+    @State var showSubscriptionPhases: Bool = false
     
     var body: some View {
         VStack {
@@ -34,17 +35,26 @@ struct ContentView: View {
             Text("Tap a button below to view your Frame data after you have entered your API key!")
                 .multilineTextAlignment(.center)
                 .padding()
-            allCustomersButton
-                .disabled(viewModel.customers.isEmpty)
-                .opacity(viewModel.customers.isEmpty ? 0.3 : 1)
-            allPaymentMethodsButton
-                .disabled(viewModel.paymentMethods.isEmpty)
-                .opacity(viewModel.paymentMethods.isEmpty ? 0.3 : 1)
-            allSubscriptionsButton
-            allChargeIntentsButton
-            allRefundsButton
-                .disabled(viewModel.refunds.isEmpty)
-                .opacity(viewModel.refunds.isEmpty ? 0.3 : 1)
+            ScrollView {
+                allCustomersButton
+                    .disabled(viewModel.customers.isEmpty)
+                    .opacity(viewModel.customers.isEmpty ? 0.3 : 1)
+                allPaymentMethodsButton
+                    .disabled(viewModel.paymentMethods.isEmpty)
+                    .opacity(viewModel.paymentMethods.isEmpty ? 0.3 : 1)
+                allSubscriptionsButton
+                    .disabled(viewModel.subscriptions.isEmpty)
+                    .opacity(viewModel.subscriptions.isEmpty ? 0.3 : 1)
+                allChargeIntentsButton
+                    .disabled(viewModel.chargeIntents.isEmpty)
+                    .opacity(viewModel.chargeIntents.isEmpty ? 0.3 : 1)
+                allRefundsButton
+                    .disabled(viewModel.refunds.isEmpty)
+                    .opacity(viewModel.refunds.isEmpty ? 0.3 : 1)
+                allSubscriptionPhasesButton
+                    .disabled(viewModel.subscriptionPhases.isEmpty)
+                    .opacity(viewModel.subscriptionPhases.isEmpty ? 0.3 : 1)
+            }
             Spacer()
             cartButton
         }
@@ -143,6 +153,28 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text("**Subscription ID:** \n\(subscription.id)")
                             Text("**Customer ID:** \n\(subscription.customer ?? "")")
+                        }
+                        Spacer()
+                    }
+                    Divider()
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    var subscriptionPhasesScrollView: some View {
+        ScrollView {
+            VStack {
+                Text("Subscription Phases")
+                    .font(.largeTitle)
+                    .padding()
+                ForEach(viewModel.subscriptionPhases) { subscriptionPhase in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("**Subscription Phase ID:** \n\(subscriptionPhase.id)")
+                            Text("**Pricing Type:** \n\(subscriptionPhase.pricingType?.rawValue ?? "")")
                         }
                         Spacer()
                     }
@@ -284,6 +316,22 @@ struct ContentView: View {
             self.showRefundsView = true
         } label: {
             Text("View All Refunds")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
+    
+    var allSubscriptionPhasesButton: some View {
+        Button {
+            self.showSubscriptionPhases = true
+        } label: {
+            Text("View All Subscription Phases")
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity, alignment: .center)

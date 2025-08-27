@@ -19,7 +19,7 @@ protocol SubscriptionPhasesProtocol {
     static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?)
     
     // completionHandlers
-    static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void)
+    static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) -> Void)
     static func getSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
     static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
     static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
@@ -105,12 +105,12 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     }
     
     // completionHandlers
-    public static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
+    public static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionPhasesResponses.ListSubscriptionPhasesResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)
