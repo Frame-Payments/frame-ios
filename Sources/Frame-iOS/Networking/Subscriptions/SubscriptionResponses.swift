@@ -7,7 +7,7 @@
 
 public class SubscriptionResponses {
     public struct ListSubscriptionsResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.Subscription]?
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.Subscription]?
     }
 }

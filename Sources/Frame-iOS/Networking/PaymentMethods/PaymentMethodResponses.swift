@@ -7,7 +7,7 @@
 
 public class PaymentMethodResponses {
     public struct ListPaymentMethodsResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.PaymentMethod]?
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.PaymentMethod]?
     }
 }

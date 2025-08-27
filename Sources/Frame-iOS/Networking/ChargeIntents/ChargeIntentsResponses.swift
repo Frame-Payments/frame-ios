@@ -9,7 +9,7 @@ import Foundation
 
 public class ChargeIntentResponses {
     public struct ListChargeIntentsResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.ChargeIntent]?
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.ChargeIntent]?
     }
 }

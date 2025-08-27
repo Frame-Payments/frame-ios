@@ -15,28 +15,6 @@ import Sift
 
 // TODO: Add Pagination for Network Request
 
-protocol FrameNetworkingEndpoints {
-    var endpointURL: String { get }
-    var httpMethod: String { get }
-    var queryItems: [URLQueryItem]? { get }
-}
-
-// Custom protocol for URLSession
-public protocol URLSessionProtocol {
-    func data(for request: URLRequest) async throws -> (Data, URLResponse)
-}
-
-// Extend URLSession to conform to the protocol
-extension URLSession: URLSessionProtocol {}
-
-public enum NetworkingError: Error, Equatable {
-    case noData
-    case invalidURL
-    case decodingFailed
-    case serverError(statusCode: Int)
-    case unknownError
-}
-
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     

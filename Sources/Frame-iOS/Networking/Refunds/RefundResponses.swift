@@ -9,7 +9,7 @@ import Foundation
 
 public class RefundResponses {
     public struct ListRefundsResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.Refund]?
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.Refund]?
     }
 }
