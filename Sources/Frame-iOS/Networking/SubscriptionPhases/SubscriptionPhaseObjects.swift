@@ -17,22 +17,22 @@ extension FrameObjects {
         case infinite
     }
     
-    public struct SubscriptionPhase: Codable {
-        var id: String
-        var ordinal: Int?
-        var name: String?
-        var pricingType: PhasePricingType?
-        var durationType: PhaseDurationType?
-        var amount: Int?
-        var currency: String?
-        var discountPercentage: Float?
-        var periodCount: Int?
-        var interval: String?
-        var intervalCount: Int?
-        var livemode: Bool?
-        var created: Int?
-        var updated: Int?
-        var object: String?
+    public struct SubscriptionPhase: Codable, Sendable, Identifiable, Equatable {
+        public var id: String
+        public var ordinal: Int?
+        public var name: String?
+        public var pricingType: PhasePricingType?
+        public var durationType: PhaseDurationType?
+        public var amount: Int?
+        public var currency: String?
+        public var discountPercentage: Float?
+        public var periodCount: Int?
+        public var interval: String?
+        public var intervalCount: Int?
+        public var livemode: Bool?
+        public var created: Int?
+        public var updated: Int?
+        public var object: String?
         
         public init(id: String, ordinal: Int?, name: String?, pricingType: PhasePricingType?, durationType: PhaseDurationType?, amount: Int?, currency: String?, discountPercentage: Float?, periodCount: Int?, interval: String?, intervalCount: Int?, livemode: Bool?, created: Int?, updated: Int?, object: String?) {
             self.id = id
@@ -50,6 +50,24 @@ extension FrameObjects {
             self.created = created
             self.updated = updated
             self.object = object
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case id
+            case ordinal
+            case name
+            case pricingType = "pricing_type"
+            case durationType = "duration_type"
+            case amount
+            case currency
+            case discountPercentage = "discount_percentage"
+            case periodCount = "period_count"
+            case interval
+            case intervalCount = "interval_count"
+            case livemode
+            case created
+            case updated
+            case object
         }
     }
 }

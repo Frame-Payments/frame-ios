@@ -7,15 +7,15 @@
 import Foundation
 
 public class SubscriptionPhasesResponses {
-    struct ListSubscriptionPhasesResponse: Codable {
-        let meta: SubscriptionPhaseMeta?
-        let phases: [FrameObjects.SubscriptionPhase]?
+    public struct ListSubscriptionPhasesResponse: Codable {
+        public let meta: SubscriptionPhaseMeta?
+        public let phases: [FrameObjects.SubscriptionPhase]?
     }
     
-    struct SubscriptionPhaseMeta: Codable {
-        let subscriptionId: String?
+    public struct SubscriptionPhaseMeta: Codable {
+        public let subscriptionId: String?
         
-        enum CodingKeys: String, CodingKey {
+        public enum CodingKeys: String, CodingKey {
             case subscriptionId = "subscription_id"
         }
     }

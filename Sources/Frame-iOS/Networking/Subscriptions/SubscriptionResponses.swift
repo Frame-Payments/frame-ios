@@ -5,9 +5,9 @@
 //  Created by Frame Payments on 9/27/24.
 //
 
-class SubscriptionResponses {
-    struct ListSubscriptionsResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.Subscription]?
+public class SubscriptionResponses {
+    public struct ListSubscriptionsResponse: Codable {
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.Subscription]?
     }
 }

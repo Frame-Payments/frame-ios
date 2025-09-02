@@ -15,27 +15,6 @@ import Sift
 
 // TODO: Add Pagination for Network Request
 
-protocol FrameNetworkingEndpoints {
-    var endpointURL: String { get }
-    var httpMethod: String { get }
-    var queryItems: [URLQueryItem]? { get }
-}
-
-// Custom protocol for URLSession
-public protocol URLSessionProtocol {
-    func data(for request: URLRequest) async throws -> (Data, URLResponse)
-}
-
-// Extend URLSession to conform to the protocol
-extension URLSession: URLSessionProtocol {}
-
-enum NetworkingError: Error, Equatable {
-    case invalidURL
-    case decodingFailed
-    case serverError(statusCode: Int)
-    case unknownError
-}
-
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
@@ -90,7 +69,7 @@ public class FrameNetworking: ObservableObject {
                 printDataForTesting(data: data)
             }
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-                return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode))
+                return (nil, NetworkingError.serverError(statusCode: httpResponse.statusCode, errorDescription: returnErrorString(data: data)))
             }
             return (data, nil)
         } catch URLError.cannotFindHost {
@@ -103,7 +82,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Completion Handler
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, (any Error)?) -> Void) {
+    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url)
@@ -121,7 +100,24 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         urlSession.dataTask(with: urlRequest) { data, response, error in
-            completion(data, response, error)
+            var networkingError: NetworkingError?
+            
+            if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+                networkingError = NetworkingError.serverError(statusCode: httpResponse.statusCode, errorDescription: error?.localizedDescription ?? "")
+            } else if data == nil {
+                networkingError = NetworkingError.noData
+            } else if let urlError = error as? URLError {
+                switch urlError {
+                case URLError.cannotFindHost:
+                    networkingError = NetworkingError.invalidURL
+                case URLError.cannotDecodeRawData:
+                    networkingError = NetworkingError.decodingFailed
+                default:
+                    networkingError = NetworkingError.unknownError
+                }
+            }
+            
+            completion(data, response, networkingError)
         }.resume()
     }
     
@@ -140,8 +136,14 @@ public class FrameNetworking: ObservableObject {
     }
     
     func printDataForTesting(data: Data?) {
+        print(returnErrorString(data: data))
+    }
+    
+    func returnErrorString(data: Data?) -> String {
         if let data, let jsonString = String(data: data, encoding: .utf8) {
-            print(jsonString)
+            return jsonString
         }
+        
+        return ""
     }
 }

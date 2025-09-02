@@ -8,9 +8,9 @@
 import Foundation
 
 public class CustomerResponses {
-    struct ListCustomersResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.Customer]?
+    public struct ListCustomersResponse: Codable {
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.Customer]?
         
         init(meta: FrameMetadata? = nil, data: [FrameObjects.Customer]?) {
             self.meta = meta

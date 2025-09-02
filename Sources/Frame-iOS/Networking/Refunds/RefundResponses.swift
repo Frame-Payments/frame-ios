@@ -8,8 +8,8 @@
 import Foundation
 
 public class RefundResponses {
-    struct ListRefundsResponse: Codable {
-        let meta: FrameMetadata?
-        let data: [FrameObjects.Refund]?
+    public struct ListRefundsResponse: Codable {
+        public let meta: FrameMetadata?
+        public let data: [FrameObjects.Refund]?
     }
 }
