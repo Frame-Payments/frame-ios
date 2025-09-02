@@ -17,55 +17,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode with Swift 6
-        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
 
       - name: Resolve Binary Dependencies
         run: |
           swift package resolve
-
-      - name: Create & boot iOS 18.1 simulator
-        id: sim
-        shell: bash
-        run: |
-          set -euo pipefail
-      
-          echo "== Xcode & Runtimes =="
-          xcodebuild -version
-          xcrun simctl list runtimes
-          xcrun simctl list devicetypes
-      
-          RUNTIME_ID=$(xcrun simctl list runtimes | awk -F' - ' '/iOS 18\.1/{print $2; exit}')
-          if [[ -z "${RUNTIME_ID:-}" ]]; then
-            echo "No iOS 18.1 runtime identifier found."
-            exit 1
-          fi
-          echo "Using runtime: $RUNTIME_ID"
-      
-          DEVTYPE_ID=$(xcrun simctl list devicetypes | awk -F'[()]' '/iPhone 15 Pro/{print $2; exit}')
-          if [[ -z "${DEVTYPE_ID:-}" ]]; then
-            echo "No iPhone 15 Pro device type found."
-            exit 1
-          fi
-          echo "Using device type: $DEVTYPE_ID"
-      
-          UDID=$(xcrun simctl create "CI iPhone 15 Pro (18.1)" "$DEVTYPE_ID" "$RUNTIME_ID")
-          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-      
-          xcrun simctl boot "$UDID"
-          xcrun simctl list devices available
-      
-      - name: Test on created sim
+          
+      - name: Run Tests on iOS Simulator
         run: |
           xcodebuild test \
-            -scheme "Frame-iOS" \
-            -destination "id=${{ steps.sim.outputs.udid }}"
-      
-      - name: Cleanup
-        if: always()
-        shell: bash
-        run: |
-          if [[ -n "${{ steps.sim.outputs.udid }}" ]]; then
-            xcrun simctl delete "${{ steps.sim.outputs.udid }}"
-          else
-            echo "No UDID to delete (previous step likely failed before creation)."
-          fi
+            -scheme Frame-iOS \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=17.0.1" \
+            -sdk iphonesimulator \
+            -enableCodeCoverage YES
+            ONLY_ACTIVE_ARCH=YES
