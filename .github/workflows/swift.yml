@@ -1,4 +1,4 @@
-name: Frame Package Test (macOS)
+name: Frame Package Test (iOS)
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
@@ -27,11 +27,30 @@ jobs:
         id: sim
         shell: bash
         run: |
-          set -e
-          RUNTIME=$(xcrun simctl list runtimes | awk -F'[()]' '/iOS 18\.1/{print $2; exit}')
-          DEVTYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro"
-          UDID=$(xcrun simctl create "CI iPhone" "$DEVTYPE" "$RUNTIME")
+          set -euo pipefail
+      
+          echo "== Xcode & Runtimes =="
+          xcodebuild -version
+          xcrun simctl list runtimes
+          xcrun simctl list devicetypes
+      
+          RUNTIME_ID=$(xcrun simctl list runtimes | awk -F' - ' '/iOS 18\.1/{print $2; exit}')
+          if [[ -z "${RUNTIME_ID:-}" ]]; then
+            echo "No iOS 18.1 runtime identifier found."
+            exit 1
+          fi
+          echo "Using runtime: $RUNTIME_ID"
+      
+          DEVTYPE_ID=$(xcrun simctl list devicetypes | awk -F'[()]' '/iPhone 15 Pro/{print $2; exit}')
+          if [[ -z "${DEVTYPE_ID:-}" ]]; then
+            echo "No iPhone 15 Pro device type found."
+            exit 1
+          fi
+          echo "Using device type: $DEVTYPE_ID"
+      
+          UDID=$(xcrun simctl create "CI iPhone 15 Pro (18.1)" "$DEVTYPE_ID" "$RUNTIME_ID")
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+      
           xcrun simctl boot "$UDID"
           xcrun simctl list devices available
       
@@ -43,4 +62,10 @@ jobs:
       
       - name: Cleanup
         if: always()
-        run: xcrun simctl delete "${{ steps.sim.outputs.udid }}"
+        shell: bash
+        run: |
+          if [[ -n "${{ steps.sim.outputs.udid }}" ]]; then
+            xcrun simctl delete "${{ steps.sim.outputs.udid }}"
+          else
+            echo "No UDID to delete (previous step likely failed before creation)."
+          fi
