@@ -1,4 +1,4 @@
-name: Frame Package Test (macOS)
+name: Frame Package Test (iOS)
 
 on:
   push:
@@ -17,17 +17,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode with Swift 6
-        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
 
       - name: Resolve Binary Dependencies
         run: |
           swift package resolve
-
+          
       - name: Run Tests on iOS Simulator
         run: |
           xcodebuild test \
             -scheme Frame-iOS \
-            -destination "platform=iOS Simulator,name=iPhone 15,OS=17.0.1" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
             ONLY_ACTIVE_ARCH=YES
