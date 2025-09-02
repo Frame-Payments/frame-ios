@@ -23,11 +23,24 @@ jobs:
         run: |
           swift package resolve
 
-      - name: Run Tests on iOS Simulator
+      - name: Create & boot iOS 18.1 simulator
+        id: sim
+        shell: bash
+        run: |
+          set -e
+          RUNTIME=$(xcrun simctl list runtimes | awk -F'[()]' '/iOS 18\.1/{print $2; exit}')
+          DEVTYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro"
+          UDID=$(xcrun simctl create "CI iPhone" "$DEVTYPE" "$RUNTIME")
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID"
+          xcrun simctl list devices available
+      
+      - name: Test on created sim
         run: |
           xcodebuild test \
-            -scheme Frame-iOS \
-            -destination "platform=iOS Simulator" \
-            -sdk iphonesimulator \
-            -enableCodeCoverage YES
-            ONLY_ACTIVE_ARCH=YES
+            -scheme "Frame-iOS" \
+            -destination "id=${{ steps.sim.outputs.udid }}"
+      
+      - name: Cleanup
+        if: always()
+        run: xcrun simctl delete "${{ steps.sim.outputs.udid }}"
