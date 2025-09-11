@@ -17,6 +17,10 @@ public class FrameObjects {
         case card, ach
     }
     
+    public enum PaymentAccountType: String, Codable, Sendable {
+        case checking, savings
+    }
+    
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
         public var customer: String? // ID of the Customer
@@ -101,13 +105,13 @@ public class FrameObjects {
     }
     
     public struct BankAccount: Codable, Sendable, Equatable {
-        public let accountType: String?
+        public let accountType: FrameObjects.PaymentAccountType?
         public let accountNumber: String?
         public let routingNumber: String?
         public let bankName: String?
         public let lastFour: String?
         
-        public init(accountType: String?, accountNumber: String?, routingNumber: String?, bankName: String?, lastFour: String?) {
+        public init(accountType: FrameObjects.PaymentAccountType?, accountNumber: String?, routingNumber: String?, bankName: String?, lastFour: String?) {
             self.accountType = accountType
             self.accountNumber = accountNumber
             self.routingNumber = routingNumber

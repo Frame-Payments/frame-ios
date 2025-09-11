@@ -9,13 +9,13 @@ public class PaymentMethodRequest {
     
     public struct CreateACHPaymentMethodRequest: Encodable, Sendable {
         let type: FrameObjects.PaymentRequestType
-        var accountType: String // Required for ACH
+        var accountType: FrameObjects.PaymentAccountType // Required for ACH
         var accountNumber: String // Required for ACH
         var routingNumber: String // Required for ACH
         let customer: String?
         let billing: FrameObjects.BillingAddress?
         
-        public init(type: FrameObjects.PaymentRequestType = .ach, accountType: String, accountNumber: String, routingNumber: String, customer: String?, billing: FrameObjects.BillingAddress?) {
+        public init(type: FrameObjects.PaymentRequestType = .ach, accountType: FrameObjects.PaymentAccountType, accountNumber: String, routingNumber: String, customer: String?, billing: FrameObjects.BillingAddress?) {
             self.type = type
             self.accountType = accountType
             self.accountNumber = accountNumber

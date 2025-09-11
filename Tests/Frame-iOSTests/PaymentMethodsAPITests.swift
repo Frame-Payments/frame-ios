@@ -21,12 +21,13 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.getPaymentMethods().0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: "card", object: "", created: 0, updated: 0, livemode: true)
-        let secondPaymentMethod = FrameObjects.PaymentMethod(id: "2", customer: "654321", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: .card, object: "", created: 0, updated: 0, livemode: true)
+        let secondPaymentMethod = FrameObjects.PaymentMethod(id: "2", customer: "654321", type: .ach, object: "", created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod, secondPaymentMethod]))
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.getPaymentMethods()
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.getPaymentMethods()
+            
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.data?[0].customer, paymentMethod.customer)
             XCTAssertEqual(thirdReceivedMethod?.data?[1].customer, secondPaymentMethod.customer)
@@ -45,11 +46,11 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.getPaymentMethodWith(paymentMethodId: "123").0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .ach, object: "", created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.getPaymentMethodWith(paymentMethodId: paymentMethod.id)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.getPaymentMethodWith(paymentMethodId: paymentMethod.id)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
         } catch {
@@ -65,12 +66,13 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: "123").0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: "card", object: "", created: 0, updated: 0, livemode: true)
-        let secondPaymentMethod = FrameObjects.PaymentMethod(id: "2", customer: "654321", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: .card, object: "", created: 0, updated: 0, livemode: true)
+        let secondPaymentMethod = FrameObjects.PaymentMethod(id: "2", customer: "654321", type: .ach, object: "", created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod, secondPaymentMethod]))
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: paymentMethod.customer ?? "")
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: paymentMethod.customer ?? "")
+            
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.data?[0].customer, paymentMethod.customer)
             XCTAssertEqual(thirdReceivedMethod?.data?[1].customer, secondPaymentMethod.customer)
@@ -81,20 +83,19 @@ final class PaymentMethodsAPITests: XCTestCase {
         }
     }
     
-    func testCreatePaymentMethod() async {
+    func testCreateCardPaymentMethod() async {
         FrameNetworking.shared.asyncURLSession = session
-        let request = PaymentMethodRequest.CreatePaymentMethodRequest(type: "card", cardNumber: "44444444444444444", expMonth: "08", expYear: "2021",
-                                                                      cvc: "333", customer: nil, billing: nil)
-        let receivedMethod = try? await PaymentMethodsAPI.createPaymentMethod(request: request).0
+        let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(type: .card, cardNumber: "44444444444444444", expMonth: "08", expYear: "2021", cvc: "333", customer: nil, billing: nil)
+        let receivedMethod = try? await PaymentMethodsAPI.createCardPaymentMethod(request: request).0
         XCTAssertNil(receivedMethod)
         
-        let secondReceivedMethod = try? await PaymentMethodsAPI.createPaymentMethod(request: request).0
+        let secondReceivedMethod = try? await PaymentMethodsAPI.createCardPaymentMethod(request: request).0
         XCTAssertNil(secondReceivedMethod)
         
         let billing = FrameObjects.BillingAddress(postalCode: "55555")
         let card = FrameObjects.PaymentCard(brand: "visa", expirationMonth: "08", expirationYear: "2021", currency: "USD", lastFourDigits: "1212")
         
-        var paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        var paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: .card, object: "", created: 0, updated: 0, livemode: true)
         XCTAssertNil(paymentMethod.billing)
         XCTAssertNil(paymentMethod.card)
         
@@ -106,7 +107,40 @@ final class PaymentMethodsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.createPaymentMethod(request: request, encryptData: false)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+            XCTAssertNotNil(thirdReceivedMethod)
+            XCTAssertEqual(thirdReceivedMethod?.card, card)
+            XCTAssertEqual(thirdReceivedMethod?.billing?.postalCode, "55555")
+        } catch {
+            XCTFail("Error should not be thrown")
+        }
+    }
+    
+    func testCreateACHPaymentMethod() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: .checking, accountNumber: "1234567890123456789", routingNumber: "123456789", customer: nil, billing: nil)
+        let receivedMethod = try? await PaymentMethodsAPI.createACHPaymentMethod(request: request).0
+        XCTAssertNil(receivedMethod)
+        
+        let secondReceivedMethod = try? await PaymentMethodsAPI.createACHPaymentMethod(request: request).0
+        XCTAssertNil(secondReceivedMethod)
+        
+        let billing = FrameObjects.BillingAddress(postalCode: "55555")
+        let account = FrameObjects.BankAccount(accountType: .checking, accountNumber: "1234567890123456789", routingNumber: "123456789", bankName: "Chase Bank", lastFour: "6789")
+        
+        var paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: .ach, object: "", created: 0, updated: 0, livemode: true)
+        XCTAssertNil(paymentMethod.billing)
+        XCTAssertNil(paymentMethod.card)
+        
+        paymentMethod.billing = billing
+        paymentMethod.ach = account
+        
+        XCTAssertNotNil(paymentMethod.billing)
+        XCTAssertNotNil(paymentMethod.ach)
+        
+        do {
+            session.data = try JSONEncoder().encode(paymentMethod)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
             XCTAssertNotNil(thirdReceivedMethod)
         } catch {
             XCTFail("Error should not be thrown")
@@ -122,11 +156,11 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: "123", request: request).0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethod.id, request: request)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethod.id, request: request)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
         } catch {
@@ -143,11 +177,11 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: "123", request: request).0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "cus_123", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "cus_123", type: .card, object: "", created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethod.id, request: request)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethod.id, request: request)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
             XCTAssertEqual(thirdReceivedMethod?.customer, paymentMethod.customer)
@@ -164,11 +198,11 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.detachPaymentMethodWith(paymentMethodId: "123").0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: "card", object: "", created: 0, updated: 0, livemode: true)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: true)
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.detachPaymentMethodWith(paymentMethodId: paymentMethod.id)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.detachPaymentMethodWith(paymentMethodId: paymentMethod.id)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
             XCTAssertNil(thirdReceivedMethod?.customer)
@@ -185,11 +219,11 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.blockPaymentMethodWith(paymentMethodId: "321").0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "321", type: "card", object: "", created: 0, updated: 0, livemode: true, status: .blocked)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "321", type: .card, object: "", created: 0, updated: 0, livemode: true, status: .blocked)
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.blockPaymentMethodWith(paymentMethodId: paymentMethod.id)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.blockPaymentMethodWith(paymentMethodId: paymentMethod.id)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
             XCTAssertEqual(thirdReceivedMethod?.status, paymentMethod.status)
@@ -206,11 +240,11 @@ final class PaymentMethodsAPITests: XCTestCase {
         let secondReceivedMethod = try? await PaymentMethodsAPI.unblockPaymentMethodWith(paymentMethodId: "123").0
         XCTAssertNil(secondReceivedMethod)
         
-        let paymentMethod = FrameObjects.PaymentMethod(id: "123", type: "card", object: "", created: 0, updated: 0, livemode: true, status: .active)
+        let paymentMethod = FrameObjects.PaymentMethod(id: "123", type: .card, object: "", created: 0, updated: 0, livemode: true, status: .active)
         
         do {
             session.data = try JSONEncoder().encode(paymentMethod)
-            let (thirdReceivedMethod, error) = try await PaymentMethodsAPI.unblockPaymentMethodWith(paymentMethodId: paymentMethod.id)
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.unblockPaymentMethodWith(paymentMethodId: paymentMethod.id)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
             XCTAssertEqual(thirdReceivedMethod?.status, paymentMethod.status)
