@@ -95,20 +95,15 @@ class FrameCheckoutViewModel: ObservableObject {
         }
         
         //2. Create the payment method
-        let request = PaymentMethodRequest.CreatePaymentMethodRequest(type: "card",
-                                                                      cardNumber: cardData.card.number,
-                                                                      expMonth: cardData.card.expMonth,
-                                                                      expYear: cardData.card.expYear,
-                                                                      cvc: cardData.card.cvc,
-                                                                      customer: nil,
-                                                                      billing: billingAddress)
-        let paymentMethod = try? await PaymentMethodsAPI.createPaymentMethod(request: request, encryptData: false).0
-        guard let paymentMethodId = paymentMethod?.id else { return (nil, nil) }
-        
-        //3. Attach the new payment method to the customer.
-        let attachRequest = PaymentMethodRequest.AttachPaymentMethodRequest(customer: currentCustomerId)
-        let method = try? await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethodId, request: attachRequest).0
-        return (method?.id, currentCustomerId)
+        let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(cardNumber: cardData.card.number,
+                                                                          expMonth: cardData.card.expMonth,
+                                                                          expYear: cardData.card.expYear,
+                                                                          cvc: cardData.card.cvc,
+                                                                          customer: currentCustomerId,
+                                                                          billing: billingAddress)
+        let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+        guard let paymentMethodId = paymentMethod?.id else { return (nil, currentCustomerId) }
+        return (paymentMethodId, currentCustomerId)
     }
 }
 
@@ -119,10 +114,9 @@ struct AvailableCountry: Hashable {
     static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
     
     static let allCountries: [AvailableCountry] = {
-        Locale.isoRegionCodes.map { code in
-            let locale = Locale(identifier: Locale.identifier(fromComponents: [NSLocale.Key.countryCode.rawValue: code]))
-            let name = locale.localizedString(forRegionCode: code) ?? code
-            return AvailableCountry(alpha2Code: code, displayName: name)
+        Locale.Region.isoRegions.map { region in
+            let name = Locale().localizedString(forRegionCode: region.identifier) ?? region.identifier
+            return AvailableCountry(alpha2Code: region.identifier, displayName: name)
         }
         .sorted { $0.displayName < $1.displayName }
     }()

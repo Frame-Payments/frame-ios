@@ -8,7 +8,6 @@ import Foundation
 
 // https://docs.framepayments.com/api/subscription_phases
 
-// Protocol for Mock Testing
 protocol SubscriptionPhasesProtocol {
     //async/await
     static func listAllSubscriptionPhases(subscriptionId: String) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?)

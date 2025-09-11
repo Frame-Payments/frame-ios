@@ -220,14 +220,24 @@ public struct FrameCheckoutView: View {
                     }
                     .frame(height: 49.0)
                     Divider()
-                    Button {
-                        self.isShowingPicker = true
-                    } label: {
-                        Text(checkoutViewModel.customerCountry.displayName)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .font(.headline)
-                            .foregroundColor(.black)
-                            .padding(.horizontal)
+                    HStack {
+                        Button {
+                            self.isShowingPicker = true
+                        } label: {
+                            Text(checkoutViewModel.customerCountry.displayName)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .font(.headline)
+                                .foregroundColor(.black)
+                                .padding(.horizontal)
+                        }
+                        
+                        if let image = UIImage(named: "BlackDownArrow", in: Bundle.module, with: nil) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20.0)
+                                .padding()
+                        }
                     }
                     .frame(height: 49.0)
                     Divider()
