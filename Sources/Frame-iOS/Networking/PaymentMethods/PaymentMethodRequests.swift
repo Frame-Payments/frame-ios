@@ -6,16 +6,42 @@
 //
 
 public class PaymentMethodRequest {
-    public struct CreatePaymentMethodRequest: Encodable, Sendable {
-        let type: String
-        var cardNumber: String
-        var expMonth: String
-        var expYear: String
-        var cvc: String
+    
+    public struct CreateACHPaymentMethodRequest: Encodable, Sendable {
+        let type: FrameObjects.PaymentRequestType
+        var accountType: FrameObjects.PaymentAccountType // Required for ACH
+        var accountNumber: String // Required for ACH
+        var routingNumber: String // Required for ACH
         let customer: String?
         let billing: FrameObjects.BillingAddress?
         
-        public init(type: String, cardNumber: String, expMonth: String, expYear: String, cvc: String, customer: String?, billing: FrameObjects.BillingAddress?) {
+        public init(type: FrameObjects.PaymentRequestType = .ach, accountType: FrameObjects.PaymentAccountType, accountNumber: String, routingNumber: String, customer: String?, billing: FrameObjects.BillingAddress?) {
+            self.type = type
+            self.accountType = accountType
+            self.accountNumber = accountNumber
+            self.routingNumber = routingNumber
+            self.customer = customer
+            self.billing = billing
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case type, customer, billing
+            case accountType = "account_type"
+            case accountNumber = "account_number"
+            case routingNumber = "routing_number"
+        }
+    }
+    
+    public struct CreateCardPaymentMethodRequest: Encodable, Sendable {
+        let type: FrameObjects.PaymentRequestType
+        var cardNumber: String // Required for Card
+        var expMonth: String // Required for Card
+        var expYear: String // Required for Card
+        var cvc: String // Required for Card
+        let customer: String?
+        let billing: FrameObjects.BillingAddress?
+        
+        public init(type: FrameObjects.PaymentRequestType = .card, cardNumber: String, expMonth: String, expYear: String, cvc: String, customer: String?, billing: FrameObjects.BillingAddress?) {
             self.type = type
             self.cardNumber = cardNumber
             self.expMonth = expMonth
@@ -34,8 +60,8 @@ public class PaymentMethodRequest {
     }
     
     public struct UpdatePaymentMethodRequest: Encodable {
-        let expMonth: String?
-        let expYear: String?
+        let expMonth: String? // Only used for type: `card` payment methods
+        let expYear: String? // Only used for type: `card` payment methods
         let billing: FrameObjects.BillingAddress?
         
         public init(expMonth: String? = nil, expYear: String? = nil, billing: FrameObjects.BillingAddress? = nil) {

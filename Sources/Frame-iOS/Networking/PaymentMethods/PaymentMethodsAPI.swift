@@ -8,13 +8,15 @@
 import Foundation
 import EvervaultCore
 
-// Protocol for Mock Testing
+// https://docs.framepayments.com/api/payment_methods
+
 protocol PaymentMethodProtocol {
     //MARK: Methods using async/await
     static func getPaymentMethods(page: Int?, perPage: Int?) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
     static func getPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func getPaymentMethodsWithCustomer(customerId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
-    static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
+    static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
+    static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest)  async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest)  async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func detachPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
@@ -25,7 +27,8 @@ protocol PaymentMethodProtocol {
     static func getPaymentMethods(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
     static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
-    static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
+    static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
+    static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
@@ -71,20 +74,33 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = true) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
-        // Ensure evervault is configured before continuing
-        if !FrameNetworking.shared.isEvervaultConfigured {
-            FrameNetworking.shared.configureEvervault()
-        }
-        
+    public static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         
         var encryptedRequest = request
         if encryptData {
+            // Ensure evervault is configured before continuing
+            if !FrameNetworking.shared.isEvervaultConfigured {
+                FrameNetworking.shared.configureEvervault()
+            }
+            
             encryptedRequest.cardNumber = try await Evervault.shared.encrypt(request.cardNumber) as! String
             encryptedRequest.cvc = try await Evervault.shared.encrypt(request.cvc) as! String
         }
+        
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
+        
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+    
+    public static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
+        let endpoint = PaymentMethodEndpoints.createPaymentMethod
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
@@ -194,14 +210,19 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public static func createPaymentMethod(request: PaymentMethodRequest.CreatePaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
-        let immutableRequest = request // Capture as a local constant
+    public static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
+        let immutableRequest = request
 
         Task {
             do {
                 let endpoint = PaymentMethodEndpoints.createPaymentMethod
                 var encryptedRequest = immutableRequest
                 if encryptData {
+                    // Ensure evervault is configured before continuing
+                    if !FrameNetworking.shared.isEvervaultConfigured {
+                        FrameNetworking.shared.configureEvervault()
+                    }
+                    
                     encryptedRequest.cardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as! String
                     encryptedRequest.cvc = try await Evervault.shared.encrypt(immutableRequest.cvc) as! String
                 }
@@ -216,6 +237,19 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
                 }
             } catch {
                 completionHandler(nil, nil)
+            }
+        }
+    }
+    
+    public static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
+        let endpoint = PaymentMethodEndpoints.createPaymentMethod
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
             }
         }
     }

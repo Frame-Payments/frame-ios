@@ -13,19 +13,28 @@ public class FrameObjects {
         case active, blocked
     }
     
+    public enum PaymentRequestType: String, Codable, Sendable {
+        case card, ach
+    }
+    
+    public enum PaymentAccountType: String, Codable, Sendable {
+        case checking, savings
+    }
+    
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
         public var customer: String? // ID of the Customer
         public var billing: BillingAddress? // Billing information associated with the PaymentMethod
-        public let type: String
+        public let type: PaymentRequestType
         public let object: String
         public let created: Int // Timestamp
         public let updated: Int // Timestamp
         public let livemode: Bool
         public var card: PaymentCard?
+        public var ach: BankAccount?
         public let status: PaymentMethodStatus?
         
-        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: String, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil, status: PaymentMethodStatus? = nil) {
+        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: PaymentRequestType, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil, ach: BankAccount? = nil, status: PaymentMethodStatus? = nil) {
             self.id = id
             self.customer = customer
             self.billing = billing
@@ -35,6 +44,7 @@ public class FrameObjects {
             self.updated = updated
             self.livemode = livemode
             self.card = card
+            self.ach = ach
             self.status = status
         }
     }
@@ -64,7 +74,6 @@ public class FrameObjects {
         }
     }
     
-    //TODO: Get real types for mark objects as optional
     public struct PaymentCard: Codable, Sendable, Equatable {
         public let brand: String
         public let expirationMonth: String
@@ -92,6 +101,30 @@ public class FrameObjects {
             case expirationMonth = "exp_month"
             case expirationYear = "exp_year"
             case lastFourDigits = "last_four"
+        }
+    }
+    
+    public struct BankAccount: Codable, Sendable, Equatable {
+        public let accountType: FrameObjects.PaymentAccountType?
+        public let accountNumber: String?
+        public let routingNumber: String?
+        public let bankName: String?
+        public let lastFour: String?
+        
+        public init(accountType: FrameObjects.PaymentAccountType?, accountNumber: String?, routingNumber: String?, bankName: String?, lastFour: String?) {
+            self.accountType = accountType
+            self.accountNumber = accountNumber
+            self.routingNumber = routingNumber
+            self.bankName = bankName
+            self.lastFour = lastFour
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case accountType = "account_type"
+            case accountNumber = "account_number"
+            case routingNumber = "routing_number"
+            case bankName = "bank_name"
+            case lastFour = "last_four"
         }
     }
 }
