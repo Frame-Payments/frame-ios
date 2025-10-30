@@ -63,7 +63,7 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       description: "",
                                                                       paymentMethod: paymentMethodId,
                                                                       confirm: true,
-                                                                      receiptEmail: nil,
+                                                                      receiptEmail: customerEmail,
                                                                       authorizationMode: .automatic,
                                                                       customerData: nil,
                                                                       paymentMethodData: nil)
