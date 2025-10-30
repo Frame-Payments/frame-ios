@@ -37,9 +37,9 @@ public class FrameNetworking: ObservableObject {
         self.apiKey = key
         self.debugMode = debugMode
         
-        // Initializes Sift when the api key is set and the SDK is initialized.
+        // Initializes Sift when the SDK is initialized.
         Task {
-            await SiftManager.initializeSift(userId: apiKey)
+            await SiftManager.initializeSift()
         }
     }
     

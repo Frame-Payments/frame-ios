@@ -40,6 +40,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -88,6 +89,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+            SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -137,6 +139,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)
@@ -186,6 +189,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
+                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

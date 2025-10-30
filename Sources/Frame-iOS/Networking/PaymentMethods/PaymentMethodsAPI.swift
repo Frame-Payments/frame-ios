@@ -68,12 +68,15 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+            // Redundancy incase no Customer API calls are ever made.
+            SiftManager.collectLoginEvent(customerId: customerId, email: "")
             return (decodedResponse, error)
         } else {
             return (nil, error)
         }
     }
     
+    // Note: You do not need to encrypt if you are using card details the EncryptedPaymentCardInput element
     public static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         
@@ -210,6 +213,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
+    // Note: You do not need to encrypt if you are using card details the EncryptedPaymentCardInput element
     public static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let immutableRequest = request
 
