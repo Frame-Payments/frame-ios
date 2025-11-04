@@ -188,7 +188,7 @@ final class CustomerAPITests: XCTestCase {
         let customerTwo = FrameObjects.Customer(id: "12345", livemode: false, name: "Tester2")
         
         do {
-            let response = Frame_iOS.CustomerResponses.ListCustomersResponse(meta: nil, data: [customerOne, customerTwo])
+            let response = CustomerResponses.ListCustomersResponse(meta: nil, data: [customerOne, customerTwo])
             
             session.data = try JSONEncoder().encode(response)
             let (secondSearch, _) = try await CustomersAPI.searchCustomers(request: request)
