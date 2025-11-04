@@ -2,7 +2,7 @@
 //  InvoiceObjects.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 11/4/25.
+//  Created by Frame Payments on 11/4/25.
 //
 
 extension FrameObjects {
