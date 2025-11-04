@@ -49,7 +49,7 @@ extension FrameObjects {
         public let created: Int
         public let updated: Int
         
-        init(id: String, customer: Customer?, object: String, total: Int, currency: String, status: InvoiceStatus, collectionMethod: InvoiceCollectionMethod, netTerms: Int, invoiceNumber: String, description: String, memo: String, livemode: Bool, metadata: [String : String]?, lineItems: [InvoiceLineItem]?, created: Int, updated: Int) {
+        public init(id: String, customer: Customer?, object: String, total: Int, currency: String, status: InvoiceStatus, collectionMethod: InvoiceCollectionMethod, netTerms: Int, invoiceNumber: String, description: String, memo: String, livemode: Bool, metadata: [String : String]?, lineItems: [InvoiceLineItem]?, created: Int, updated: Int) {
             self.id = id
             self.customer = customer
             self.object = object
@@ -68,7 +68,7 @@ extension FrameObjects {
             self.updated = updated
         }
         
-        public enum CodingKeys: String, CodingKey {
+        enum CodingKeys: String, CodingKey {
             case id, customer, object, total, currency, status, description, memo, livemode, metadata, created, updated
             case collectionMethod = "collection_method"
             case netTerms = "net_terms"
