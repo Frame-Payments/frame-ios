@@ -26,7 +26,7 @@ protocol InvoicesProtocol {
     static func issueInvoice(invoiceId: String, completionHandler: @escaping @Sendable (FrameObjects.Invoice?, NetworkingError?) -> Void)
 }
 
-// Customers API
+// Invoices API
 public class InvoicesAPI: InvoicesProtocol, @unchecked Sendable {
     
     //MARK: Methods using async/await
