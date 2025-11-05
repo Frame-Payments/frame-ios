@@ -9,7 +9,7 @@ import XCTest
 @testable import Frame_iOS
 
 final class InvoiceLineItemsAPITests: XCTestCase {
-    let session = MockURLAsyncSession(data: nil, response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/invoices")!,
+    let session = MockURLAsyncSession(data: nil, response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/invoices/inv_1/line_items")!,
                                                                            statusCode: 200,
                                                                            httpVersion: nil,
                                                                            headerFields: nil), error: nil)
