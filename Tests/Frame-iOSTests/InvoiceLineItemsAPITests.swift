@@ -72,7 +72,7 @@ final class InvoiceLineItemsAPITests: XCTestCase {
         }
     }
     
-    func testGetInvoices() async {
+    func testGetInvoiceLineItems() async {
         FrameNetworking.shared.asyncURLSession = session
         let invoiceLineItems = try? await InvoiceLineItemsAPI.getLineItems(invoiceId: "inv_1").0
         XCTAssertNil(invoiceLineItems )
