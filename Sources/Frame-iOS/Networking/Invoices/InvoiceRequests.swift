@@ -8,7 +8,7 @@
 import Foundation
 
 public class InvoiceRequests {
-    public struct CreateInvoiceRequest: Codable {
+    public struct CreateInvoiceRequest: Encodable {
         let customer: String
         let collectionMethod: FrameObjects.InvoiceCollectionMethod
         var netTerms: Int?
@@ -37,7 +37,7 @@ public class InvoiceRequests {
         }
     }
     
-    public struct UpdateInvoiceRequest: Codable {
+    public struct UpdateInvoiceRequest: Encodable {
         var collectionMethod: FrameObjects.InvoiceCollectionMethod?
         var netTerms: Int?
         var number: Int?
