@@ -60,10 +60,10 @@ final class PaymentMethodsAPITests: XCTestCase {
     
     func testGetCustomerPaymentMethods() async {
         FrameNetworking.shared.asyncURLSession = session
-        let receivedMethod = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: "").0
+        let receivedMethod = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: "", forTesting: true).0
         XCTAssertNil(receivedMethod)
         
-        let secondReceivedMethod = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: "123").0
+        let secondReceivedMethod = try? await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: "123", forTesting: true).0
         XCTAssertNil(secondReceivedMethod)
         
         let paymentMethod = FrameObjects.PaymentMethod(id: "1", customer: "123456", type: .card, object: "", created: 0, updated: 0, livemode: true)
@@ -71,7 +71,7 @@ final class PaymentMethodsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod, secondPaymentMethod]))
-            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: paymentMethod.customer ?? "")
+            let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: paymentMethod.customer ?? "", forTesting: true)
             
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.data?[0].customer, paymentMethod.customer)

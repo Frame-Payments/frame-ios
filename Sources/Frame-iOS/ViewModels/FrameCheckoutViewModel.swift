@@ -26,13 +26,13 @@ class FrameCheckoutViewModel: ObservableObject {
     var customerId: String?
     var amount: Int = 0
     
-    func loadCustomerPaymentMethods(customerId: String?, amount: Int) async {
+    func loadCustomerPaymentMethods(customerId: String?, amount: Int, forTesting: Bool = false) async {
         self.amount = amount
         
         guard let customerId else { return }
         self.customerId = customerId
         
-        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId).0
+        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId, forTesting: forTesting).0
         self.customerPaymentOptions = customer?.paymentMethods
         self.customerName = customer?.name ?? ""
         self.customerEmail = customer?.email ?? ""
@@ -63,7 +63,7 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       description: "",
                                                                       paymentMethod: paymentMethodId,
                                                                       confirm: true,
-                                                                      receiptEmail: nil,
+                                                                      receiptEmail: customerEmail,
                                                                       authorizationMode: .automatic,
                                                                       customerData: nil,
                                                                       paymentMethodData: nil)
@@ -87,7 +87,7 @@ class FrameCheckoutViewModel: ObservableObject {
         if customerId == nil {
             //1. Create the new user to assign the payment method to.
             let customerRequest = CustomerRequest.CreateCustomerRequest(billingAddress: billingAddress, name: customerName, email: customerEmail)
-            let customer = try? await CustomersAPI.createCustomer(request: customerRequest).0
+            let customer = try? await CustomersAPI.createCustomer(request: customerRequest, forTesting: true).0
             currentCustomerId = customer?.id ?? ""
             guard currentCustomerId != "" else { return (nil, nil) }
         } else if let customerId {

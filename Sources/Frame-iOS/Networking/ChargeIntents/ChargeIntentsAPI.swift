@@ -37,7 +37,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
-            SiftManager.addNewSiftEvent(transactionType: .sale, eventId: decodedResponse.id)
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -51,7 +50,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
-            SiftManager.addNewSiftEvent(transactionType: .capture, eventId: decodedResponse.id)
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -125,7 +123,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
-                SiftManager.addNewSiftEvent(transactionType: .sale, eventId: decodedResponse.id)
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)
@@ -139,7 +136,6 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
-                SiftManager.addNewSiftEvent(transactionType: .capture, eventId: decodedResponse.id)
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

@@ -20,11 +20,11 @@ final class CheckoutViewModelTests: XCTestCase {
         
         // Test with invalid customer ID
         let viewModel = FrameCheckoutViewModel()
-        await viewModel.loadCustomerPaymentMethods(customerId: "", amount: 100)
+        await viewModel.loadCustomerPaymentMethods(customerId: "", amount: 100, forTesting: true)
         XCTAssertNil(viewModel.customerPaymentOptions)
         
         // Test with valid customer ID with no payment methods
-        await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100)
+        await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100, forTesting: true)
         XCTAssertNil(viewModel.customerPaymentOptions)
         
         // Test with valid customer ID with payment method
@@ -32,7 +32,7 @@ final class CheckoutViewModelTests: XCTestCase {
         let customer = FrameObjects.Customer(id: "1", livemode: false, name: "Tester", paymentMethods: [paymentMethod])
         
         session.data = try? JSONEncoder().encode(customer)
-        await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100)
+        await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100, forTesting: true)
         XCTAssertNotNil(viewModel.customerPaymentOptions)
         XCTAssertEqual(viewModel.customerPaymentOptions?.first?.id, "1")
     }

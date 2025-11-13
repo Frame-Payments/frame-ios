@@ -16,7 +16,7 @@ class SiftManager {
         case refund = "$refund"
     }
     
-    class func initializeSift(userId: String) async {
+    class func initializeSift() async {
         guard let sift = Sift.sharedInstance() else { return }
         
         do {
@@ -28,25 +28,24 @@ class SiftManager {
                 sift.accountId = response.accountId
                 sift.beaconKey = response.beaconKey
             }
-            
-            sift.userId = userId // Frame API Key
         } catch let error {
             print(error.localizedDescription)
         }
     }
     
-    class func addNewSiftEvent(transactionType: SiftTransactionType, eventId: String) {
-        // Create Sift Event
-        let event = SiftEvent()
-        event.type = "$transaction"
-        event.fields = ["$transaction_type": transactionType.rawValue,
-                        "$transaction_id": eventId,
-                        "$ip": getIPAddress() ?? ""]
+    //Set the login event the first chance you get customer details.
+    class func collectLoginEvent(customerId: String, email: String) {
+        guard let sift = Sift.sharedInstance(), sift.userId.isEmpty else { return }
+        sift.userId = customerId
         
-        // Added event to queue and collect phone data
-        Sift.sharedInstance().append(event)
-        Sift.sharedInstance().collect()
-        Sift.sharedInstance().upload()
+        let event = SiftEvent()
+        event.type = "$login"
+        event.fields = ["$ip": getIPAddress() ?? "", "$user_email": email]
+        
+        // Added event to queue and collect data
+        sift.append(event)
+        sift.collect()
+        sift.upload()
     }
     
     class func getIPAddress() -> String? {

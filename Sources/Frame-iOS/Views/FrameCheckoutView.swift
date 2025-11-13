@@ -328,7 +328,5 @@ public struct FrameCheckoutView: View {
 }
 
 #Preview {
-    FrameCheckoutView(customerId: "", paymentAmount: 15000) { chargeIntent in
-        print(chargeIntent.description)
-    }
+    FrameCheckoutView(customerId: "", paymentAmount: 15000) { _ in }
 }
