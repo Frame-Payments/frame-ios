@@ -7,7 +7,7 @@
 
 import Foundation
 
-// https://docs.framepayments.com/refunds
+// https://docs.framepayments.com/api/refunds
 
 // Protocol for Mock Testing
 protocol RefundsProtocol {
