@@ -26,8 +26,8 @@ jobs:
       - name: Run Tests on iOS Simulator
         run: |
           xcodebuild test \
-            -scheme Frame-iOS \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -scheme "Frame-iOS" \
+            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device'
             -sdk iphonesimulator \
             -enableCodeCoverage YES
             ONLY_ACTIVE_ARCH=YES
