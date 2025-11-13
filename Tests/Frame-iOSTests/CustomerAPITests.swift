@@ -37,7 +37,7 @@ final class CustomerAPITests: XCTestCase {
         request.shippingAddress = FrameObjects.BillingAddress(city: nil, country: nil, state: nil, postalCode: "99999", addressLine1: nil, addressLine2: nil)
         XCTAssertNotNil(request.shippingAddress)
         
-        let createdCustomer = try? await CustomersAPI.createCustomer(request: request).0
+        let createdCustomer = try? await CustomersAPI.createCustomer(request: request, forTesting: true).0
         XCTAssertNil(createdCustomer)
         
         var customer = FrameObjects.Customer(id: "1", livemode: false, name: "Tester")
@@ -48,7 +48,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (createdCustomerTwo, _) = try await CustomersAPI.createCustomer(request: request)
+            let (createdCustomerTwo, _) = try await CustomersAPI.createCustomer(request: request, forTesting: true)
             XCTAssertNotNil(createdCustomerTwo)
             XCTAssertEqual(createdCustomerTwo?.phone, customer.phone)
             XCTAssertEqual(createdCustomerTwo?.billingAddress, customer.billingAddress)
@@ -148,17 +148,17 @@ final class CustomerAPITests: XCTestCase {
     
     func testGetCustomerWithId() async {
         FrameNetworking.shared.asyncURLSession = session
-        let receivedCustomer = try? await CustomersAPI.getCustomerWith(customerId: "").0
+        let receivedCustomer = try? await CustomersAPI.getCustomerWith(customerId: "", forTesting: true).0
         XCTAssertNil(receivedCustomer)
         
-        let receivedCustomerTwo = try? await CustomersAPI.getCustomerWith(customerId: "123").0
+        let receivedCustomerTwo = try? await CustomersAPI.getCustomerWith(customerId: "123", forTesting: true).0
         XCTAssertNil(receivedCustomerTwo)
         
         let customer = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester")
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (receivedCustomerThree, _) = try await CustomersAPI.getCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, _) = try await CustomersAPI.getCustomerWith(customerId: "1234", forTesting: true)
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
         } catch {

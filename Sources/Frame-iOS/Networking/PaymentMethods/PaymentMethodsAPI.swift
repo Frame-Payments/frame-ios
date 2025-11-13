@@ -14,7 +14,7 @@ protocol PaymentMethodProtocol {
     //MARK: Methods using async/await
     static func getPaymentMethods(page: Int?, perPage: Int?) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
     static func getPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
-    static func getPaymentMethodsWithCustomer(customerId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
+    static func getPaymentMethodsWithCustomer(customerId: String, forTesting: Bool) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
     static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest)  async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
@@ -62,14 +62,16 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         }
     }
     
-    public static func getPaymentMethodsWithCustomer(customerId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
+    public static func getPaymentMethodsWithCustomer(customerId: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
       guard !customerId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
-            // Redundancy incase no Customer API calls are ever made.
-            SiftManager.collectLoginEvent(customerId: customerId, email: "")
+            if !forTesting {
+                // Redundancy incase no Customer API calls are ever made.
+                SiftManager.collectLoginEvent(customerId: customerId, email: "")
+            }
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -206,6 +208,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+                SiftManager.collectLoginEvent(customerId: customerId, email: "")
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

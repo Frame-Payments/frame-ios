@@ -32,7 +32,7 @@ class FrameCheckoutViewModel: ObservableObject {
         guard let customerId else { return }
         self.customerId = customerId
         
-        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId).0
+        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId, forTesting: true).0
         self.customerPaymentOptions = customer?.paymentMethods
         self.customerName = customer?.name ?? ""
         self.customerEmail = customer?.email ?? ""
@@ -87,7 +87,7 @@ class FrameCheckoutViewModel: ObservableObject {
         if customerId == nil {
             //1. Create the new user to assign the payment method to.
             let customerRequest = CustomerRequest.CreateCustomerRequest(billingAddress: billingAddress, name: customerName, email: customerEmail)
-            let customer = try? await CustomersAPI.createCustomer(request: customerRequest).0
+            let customer = try? await CustomersAPI.createCustomer(request: customerRequest, forTesting: true).0
             currentCustomerId = customer?.id ?? ""
             guard currentCustomerId != "" else { return (nil, nil) }
         } else if let customerId {

@@ -10,11 +10,11 @@ import Foundation
 // Protocol for Mock Testing
 protocol CustomersProtocol {
     //async/await
-    static func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> (FrameObjects.Customer?, NetworkingError?)
+    static func createCustomer(request: CustomerRequest.CreateCustomerRequest, forTesting: Bool) async throws -> (FrameObjects.Customer?, NetworkingError?)
     static func deleteCustomer(customerId: String) async throws -> (CustomerResponses.DeleteCustomerResponse?, NetworkingError?)
     static func updateCustomerWith(customerId: String, request: CustomerRequest.UpdateCustomerRequest) async throws -> (FrameObjects.Customer?, NetworkingError?)
     static func getCustomers(page: Int?, perPage: Int?) async throws -> (CustomerResponses.ListCustomersResponse?, NetworkingError?)
-    static func getCustomerWith(customerId: String) async throws -> (FrameObjects.Customer?, NetworkingError?)
+    static func getCustomerWith(customerId: String, forTesting: Bool) async throws -> (FrameObjects.Customer?, NetworkingError?)
     static func searchCustomers(request: CustomerRequest.SearchCustomersRequest) async throws -> ([FrameObjects.Customer]?, NetworkingError?)
     static func blockCustomerWith(customerId: String) async throws -> (FrameObjects.Customer?, NetworkingError?)
     static func unblockCustomerWith(customerId: String) async throws -> (FrameObjects.Customer?, NetworkingError?)
@@ -34,13 +34,15 @@ protocol CustomersProtocol {
 public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
     
     //MARK: Methods using async/await
-    public static func createCustomer(request: CustomerRequest.CreateCustomerRequest) async throws -> (FrameObjects.Customer?, NetworkingError?) {
+    public static func createCustomer(request: CustomerRequest.CreateCustomerRequest, forTesting: Bool = false) async throws -> (FrameObjects.Customer?, NetworkingError?) {
         let endpoint = CustomerEndpoints.createCustomer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
-            SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+            if !forTesting {
+                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+            }
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -83,13 +85,15 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         }
     }
     
-    public static func getCustomerWith(customerId: String) async throws -> (FrameObjects.Customer?, NetworkingError?) {
+    public static func getCustomerWith(customerId: String, forTesting: Bool = false) async throws -> (FrameObjects.Customer?, NetworkingError?) {
        guard !customerId.isEmpty else { return (nil, nil) }
         let endpoint = CustomerEndpoints.getCustomerWith(customerId: customerId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
-            SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+            if !forTesting {
+                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+            }
             return (decodedResponse, error)
         } else {
             return (nil, error)
