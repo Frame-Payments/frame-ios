@@ -7,12 +7,12 @@
 import Foundation
 
 extension FrameObjects {
-    public enum PhasePricingType: String, Codable {
+    public enum PhasePricingType: String, Codable, Sendable {
         case staticType = "static"
         case relative
     }
     
-    public enum PhaseDurationType: String, Codable {
+    public enum PhaseDurationType: String, Codable, Sendable {
         case finite
         case infinite
     }
