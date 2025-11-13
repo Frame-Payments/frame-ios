@@ -48,7 +48,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (createdCustomerTwo, error) = try await CustomersAPI.createCustomer(request: request)
+            let (createdCustomerTwo, _) = try await CustomersAPI.createCustomer(request: request)
             XCTAssertNotNil(createdCustomerTwo)
             XCTAssertEqual(createdCustomerTwo?.phone, customer.phone)
             XCTAssertEqual(createdCustomerTwo?.billingAddress, customer.billingAddress)
@@ -67,10 +67,10 @@ final class CustomerAPITests: XCTestCase {
         let customerTwoResponse = try? await CustomersAPI.deleteCustomer(customerId: "123").0
         XCTAssertNil(customerTwoResponse)
         
-        let response = CustomerResponses.DeleteCustomerResponse(id: "1234", object: nil, deleted: nil)
+        let response = CustomerResponses.DeleteCustomerResponse(id: "1234", object: "customer", deleted: true)
         do {
             session.data = try? JSONEncoder().encode(response)
-            let (customerThreeResponse, error) = try await CustomersAPI.deleteCustomer(customerId: "1234")
+            let (customerThreeResponse, _) = try await CustomersAPI.deleteCustomer(customerId: "1234")
             XCTAssertNotNil(customerThreeResponse)
             XCTAssertEqual(customerThreeResponse?.id, response.id)
         } catch {
@@ -116,7 +116,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (customerThree, error) = try await CustomersAPI.updateCustomerWith(customerId: "1234", request: request)
+            let (customerThree, _) = try await CustomersAPI.updateCustomerWith(customerId: "1234", request: request)
             XCTAssertNotNil(customerThree)
             XCTAssertEqual(customerThree?.billingAddress, customer.billingAddress)
             XCTAssertEqual(customerThree?.shippingAddress, customer.shippingAddress)
@@ -134,10 +134,10 @@ final class CustomerAPITests: XCTestCase {
         let customerOne = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester")
         let customerTwo = FrameObjects.Customer(id: "12345", livemode: false, name: "Tester2")
         do {
-            let response = Frame_iOS.CustomerResponses.ListCustomersResponse(data: [customerOne, customerTwo])
+            let response = Frame_iOS.CustomerResponses.ListCustomersResponse(meta: nil, data: [customerOne, customerTwo])
             
             session.data = try JSONEncoder().encode(response)
-            let (customersTwo, error) = try await CustomersAPI.getCustomers()
+            let (customersTwo, _) = try await CustomersAPI.getCustomers()
             XCTAssertNotNil(customersTwo)
             XCTAssertEqual(customersTwo?.data?[0].id, customerOne.id)
             XCTAssertEqual(customersTwo?.data?[1].id, customerTwo.id)
@@ -158,7 +158,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (receivedCustomerThree, error) = try await CustomersAPI.getCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, _) = try await CustomersAPI.getCustomerWith(customerId: "1234")
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
         } catch {
@@ -188,10 +188,10 @@ final class CustomerAPITests: XCTestCase {
         let customerTwo = FrameObjects.Customer(id: "12345", livemode: false, name: "Tester2")
         
         do {
-            let response = Frame_iOS.CustomerResponses.ListCustomersResponse(data: [customerOne, customerTwo])
+            let response = CustomerResponses.ListCustomersResponse(meta: nil, data: [customerOne, customerTwo])
             
             session.data = try JSONEncoder().encode(response)
-            let (secondSearch, error) = try await CustomersAPI.searchCustomers(request: request)
+            let (secondSearch, _) = try await CustomersAPI.searchCustomers(request: request)
             XCTAssertNotNil(secondSearch)
             XCTAssertEqual(secondSearch?[0].name, customerOne.name)
             XCTAssertEqual(secondSearch?[1].name, customerTwo.name)
@@ -212,7 +212,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (receivedCustomerThree, error) = try await CustomersAPI.blockCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, _) = try await CustomersAPI.blockCustomerWith(customerId: "1234")
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
             XCTAssertEqual(receivedCustomerThree?.status, customer.status)
@@ -233,7 +233,7 @@ final class CustomerAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customer)
-            let (receivedCustomerThree, error) = try await CustomersAPI.unblockCustomerWith(customerId: "1234")
+            let (receivedCustomerThree, _) = try await CustomersAPI.unblockCustomerWith(customerId: "1234")
             XCTAssertNotNil(receivedCustomerThree)
             XCTAssertEqual(receivedCustomerThree?.id, customer.id)
             XCTAssertEqual(receivedCustomerThree?.status, customer.status)

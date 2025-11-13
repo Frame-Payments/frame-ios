@@ -1,33 +1,34 @@
 //
-//  RefundEndpoints.swift
+//  DisputeEndpoints.swift
 //  Frame-iOS
 //
-//  Created by Frame Payments on 10/17/24.
+//  Created by Frame Payments on 11/5/25.
 //
 
 import Foundation
 
-enum RefundEndpoints: FrameNetworkingEndpoints {
-    //MARK: Refund Endpoints
-    case createRefund
-    case cancelRefund(refundId: String)
-    case getRefunds(chargeId: String?, chargeIntentId: String?, perPage: Int?, page : Int?)
-    case getRefundWith(refundId: String)
+enum DisputeEndpoints: FrameNetworkingEndpoints {
+    case updateDispute(disputeId: String)
+    case getDispute(disputeId: String)
+    case getDisputes(chargeId: String?, chargeIntentId: String?, perPage: Int?, page: Int?)
+    case closeDispute(disputeId: String)
     
     var endpointURL: String {
         switch self {
-        case .createRefund, .getRefunds:
-            return "/v1/refunds"
-        case .getRefundWith(let id):
-            return "/v1/refunds/\(id)"
-        case .cancelRefund(let id):
-            return "/v1/refunds/\(id)/cancel"
+        case .updateDispute(let disputeId), .getDispute(let disputeId):
+            return "/v1/disputes/\(disputeId)"
+        case .getDisputes:
+            return "/v1/disputes/"
+        case .closeDispute(let disputeId):
+            return "/v1/disputes/\(disputeId)/close"
         }
     }
     
     var httpMethod: String {
         switch self {
-        case .createRefund, .cancelRefund:
+        case .updateDispute:
+            return "PATCH"
+        case .closeDispute:
             return "POST"
         default:
             return "GET"
@@ -36,7 +37,7 @@ enum RefundEndpoints: FrameNetworkingEndpoints {
     
     var queryItems: [URLQueryItem]? {
         switch self {
-        case .getRefunds(let chargeId, let chargeIntentId, let perPage, let page):
+        case .getDisputes(let chargeId, let chargeIntentId, let perPage, let page):
             var queryItems: [URLQueryItem] = []
             
             if let chargeId { queryItems.append(URLQueryItem(name: "charge", value: chargeId)) }
