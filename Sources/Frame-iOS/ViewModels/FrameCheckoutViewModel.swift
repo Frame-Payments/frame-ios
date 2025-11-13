@@ -26,13 +26,13 @@ class FrameCheckoutViewModel: ObservableObject {
     var customerId: String?
     var amount: Int = 0
     
-    func loadCustomerPaymentMethods(customerId: String?, amount: Int) async {
+    func loadCustomerPaymentMethods(customerId: String?, amount: Int, forTesting: Bool = false) async {
         self.amount = amount
         
         guard let customerId else { return }
         self.customerId = customerId
         
-        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId, forTesting: true).0
+        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId, forTesting: forTesting).0
         self.customerPaymentOptions = customer?.paymentMethods
         self.customerName = customer?.name ?? ""
         self.customerEmail = customer?.email ?? ""
