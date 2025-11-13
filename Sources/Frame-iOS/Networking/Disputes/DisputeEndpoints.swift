@@ -17,7 +17,7 @@ enum DisputeEndpoints: FrameNetworkingEndpoints {
         switch self {
         case .updateDispute(let disputeId), .getDispute(let disputeId):
             return "/v1/disputes/\(disputeId)"
-        case .getDisputes(let chargeId, let chargeIntentId, let perPage, let page):
+        case .getDisputes:
             return "/v1/disputes/"
         case .closeDispute(let disputeId):
             return "/v1/disputes/\(disputeId)/close"
