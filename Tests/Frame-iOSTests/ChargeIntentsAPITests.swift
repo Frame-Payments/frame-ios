@@ -15,7 +15,7 @@ final class ChargeIntentsAPITests: XCTestCase {
                                                                            headerFields: nil), error: nil)
     
     let chargeIntentResponse = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: FrameObjects.BillingAddress(postalCode: "99999"), status: .pending,
-                                                 authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
+                                                         authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
     
     func testCreateChargeIntent() async {
         FrameNetworking.shared.asyncURLSession = session
