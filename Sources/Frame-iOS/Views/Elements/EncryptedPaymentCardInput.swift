@@ -33,3 +33,9 @@ struct EncryptedPaymentCardInput: PaymentCardInputStyle {
             .padding(.horizontal)
     }
 }
+
+#Preview {
+    // Evervault Card Input
+    PaymentCardInput(cardData: .constant(PaymentCardData()))
+        .paymentCardInputStyle(EncryptedPaymentCardInput())
+}

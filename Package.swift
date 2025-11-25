@@ -16,7 +16,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
-        .package(url: "https://github.com/SiftScience/sift-ios.git", branch: "master")
+        .package(url: "https://github.com/SiftScience/sift-ios.git", branch: "master"),
+        .package(url: "https://github.com/persona-id/inquiry-ios-2.git", from: "2.33.1")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -26,11 +27,12 @@ let package = Package(
             dependencies: [
                 .product(name: "EvervaultInputs", package: "evervault-ios"),
                 .product(name: "EvervaultEnclaves", package: "evervault-ios"),
-                .product(name: "sift-ios", package: "sift-ios")
+                .product(name: "sift-ios", package: "sift-ios"),
+                .product(name: "PersonaInquirySDK2", package: "inquiry-ios-2")
             ],
             resources: [.process("Resources")],
             swiftSettings: [
-                .define("EXCLUDE_MACOS", .when(platforms: [.macOS])) // 👈 Prevents macOS builds
+                .define("EXCLUDE_MACOS", .when(platforms: [.macOS]))
             ]
         ),
         .testTarget(

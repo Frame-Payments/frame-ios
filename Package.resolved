@@ -1,5 +1,5 @@
 {
-  "originHash" : "f65325f290a8a6717928b72112883d084d58936799403adb070e93ee5bc9f68b",
+  "originHash" : "deeeaf75cc9711c6e0e0d85c4778282e5b52921a095317b0e82251730af02c51",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -11,12 +11,21 @@
       }
     },
     {
+      "identity" : "inquiry-ios-2",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/persona-id/inquiry-ios-2.git",
+      "state" : {
+        "revision" : "4a23ed2d2bde0bfa74d704c6e4e6ae92b403bcfa",
+        "version" : "2.33.1"
+      }
+    },
+    {
       "identity" : "sift-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SiftScience/sift-ios.git",
       "state" : {
         "branch" : "master",
-        "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
+        "revision" : "85d8b9aafc03f4716ca1b9524863823832c2447a"
       }
     }
   ],

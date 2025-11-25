@@ -50,12 +50,12 @@ public class FrameObjects {
     }
     
     public struct BillingAddress: Codable, Sendable, Equatable {
-        public let city: String?
-        public let country: String?
-        public let state: String?
-        public let postalCode: String
-        public let addressLine1: String?
-        public let addressLine2: String?
+        public var city: String?
+        public var country: String?
+        public var state: String?
+        public var postalCode: String
+        public var addressLine1: String?
+        public var addressLine2: String?
         
         public init(city: String? = nil, country: String? = nil, state: String? = nil, postalCode: String, addressLine1: String? = nil, addressLine2: String? = nil) {
             self.city = city
@@ -105,11 +105,11 @@ public class FrameObjects {
     }
     
     public struct BankAccount: Codable, Sendable, Equatable {
-        public let accountType: FrameObjects.PaymentAccountType?
-        public let accountNumber: String?
-        public let routingNumber: String?
-        public let bankName: String?
-        public let lastFour: String?
+        public var accountType: FrameObjects.PaymentAccountType?
+        public var accountNumber: String?
+        public var routingNumber: String?
+        public var bankName: String?
+        public var lastFour: String?
         
         public init(accountType: FrameObjects.PaymentAccountType?, accountNumber: String?, routingNumber: String?, bankName: String?, lastFour: String?) {
             self.accountType = accountType
