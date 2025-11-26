@@ -19,8 +19,10 @@ public class ChargeIntentsRequests {
         let authorizationMode: FrameObjects.AuthorizationMode?
         let customerData: CustomerData?
         let paymentMethodData: PaymentMethodData?
+        let useFrameSDK: Bool = true
+        var fraudSignals: FraudSignals?
         
-        public init(amount: Int, currency: String, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil) {
+        public init(amount: Int, currency: String, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil, fraudSignals: FraudSignals? = nil) {
             self.amount = amount
             self.currency = currency
             self.customer = customer
@@ -31,6 +33,7 @@ public class ChargeIntentsRequests {
             self.authorizationMode = authorizationMode
             self.customerData = customerData
             self.paymentMethodData = paymentMethodData
+            self.fraudSignals = fraudSignals
         }
         
         public enum CodingKeys: String, CodingKey {
@@ -40,6 +43,8 @@ public class ChargeIntentsRequests {
             case authorizationMode = "authorization_mode"
             case customerData = "customer_data"
             case paymentMethodData = "payment_method_data"
+            case useFrameSDK = "use_frame_sdk"
+            case fraudSignals = "fraud_signals"
         }
     }
     
@@ -119,6 +124,18 @@ public class ChargeIntentsRequests {
             case cardNumber = "card_number"
             case expMonth = "exp_month"
             case expYear = "exp_year"
+        }
+    }
+    
+    public struct FraudSignals: Encodable {
+        let clientIp: String?
+        
+        public init(clientIp: String?) {
+            self.clientIp = clientIp
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case clientIp = "client_ip"
         }
     }
 }
