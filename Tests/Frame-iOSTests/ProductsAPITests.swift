@@ -54,11 +54,11 @@ final class ProductsAPITests: XCTestCase {
     
     func testGetProducts() async {
         FrameNetworking.shared.asyncURLSession = session
-        let ProductResponse = try? await ProductsAPI.getProducts(perPage: nil, page: nil).0
-        XCTAssertNil(ProductResponse)
+        let productResponseOne = try? await ProductsAPI.getProducts(perPage: nil, page: nil).0
+        XCTAssertNil(productResponseOne)
         
-        let ProductResponseTwo = try? await ProductsAPI.getProducts(perPage: 10, page: 1).0
-        XCTAssertNil(ProductResponseTwo)
+        let productResponseTwo = try? await ProductsAPI.getProducts(perPage: 10, page: 1).0
+        XCTAssertNil(productResponseTwo)
         
         do {
             session.data = try JSONEncoder().encode(ProductResponses.ListProductsResponse(meta: nil, data: [productResponse]))
@@ -73,11 +73,11 @@ final class ProductsAPITests: XCTestCase {
     
     func testGetProduct() async {
         FrameNetworking.shared.asyncURLSession = session
-        let ProductResponse = try? await ProductsAPI.getProduct(productId: "").0
-        XCTAssertNil(ProductResponse)
+        let productResponseOne = try? await ProductsAPI.getProduct(productId: "").0
+        XCTAssertNil(productResponseOne)
         
-        let ProductResponseTwo = try? await ProductsAPI.getProduct(productId: "prod_1").0
-        XCTAssertNil(ProductResponseTwo)
+        let productResponseTwo = try? await ProductsAPI.getProduct(productId: "prod_1").0
+        XCTAssertNil(productResponseTwo)
         
         do {
             session.data = try JSONEncoder().encode(productResponse)
@@ -110,11 +110,11 @@ final class ProductsAPITests: XCTestCase {
     
     func testDeleteProduct() async {
         FrameNetworking.shared.asyncURLSession = session
-        let ProductResponse = try? await ProductsAPI.deleteProduct(productId: "").0
-        XCTAssertNil(ProductResponse)
+        let productResponse = try? await ProductsAPI.deleteProduct(productId: "").0
+        XCTAssertNil(productResponse)
         
-        let ProductResponseTwo = try? await ProductsAPI.deleteProduct(productId: "prod_1").0
-        XCTAssertNil(ProductResponseTwo)
+        let productResponseTwo = try? await ProductsAPI.deleteProduct(productId: "prod_1").0
+        XCTAssertNil(productResponseTwo)
         
         let deletionResponse = ProductResponses.DeleteProductResponse(id: "prod_1", object: "product", deleted: true)
         do {
