@@ -8,7 +8,7 @@
 import XCTest
 @testable import Frame_iOS
 
-final class ProductsPITests: XCTestCase {
+final class ProductsAPITests: XCTestCase {
     let session = MockURLAsyncSession(data: nil, response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/products")!,
                                                                            statusCode: 200,
                                                                            httpVersion: nil,
