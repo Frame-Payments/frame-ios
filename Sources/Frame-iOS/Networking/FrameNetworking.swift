@@ -48,8 +48,8 @@ public class FrameNetworking: ObservableObject {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = endpoint.httpMethod
-        if endpoint.httpMethod == "POST" || endpoint.httpMethod == "PATCH" {
+        urlRequest.httpMethod = endpoint.httpMethod.rawValue
+        if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
@@ -86,8 +86,8 @@ public class FrameNetworking: ObservableObject {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = endpoint.httpMethod
-        if endpoint.httpMethod == "POST" || endpoint.httpMethod == "PATCH" {
+        urlRequest.httpMethod = endpoint.httpMethod.rawValue
+        if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         

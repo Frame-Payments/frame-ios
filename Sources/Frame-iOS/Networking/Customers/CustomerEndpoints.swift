@@ -33,16 +33,16 @@ enum CustomerEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createCustomer, .blockCustomer, .unblockCustomer:
-            return "POST"
+            return .POST
         case .updateCustomer:
-            return "PATCH"
+            return .PATCH
         case .deleteCustomer:
-            return "DELETE"
+            return .DELETE
         default:
-            return "GET"
+            return .GET
         }
     }
     

@@ -29,14 +29,14 @@ enum SubscriptionEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createSubscription, .cancelSubscription:
-            return "POST"
+            return .POST
         case .updateSubscription:
-            return "PATCH"
+            return .PATCH
         default:
-            return "GET"
+            return .GET
         }
     }
     

@@ -61,7 +61,7 @@ class MockURLAsyncSession: URLSessionProtocol {
 
 struct MockFrameEndpoints: FrameNetworkingEndpoints {
     var endpointURL: String
-    var httpMethod: String
+    var httpMethod: HTTPMethod
     var queryItems: [URLQueryItem]?
 }
 
@@ -78,7 +78,7 @@ final class FrameNetworkingTests: XCTestCase {
         
         let networking = FrameNetworking.shared
         networking.asyncURLSession = mockSession
-        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
         
         do {
             let (data, error) = try await networking.performDataTask(endpoint: endpoint)
@@ -100,7 +100,7 @@ final class FrameNetworkingTests: XCTestCase {
         
         let networking = FrameNetworking.shared
         networking.asyncURLSession = mockSession
-        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
         
         do {
             let (data, response) = try await networking.performDataTask(endpoint: endpoint)
@@ -121,7 +121,7 @@ final class FrameNetworkingTests: XCTestCase {
         
         let networking = FrameNetworking.shared
         networking.asyncURLSession = mockSession
-        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
         
         do {
             let (data, error) = try await networking.performDataTask(endpoint: endpoint)
@@ -147,7 +147,7 @@ final class FrameNetworkingTests: XCTestCase {
         
         let networking = FrameNetworking.shared
         networking.urlSession = mockSession
-        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
         
         let expectation = self.expectation(description: "Completion handler called")
         
@@ -172,7 +172,7 @@ final class FrameNetworkingTests: XCTestCase {
         
         let networking = FrameNetworking.shared
         networking.urlSession = mockSession
-        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
         
         let expectation = self.expectation(description: "Completion handler called")
         
@@ -194,7 +194,7 @@ final class FrameNetworkingTests: XCTestCase {
         
         let networking = FrameNetworking.shared
         networking.urlSession = mockSession
-        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: "GET", queryItems: nil)
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
         
         let expectation = self.expectation(description: "Completion handler called")
         

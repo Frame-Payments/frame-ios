@@ -32,14 +32,14 @@ enum ChargeIntentEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createChargeIntent, .cancelChargeIntent, .captureChargeIntent, .confirmChargeIntent:
-            return "POST"
+            return .POST
         case .updateChargeIntent:
-            return "PATCH"
+            return .PATCH
         default:
-            return "GET"
+            return .GET
         }
     }
     

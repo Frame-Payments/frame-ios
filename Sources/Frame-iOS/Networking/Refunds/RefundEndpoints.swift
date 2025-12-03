@@ -25,12 +25,12 @@ enum RefundEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createRefund, .cancelRefund:
-            return "POST"
+            return .POST
         default:
-            return "GET"
+            return .GET
         }
     }
     
