@@ -17,6 +17,16 @@ public class SubscriptionPhaseRequests {
         let periodCount: Int?
         let interval: String?
         let intervalCount: Int?
+        
+        enum CodingKeys: String, CodingKey {
+            case ordinal, name, interval
+            case durationType = "duration_type"
+            case pricingType = "pricing_type"
+            case amountCents = "amount_cents"
+            case discountPercentage = "discount_percentage"
+            case periodCount = "period_count"
+            case intervalCount = "interval_count"
+        }
     }
     
     public struct UpdateSubscriptionPhase: Codable {
@@ -29,6 +39,16 @@ public class SubscriptionPhaseRequests {
         let periodCount: Int?
         let interval: String?
         let intervalCount: Int?
+        
+        enum CodingKeys: String, CodingKey {
+            case ordinal, name, interval
+            case durationType = "duration_type"
+            case pricingType = "pricing_type"
+            case amountCents = "amount_cents"
+            case discountPercentage = "discount_percentage"
+            case periodCount = "period_count"
+            case intervalCount = "interval_count"
+        }
     }
     
     public struct BulkUpdateScriptionPhase: Codable {
