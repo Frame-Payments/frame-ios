@@ -28,16 +28,16 @@ enum ProductEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createProduct:
-            return "POST"
+            return .POST
         case .updateProduct:
-            return "PATCH"
+            return .PATCH
         case .deleteProduct:
-            return "DELETE"
+            return .DELETE
         default:
-            return "GET"
+            return .GET
         }
     }
     

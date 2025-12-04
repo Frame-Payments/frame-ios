@@ -17,6 +17,7 @@ extension FrameObjects {
         case infinite
     }
     
+    //Note: Also used as a *ProductPhase*
     public struct SubscriptionPhase: Codable, Sendable, Identifiable, Equatable {
         public var id: String
         public var ordinal: Int?

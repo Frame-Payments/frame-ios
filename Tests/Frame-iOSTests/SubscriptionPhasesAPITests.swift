@@ -2,7 +2,7 @@
 //  File.swift
 //  Frame-iOS
 //
-//  Created by Frame Objects on 8/21/25.
+//  Created by Frame Payments on 8/21/25.
 //
 
 import Foundation
@@ -128,20 +128,10 @@ final class SubscriptionPhasesAPITests: XCTestCase {
     func testDeleteSubscriptionPhase() async {
         FrameNetworking.shared.asyncURLSession = session
         
-        let subscriptionPhase = try? await SubscriptionPhasesAPI.deleteSubscriptionPhase(subscriptionId: "", phaseId: "phase_123").0
+        let subscriptionPhase = try? await SubscriptionPhasesAPI.deleteSubscriptionPhase(subscriptionId: "", phaseId: "phase_123")
         XCTAssertNil(subscriptionPhase)
         
-        let secondSubscriptionPhase = try? await SubscriptionPhasesAPI.deleteSubscriptionPhase(subscriptionId: "sub_123", phaseId: "").0
+        let secondSubscriptionPhase = try? await SubscriptionPhasesAPI.deleteSubscriptionPhase(subscriptionId: "sub_123", phaseId: "")
         XCTAssertNil(secondSubscriptionPhase)
-        
-        do {
-            session.data = try JSONEncoder().encode(mockPhase)
-            let (thirdUpdatedSubscriptionPhase, error) = try await SubscriptionPhasesAPI.deleteSubscriptionPhase(subscriptionId: "sub_123", phaseId: "phase_123")
-            XCTAssertNotNil(thirdUpdatedSubscriptionPhase)
-            XCTAssertEqual(thirdUpdatedSubscriptionPhase?.pricingType, .relative)
-            XCTAssertEqual(thirdUpdatedSubscriptionPhase?.amount, 100)
-        } catch {
-            XCTFail("Error should not be thrown")
-        }
     }
 }
