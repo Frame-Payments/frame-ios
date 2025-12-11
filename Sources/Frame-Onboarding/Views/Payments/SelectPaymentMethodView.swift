@@ -10,8 +10,11 @@ import EvervaultInputs
 import Frame_iOS
 
 struct SelectPaymentMethodView: View {
-    @StateObject var paymentMethodViewModel = PaymentMethodViewModel()
+    @StateObject private var paymentMethodViewModel = PaymentMethodViewModel()
+    
     @State private var canCustomerContinue: Bool = false
+    @State private var showAddPaymentPage: Bool = false
+    @State private var showVerifyPaymentPage: Bool = false
     
     let customerId: String
     
@@ -23,11 +26,23 @@ struct SelectPaymentMethodView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
-            listPaymentMethodsView
-            Spacer()
-            ContinueButton(enabled: $canCustomerContinue) {
-                // Continue to next step based on onboarding
+        NavigationStack {
+            VStack(alignment: .leading) {
+                listPaymentMethodsView
+                Spacer()
+                ContinueButton(enabled: $canCustomerContinue) {
+                    // Verify the customer's payment method
+                    self.showVerifyPaymentPage = true
+                }
+                .padding(.bottom)
+            }
+            .navigationDestination(isPresented: $showAddPaymentPage) {
+                AddPaymentMethodView(customerId: customerId, paymentMethodViewModel: paymentMethodViewModel)
+                    .navigationBarHidden(true)
+            }
+            .navigationDestination(isPresented: $showVerifyPaymentPage) {
+                SecurePMVerificationView(completedScreen: .constant(true))
+                    .navigationBarHidden(true)
             }
         }
         .onAppear {
@@ -99,7 +114,7 @@ struct SelectPaymentMethodView: View {
         )
         .padding(.horizontal)
         .onTapGesture {
-            //TODO: Continue to 3DS card verification
+            self.showAddPaymentPage = true
         }
     }
     
@@ -131,7 +146,6 @@ struct SelectPaymentMethodView: View {
         .padding(.horizontal)
         .onTapGesture {
             paymentMethodViewModel.selectedPaymentMethod = paymentMethod
-            //TODO: Continue to 3DS card verification
         }
     }
 }

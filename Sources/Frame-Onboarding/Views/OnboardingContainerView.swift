@@ -13,16 +13,16 @@ enum OnboardingFlow: Int, CaseIterable, Identifiable {
         return "\(self.rawValue)"
     }
 
-    case selectPaymentMethod = 1
-    case confirmPaymentMethod = 2
-    case userVerification = 3
+    case confirmPaymentMethod = 1
+    case countryVerification = 2
+    case uploadDocuments = 3
     case onboardingComplete = 4
 }
 
 struct SwiftUIView: View {
-    @State private var currentStep: OnboardingFlow = .selectPaymentMethod
-    @State private var onboardingFlow: [OnboardingFlow] = [.selectPaymentMethod, .confirmPaymentMethod, .userVerification, .onboardingComplete]
-    @State private var progressiveSteps: [OnboardingFlow] = [.selectPaymentMethod]
+    @State private var currentStep: OnboardingFlow = .confirmPaymentMethod
+    @State private var onboardingFlow: [OnboardingFlow] = [.confirmPaymentMethod, .countryVerification, .uploadDocuments, .onboardingComplete]
+    @State private var progressiveSteps: [OnboardingFlow] = [.confirmPaymentMethod]
     
     let customerId: String
     
@@ -39,11 +39,11 @@ struct SwiftUIView: View {
         VStack {
             containerHeader
             switch currentStep {
-            case .selectPaymentMethod:
-                SelectPaymentMethodView(customerId: customerId)
             case .confirmPaymentMethod:
-                SecurePMVerificationView()
-            case .userVerification:
+                SelectPaymentMethodView(customerId: customerId)
+            case .countryVerification:
+                UserIdentificationView()
+            case .uploadDocuments:
                 UserIdentificationView()
             case .onboardingComplete:
                 UserIdentificationView()

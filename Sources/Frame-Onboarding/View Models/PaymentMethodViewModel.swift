@@ -38,7 +38,11 @@ class PaymentMethodViewModel: ObservableObject {
                                                                               customer: customerId,
                                                                               billing: nil)
             let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
-            self.selectedPaymentMethod = paymentMethod
+            
+            if let paymentMethod {
+                self.selectedPaymentMethod = paymentMethod
+                self.paymentMethods.append(paymentMethod)
+            }
         } catch let error {
             print(error)
         }

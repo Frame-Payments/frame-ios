@@ -10,12 +10,15 @@ import EvervaultInputs
 import Frame_iOS
 
 struct AddPaymentMethodView: View {
-    @StateObject var paymentMethodViewModel = PaymentMethodViewModel()
+    @Environment(\.dismiss) var dismiss
+    
+    @ObservedObject private var paymentMethodViewModel: PaymentMethodViewModel
     @State private var canCustomerContinue: Bool = false
     
     let customerId: String
     
-    init(customerId: String) {
+    init(customerId: String, paymentMethodViewModel: PaymentMethodViewModel) {
+        self.paymentMethodViewModel = paymentMethodViewModel
         self.customerId = customerId
     }
     
@@ -33,32 +36,36 @@ struct AddPaymentMethodView: View {
     }
     
     var addPaymentMethodView: some View {
-        Group {
-            HStack(alignment: .center) {
-                Button {
-                    // Back to previous page of card selection
-                } label: {
-                    Image("left-chevron", bundle: FrameResources.module)
-                }
-                .padding()
+        ScrollView {
+            VStack(alignment: .leading) {
+                HStack(alignment: .center) {
+                    Button {
+                        self.dismiss()
+                    } label: {
+                        Image("left-chevron", bundle: FrameResources.module)
+                    }
+                    .padding()
 
-                Spacer()
-                Text("Add New Payment Method")
+                    Spacer()
+                    Text("Add New Payment Method")
+                        .bold()
+                    Spacer()
+                    Spacer()
+                }
+                Text("Card Details")
                     .bold()
-                Spacer()
-                Spacer()
-            }
-            .padding(.bottom, 5.0)
-            Text("Card Details")
-                .bold()
-                .font(.subheadline)
-                .padding([.horizontal, .top])
-            PaymentCardInput(cardData: $paymentMethodViewModel.cardData)
-                .paymentCardInputStyle(EncryptedPaymentCardInput())
-            billingAddressDetails
-            ContinueButton(enabled: $canCustomerContinue) {
-                Task {
-                    await paymentMethodViewModel.addNewPaymentMethod(customerId: customerId)
+                    .font(.subheadline)
+                    .padding([.horizontal])
+                PaymentCardInput(cardData: $paymentMethodViewModel.cardData)
+                    .paymentCardInputStyle(EncryptedPaymentCardInput())
+                billingAddressDetails
+                ContinueButton(enabled: $canCustomerContinue) {
+                    Task {
+                        await paymentMethodViewModel.addNewPaymentMethod(customerId: customerId)
+                        
+                        // Save payment method to the customer, then go back to the previous page with the payment method selected. (**Could possibly auto-continue after that)
+                        self.dismiss()
+                    }
                 }
             }
         }
@@ -115,5 +122,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(customerId: "cus_123")
+    AddPaymentMethodView(customerId: "cus_123", paymentMethodViewModel: PaymentMethodViewModel())
 }
