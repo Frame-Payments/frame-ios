@@ -1,5 +1,5 @@
 {
-  "originHash" : "deeeaf75cc9711c6e0e0d85c4778282e5b52921a095317b0e82251730af02c51",
+  "originHash" : "1f192104556a0b3e54490d1a378585922fbe1ded0f378ad280a2f809c80385e3",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "3d2c269babcd760203e5ced03282eda6863c09b5",
         "version" : "1.3.0"
-      }
-    },
-    {
-      "identity" : "inquiry-ios-2",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/persona-id/inquiry-ios-2.git",
-      "state" : {
-        "revision" : "4a23ed2d2bde0bfa74d704c6e4e6ae92b403bcfa",
-        "version" : "2.33.1"
       }
     },
     {

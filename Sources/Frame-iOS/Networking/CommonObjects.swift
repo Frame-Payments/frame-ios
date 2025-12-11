@@ -22,6 +22,12 @@ public protocol URLSessionProtocol {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
 
+public enum FrameResources {
+    public static var module: Bundle {
+        return Bundle.module
+    }
+}
+
 // Extend URLSession to conform to the protocol
 extension URLSession: URLSessionProtocol {}
 

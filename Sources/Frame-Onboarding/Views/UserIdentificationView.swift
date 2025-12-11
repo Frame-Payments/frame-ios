@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
-import Persona2
 
 struct UserIdentificationView: View {
-    @StateObject private var kycViewModel = KYCViewModel()
+//    @StateObject private var kycViewModel = KYCViewModel()
     @State private var isPresentingSDK = false
     @State private var message = ""
     
@@ -63,27 +62,27 @@ struct UserIdentificationView: View {
                         isPresented: $isPresentingSDK,
                         onDismiss: {},
                         content: {
-                            InquirySDKWrapper(
-                                inquiryComplete: { inquiryId, status, fields in
-                                    self.message = """
-                                        Inquiry Complete
-                                        Inquiry ID: \(inquiryId)
-                                        Status: \(String(describing: status))
-                                    """
-                                    print(self.message)
-                                },
-                                inquiryCanceled: { inquiryId, sessionToken in
-                                    self.message = "🤷‍♀️ Inquiry Cancelled"
-                                    print(self.message)
-                                },
-                                inquiryErrored: { error in
-                                    self.message = """
-                                        💀 Inquiry Error
-                                        \(error.localizedDescription)
-                                    """
-                                    print(self.message)
-                                }
-                            )
+//                            InquirySDKWrapper(
+//                                inquiryComplete: { inquiryId, status, fields in
+//                                    self.message = """
+//                                        Inquiry Complete
+//                                        Inquiry ID: \(inquiryId)
+//                                        Status: \(String(describing: status))
+//                                    """
+//                                    print(self.message)
+//                                },
+//                                inquiryCanceled: { inquiryId, sessionToken in
+//                                    self.message = "🤷‍♀️ Inquiry Cancelled"
+//                                    print(self.message)
+//                                },
+//                                inquiryErrored: { error in
+//                                    self.message = """
+//                                        💀 Inquiry Error
+//                                        \(error.localizedDescription)
+//                                    """
+//                                    print(self.message)
+//                                }
+//                            )
                         }
                     )
     }

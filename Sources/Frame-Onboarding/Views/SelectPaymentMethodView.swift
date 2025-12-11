@@ -7,6 +7,7 @@
 
 import SwiftUI
 import EvervaultInputs
+import Frame_iOS
 
 struct SelectPaymentMethodView: View {
     @StateObject var paymentMethodViewModel = PaymentMethodViewModel()
@@ -131,7 +132,7 @@ struct SelectPaymentMethodView: View {
 
     func paymentMethodView(paymentMethod: FrameObjects.PaymentMethod) -> some View {
         HStack {
-            Image(paymentMethod.card?.brand ?? "", bundle: Bundle.module)
+            Image(paymentMethod.card?.brand ?? "", bundle: FrameResources.module)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 100.0, height: 40.0)

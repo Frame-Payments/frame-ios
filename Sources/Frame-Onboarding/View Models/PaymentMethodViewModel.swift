@@ -7,6 +7,7 @@
 
 import Foundation
 import EvervaultInputs
+import Frame_iOS
 
 @MainActor
 class PaymentMethodViewModel: ObservableObject {
