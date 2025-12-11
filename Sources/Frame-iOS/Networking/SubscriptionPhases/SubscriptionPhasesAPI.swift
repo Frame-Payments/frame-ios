@@ -14,7 +14,7 @@ protocol SubscriptionPhasesProtocol {
     static func getSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?)
     static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?)
     static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?)
-    static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?)
+    static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (NetworkingError?)
     static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?)
     
     // completionHandlers
@@ -22,7 +22,7 @@ protocol SubscriptionPhasesProtocol {
     static func getSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
     static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
     static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
-    static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void)
+    static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (NetworkingError?) -> Void)
     static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void)
 }
 
@@ -79,16 +79,12 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
-        guard subscriptionId != "" && phaseId != "" else { return (nil, nil) }
+    public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (NetworkingError?) {
+        guard subscriptionId != "" && phaseId != "" else { return (nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
-            return (decodedResponse, error)
-        } else {
-            return (nil, error)
-        }
+        return error
     }
     
     public static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
@@ -158,16 +154,12 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         }
     }
     
-    public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
-        guard subscriptionId != "", phaseId != "" else { return completionHandler(nil, nil) }
+    public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (NetworkingError?) -> Void) {
+        guard subscriptionId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
-            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
-                completionHandler(decodedResponse, error)
-            } else {
-                completionHandler(nil, error)
-            }
+            completionHandler(error)
         }
     }
     

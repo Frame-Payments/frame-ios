@@ -24,14 +24,14 @@ enum DisputeEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .updateDispute:
-            return "PATCH"
+            return .PATCH
         case .closeDispute:
-            return "POST"
+            return .POST
         default:
-            return "GET"
+            return .GET
         }
     }
     

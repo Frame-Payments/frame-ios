@@ -14,9 +14,12 @@ final class ChargeIntentsAPITests: XCTestCase {
                                                                            httpVersion: nil,
                                                                            headerFields: nil), error: nil)
     
+    let chargeIntentResponse = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: FrameObjects.BillingAddress(postalCode: "99999"), status: .pending,
+                                                         authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
+    
     func testCreateChargeIntent() async {
         FrameNetworking.shared.asyncURLSession = session
-        let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: 0, currency: "USD", confirm: true)
+        let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: 10, currency: "USD", confirm: true)
         XCTAssertNotNil(request.amount)
         XCTAssertNotNil(request.currency)
         XCTAssertNotNil(request.confirm)
@@ -24,16 +27,11 @@ final class ChargeIntentsAPITests: XCTestCase {
         let intent = try? await ChargeIntentsAPI.createChargeIntent(request: request).0
         XCTAssertNil(intent)
         
-        let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
-        XCTAssertNotNil(chargeIntent.shipping)
-        
         do {
-            session.data = try JSONEncoder().encode(chargeIntent)
-            let (secondIntent, error) = try await ChargeIntentsAPI.createChargeIntent(request: request)
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (secondIntent, _) = try await ChargeIntentsAPI.createChargeIntent(request: request)
             XCTAssertNotNil(secondIntent)
-            XCTAssertEqual(secondIntent?.shipping, chargeIntent.shipping)
+            XCTAssertEqual(secondIntent?.shipping, chargeIntentResponse.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -50,14 +48,11 @@ final class ChargeIntentsAPITests: XCTestCase {
         let secondCapture = try? await ChargeIntentsAPI.captureChargeIntent(intentId: "123", request: request).0
         XCTAssertNil(secondCapture)
         
-        let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
         do {
-            session.data = try JSONEncoder().encode(chargeIntent)
-            let (thirdCapture, error) = try await ChargeIntentsAPI.captureChargeIntent(intentId: "1234", request: request)
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (thirdCapture, _) = try await ChargeIntentsAPI.captureChargeIntent(intentId: "1234", request: request)
             XCTAssertNotNil(thirdCapture)
-            XCTAssertEqual(thirdCapture?.shipping, chargeIntent.shipping)
+            XCTAssertEqual(thirdCapture?.shipping, chargeIntentResponse.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -71,15 +66,11 @@ final class ChargeIntentsAPITests: XCTestCase {
         let confirmationTwo = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "123").0
         XCTAssertNil(confirmationTwo)
         
-        let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
-        
         do {
-            session.data = try JSONEncoder().encode(chargeIntent)
-            let (confirmationThree, error) = try await ChargeIntentsAPI.confirmChargeIntent(intentId: "1234")
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (confirmationThree, _) = try await ChargeIntentsAPI.confirmChargeIntent(intentId: "1234")
             XCTAssertNotNil(confirmationThree)
-            XCTAssertEqual(confirmationThree?.shipping, chargeIntent.shipping)
+            XCTAssertEqual(confirmationThree?.shipping, chargeIntentResponse.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -93,15 +84,11 @@ final class ChargeIntentsAPITests: XCTestCase {
         let cancellationTwo = try? await ChargeIntentsAPI.cancelChargeIntent(intentId: "123").0
         XCTAssertNil(cancellationTwo)
         
-        let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
-        
         do {
-            session.data = try JSONEncoder().encode(chargeIntent)
-            let (cancellationThree, error) = try await ChargeIntentsAPI.cancelChargeIntent(intentId: "1234")
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (cancellationThree, _) = try await ChargeIntentsAPI.cancelChargeIntent(intentId: "1234")
             XCTAssertNotNil(cancellationThree)
-            XCTAssertEqual(cancellationThree?.shipping, chargeIntent.shipping)
+            XCTAssertEqual(cancellationThree?.shipping, chargeIntentResponse.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -113,17 +100,14 @@ final class ChargeIntentsAPITests: XCTestCase {
         XCTAssertNil(intentsOne)
         
         let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
-        
         let chargeIntentTwo = FrameObjects.ChargeIntent(id: "2", currency: "EUR", shipping: shippingAddress, status: .canceled,
                                                         authorizationMode: .automatic, object: "", amount: 100, created: 0, updated: 0, livemode: false)
         do {
-            session.data = try JSONEncoder().encode(ChargeIntentResponses.ListChargeIntentsResponse(meta: nil, data: [chargeIntent, chargeIntentTwo]))
-            let (intentsTwo, error) = try await ChargeIntentsAPI.getAllChargeIntents()
+            session.data = try JSONEncoder().encode(ChargeIntentResponses.ListChargeIntentsResponse(meta: nil, data: [chargeIntentResponse, chargeIntentTwo]))
+            let (intentsTwo, _) = try await ChargeIntentsAPI.getAllChargeIntents()
 
             XCTAssertNotNil(intentsTwo)
-            XCTAssertEqual(intentsTwo?.data?[0].currency, chargeIntent.currency)
+            XCTAssertEqual(intentsTwo?.data?[0].currency, chargeIntentResponse.currency)
             XCTAssertEqual(intentsTwo?.data?[1].currency, chargeIntentTwo.currency)
         } catch {
             XCTFail("Error should not be thrown")
@@ -138,15 +122,11 @@ final class ChargeIntentsAPITests: XCTestCase {
         let intentTwo = try? await ChargeIntentsAPI.getChargeIntent(intentId: "123").0
         XCTAssertNil(intentTwo)
         
-        let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
-        
         do {
-            session.data = try JSONEncoder().encode(chargeIntent)
-            let (intentThree, error) = try await ChargeIntentsAPI.getChargeIntent(intentId: "1234")
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (intentThree, _) = try await ChargeIntentsAPI.getChargeIntent(intentId: "1234")
             XCTAssertNotNil(intentThree)
-            XCTAssertEqual(intentThree?.shipping, chargeIntent.shipping)
+            XCTAssertEqual(intentThree?.shipping, chargeIntentResponse.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -161,15 +141,11 @@ final class ChargeIntentsAPITests: XCTestCase {
         let intentTwo = try? await ChargeIntentsAPI.updateChargeIntent(intentId: "123", request: request).0
         XCTAssertNil(intentTwo)
         
-        let shippingAddress = FrameObjects.BillingAddress(postalCode: "99999")
-        let chargeIntent = FrameObjects.ChargeIntent(id: "1", currency: "USD", shipping: shippingAddress, status: .pending,
-                                                     authorizationMode: .automatic, object: "", amount: 10, created: 0, updated: 0, livemode: true)
-        
         do {
-            session.data = try JSONEncoder().encode(chargeIntent)
-            let (intentThree, error) = try await ChargeIntentsAPI.updateChargeIntent(intentId: "1234", request: request)
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (intentThree, _) = try await ChargeIntentsAPI.updateChargeIntent(intentId: "1234", request: request)
             XCTAssertNotNil(intentThree)
-            XCTAssertEqual(intentThree?.shipping, chargeIntent.shipping)
+            XCTAssertEqual(intentThree?.shipping, chargeIntentResponse.shipping)
         } catch {
             XCTFail("Error should not be thrown")
         }

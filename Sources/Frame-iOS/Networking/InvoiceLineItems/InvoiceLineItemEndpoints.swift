@@ -24,16 +24,16 @@ enum InvoiceLineItemEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createLineItem:
-            return "POST"
+            return .POST
         case .updateLineItem:
-            return "PATCH"
+            return .PATCH
         case .deleteLineItem:
-            return "DELETE"
+            return .DELETE
         default:
-            return "GET"
+            return .GET
         }
     }
     

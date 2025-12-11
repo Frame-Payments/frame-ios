@@ -27,16 +27,16 @@ enum InvoiceEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createInvoice, .issueInvoice:
-            return "POST"
+            return .POST
         case .updateInvoice:
-            return "PATCH"
+            return .PATCH
         case .deleteInvoice:
-            return "DELETE"
+            return .DELETE
         default:
-            return "GET"
+            return .GET
         }
     }
     

@@ -21,8 +21,8 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
-        return "GET"
+    var httpMethod: HTTPMethod {
+        return .GET
     }
     
     var queryItems: [URLQueryItem]? {

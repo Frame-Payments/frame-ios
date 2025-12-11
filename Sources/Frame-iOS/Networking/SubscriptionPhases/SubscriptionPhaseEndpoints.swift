@@ -27,16 +27,16 @@ enum SubscriptionPhaseEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: String {
+    var httpMethod: HTTPMethod {
         switch self {
         case .createSubscriptionPhase:
-            return "POST"
+            return .POST
         case .updateSubscriptionPhaseWith, .bulkUpdateSubscriptionPhases:
-            return "PATCH"
+            return .PATCH
         case .deleteSubscriptionPhase:
-            return "DELETE"
+            return .DELETE
         default:
-            return "GET"
+            return .GET
         }
     }
     

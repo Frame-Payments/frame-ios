@@ -11,9 +11,17 @@ class NetworkingConstants {
     static let mainAPIURL: String = "https://api.framepayments.com"
 }
 
+public enum HTTPMethod: String {
+    case DELETE
+    case GET
+    case PATCH
+    case POST
+    case PUT
+}
+
 protocol FrameNetworkingEndpoints {
     var endpointURL: String { get }
-    var httpMethod: String { get }
+    var httpMethod: HTTPMethod { get }
     var queryItems: [URLQueryItem]? { get }
 }
 

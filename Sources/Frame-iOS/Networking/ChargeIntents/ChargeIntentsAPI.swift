@@ -33,7 +33,12 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     //async/await
     public static func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
         let endpoint = ChargeIntentEndpoints.createChargeIntent
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        
+        // Automatically insert client's ip address for charge intent
+        var updatedRequest = request
+        updatedRequest.fraudSignals = ChargeIntentsRequests.FraudSignals(clientIp: SiftManager.getIPAddress())
+        
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(updatedRequest)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
@@ -119,7 +124,11 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     // completionHandlers
     public static func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.createChargeIntent
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        
+        var updatedRequest = request
+        updatedRequest.fraudSignals = ChargeIntentsRequests.FraudSignals(clientIp: SiftManager.getIPAddress())
+        
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(updatedRequest)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
