@@ -26,11 +26,17 @@ struct SelectPaymentMethodView: View {
         VStack(alignment: .leading) {
             listPaymentMethodsView
             Spacer()
+            ContinueButton(enabled: $canCustomerContinue) {
+                // Continue to next step based on onboarding
+            }
         }
         .onAppear {
             Task {
                 await paymentMethodViewModel.loadCustomerPaymentMethods(customerId: customerId)
             }
+        }
+        .onChange(of: paymentMethodViewModel.selectedPaymentMethod) { oldValue, newValue in
+            self.canCustomerContinue = newValue != nil
         }
     }
     

@@ -35,12 +35,20 @@ struct AddPaymentMethodView: View {
     var addPaymentMethodView: some View {
         Group {
             HStack(alignment: .center) {
+                Button {
+                    // Back to previous page of card selection
+                } label: {
+                    Image("left-chevron", bundle: FrameResources.module)
+                }
+                .padding()
+
                 Spacer()
                 Text("Add New Payment Method")
                     .bold()
                 Spacer()
+                Spacer()
             }
-            .padding(.bottom)
+            .padding(.bottom, 5.0)
             Text("Card Details")
                 .bold()
                 .font(.subheadline)
