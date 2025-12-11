@@ -12,7 +12,7 @@ import Frame_iOS
 @MainActor
 class PaymentMethodViewModel: ObservableObject {
     @Published var cardData = PaymentCardData()
-    @Published var createdPaymentMethod: FrameObjects.PaymentMethod?
+    @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: "United States", postalCode: "")
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []
     
@@ -38,7 +38,7 @@ class PaymentMethodViewModel: ObservableObject {
                                                                               customer: customerId,
                                                                               billing: nil)
             let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
-            self.createdPaymentMethod = paymentMethod
+            self.selectedPaymentMethod = paymentMethod
         } catch let error {
             print(error)
         }
