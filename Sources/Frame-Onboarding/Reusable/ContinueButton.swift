@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContinueButton: View {
+    @State var buttonColor: Color = Color(hex: "2B4146")
     @Binding var enabled: Bool
     var buttonAction: () -> ()
     
@@ -16,7 +17,7 @@ struct ContinueButton: View {
             buttonAction()
         } label: {
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(enabled ? .black : .gray.opacity(0.1))
+                .fill(enabled ? buttonColor : .gray.opacity(0.1))
                 .overlay {
                     Text("Continue")
                         .bold()
