@@ -19,13 +19,15 @@ struct PageHeaderView: View {
             } label: {
                 Image("left-chevron", bundle: FrameResources.module)
             }
-            .padding()
+            .frame(width: 50.0, height: 50.0)
 
             Spacer()
             Text(headerTitle)
                 .bold()
             Spacer()
-            Spacer()
+            Rectangle()
+                .fill(.clear)
+                .frame(width: 50.0, height: 50.0)
         }
     }
 }

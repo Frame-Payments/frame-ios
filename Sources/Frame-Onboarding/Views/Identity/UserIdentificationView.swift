@@ -13,10 +13,16 @@ struct UserIdentificationView: View {
     @State private var isPresentingSDK = false
     @State private var message = ""
     @State private var showIdentityInputs: Bool = false
+    @State private var selectedCountry: String = "United States"
+    @State private var selectedIdType: String = "Driver's License"
     
     var body: some View {
         VStack {
-            identityIntro
+            if showIdentityInputs {
+                verifyIdentityView
+            } else {
+                identityIntro
+            }
         }
     }
     
@@ -34,9 +40,54 @@ struct UserIdentificationView: View {
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                isPresentingSDK.toggle()
+                showIdentityInputs.toggle()
             }
         }
+    }
+    
+    var verifyIdentityView: some View {
+        VStack(alignment: .leading) {
+            PageHeaderView(headerTitle: "Verify Your ID") {
+                self.showIdentityInputs = false
+            }
+            Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
+                .multilineTextAlignment(.center)
+                .font(.system(size: 14.0))
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 20.0)
+                .padding(.bottom, 8.0)
+            dropdownSelectionBox(titleName: "Issuing Country", entryText: self.selectedCountry)
+            dropdownSelectionBox(titleName: "ID Type", entryText: self.selectedIdType)
+            
+            Spacer()
+            ContinueButton(enabled: .constant(true)) {
+                // Continue to next onboarding flow step
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func dropdownSelectionBox(titleName: String, entryText: String) -> some View {
+        Text(titleName)
+            .padding([.horizontal])
+            .fontWeight(.semibold)
+            .font(.system(size: 13.0))
+        HStack {
+            Text(entryText)
+                .fontWeight(.medium)
+                .font(.system(size: 14.0))
+                .padding()
+            Spacer()
+            Image("right-chevron", bundle: FrameResources.module)
+                .padding()
+        }
+        .frame(maxWidth: .infinity, minHeight: 42.0)
+        .contentShape(Rectangle())
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        )
+        .padding([.horizontal, .bottom])
     }
 }
 
