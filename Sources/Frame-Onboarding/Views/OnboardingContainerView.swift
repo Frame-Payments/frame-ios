@@ -44,9 +44,9 @@ struct OnboardingContainerView: View {
             case .countryVerification:
                 UserIdentificationView()
             case .uploadDocuments:
-                UserIdentificationView()
+                UploadPhotosView()
             case .onboardingComplete:
-                UserIdentificationView()
+                VerificationSubmittedView()
             }
             Spacer()
         }

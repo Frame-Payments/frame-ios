@@ -13,6 +13,15 @@ struct SecurePMVerificationView: View {
     @State private var codeInput: Bool = false
     @Binding var completedScreen: Bool
     
+    @State private var enteredCode: String = "      "
+    
+    @State private var codeInputOne: String = ""
+    @State private var codeInputTwo: String = ""
+    @State private var codeInputThree: String = ""
+    @State private var codeInputFour: String = ""
+    @State private var codeInputFive: String = ""
+    @State private var codeInputSix: String = ""
+    
     var body: some View {
         VStack {
             PageHeaderView(headerTitle: "Verify Your Card") {
@@ -22,6 +31,7 @@ struct SecurePMVerificationView: View {
                 .fontWeight(.light)
                 .font(.system(size: 14.0))
                 .padding(.horizontal)
+            codeContainerStack
             ContinueButton(enabled: $codeInput) {
                 self.completedScreen = true
             }
@@ -36,6 +46,63 @@ struct SecurePMVerificationView: View {
             Spacer()
         }
     }
+    
+    var codeContainerStack: some View {
+        HStack {
+            ForEach(0..<6, id: \.self) { index in
+                VStack {
+                    switch index {
+                    case 0:
+                        codeInputView(index: index, input: $codeInputOne)
+                    case 1:
+                        codeInputView(index: index, input: $codeInputTwo)
+                    case 2:
+                        codeInputView(index: index, input: $codeInputThree)
+                    case 3:
+                        codeInputView(index: index, input: $codeInputFour)
+                    case 4:
+                        codeInputView(index: index, input: $codeInputFive)
+                    default:
+                        codeInputView(index: index, input: $codeInputSix)
+                    }
+                }
+                .frame(height: 70.0)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                }
+                .padding(.horizontal, 3.0)
+            }
+        }
+        .padding()
+    }
+    
+    func codeInputView(index: Int, input: Binding<String>) -> some View {
+        TextField("", text: input)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.center)
+            .font(.system(size: 20.0))
+            .fontWeight(.semibold)
+            .onChange(of: input.wrappedValue) { oldValue, newValue in
+                input.wrappedValue = String(newValue.prefix(1))
+                self.updateMainCodeInput()
+            }
+    }
+    
+    func updateMainCodeInput() {
+        self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour + codeInputFive + codeInputSix
+        self.codeInput = enteredCode.count == 6
+    }
+    
+    func replace(myString: String, _ index: Int, _ newChar: Character) -> String {
+        var chars = Array(myString) // gets an array of characters
+        if index >= 0 && index < chars.count {
+            chars[index] = newChar
+            return String(chars)
+        }
+        return myString
+    }
+
 }
 
 #Preview {
