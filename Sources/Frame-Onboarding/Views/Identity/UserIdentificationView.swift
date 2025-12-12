@@ -9,12 +9,24 @@ import SwiftUI
 import Frame_iOS
 
 struct UserIdentificationView: View {
+    enum IdentificationSelection: String, CaseIterable {
+        case id
+        case country
+    }
+    
 //    @StateObject private var kycViewModel = KYCViewModel()
     @State private var isPresentingSDK = false
     @State private var message = ""
     @State private var showIdentityInputs: Bool = false
     @State private var selectedCountry: String = "United States"
+    @State private var showCountryPicker: Bool = false
     @State private var selectedIdType: String = "Driver's License"
+    @State private var showIDPicker: Bool = false
+    
+    let idTypes: [String] = ["Driver's License", "State ID", "Military ID", "Passport"]
+    let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
+                                         "Democratic Republic of Congo", "Iraq", "Libya",
+                                         "Mali", "Nicaragua", "Sudan", "Venezuela", "Yemen"]
     
     var body: some View {
         VStack {
@@ -23,6 +35,27 @@ struct UserIdentificationView: View {
             } else {
                 identityIntro
             }
+        }
+        .sheet(isPresented: $showIDPicker) {
+            Picker(IdentificationSelection.id.rawValue, selection: $selectedIdType) {
+                ForEach(idTypes, id: \.self) { id in
+                    Text(id)
+                }
+            }
+            .pickerStyle(.wheel)
+            .presentationDetents([.height(200.0)])
+        }
+        .sheet(isPresented: $showCountryPicker) {
+            Picker(IdentificationSelection.country.rawValue, selection: $selectedCountry) {
+                ForEach(AvailableCountry.allCountries
+                    .filter({ !restrictedCountries.contains($0.displayName) })
+                    .sorted(by: { $0.displayName < $1.displayName }),
+                        id: \.self) { country in
+                    Text(country.displayName)
+                }
+            }
+            .pickerStyle(.wheel)
+            .presentationDetents([.height(200.0)])
         }
     }
     
@@ -56,8 +89,8 @@ struct UserIdentificationView: View {
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 20.0)
                 .padding(.bottom, 8.0)
-            dropdownSelectionBox(titleName: "Issuing Country", entryText: self.selectedCountry)
-            dropdownSelectionBox(titleName: "ID Type", entryText: self.selectedIdType)
+            dropdownSelectionBox(titleName: "Issuing Country", selection: .country)
+            dropdownSelectionBox(titleName: "ID Type", selection: .id)
             
             Spacer()
             ContinueButton(enabled: .constant(true)) {
@@ -67,18 +100,18 @@ struct UserIdentificationView: View {
     }
     
     @ViewBuilder
-    func dropdownSelectionBox(titleName: String, entryText: String) -> some View {
+    func dropdownSelectionBox(titleName: String, selection: IdentificationSelection) -> some View {
         Text(titleName)
             .padding([.horizontal])
             .fontWeight(.semibold)
             .font(.system(size: 13.0))
         HStack {
-            Text(entryText)
+            Text(selection == .id ? selectedIdType : selectedCountry)
                 .fontWeight(.medium)
                 .font(.system(size: 14.0))
                 .padding()
             Spacer()
-            Image("right-chevron", bundle: FrameResources.module)
+            Image("down-chevron", bundle: FrameResources.module)
                 .padding()
         }
         .frame(maxWidth: .infinity, minHeight: 42.0)
@@ -88,6 +121,14 @@ struct UserIdentificationView: View {
                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
         .padding([.horizontal, .bottom])
+        .onTapGesture {
+            switch selection {
+            case .id:
+                self.showIDPicker.toggle()
+            case .country:
+                self.showCountryPicker.toggle()
+            }
+        }
     }
 }
 
