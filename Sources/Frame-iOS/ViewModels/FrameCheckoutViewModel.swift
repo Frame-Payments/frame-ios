@@ -107,13 +107,13 @@ class FrameCheckoutViewModel: ObservableObject {
     }
 }
 
-struct AvailableCountry: Hashable {
-    let alpha2Code: String
-    let displayName: String
+public struct AvailableCountry: Hashable {
+    public let alpha2Code: String
+    public let displayName: String
     
-    static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
+    public static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
     
-    static let allCountries: [AvailableCountry] = {
+    public static let allCountries: [AvailableCountry] = {
         Locale.Region.isoRegions.map { region in
             let name = Locale().localizedString(forRegionCode: region.identifier) ?? region.identifier
             return AvailableCountry(alpha2Code: region.identifier, displayName: name)
