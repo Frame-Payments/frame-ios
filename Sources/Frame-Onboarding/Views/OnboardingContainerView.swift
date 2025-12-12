@@ -19,7 +19,7 @@ enum OnboardingFlow: Int, CaseIterable, Identifiable {
     case onboardingComplete = 4
 }
 
-struct SwiftUIView: View {
+struct OnboardingContainerView: View {
     @State private var currentStep: OnboardingFlow = .confirmPaymentMethod
     @State private var onboardingFlow: [OnboardingFlow] = [.confirmPaymentMethod, .countryVerification, .uploadDocuments, .onboardingComplete]
     @State private var progressiveSteps: [OnboardingFlow] = [.confirmPaymentMethod]
@@ -73,5 +73,5 @@ struct SwiftUIView: View {
 }
 
 #Preview {
-    SwiftUIView(customerId: "cust_123")
+    OnboardingContainerView(customerId: "cust_123")
 }
