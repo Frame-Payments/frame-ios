@@ -13,16 +13,16 @@ enum OnboardingFlow: Int, CaseIterable, Identifiable {
         return "\(self.rawValue)"
     }
 
-    case confirmPaymentMethod = 1
-    case countryVerification = 2
+    case countryVerification = 1
+    case confirmPaymentMethod = 2
     case uploadDocuments = 3
     case onboardingComplete = 4
 }
 
 struct OnboardingContainerView: View {
-    @State private var currentStep: OnboardingFlow = .confirmPaymentMethod
-    @State private var onboardingFlow: [OnboardingFlow] = [.confirmPaymentMethod, .countryVerification, .uploadDocuments, .onboardingComplete]
-    @State private var progressiveSteps: [OnboardingFlow] = [.confirmPaymentMethod]
+    @State private var currentStep: OnboardingFlow = .countryVerification
+    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .onboardingComplete]
+    @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
     
     let customerId: String
     
