@@ -13,7 +13,7 @@ struct SecurePMVerificationView: View {
     @State private var codeInput: Bool = false
     @Binding var completedScreen: Bool
     
-    @State private var enteredCode: String = "      "
+    @State private var enteredCode: String = ""
     
     @State private var codeInputOne: String = ""
     @State private var codeInputTwo: String = ""
@@ -79,12 +79,25 @@ struct SecurePMVerificationView: View {
     
     func codeInputView(index: Int, input: Binding<String>) -> some View {
         TextField("", text: input)
+            .textContentType(.oneTimeCode)
             .keyboardType(.numberPad)
             .multilineTextAlignment(.center)
             .font(.system(size: 20.0))
             .fontWeight(.semibold)
             .onChange(of: input.wrappedValue) { oldValue, newValue in
-                input.wrappedValue = String(newValue.prefix(1))
+                if newValue.count == 6 { // one time code input | TODO: Need to test text code input.
+                    self.enteredCode = newValue
+                    
+                    let splitValue = newValue.components(separatedBy: "")
+                    self.codeInputOne = splitValue[0]
+                    self.codeInputTwo = splitValue[1]
+                    self.codeInputThree = splitValue[2]
+                    self.codeInputFour = splitValue[3]
+                    self.codeInputFive = splitValue[4]
+                    self.codeInputSix = splitValue[5]
+                } else {
+                    input.wrappedValue = String(newValue.prefix(1))
+                }
                 self.updateMainCodeInput()
             }
     }
