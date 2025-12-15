@@ -8,30 +8,32 @@
 import SwiftUI
 import Frame_iOS
 
-enum OnboardingFlow: Int, CaseIterable, Identifiable {
+enum OnboardingFlow: String, CaseIterable, Identifiable {
     var id: String {
         return "\(self.rawValue)"
     }
 
-    case countryVerification = 1
-    case confirmPaymentMethod = 2
-    case uploadDocuments = 3
-    case onboardingComplete = 4
+    case countryVerification
+    case confirmPaymentMethod
+    case uploadDocuments
+    case onboardingComplete
 }
 
 struct OnboardingContainerView: View {
     @State private var currentStep: OnboardingFlow = .countryVerification
     @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .onboardingComplete]
     @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
+    @State private var continueToNextStep: Bool = false
+    @State private var returnToPreviousStep: Bool = false
     
     let customerId: String
     
     init(customerId: String, customOnboardingFlow: [OnboardingFlow]? = nil) {
         self.customerId = customerId
         
-        if let customOnboardingFlow, let first = customOnboardingFlow.first {
+        if let customOnboardingFlow {
             self.onboardingFlow = customOnboardingFlow
-            self.progressiveSteps = [first]
+            self.currentStep = customOnboardingFlow.first ?? .countryVerification
         }
     }
     
@@ -40,17 +42,40 @@ struct OnboardingContainerView: View {
             containerHeader
             switch currentStep {
             case .confirmPaymentMethod:
-                SelectPaymentMethodView(customerId: customerId)
+                SelectPaymentMethodView(continueToNextStep: $continueToNextStep,
+                                        returnToPreviousStep: $returnToPreviousStep,
+                                        customerId: customerId)
             case .countryVerification:
-                UserIdentificationView()
+                UserIdentificationView(continueToNextStep: $continueToNextStep)
             case .uploadDocuments:
-                UploadPhotosView()
+                UploadIdentificationView(continueToNextStep: $continueToNextStep, returnToPreviousStep: $returnToPreviousStep)
             case .onboardingComplete:
                 VerificationSubmittedView()
             }
             Spacer()
         }
         .ignoresSafeArea()
+        .onChange(of: continueToNextStep) { oldValue, newValue in
+            guard continueToNextStep else { return }
+            guard onboardingFlow.last != currentStep else { return } // Complete onboarding here.
+            
+            let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
+            self.currentStep = onboardingFlow[index]
+            print(currentStep.rawValue)
+            self.continueToNextStep = false
+        }
+        .onChange(of: returnToPreviousStep, { oldValue, newValue in
+            guard returnToPreviousStep else { return }
+            guard onboardingFlow.first != currentStep else { return }
+            
+            let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) - 1
+            self.currentStep = onboardingFlow[index]
+            self.returnToPreviousStep = false
+        })
+        .onChange(of: currentStep) {
+            let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
+            self.progressiveSteps = Array(self.onboardingFlow[0..<index])
+        }
     }
     
     var containerHeader: some View {

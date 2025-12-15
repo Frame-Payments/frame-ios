@@ -9,10 +9,9 @@ import SwiftUI
 
 struct SecurePMVerificationView: View {
     @Environment(\.dismiss) var dismiss
+    @FocusState private var focusedField: Int?
     
     @State private var codeInput: Bool = false
-    @Binding var completedScreen: Bool
-    
     @State private var enteredCode: String = ""
     
     @State private var codeInputOne: String = ""
@@ -22,10 +21,13 @@ struct SecurePMVerificationView: View {
     @State private var codeInputFive: String = ""
     @State private var codeInputSix: String = ""
     
+    @Binding var continueToNextStep: Bool
+    @Binding var returnToPreviousStep: Bool
+    
     var body: some View {
         VStack {
             PageHeaderView(headerTitle: "Verify Your Card") {
-                self.dismiss()
+                self.returnToPreviousStep = true
             }
             Text("We've sent a security code to your bank registered phone number ending in *")
                 .fontWeight(.light)
@@ -33,7 +35,7 @@ struct SecurePMVerificationView: View {
                 .padding(.horizontal)
             codeContainerStack
             ContinueButton(enabled: $codeInput) {
-                self.completedScreen = true
+                self.continueToNextStep = true
             }
             Button {
                 //TODO: Prompt the backend to resend the code to the user.
@@ -84,6 +86,7 @@ struct SecurePMVerificationView: View {
             .multilineTextAlignment(.center)
             .font(.system(size: 20.0))
             .fontWeight(.semibold)
+            .focused($focusedField, equals: index)
             .onChange(of: input.wrappedValue) { oldValue, newValue in
                 if newValue.count == 6 { // one time code input | TODO: Need to test text code input.
                     self.enteredCode = newValue
@@ -96,7 +99,12 @@ struct SecurePMVerificationView: View {
                     self.codeInputFive = splitValue[4]
                     self.codeInputSix = splitValue[5]
                 } else {
-                    input.wrappedValue = String(newValue.prefix(1))
+                    input.wrappedValue = String(newValue.suffix(1))
+                    if index != 5 {
+                        focusedField = index + 1
+                    } else {
+                        focusedField = nil
+                    }
                 }
                 self.updateMainCodeInput()
             }
@@ -119,5 +127,5 @@ struct SecurePMVerificationView: View {
 }
 
 #Preview {
-    SecurePMVerificationView(completedScreen: .constant(false))
+    SecurePMVerificationView(continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
 }

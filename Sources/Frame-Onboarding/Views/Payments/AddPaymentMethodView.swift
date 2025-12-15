@@ -15,11 +15,14 @@ struct AddPaymentMethodView: View {
     @ObservedObject private var paymentMethodViewModel: PaymentMethodViewModel
     @State private var canCustomerContinue: Bool = false
     
+    @Binding var paymentMethodAdded: Bool
+    
     let customerId: String
     
-    init(customerId: String, paymentMethodViewModel: PaymentMethodViewModel) {
+    init(customerId: String, paymentMethodViewModel: PaymentMethodViewModel, paymentMethodAdded: Binding<Bool>) {
         self.paymentMethodViewModel = paymentMethodViewModel
         self.customerId = customerId
+        self._paymentMethodAdded = paymentMethodAdded
     }
     
     var body: some View {
@@ -38,19 +41,8 @@ struct AddPaymentMethodView: View {
     var addPaymentMethodView: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                HStack(alignment: .center) {
-                    Button {
-                        self.dismiss()
-                    } label: {
-                        Image("left-chevron", bundle: FrameResources.module)
-                    }
-                    .padding()
-
-                    Spacer()
-                    Text("Add New Payment Method")
-                        .bold()
-                    Spacer()
-                    Spacer()
+                PageHeaderView(headerTitle: "Add New Payment Method") {
+                    self.dismiss()
                 }
                 Text("Card Details")
                     .bold()
@@ -62,8 +54,8 @@ struct AddPaymentMethodView: View {
                 ContinueButton(enabled: $canCustomerContinue) {
                     Task {
                         await paymentMethodViewModel.addNewPaymentMethod(customerId: customerId)
-                        
                         // Save payment method to the customer, then go back to the previous page with the payment method selected. (**Could possibly auto-continue after that)
+                        self.paymentMethodAdded = true
                         self.dismiss()
                     }
                 }
@@ -122,5 +114,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(customerId: "cus_123", paymentMethodViewModel: PaymentMethodViewModel())
+    AddPaymentMethodView(customerId: "cus_123", paymentMethodViewModel: PaymentMethodViewModel(), paymentMethodAdded: .constant(false))
 }
