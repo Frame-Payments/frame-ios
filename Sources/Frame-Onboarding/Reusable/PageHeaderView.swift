@@ -9,6 +9,7 @@ import SwiftUI
 import Frame_iOS
 
 struct PageHeaderView: View {
+    var useCloseButton: Bool = false
     let headerTitle: String
     let buttonAction: () -> ()
     
@@ -17,13 +18,14 @@ struct PageHeaderView: View {
             Button {
                 buttonAction()
             } label: {
-                Image("left-chevron", bundle: FrameResources.module)
+                Image(useCloseButton ? "close-icon-white" : "left-chevron", bundle: FrameResources.module)
             }
             .frame(width: 50.0, height: 50.0)
 
             Spacer()
             Text(headerTitle)
                 .bold()
+                .foregroundColor(useCloseButton ? .white : .black)
             Spacer()
             Rectangle()
                 .fill(.clear)
