@@ -16,12 +16,12 @@ enum OnboardingFlow: String, CaseIterable, Identifiable {
     case countryVerification
     case confirmPaymentMethod
     case uploadDocuments
-    case onboardingComplete
+    case uploadSelfie
 }
 
 struct OnboardingContainerView: View {
     @State private var currentStep: OnboardingFlow = .countryVerification
-    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .onboardingComplete]
+    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .uploadSelfie]
     @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
@@ -49,8 +49,8 @@ struct OnboardingContainerView: View {
                 UserIdentificationView(continueToNextStep: $continueToNextStep)
             case .uploadDocuments:
                 UploadIdentificationView(continueToNextStep: $continueToNextStep, returnToPreviousStep: $returnToPreviousStep)
-            case .onboardingComplete:
-                VerificationSubmittedView()
+            case .uploadSelfie:
+                UploadSelfieView(continueToNextStep: $continueToNextStep, returnToPreviousStep: $returnToPreviousStep)
             }
             Spacer()
         }

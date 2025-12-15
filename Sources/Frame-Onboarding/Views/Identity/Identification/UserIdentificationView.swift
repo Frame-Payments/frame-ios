@@ -14,14 +14,13 @@ struct UserIdentificationView: View {
         case country
     }
     
-//    @StateObject private var kycViewModel = KYCViewModel()
-    @State private var isPresentingSDK = false
-    @State private var message = ""
     @State private var showIdentityInputs: Bool = false
     @State private var selectedCountry: String = "United States"
     @State private var showCountryPicker: Bool = false
     @State private var selectedIdType: String = "Driver's License"
     @State private var showIDPicker: Bool = false
+    
+    @Binding var continueToNextStep: Bool
     
     let idTypes: [String] = ["Driver's License", "State ID", "Military ID", "Passport"]
     let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
@@ -75,6 +74,7 @@ struct UserIdentificationView: View {
             ContinueButton(enabled: .constant(true)) {
                 showIdentityInputs.toggle()
             }
+            .padding(.bottom)
         }
     }
     
@@ -94,8 +94,9 @@ struct UserIdentificationView: View {
             
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                // Continue to next onboarding flow step
+                self.continueToNextStep.toggle()
             }
+            .padding(.bottom)
         }
     }
     
@@ -133,7 +134,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView()
+    UserIdentificationView(continueToNextStep: .constant(false))
 }
 
 extension Color {
