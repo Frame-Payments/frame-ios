@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContinueButton: View {
     @State var buttonColor: Color = Color(hex: "2B4146")
+    @State var buttonText: String = "Continue"
     @Binding var enabled: Bool
     var buttonAction: () -> ()
     
@@ -19,7 +20,7 @@ struct ContinueButton: View {
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(enabled ? buttonColor : .gray.opacity(0.1))
                 .overlay {
-                    Text("Continue")
+                    Text(buttonText)
                         .bold()
                         .foregroundColor(enabled ? .white : .gray)
                 }
