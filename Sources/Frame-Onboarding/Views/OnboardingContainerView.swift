@@ -61,7 +61,6 @@ struct OnboardingContainerView: View {
             
             let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
             self.currentStep = onboardingFlow[index]
-            print(currentStep.rawValue)
             self.continueToNextStep = false
         }
         .onChange(of: returnToPreviousStep, { oldValue, newValue in

@@ -57,7 +57,7 @@ struct UploadIdentificationView: View {
             Text("We’ll ask you to take photos of both the front and back to confirm your information.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(.secondary)
+                .foregroundColor(secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
@@ -75,7 +75,7 @@ struct UploadIdentificationView: View {
             Text("Take photos of the front and back of your government ID.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(.secondary)
+                .foregroundColor(secondaryTextColor)
                 .padding(.horizontal, 15.0)
                 .padding(.bottom, 8.0)
             listIdentificationOptionsView

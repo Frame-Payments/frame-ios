@@ -40,7 +40,7 @@ struct UploadSelfieView: View {
             Text("Position yourself in the center of the screen and then move your head left and right to show both sides.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(.secondary)
+                .foregroundColor(secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
