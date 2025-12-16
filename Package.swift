@@ -30,7 +30,7 @@ let package = Package(
             dependencies: [
                 .product(name: "EvervaultInputs", package: "evervault-ios"),
                 .product(name: "EvervaultEnclaves", package: "evervault-ios"),
-                .product(name: "sift-ios", package: "sift-ios")
+                .product(name: "sift-ios", package: "sift-ios", condition: .when(platforms: [.iOS]))
             ],
             resources: [.process("Resources")],
             swiftSettings: [
