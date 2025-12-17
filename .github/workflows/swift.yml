@@ -23,17 +23,11 @@ jobs:
         run: |
           swift package resolve
 
-      - name: Generate Xcode project
-        run: swift package generate-xcodeproj
-      
-      - name: List schemes
-        run: xcodebuild -list -project Frame-iOS.xcodeproj
-      
       - name: Run tests on iOS Simulator
         run: |
           xcodebuild test \
-            -project Frame-iOS.xcodeproj \
-            -scheme "Frame-iOSTests" \
+            -project FrameExample-iOS/FrameExample-iOS.xcodeproj \
+            -scheme FrameExample-iOS \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
