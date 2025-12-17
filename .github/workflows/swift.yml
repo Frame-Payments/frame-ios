@@ -15,9 +15,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: List schemes (package)
-        run: xcodebuild -list -packagePath .
   
       - name: Select Xcode with Swift 6
         run: sudo xcode-select -s /Applications/Xcode_16.4.app
@@ -25,15 +22,18 @@ jobs:
       - name: Resolve Binary Dependencies
         run: |
           swift package resolve
-          
-      - name: Run SwiftPM Tests
-        run: swift test --enable-code-coverage
 
-      - name: Run package tests on iOS Simulator
+      - name: Generate Xcode project
+        run: swift package generate-xcodeproj
+      
+      - name: List schemes
+        run: xcodebuild -list -project Frame-iOS.xcodeproj
+      
+      - name: Run tests on iOS Simulator
         run: |
           xcodebuild test \
-            -packagePath . \
-            -scheme "Frame-iOS-Package" \
+            -project Frame-iOS.xcodeproj \
+            -scheme "Frame-iOSTests" \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
