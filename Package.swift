@@ -28,8 +28,8 @@ let package = Package(
         .target(
             name: "Frame-iOS",
             dependencies: [
+                .product(name: "EvervaultCore", package: "evervault-ios", condition: .when(platforms: [.iOS])),
                 .product(name: "EvervaultInputs", package: "evervault-ios", condition: .when(platforms: [.iOS])),
-                .product(name: "EvervaultEnclaves", package: "evervault-ios", condition: .when(platforms: [.iOS])),
                 .product(name: "sift-ios", package: "sift-ios", condition: .when(platforms: [.iOS]))
             ],
             resources: [.process("Resources")],
