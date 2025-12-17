@@ -6,11 +6,6 @@
 //
 
 import SwiftUI
-import Frame_iOS
-
-// Reusable colors
-let secondaryTextColor = Color("TextColorSecondary", bundle: FrameResources.module)
-let mainButtonColor = Color("MainButtonColor", bundle: FrameResources.module)
 
 struct ContinueButton: View {
     @State var buttonColor: Color = mainButtonColor
@@ -23,15 +18,15 @@ struct ContinueButton: View {
             buttonAction()
         } label: {
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(enabled ? buttonColor : .gray.opacity(0.1))
+                .fill(enabled ? buttonColor : unfilledButtonColor)
                 .overlay {
                     if !enabled {
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1.0)
+                            .stroke(unfilledButtonStrokeColor, lineWidth: 1.0)
                     }
                     Text(buttonText)
                         .bold()
-                        .foregroundColor(enabled ? .white : .gray)
+                        .foregroundColor(enabled ? .white : unfilledButtonTextColor)
                 }
         }
         .disabled(!enabled)
