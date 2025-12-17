@@ -18,7 +18,7 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:FrameExample-iOS.xcodeproj",
         "identifier" : "9CED70A32CA5868900C3B45B",
