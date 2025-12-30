@@ -19,7 +19,7 @@ public enum HTTPMethod: String {
     case PUT
 }
 
-protocol FrameNetworkingEndpoints {
+public protocol FrameNetworkingEndpoints {
     var endpointURL: String { get }
     var httpMethod: HTTPMethod { get }
     var queryItems: [URLQueryItem]? { get }
