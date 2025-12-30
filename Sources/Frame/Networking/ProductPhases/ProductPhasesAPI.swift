@@ -34,7 +34,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.getAllProductPhases(productId: productId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -46,7 +46,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.getProductPhaseWith(productId: productId, phaseId: phaseId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -59,7 +59,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -72,7 +72,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -92,7 +92,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.bulkUpdateProductPhases(productId: productId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)

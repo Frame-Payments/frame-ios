@@ -32,7 +32,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -43,7 +43,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(RefundResponses.ListRefundsResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(RefundResponses.ListRefundsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -55,7 +55,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -67,7 +67,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Refund.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)

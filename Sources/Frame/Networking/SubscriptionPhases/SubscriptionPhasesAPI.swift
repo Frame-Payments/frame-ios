@@ -34,7 +34,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(SubscriptionPhasesResponses.ListSubscriptionPhasesResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionPhasesResponses.ListSubscriptionPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -46,7 +46,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -59,7 +59,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -72,7 +72,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.SubscriptionPhase.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -92,7 +92,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(SubscriptionPhasesResponses.ListSubscriptionPhasesResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionPhasesResponses.ListSubscriptionPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
