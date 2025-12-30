@@ -8,7 +8,6 @@
 import Foundation
 import Frame_iOS
 
-// https://docs.framepayments.com/api/refunds
 
 // Protocol for Mock Testing
 protocol SessionsProtocol {
