@@ -12,12 +12,12 @@ import Frame_iOS
 // Protocol for Mock Testing
 protocol SessionsProtocol {
     //async/await
-    static func createOnboardingSession(request: SessionRequest.CreateOnboardingSession) async throws -> (OnboardingSession?, NetworkingError?)
+    static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession) async throws -> (OnboardingSession?, NetworkingError?)
     static func getOnboardingSessionWithCustomer(customerId: String) async throws -> (SessionResponses.ListSessionsResponse?, NetworkingError?)
     static func cancelOnboardingSession(sessionId: String) async throws -> (OnboardingSession?, NetworkingError?)
     
     // completionHandlers
-    static func createOnboardingSession(request: SessionRequest.CreateOnboardingSession, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void)
+    static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void)
     static func getOnboardingSessionWithCustomer(customerId: String, completionHandler: @escaping @Sendable (SessionResponses.ListSessionsResponse?, NetworkingError?) -> Void)
     static func cancelOnboardingSession(sessionId: String, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void)
 }
@@ -25,7 +25,7 @@ protocol SessionsProtocol {
 // Sessions API
 class SessionsAPI: SessionsProtocol, @unchecked Sendable {
     //async/await
-    static func createOnboardingSession(request: SessionRequest.CreateOnboardingSession) async throws -> (OnboardingSession?, NetworkingError?) {
+    static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession) async throws -> (OnboardingSession?, NetworkingError?) {
         let endpoint = SessionEndpoints.createOnboardingSession
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -60,7 +60,7 @@ class SessionsAPI: SessionsProtocol, @unchecked Sendable {
     }
     
     // completionHandlers
-    static func createOnboardingSession(request: SessionRequest.CreateOnboardingSession, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void) {
+    static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void) {
         let endpoint = SessionEndpoints.createOnboardingSession
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         

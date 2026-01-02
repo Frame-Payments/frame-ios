@@ -2,7 +2,7 @@
 //  Colors.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 12/17/25.
+//  Created by Frame Payments on 12/17/25.
 //
 
 import SwiftUI

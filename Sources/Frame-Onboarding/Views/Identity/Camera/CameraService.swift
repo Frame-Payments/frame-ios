@@ -2,7 +2,7 @@
 //  Untitled.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 12/15/25.
+//  Created by Frame Payments on 12/15/25.
 //
 
 import AVFoundation
