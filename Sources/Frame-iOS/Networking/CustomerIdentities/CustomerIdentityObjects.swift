@@ -78,7 +78,7 @@ extension FrameObjects {
         public let verificationChecks: VerificationChecks?
         public let customer: Customer?
 
-        init(id: String, status: CustomerIdentityStatus, verificationURL: String?, object: String?, created: Int, updated: Int, pending: Int?, verified: Int?, failed: Int?, documents: IdentificationDocuments?, provider: String?, providerReference: String?, extractedData: IdentificationData?, verificationChecks: VerificationChecks?, customer: Customer?) {
+        init(id: String, status: CustomerIdentityStatus, verificationURL: String?, object: String?, created: Int, updated: Int, pending: Int?, verified: Int?, failed: Int?, documents: IdentificationDocuments? = nil, provider: String? = nil, providerReference: String? = nil, extractedData: IdentificationData? = nil, verificationChecks: VerificationChecks? = nil, customer: Customer? = nil) {
             self.id = id
             self.status = status
             self.verificationURL = verificationURL
