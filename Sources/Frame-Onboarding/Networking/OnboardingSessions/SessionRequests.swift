@@ -13,10 +13,14 @@ class SessionRequests {
         let platform: String = "iOS"
         let appVersion: String
         let deviceId: String
+        let documentCountry: String
+        let documentType: String
         
-        init(appVersion: String, deviceId: String) {
+        init(appVersion: String, deviceId: String, documentCountry: String, documentType: String) {
             self.appVersion = appVersion
             self.deviceId = deviceId
+            self.documentCountry = documentCountry
+            self.documentType = documentType
         }
         
         enum CodingKeys: String, CodingKey {
@@ -30,9 +34,9 @@ class SessionRequests {
         let customerId: String
         let metadata: SessionMetadata
         let entryPoint: String = "signup"
-        let components: Components
+        let components: SessionComponents
         
-        init(customerId: String, metadata: SessionMetadata, components: Components) {
+        init(customerId: String, metadata: SessionMetadata, components: SessionComponents) {
             self.customerId = customerId
             self.metadata = metadata
             self.components = components

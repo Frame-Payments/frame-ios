@@ -14,7 +14,7 @@ enum SessionStatus: String, Codable {
     case canceled
 }
 
-struct Components: Codable {
+struct SessionComponents: Codable {
     var paymentMethod: PaymentMethodComponent?
     var identityVerification: IdentityVerificationComponent?
 
@@ -62,7 +62,7 @@ struct OnboardingSession: Codable {
     let customerId: String
     let status: SessionStatus
     let steps: OnboardingSteps
-    let components: Components
+    let components: SessionComponents
     let entryPoint: String
     let metadata: [String: String]
     let clientSecret: String
