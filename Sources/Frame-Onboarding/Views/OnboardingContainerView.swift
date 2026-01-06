@@ -8,8 +8,8 @@
 import SwiftUI
 import Frame_iOS
 
-enum OnboardingFlow: String, CaseIterable, Identifiable {
-    var id: String {
+public enum OnboardingFlow: String, CaseIterable, Identifiable {
+    public var id: String {
         return "\(self.rawValue)"
     }
 
@@ -19,7 +19,9 @@ enum OnboardingFlow: String, CaseIterable, Identifiable {
     case uploadSelfie
 }
 
-struct OnboardingContainerView: View {
+public struct OnboardingContainerView: View {
+    @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
+    
     @State private var currentStep: OnboardingFlow = .countryVerification
     @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .uploadSelfie]
     @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
@@ -28,25 +30,28 @@ struct OnboardingContainerView: View {
     
     let customerId: String
     
-    init(customerId: String, customOnboardingFlow: [OnboardingFlow]? = nil) {
+    public init(customerId: String, customOnboardingFlow: [OnboardingFlow]? = nil) {
         self.customerId = customerId
-        
+        self.onboardingContainerViewModel = OnboardingContainerViewModel(customerId: customerId,
+                                                                         components: SessionComponents(paymentMethod: PaymentMethodComponent(enabled: true),
+                                                                                                       identityVerification: IdentityVerificationComponent(enabled: true)))
         if let customOnboardingFlow {
             self.onboardingFlow = customOnboardingFlow
             self.currentStep = customOnboardingFlow.first ?? .countryVerification
         }
     }
     
-    var body: some View {
+    public var body: some View {
         VStack {
             containerHeader
             switch currentStep {
             case .confirmPaymentMethod:
-                SelectPaymentMethodView(continueToNextStep: $continueToNextStep,
+                SelectPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                        continueToNextStep: $continueToNextStep,
                                         returnToPreviousStep: $returnToPreviousStep,
                                         customerId: customerId)
             case .countryVerification:
-                UserIdentificationView(continueToNextStep: $continueToNextStep)
+                UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel, continueToNextStep: $continueToNextStep)
             case .uploadDocuments:
                 UploadIdentificationView(continueToNextStep: $continueToNextStep, returnToPreviousStep: $returnToPreviousStep)
             case .uploadSelfie:

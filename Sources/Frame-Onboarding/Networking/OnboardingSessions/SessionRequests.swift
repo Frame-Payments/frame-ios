@@ -8,28 +8,6 @@
 import Foundation
 
 class SessionRequests {
-    
-    struct SessionMetadata: Encodable, Sendable {
-        let platform: String = "iOS"
-        let appVersion: String
-        let deviceId: String
-        let documentCountry: String
-        let documentType: String
-        
-        init(appVersion: String, deviceId: String, documentCountry: String, documentType: String) {
-            self.appVersion = appVersion
-            self.deviceId = deviceId
-            self.documentCountry = documentCountry
-            self.documentType = documentType
-        }
-        
-        enum CodingKeys: String, CodingKey {
-            case platform
-            case appVersion = "app_version"
-            case deviceId = "device_id"
-        }
-    }
-    
     struct CreateOnboardingSession: Encodable, Sendable {
         let customerId: String
         let metadata: SessionMetadata

@@ -11,16 +11,15 @@ import Frame_iOS
 
 struct AddPaymentMethodView: View {
     @Environment(\.dismiss) var dismiss
+    @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
     
-    @ObservedObject private var paymentMethodViewModel: PaymentMethodViewModel
     @State private var canCustomerContinue: Bool = false
-    
     @Binding var paymentMethodAdded: Bool
     
     let customerId: String
     
-    init(customerId: String, paymentMethodViewModel: PaymentMethodViewModel, paymentMethodAdded: Binding<Bool>) {
-        self.paymentMethodViewModel = paymentMethodViewModel
+    init(customerId: String, onboardingContainerViewModel: OnboardingContainerViewModel, paymentMethodAdded: Binding<Bool>) {
+        self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
         self.customerId = customerId
         self._paymentMethodAdded = paymentMethodAdded
     }
@@ -30,11 +29,11 @@ struct AddPaymentMethodView: View {
             addPaymentMethodView
             Spacer()
         }
-        .onChange(of: paymentMethodViewModel.cardData) { oldValue, newValue in
-            self.canCustomerContinue = paymentMethodViewModel.checkIfCustomerCanContinue()
+        .onChange(of: onboardingContainerViewModel.cardData) { oldValue, newValue in
+            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod()
         }
-        .onChange(of: paymentMethodViewModel.createdBillingAddress) { oldValue, newValue in
-            self.canCustomerContinue = paymentMethodViewModel.checkIfCustomerCanContinue()
+        .onChange(of: onboardingContainerViewModel.createdBillingAddress) { oldValue, newValue in
+            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod()
         }
     }
     
@@ -48,12 +47,12 @@ struct AddPaymentMethodView: View {
                     .bold()
                     .font(.subheadline)
                     .padding([.horizontal])
-                PaymentCardInput(cardData: $paymentMethodViewModel.cardData)
+                PaymentCardInput(cardData: $onboardingContainerViewModel.cardData)
                     .paymentCardInputStyle(EncryptedPaymentCardInput())
                 billingAddressDetails
                 ContinueButton(enabled: $canCustomerContinue) {
                     Task {
-                        await paymentMethodViewModel.addNewPaymentMethod(customerId: customerId)
+                        await onboardingContainerViewModel.addNewPaymentMethod()
                         // Save payment method to the customer, then go back to the previous page with the payment method selected. (**Could possibly auto-continue after that)
                         self.paymentMethodAdded = true
                         self.dismiss()
@@ -76,25 +75,25 @@ struct AddPaymentMethodView: View {
             .overlay {
                 VStack(spacing: 0) {
                     TextField("",
-                              text: $paymentMethodViewModel.createdBillingAddress.addressLine1.orEmpty,
+                              text: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
                               prompt: Text("Address Line 1"))
                     .frame(height: 49.0)
                     .padding(.horizontal)
                     Divider()
                     TextField("",
-                              text: $paymentMethodViewModel.createdBillingAddress.addressLine2.orEmpty,
+                              text: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
                               prompt: Text("Address Line 2"))
                     .frame(height: 49.0)
                     .padding(.horizontal)
                     Divider()
                     HStack {
                         TextField("",
-                                  text: $paymentMethodViewModel.createdBillingAddress.city.orEmpty,
+                                  text: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
                                   prompt: Text("City"))
                         .frame(height: 49.0)
                         .padding(.horizontal)
                         TextField("",
-                                  text: $paymentMethodViewModel.createdBillingAddress.state.orEmpty,
+                                  text: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
                                   prompt: Text("State"))
                         .frame(height: 49.0)
                         .padding(.horizontal)
@@ -102,7 +101,7 @@ struct AddPaymentMethodView: View {
                     .frame(height: 49.0)
                     Divider()
                     TextField("",
-                              text: $paymentMethodViewModel.createdBillingAddress.postalCode,
+                              text: $onboardingContainerViewModel.createdBillingAddress.postalCode,
                               prompt: Text("Zip Code"))
                     .frame(height: 49.0)
                     .keyboardType(.numberPad)
@@ -114,5 +113,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(customerId: "cus_123", paymentMethodViewModel: PaymentMethodViewModel(), paymentMethodAdded: .constant(false))
+    AddPaymentMethodView(customerId: "cus_123", onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), paymentMethodAdded: .constant(false))
 }

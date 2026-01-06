@@ -15,7 +15,7 @@ struct SelectPaymentMethodView: View {
         case verifyPayment
     }
     
-    @StateObject private var paymentMethodViewModel = PaymentMethodViewModel()
+    @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var canCustomerContinue: Bool = false
     @State private var currentPaymentStep: ConfirmPaymentMethodSteps = .selectPayment
@@ -38,19 +38,21 @@ struct SelectPaymentMethodView: View {
             case .selectPayment:
                 selectPaymentView
                     .navigationDestination(isPresented: $showAddPaymentMethod) {
-                        AddPaymentMethodView(customerId: customerId, paymentMethodViewModel: paymentMethodViewModel, paymentMethodAdded: $paymentMethodAdded)
+                        AddPaymentMethodView(customerId: customerId, onboardingContainerViewModel: onboardingContainerViewModel, paymentMethodAdded: $paymentMethodAdded)
                             .navigationBarBackButtonHidden()
                     }
             case .verifyPayment:
-                SecurePMVerificationView(continueToNextStep: $paymentVerified, returnToPreviousStep: $returnToSelectPayment)
+                SecurePMVerificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                         continueToNextStep: $paymentVerified,
+                                         returnToPreviousStep: $returnToSelectPayment)
             }
         }
         .onAppear {
             Task {
-                await paymentMethodViewModel.loadCustomerPaymentMethods(customerId: customerId)
+                await onboardingContainerViewModel.loadExistingPaymentMethods()
             }
         }
-        .onChange(of: paymentMethodViewModel.selectedPaymentMethod) { oldValue, newValue in
+        .onChange(of: onboardingContainerViewModel.selectedPaymentMethod) { oldValue, newValue in
             self.canCustomerContinue = newValue != nil
         }
         .onChange(of: paymentVerified, { oldValue, newValue in
@@ -77,8 +79,10 @@ struct SelectPaymentMethodView: View {
             listPaymentMethodsView
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
-                // Verify the customer's payment method
-                self.currentPaymentStep = .verifyPayment
+                Task {
+                    await onboardingContainerViewModel.start3DSecureProcess()
+                    self.currentPaymentStep = .verifyPayment
+                }
             }
             .padding(.bottom)
         }
@@ -95,9 +99,9 @@ struct SelectPaymentMethodView: View {
                 .padding(.horizontal)
             ScrollView {
                 headerScrollTitles(name: "Saved Payment Methods")
-                paymentMethodView(paymentMethod: examplePaymentMethod) //**WARNING** REMOVE AFTER TESTING
-                paymentMethodView(paymentMethod: examplePaymentMethod2) //**WARNING** REMOVE AFTER TESTING
-                ForEach(paymentMethodViewModel.paymentMethods) { paymentMethod in
+//                paymentMethodView(paymentMethod: examplePaymentMethod) //**WARNING** REMOVE AFTER TESTING
+//                paymentMethodView(paymentMethod: examplePaymentMethod2) //**WARNING** REMOVE AFTER TESTING
+                ForEach(onboardingContainerViewModel.paymentMethods) { paymentMethod in
                     paymentMethodView(paymentMethod: paymentMethod)
                 }
                 headerScrollTitles(name: "Add Payment Method")
@@ -160,7 +164,7 @@ struct SelectPaymentMethodView: View {
                     .font(.system(size: 12.0))
             }
             Spacer()
-            Image(paymentMethodViewModel.selectedPaymentMethod == paymentMethod ? "filled-selection" : "empty-selection", bundle: FrameResources.module)
+            Image(onboardingContainerViewModel.selectedPaymentMethod == paymentMethod ? "filled-selection" : "empty-selection", bundle: FrameResources.module)
                 .padding()
         }
         .frame(maxWidth: .infinity, minHeight: 64.0)
@@ -171,11 +175,14 @@ struct SelectPaymentMethodView: View {
         )
         .padding(.horizontal)
         .onTapGesture {
-            paymentMethodViewModel.selectedPaymentMethod = paymentMethod
+            onboardingContainerViewModel.selectedPaymentMethod = paymentMethod
         }
     }
 }
 
 #Preview {
-    SelectPaymentMethodView(continueToNextStep: .constant(false), returnToPreviousStep: .constant(false), customerId: "cus_123")
+    SelectPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()),
+                            continueToNextStep: .constant(false),
+                            returnToPreviousStep: .constant(false),
+                            customerId: "cus_123")
 }

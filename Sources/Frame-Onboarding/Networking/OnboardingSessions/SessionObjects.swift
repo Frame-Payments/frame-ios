@@ -39,6 +39,29 @@ struct PaymentMethodComponent: Codable {
     }
 }
 
+struct SessionMetadata: Codable, Sendable {
+    let platform: String = "iOS"
+    let appVersion: String
+    let deviceId: String
+    let documentCountry: String
+    let documentType: String
+    
+    init(appVersion: String, deviceId: String, documentCountry: String, documentType: String) {
+        self.appVersion = appVersion
+        self.deviceId = deviceId
+        self.documentCountry = documentCountry
+        self.documentType = documentType
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case platform
+        case appVersion = "app_version"
+        case deviceId = "device_id"
+        case documentCountry = "document_country"
+        case documentType = "document_type"
+    }
+}
+
 struct OnboardingSteps: Codable {
     let paymentMethodAdded: Bool
     let identityVerified: Bool
@@ -64,8 +87,7 @@ struct OnboardingSession: Codable {
     let steps: OnboardingSteps
     let components: SessionComponents
     let entryPoint: String
-    let metadata: [String: String]
-    let clientSecret: String
+    let metadata: SessionMetadata
     let createdAt: Int
     let updatedAt: Int
     let expiresAt: Int
@@ -81,7 +103,6 @@ struct OnboardingSession: Codable {
         case components
         case entryPoint = "entry_point"
         case metadata
-        case clientSecret = "client_secret"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case expiresAt = "expires_at"

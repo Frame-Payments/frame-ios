@@ -8,21 +8,33 @@
 import SwiftUI
 import Frame_iOS
 
+enum IdentificationTypes: String, CaseIterable, Identifiable {
+    case driversLicense = "Driver's License"
+    case stateId = "State ID"
+    case militaryId = "Military ID"
+    case passport = "Passport"
+    
+    var id: String {
+        return self.rawValue
+    }
+}
+
 struct UserIdentificationView: View {
     enum IdentificationSelection: String, CaseIterable {
         case id
         case country
     }
+    @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var showIdentityInputs: Bool = false
-    @State private var selectedCountry: String = "United States"
+    @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var showCountryPicker: Bool = false
-    @State private var selectedIdType: String = "Driver's License"
+    @State private var selectedIdType: IdentificationTypes = .driversLicense
     @State private var showIDPicker: Bool = false
     
     @Binding var continueToNextStep: Bool
     
-    let idTypes: [String] = ["Driver's License", "State ID", "Military ID", "Passport"]
+    let idTypes = IdentificationTypes.allCases
     let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
                                          "Democratic Republic of Congo", "Iraq", "Libya",
                                          "Mali", "Nicaragua", "Sudan", "Venezuela", "Yemen"]
@@ -33,12 +45,17 @@ struct UserIdentificationView: View {
                 verifyIdentityView
             } else {
                 identityIntro
+                    .onAppear {
+                        Task {
+                            await onboardingContainerViewModel.checkExistingOnboardingSession()
+                        }
+                    }
             }
         }
         .sheet(isPresented: $showIDPicker) {
             Picker(IdentificationSelection.id.rawValue, selection: $selectedIdType) {
-                ForEach(idTypes, id: \.self) { id in
-                    Text(id)
+                ForEach(IdentificationTypes.allCases, id: \.self) { id in
+                    Text(id.rawValue)
                 }
             }
             .pickerStyle(.wheel)
@@ -72,7 +89,11 @@ struct UserIdentificationView: View {
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                showIdentityInputs.toggle()
+                if onboardingContainerViewModel.onboardingSession != nil {
+                    self.continueToNextStep = true
+                } else {
+                    showIdentityInputs.toggle()
+                }
             }
             .padding(.bottom)
         }
@@ -94,7 +115,11 @@ struct UserIdentificationView: View {
             
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                self.continueToNextStep.toggle()
+                Task {
+                    await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
+                                                                               selectedCountry: selectedCountry)
+                    self.continueToNextStep.toggle()
+                }
             }
             .padding(.bottom)
         }
@@ -107,7 +132,7 @@ struct UserIdentificationView: View {
             .fontWeight(.semibold)
             .font(.system(size: 13.0))
         HStack {
-            Text(selection == .id ? selectedIdType : selectedCountry)
+            Text(selection == .id ? selectedIdType.rawValue : selectedCountry.displayName)
                 .fontWeight(.medium)
                 .font(.system(size: 14.0))
                 .padding()
@@ -134,7 +159,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView(continueToNextStep: .constant(false))
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), continueToNextStep: .constant(false))
 }
 
 extension Color {

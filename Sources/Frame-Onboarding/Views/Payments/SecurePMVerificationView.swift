@@ -10,9 +10,11 @@ import SwiftUI
 struct SecurePMVerificationView: View {
     @Environment(\.dismiss) var dismiss
     @FocusState private var focusedField: Int?
+    @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var codeInput: Bool = false
     @State private var enteredCode: String = ""
+    @State private var codeResent: Bool = false
     
     @State private var codeInputOne: String = ""
     @State private var codeInputTwo: String = ""
@@ -35,15 +37,22 @@ struct SecurePMVerificationView: View {
                 .padding(.horizontal)
             codeContainerStack
             ContinueButton(enabled: $codeInput) {
+                Task {
+                    await onboardingContainerViewModel.verify3DSChallenge(verificationCode: enteredCode)
+                }
                 self.continueToNextStep = true
             }
             Button {
-                //TODO: Prompt the backend to resend the code to the user.
+                Task {
+                    await onboardingContainerViewModel.resend3DSChallenge()
+                    self.codeResent = true
+                }
             } label: {
                 Text("Resend Code")
                     .bold()
                     .foregroundColor(.black)
             }
+            .disabled(codeResent)
 
             Spacer()
         }
@@ -127,5 +136,7 @@ struct SecurePMVerificationView: View {
 }
 
 #Preview {
-    SecurePMVerificationView(continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+    SecurePMVerificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()),
+                             continueToNextStep: .constant(false),
+                             returnToPreviousStep: .constant(false))
 }
