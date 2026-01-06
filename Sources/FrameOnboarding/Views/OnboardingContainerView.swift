@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 public enum OnboardingFlow: String, CaseIterable, Identifiable {
     public var id: String {

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Frame_iOS
+import Frame
 
 protocol ThreeDSecureVerificationsProtocol {
     // async/await
@@ -24,7 +24,7 @@ protocol ThreeDSecureVerificationsProtocol {
 
 class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecked Sendable {
     // async/await
-    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, Frame_iOS.NetworkingError?) {
+    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, Frame.NetworkingError?) {
         let endpoint = ThreeDSecureEndpoints.create3DSecureVerification
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -36,7 +36,7 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
         }
     }
     
-    static func retrieve3DSecureVerification(verificationId: String) async throws -> (ThreeDSecureVerification?, Frame_iOS.NetworkingError?) {
+    static func retrieve3DSecureVerification(verificationId: String) async throws -> (ThreeDSecureVerification?, Frame.NetworkingError?) {
         let endpoint = ThreeDSecureEndpoints.retrieve3DSecureVerification(verificationId: verificationId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -71,7 +71,7 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
     }
     
     //completionHandlers
-    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame_iOS.NetworkingError?) -> Void) {
+    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.create3DSecureVerification
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -84,7 +84,7 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
         }
     }
     
-    static func retrieve3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame_iOS.NetworkingError?) -> Void) {
+    static func retrieve3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.retrieve3DSecureVerification(verificationId: verificationId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -96,7 +96,7 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
         }
     }
     
-    static func confirm3DSecureVerification(verificationId: String, request: ThreeDSecureRequests.ConfirmThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame_iOS.NetworkingError?) -> Void) {
+    static func confirm3DSecureVerification(verificationId: String, request: ThreeDSecureRequests.ConfirmThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.confirm3DSecureVerification(verificationId: verificationId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
@@ -109,7 +109,7 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
         }
     }
     
-    static func resend3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame_iOS.NetworkingError?) -> Void) {
+    static func resend3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.resend3DSecureVerification(verificationId: verificationId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in

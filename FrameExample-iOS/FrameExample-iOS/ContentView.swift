@@ -6,8 +6,8 @@
 //
 
 import SwiftUI
-import Frame_iOS
-import Frame_Onboarding
+import Frame
+import FrameOnboarding
 
 struct ExampleCartItem: FrameCartItem {
     var id: String

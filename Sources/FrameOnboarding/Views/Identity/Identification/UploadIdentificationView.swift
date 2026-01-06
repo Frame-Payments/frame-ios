@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 enum UploadDocSide: String {
     case frontPhoto = "Front Photo"

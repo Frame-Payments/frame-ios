@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Frame_iOS
+import Frame
 
 enum ThreeDSecureEndpoints: FrameNetworkingEndpoints {
     //MARK: Onboarding Session Endpoints

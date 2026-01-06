@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import Frame_iOS
+@testable import Frame
 
 final class CustomerIdentityAPITests: XCTestCase {
     let session = MockURLAsyncSession(data: nil,

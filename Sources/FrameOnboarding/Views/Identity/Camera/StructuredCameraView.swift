@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 struct StructuredCameraView: View {
     @Environment(\.dismiss) var dismiss

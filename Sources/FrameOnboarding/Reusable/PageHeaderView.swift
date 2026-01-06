@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 struct PageHeaderView: View {
     var useCloseButton: Bool = false

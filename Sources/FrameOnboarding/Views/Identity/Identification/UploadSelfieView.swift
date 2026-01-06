@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 struct UploadSelfieView: View {
     @State private var showCamera = false

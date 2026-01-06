@@ -7,7 +7,7 @@
 
 import SwiftUI
 import EvervaultInputs
-import Frame_iOS
+import Frame
 
 struct SelectPaymentMethodView: View {
     enum ConfirmPaymentMethodSteps {

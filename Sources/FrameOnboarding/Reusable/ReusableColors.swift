@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 // Reusable colors
 let secondaryTextColor = Color("TextColorSecondary", bundle: FrameResources.module)

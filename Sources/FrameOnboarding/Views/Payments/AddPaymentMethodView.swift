@@ -7,7 +7,7 @@
 
 import SwiftUI
 import EvervaultInputs
-import Frame_iOS
+import Frame
 
 struct AddPaymentMethodView: View {
     @Environment(\.dismiss) var dismiss

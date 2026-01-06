@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Frame_iOS
+import Frame
 
 enum IdentificationTypes: String, CaseIterable, Identifiable {
     case driversLicense = "Driver's License"

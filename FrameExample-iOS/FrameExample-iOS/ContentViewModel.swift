@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import Frame_iOS
+import Frame
 
 class ContentViewModel: ObservableObject, @unchecked Sendable {
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []

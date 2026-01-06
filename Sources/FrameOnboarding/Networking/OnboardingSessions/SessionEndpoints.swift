@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Frame_iOS
+import Frame
 
 enum SessionEndpoints: FrameNetworkingEndpoints {
     //MARK: Onboarding Session Endpoints

@@ -7,7 +7,7 @@
 
 import XCTest
 import EvervaultInputs
-@testable import Frame_iOS
+@testable import Frame
 
 final class CheckoutViewModelTests: XCTestCase {
     let session = MockURLAsyncSession(data: nil, response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/payment_methods")!,
