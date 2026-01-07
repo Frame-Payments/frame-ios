@@ -17,13 +17,15 @@ public enum OnboardingFlow: String, CaseIterable, Identifiable {
     case confirmPaymentMethod
     case uploadDocuments
     case uploadSelfie
+    case verificationSubmitted
 }
 
 public struct OnboardingContainerView: View {
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var currentStep: OnboardingFlow = .countryVerification
-    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .uploadSelfie]
+    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .verificationSubmitted]
     @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
@@ -51,18 +53,28 @@ public struct OnboardingContainerView: View {
                                         returnToPreviousStep: $returnToPreviousStep,
                                         customerId: customerId)
             case .countryVerification:
-                UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel, continueToNextStep: $continueToNextStep)
+                UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                       continueToNextStep: $continueToNextStep)
             case .uploadDocuments:
-                UploadIdentificationView(continueToNextStep: $continueToNextStep, returnToPreviousStep: $returnToPreviousStep)
+                UploadIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                         continueToNextStep: $continueToNextStep,
+                                         returnToPreviousStep: $returnToPreviousStep)
             case .uploadSelfie:
-                UploadSelfieView(continueToNextStep: $continueToNextStep, returnToPreviousStep: $returnToPreviousStep)
+                UploadSelfieView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                 continueToNextStep: $continueToNextStep,
+                                 returnToPreviousStep: $returnToPreviousStep)
+            case .verificationSubmitted:
+                VerificationSubmittedView(continueToNextStep: $continueToNextStep)
             }
             Spacer()
         }
         .ignoresSafeArea()
         .onChange(of: continueToNextStep) { oldValue, newValue in
             guard continueToNextStep else { return }
-            guard onboardingFlow.last != currentStep else { return } // Complete onboarding here.
+            guard onboardingFlow.last != currentStep else {
+                self.dismiss()
+                return
+            } // Complete onboarding here.
             
             let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
             self.currentStep = onboardingFlow[index]

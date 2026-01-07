@@ -6,28 +6,37 @@
 //
 
 import SwiftUI
+import UIKit
 import Frame
 
 enum UploadDocSide: String {
     case frontPhoto = "Front Photo"
     case backPhoto = "Back Photo"
     case selfiePhoto = "Take a Selfie"
+    
+    var fieldName: FileUpload.FieldName {
+        switch self {
+        case .frontPhoto:
+            return .front
+        case .backPhoto:
+            return .back
+        case .selfiePhoto:
+            return .selfie
+        }
+    }
 }
 
 struct UploadIdentificationView: View {
+    @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
+    
     @State private var showUploadInputs: Bool = false
     @State private var documentsAdded: [UploadDocSide: Image] = [:]
     @State private var showCamera = false
-    @State private var cameraImage: Image?
-    @State private var currentSelectedDoc: UploadDocSide = .frontPhoto
+    @State private var cameraImage: UIImage?
+    @State private var currentSelectedDoc: FileUpload.FieldName = .front
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
-    
-    let idTypes: [String] = ["Driver's License", "State ID", "Military ID", "Passport"]
-    let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
-                                         "Democratic Republic of Congo", "Iraq", "Libya",
-                                         "Mali", "Nicaragua", "Sudan", "Venezuela", "Yemen"]
     
     var body: some View {
         VStack {
@@ -43,7 +52,10 @@ struct UploadIdentificationView: View {
         }
         .onChange(of: cameraImage) { oldValue, newValue in
             guard let cameraImage else { return }
-            self.documentsAdded.updateValue(cameraImage, forKey: currentSelectedDoc)
+            
+            self.onboardingContainerViewModel.filesToUpload.removeAll(where: { $0.fieldName == currentSelectedDoc })
+            self.onboardingContainerViewModel.filesToUpload.append(FileUpload(image: cameraImage, fieldName: currentSelectedDoc))
+            
         }
     }
     
@@ -78,20 +90,32 @@ struct UploadIdentificationView: View {
                 .foregroundColor(secondaryTextColor)
                 .padding(.horizontal, 15.0)
                 .padding(.bottom, 8.0)
-            listIdentificationOptionsView
+            ScrollView {
+                listIdentificationOptionsView
+                listSelfieOptionsView
+            }
             Spacer()
             ContinueButton(buttonText: "Submit", enabled: .constant(true)) {
-                self.continueToNextStep.toggle()
+                self.uploadDocsThenContinue()
             }
             .padding(.bottom)
+            .opacity(onboardingContainerViewModel.checkIfCustomerCanContinueWithDocs() ? 1.0 : 0.3)
+            .disabled(!onboardingContainerViewModel.checkIfCustomerCanContinueWithDocs())
         }
     }
     
     var listIdentificationOptionsView: some View {
-        ScrollView {
+        Group {
             headerScrollTitles(name: "License, Passport or Government Id")
             identificationMethodView(docSide: .frontPhoto)
             identificationMethodView(docSide: .backPhoto)
+        }
+    }
+    
+    var listSelfieOptionsView: some View {
+        Group {
+            headerScrollTitles(name: "Selfie")
+            identificationMethodView(docSide: .selfiePhoto)
         }
     }
     
@@ -129,12 +153,21 @@ struct UploadIdentificationView: View {
         )
         .padding(.horizontal)
         .onTapGesture {
-            self.currentSelectedDoc = docSide
+            self.currentSelectedDoc = docSide.fieldName
             self.showCamera.toggle()
+        }
+    }
+    
+    func uploadDocsThenContinue() {
+        Task {
+            await onboardingContainerViewModel.createCustomerIdentity()
+            await onboardingContainerViewModel.uploadIdentificationDocuments()
+            
+            self.continueToNextStep.toggle()
         }
     }
 }
 
 #Preview {
-    UploadIdentificationView(continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+    UploadIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
 }

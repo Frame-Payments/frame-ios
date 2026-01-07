@@ -9,8 +9,10 @@ import SwiftUI
 import Frame
 
 struct UploadSelfieView: View {
+    @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
+    
     @State private var showCamera = false
-    @State private var cameraImage: Image?
+    @State private var cameraImage: UIImage?
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
@@ -20,13 +22,20 @@ struct UploadSelfieView: View {
             identityIntro
         }
         .fullScreenCover(isPresented: $showCamera) {
-            StructuredCameraView(cameraImage: $cameraImage, photoType: .selfiePhoto)
+            StructuredCameraView(cameraImage: $cameraImage, photoType: .selfie)
                 .edgesIgnoringSafeArea(.all)
         }
         .onChange(of: cameraImage) { oldValue, newValue in
             guard let cameraImage else { return }
+            showCamera.toggle()
             
-            // Continue to processing screen and upload the images.
+            onboardingContainerViewModel.filesToUpload.append(FileUpload(image: cameraImage, fieldName: .selfie))
+            
+            // Show a spinner and block any screen interaction
+            Task {
+                await onboardingContainerViewModel.createCustomerIdentity()
+                await onboardingContainerViewModel.uploadIdentificationDocuments()
+            }
         }
     }
     
@@ -52,5 +61,5 @@ struct UploadSelfieView: View {
 }
 
 #Preview {
-    UploadSelfieView(continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+    UploadSelfieView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
 }

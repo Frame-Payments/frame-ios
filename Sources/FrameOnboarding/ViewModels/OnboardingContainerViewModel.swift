@@ -19,6 +19,8 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []
     @Published var paymentMethodVerification: ThreeDSecureVerification?
+    @Published var customerIdentity: FrameObjects.CustomerIdentity?
+    @Published var filesToUpload: [FileUpload] = []
     
     let customerId: String
     let components: SessionComponents
@@ -54,10 +56,6 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (sessionResponse, _) = try await SessionsAPI.createOnboardingSession(request: request)
             if let sessionResponse {
-//                DispatchQueue.main.async {
-//                    self.onboardingSession = sessionResponse
-//                }
-                
                 self.onboardingSession = sessionResponse
             }
         } catch let error {
@@ -137,12 +135,40 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
+    func createCustomerIdentity() async {
+        do {
+            let (identity, _) = try await CustomerIdentityAPI.createCustomerIdentityWith(customerId: customerId)
+            if let identity {
+                self.customerIdentity = identity
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+    
     // Upload ID and selfie documents
-    func uploadIdentificationDocuments() async {}
+    func uploadIdentificationDocuments() async {
+        guard filesToUpload.count == 3, let customerIdentityId = customerIdentity?.id else { return }
+        do {
+            let (identity, _) = try await CustomerIdentityAPI.uploadIdentityDocuments(customerIdentityId: customerIdentityId, identityImages: filesToUpload)
+            if let identity {
+                self.customerIdentity = identity
+            }
+        } catch let error {
+            print(error)
+        }
+    }
     
     func checkIfCustomerCanContinueWithPaymentMethod() -> Bool {
         guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
         guard cardData.isValid else { return false }
+        return true
+    }
+    
+    func checkIfCustomerCanContinueWithDocs() -> Bool {
+        guard filesToUpload.contains(where: { $0.fieldName == .front }) else { return false }
+        guard filesToUpload.contains(where: { $0.fieldName == .back }) else { return false }
+        guard filesToUpload.contains(where: { $0.fieldName == .selfie }) else { return false }
         return true
     }
 }

@@ -12,14 +12,14 @@ struct StructuredCameraView: View {
     @Environment(\.dismiss) var dismiss
     
     @StateObject private var cameraService = CameraService()
-    @Binding var cameraImage: Image?
-    @State var photoType: UploadDocSide
+    @Binding var cameraImage: UIImage?
+    @State var photoType: FileUpload.FieldName
     
     var body: some View {
         ZStack {
             // CameraPreviewView(cameraService: cameraService)
             //   .edgesIgnoringSafeArea(.all)
-            if photoType == .selfiePhoto {
+            if photoType == .selfie {
                 GeometryReader { geo in
                    let holeSize = CGSize(width: 330, height: 400)
                    let holeRect = CGRect(
@@ -104,7 +104,7 @@ struct StructuredCameraView: View {
         }
         .onChange(of: cameraService.capturedImage, { oldValue, newValue in
             if let capImage = cameraService.capturedImage {
-                self.cameraImage = Image(uiImage: capImage)
+                self.cameraImage = capImage
                 self.dismiss()
             }
         })
@@ -113,5 +113,5 @@ struct StructuredCameraView: View {
 }
 
 #Preview {
-    StructuredCameraView(cameraImage: .constant(nil), photoType: .backPhoto)
+    StructuredCameraView(cameraImage: .constant(nil), photoType: .back)
 }
