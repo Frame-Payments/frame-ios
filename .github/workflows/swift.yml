@@ -20,32 +20,31 @@ jobs:
       - name: Resolve Swift Package Dependencies
         run: swift package resolve
 
-      - name: Ensure iOS Simulator Exists
+      - name: Pick and boot an iOS Simulator
         shell: bash
         run: |
           set -euo pipefail
 
-          echo "== Runtimes =="
-          xcrun simctl list runtimes
-
           echo "== Devices (available) =="
           xcrun simctl list devices available
 
-          UDID="$(python3 -c 'import json,subprocess
-j=json.loads(subprocess.check_output(["xcrun","simctl","list","devices","available","-j"]))
-c=[]
-for runtime,devices in j.get("devices",{}).items():
-    if "iOS" not in runtime: 
-        continue
-    for d in devices:
-        if not d.get("isAvailable"):
-            continue
-        name=d.get("name","")
-        udid=d.get("udid","")
-        rank=0 if "iPhone" in name else 1
-        c.append((rank,name,udid))
-c.sort()
-print(c[0][2] if c else "")')"
+          # Pick the first available iPhone UDID from any iOS runtime section
+          UDID="$(
+            xcrun simctl list devices available |
+            grep -E '^\s*iPhone ' |
+            head -n 1 |
+            sed -n 's/.*(\([0-9A-F-]\{36\}\)).*/\1/p'
+          )"
+
+          # Fallback to any iPad if no iPhone is present
+          if [ -z "$UDID" ]; then
+            UDID="$(
+              xcrun simctl list devices available |
+              grep -E '^\s*iPad ' |
+              head -n 1 |
+              sed -n 's/.*(\([0-9A-F-]\{36\}\)).*/\1/p'
+            )"
+          fi
 
           if [ -z "$UDID" ]; then
             echo "❌ No available iOS simulators found."
