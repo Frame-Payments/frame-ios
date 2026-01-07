@@ -28,6 +28,6 @@ jobs:
           xcodebuild test \
             -project FrameExample-iOS/FrameExample-iOS.xcodeproj \
             -scheme FrameExample-iOS \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.6' \
+            -destination 'platform=iOS Simulator' \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
