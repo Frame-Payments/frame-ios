@@ -23,11 +23,11 @@ jobs:
         run: |
           swift package resolve
 
-      - name: Run tests on iOS Simulator
+      - name: Run Tests on iOS Simulator
         run: |
           xcodebuild test \
             -project FrameExample-iOS/FrameExample-iOS.xcodeproj \
             -scheme FrameExample-iOS \
-            -destination 'platform=iOS Simulator' \
+            -destination "platform=iOS Simulator,name=Any iOS Simulator Device" \
             -sdk iphonesimulator \
             -enableCodeCoverage YES
