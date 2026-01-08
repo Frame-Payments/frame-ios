@@ -36,3 +36,18 @@ struct ThreeDSecureVerification: Codable {
         case expiresAt = "expires_at"
     }
 }
+
+struct ThreeDSecureVerificationError: Codable {
+    struct VerificationError: Codable {
+        let type: String?
+        let message: String?
+        let existingIntentId: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case type, message
+            case existingIntentId = "existing_intent_id"
+        }
+    }
+
+    let error: VerificationError?
+}
