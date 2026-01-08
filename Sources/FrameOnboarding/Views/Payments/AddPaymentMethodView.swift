@@ -14,11 +14,9 @@ struct AddPaymentMethodView: View {
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var canCustomerContinue: Bool = false
-    @Binding var paymentMethodAdded: Bool
     
-    init(onboardingContainerViewModel: OnboardingContainerViewModel, paymentMethodAdded: Binding<Bool>) {
+    init(onboardingContainerViewModel: OnboardingContainerViewModel) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
-        self._paymentMethodAdded = paymentMethodAdded
     }
     
     var body: some View {
@@ -50,8 +48,6 @@ struct AddPaymentMethodView: View {
                 ContinueButton(enabled: $canCustomerContinue) {
                     Task {
                         await onboardingContainerViewModel.addNewPaymentMethod()
-                        // Save payment method to the customer, then go back to the previous page with the payment method selected. (**Could possibly auto-continue after that)
-                        self.paymentMethodAdded = true
                         self.dismiss()
                     }
                 }
@@ -110,5 +106,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), paymentMethodAdded: .constant(false))
+    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()))
 }

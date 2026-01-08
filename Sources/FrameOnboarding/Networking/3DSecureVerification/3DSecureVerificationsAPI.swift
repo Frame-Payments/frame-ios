@@ -10,13 +10,13 @@ import Frame
 
 protocol ThreeDSecureVerificationsProtocol {
     // async/await
-    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, NetworkingError?)
+    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, ThreeDSecureVerificationError?, NetworkingError?)
     static func retrieve3DSecureVerification(verificationId: String) async throws -> (ThreeDSecureVerification?, NetworkingError?)
     static func confirm3DSecureVerification(verificationId: String, request: ThreeDSecureRequests.ConfirmThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, NetworkingError?)
     static func resend3DSecureVerification(verificationId: String) async throws -> (ThreeDSecureVerification?, NetworkingError?)
     
     //completionHandlers
-    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void)
+    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, ThreeDSecureVerificationError?, NetworkingError?) -> Void)
     static func retrieve3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void)
     static func confirm3DSecureVerification(verificationId: String, request: ThreeDSecureRequests.ConfirmThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void)
     static func resend3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void)
@@ -24,15 +24,17 @@ protocol ThreeDSecureVerificationsProtocol {
 
 class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecked Sendable {
     // async/await
-    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, Frame.NetworkingError?) {
+    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, ThreeDSecureVerificationError?, Frame.NetworkingError?) {
         let endpoint = ThreeDSecureEndpoints.create3DSecureVerification
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ThreeDSecureVerification.self, from: data) {
-            return (decodedResponse, error)
+            return (decodedResponse, nil, error)
+        } else if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ThreeDSecureVerificationError.self, from: data) {
+            return (nil, decodedResponse, error)
         } else {
-            return (nil, error)
+            return (nil, nil, error)
         }
     }
     
@@ -71,20 +73,22 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
     }
     
     //completionHandlers
-    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
+    static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, ThreeDSecureVerificationError?, NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.create3DSecureVerification
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ThreeDSecureVerification.self, from: data) {
-                completionHandler(decodedResponse, error)
+                completionHandler(decodedResponse, nil, error)
+            } else if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ThreeDSecureVerificationError.self, from: data) {
+                completionHandler(nil, decodedResponse, error)
             } else {
-                completionHandler(nil, error)
+                completionHandler(nil, nil, error)
             }
         }
     }
     
-    static func retrieve3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
+    static func retrieve3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.retrieve3DSecureVerification(verificationId: verificationId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
@@ -96,7 +100,7 @@ class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecke
         }
     }
     
-    static func confirm3DSecureVerification(verificationId: String, request: ThreeDSecureRequests.ConfirmThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, Frame.NetworkingError?) -> Void) {
+    static func confirm3DSecureVerification(verificationId: String, request: ThreeDSecureRequests.ConfirmThreeDSecureVerification, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void) {
         let endpoint = ThreeDSecureEndpoints.confirm3DSecureVerification(verificationId: verificationId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         

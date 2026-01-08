@@ -14,7 +14,6 @@ struct SelectPayoutMethodView: View {
     
     @State private var canCustomerContinue: Bool = false
     @State private var showAddPayoutMethod: Bool = false
-    @State private var payoutMethodAdded: Bool = false
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
@@ -23,20 +22,13 @@ struct SelectPayoutMethodView: View {
         NavigationStack {
             selectPayoutView
                 .navigationDestination(isPresented: $showAddPayoutMethod) {
-                    AddPayoutMethodView(onboardingContainerViewModel: onboardingContainerViewModel, payoutMethodAdded: $payoutMethodAdded)
+                    AddPayoutMethodView(onboardingContainerViewModel: onboardingContainerViewModel)
                         .navigationBarBackButtonHidden()
                 }
         }
         .onChange(of: onboardingContainerViewModel.selectedPayoutMethod) { oldValue, newValue in
             self.canCustomerContinue = newValue != nil
         }
-        .onChange(of: payoutMethodAdded, { oldValue, newValue in
-            guard payoutMethodAdded else { return }
-            // reload payment methods
-            // select the payment method that was added
-            // self.canCustomerContinue should change to true
-            self.payoutMethodAdded = false
-        })
     }
     
     var selectPayoutView: some View {
@@ -44,7 +36,10 @@ struct SelectPayoutMethodView: View {
             listPaymentMethodsView
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
-                self.continueToNextStep = true
+                Task {
+                    await onboardingContainerViewModel.updatePayoutMethod()
+                    self.continueToNextStep = true
+                }
             }
             .padding(.bottom)
         }

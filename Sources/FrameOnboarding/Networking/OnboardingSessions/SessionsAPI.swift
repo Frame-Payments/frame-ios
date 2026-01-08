@@ -15,11 +15,13 @@ protocol SessionsProtocol {
     static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession) async throws -> (OnboardingSession?, NetworkingError?)
     static func getOnboardingSessionWithCustomer(customerId: String) async throws -> (SessionResponses.ListSessionsResponse?, NetworkingError?)
     static func cancelOnboardingSession(sessionId: String) async throws -> (OnboardingSession?, NetworkingError?)
+    static func updatePayoutMethod(sessionId: String, request: SessionRequests.UpdatePayoutMethodRequest) async throws -> (OnboardingSession?, NetworkingError?)
     
     // completionHandlers
     static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void)
     static func getOnboardingSessionWithCustomer(customerId: String, completionHandler: @escaping @Sendable (SessionResponses.ListSessionsResponse?, NetworkingError?) -> Void)
     static func cancelOnboardingSession(sessionId: String, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void)
+    static func updatePayoutMethod(sessionId: String, request: SessionRequests.UpdatePayoutMethodRequest, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void)
 }
 
 // Sessions API
@@ -59,6 +61,18 @@ class SessionsAPI: SessionsProtocol, @unchecked Sendable {
         }
     }
     
+    static func updatePayoutMethod(sessionId: String, request: SessionRequests.UpdatePayoutMethodRequest) async throws -> (OnboardingSession?, NetworkingError?) {
+        let endpoint = SessionEndpoints.updatePayoutMethod(sessionId: sessionId)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(OnboardingSession.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+    
     // completionHandlers
     static func createOnboardingSession(request: SessionRequests.CreateOnboardingSession, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void) {
         let endpoint = SessionEndpoints.createOnboardingSession
@@ -89,6 +103,19 @@ class SessionsAPI: SessionsProtocol, @unchecked Sendable {
         let endpoint = SessionEndpoints.cancelOnboardingSession(sessionId: sessionId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(OnboardingSession.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+    
+    static func updatePayoutMethod(sessionId: String, request: SessionRequests.UpdatePayoutMethodRequest, completionHandler: @escaping @Sendable (OnboardingSession?, NetworkingError?) -> Void) {
+        let endpoint = SessionEndpoints.updatePayoutMethod(sessionId: sessionId)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(OnboardingSession.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

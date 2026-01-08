@@ -13,6 +13,7 @@ enum SessionEndpoints: FrameNetworkingEndpoints {
     case createOnboardingSession
     case getOnboardingSessionWithCustomer(customerId: String)
     case cancelOnboardingSession(sessionId: String)
+    case updatePayoutMethod(sessionId: String)
     
     var endpointURL: String {
         switch self {
@@ -20,12 +21,14 @@ enum SessionEndpoints: FrameNetworkingEndpoints {
             return "/v1/onboarding/sessions"
         case .cancelOnboardingSession(let sessionId):
             return "/v1/onboarding/sessions/\(sessionId)"
+        case .updatePayoutMethod(let sessionId):
+            return "/v1/onboarding/sessions/\(sessionId)/payout"
         }
     }
     
     var httpMethod: HTTPMethod {
         switch self {
-        case .createOnboardingSession:
+        case .createOnboardingSession, .updatePayoutMethod:
             return .POST
         case .cancelOnboardingSession:
             return .PATCH

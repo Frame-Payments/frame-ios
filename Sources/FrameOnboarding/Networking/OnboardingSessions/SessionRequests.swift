@@ -27,6 +27,18 @@ class SessionRequests {
         }
     }
     
+    struct UpdatePayoutMethodRequest: Encodable, Sendable {
+        let payoutMethodId: String
+        
+        init(payoutMethodId: String) {
+            self.payoutMethodId = payoutMethodId
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case payoutMethodId = "payout_method_id"
+        }
+    }
+    
     struct CancelOnboardingSession: Encodable, Sendable {
         let status: SessionStatus = .canceled
     }

@@ -21,7 +21,6 @@ struct SelectPaymentMethodView: View {
     @State private var currentPaymentStep: ConfirmPaymentMethodSteps = .selectPayment
     @State private var showAddPaymentMethod: Bool = false
     @State private var paymentVerified: Bool = false
-    @State private var paymentMethodAdded: Bool = false
     @State private var returnToSelectPayment: Bool = false
     
     @Binding var continueToNextStep: Bool
@@ -35,7 +34,7 @@ struct SelectPaymentMethodView: View {
             case .selectPayment:
                 selectPaymentView
                     .navigationDestination(isPresented: $showAddPaymentMethod) {
-                        AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel, paymentMethodAdded: $paymentMethodAdded)
+                        AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel)
                             .navigationBarBackButtonHidden()
                     }
             case .verifyPayment:
@@ -55,13 +54,6 @@ struct SelectPaymentMethodView: View {
         .onChange(of: paymentVerified, { oldValue, newValue in
             guard paymentVerified else { return }
             self.continueToNextStep = true
-        })
-        .onChange(of: paymentMethodAdded, { oldValue, newValue in
-            guard paymentMethodAdded else { return }
-            // reload payment methods
-            // select the payment method that was added
-            // self.canCustomerContinue should change to true
-            self.paymentMethodAdded = false
         })
         .onChange(of: returnToSelectPayment) { oldValue, newValue in
             guard returnToSelectPayment else { return }

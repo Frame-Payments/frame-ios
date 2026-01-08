@@ -122,12 +122,40 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
+    func updatePayoutMethod() async {
+        guard let sessionId = onboardingSession?.id, let payoutMethodId = selectedPayoutMethod?.id else { return }
+        let request = SessionRequests.UpdatePayoutMethodRequest(payoutMethodId: payoutMethodId)
+        
+        do {
+            let (session, _) = try await SessionsAPI.updatePayoutMethod(sessionId: sessionId, request: request)
+            if let session {
+                self.onboardingSession = session
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+    
     // Start 3DS process with select payment method
     func start3DSecureProcess() async {
         guard let paymentMethodId = selectedPaymentMethod?.id else { return }
         let request = ThreeDSecureRequests.CreateThreeDSecureVerification(paymentMethodId: paymentMethodId)
+        
         do {
-            let (verification, _) = try await ThreeDSecureVerificationsAPI.create3DSecureVerification(request: request)
+            let (verification, verificationError, _) = try await ThreeDSecureVerificationsAPI.create3DSecureVerification(request: request)
+            if let verification {
+                paymentMethodVerification = verification
+            } else if let verificationError, let verificationId = verificationError.error?.existingIntentId {
+                await retrieve3DSChallenge(verificationId: verificationId)
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+    
+    func retrieve3DSChallenge(verificationId: String) async {
+        do {
+            let (verification, _) = try await ThreeDSecureVerificationsAPI.retrieve3DSecureVerification(verificationId: verificationId)
             if let verification {
                 paymentMethodVerification = verification
             }
@@ -194,7 +222,7 @@ class OnboardingContainerViewModel: ObservableObject {
     
     func checkIfCustomerCanContinueWithPayoutMethod() -> Bool {
         guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        guard bankAccount.accountNumber != nil, bankAccount.accountType != nil, bankAccount.routingNumber != nil, bankAccount.bankName != nil else { return false }
+        guard bankAccount.accountNumber != nil, bankAccount.routingNumber != nil, bankAccount.bankName != nil else { return false }
         return true
     }
     

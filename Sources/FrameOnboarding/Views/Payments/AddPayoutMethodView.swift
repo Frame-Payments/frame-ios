@@ -16,11 +16,9 @@ struct AddPayoutMethodView: View {
     @State private var selectedAccountType: FrameObjects.PaymentAccountType = .checking
     @State private var canCustomerContinue: Bool = false
     @State private var showAccountTypePicker: Bool = false
-    @Binding var payoutMethodAdded: Bool
     
-    init(onboardingContainerViewModel: OnboardingContainerViewModel, payoutMethodAdded: Binding<Bool>) {
+    init(onboardingContainerViewModel: OnboardingContainerViewModel) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
-        self._payoutMethodAdded = payoutMethodAdded
     }
     
     var body: some View {
@@ -65,7 +63,6 @@ struct AddPayoutMethodView: View {
             Task {
                 onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
                 await onboardingContainerViewModel.addNewPayoutMethod()
-                self.payoutMethodAdded = true
                 self.dismiss()
             }
         }
@@ -184,6 +181,5 @@ struct AddPayoutMethodView: View {
 }
 
 #Preview {
-    AddPayoutMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()),
-                        payoutMethodAdded: .constant(false))
+    AddPayoutMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()))
 }
