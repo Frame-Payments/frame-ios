@@ -17,7 +17,7 @@ public class FrameObjects {
         case card, ach
     }
     
-    public enum PaymentAccountType: String, Codable, Sendable {
+    public enum PaymentAccountType: String, Codable, Sendable, CaseIterable {
         case checking, savings
     }
     
@@ -111,7 +111,7 @@ public class FrameObjects {
         public var bankName: String?
         public var lastFour: String?
         
-        public init(accountType: FrameObjects.PaymentAccountType?, accountNumber: String?, routingNumber: String?, bankName: String?, lastFour: String?) {
+        public init(accountType: FrameObjects.PaymentAccountType? = nil, accountNumber: String? = nil, routingNumber: String? = nil, bankName: String? = nil, lastFour: String? = nil) {
             self.accountType = accountType
             self.accountNumber = accountNumber
             self.routingNumber = routingNumber

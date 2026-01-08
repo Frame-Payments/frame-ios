@@ -16,11 +16,8 @@ struct AddPaymentMethodView: View {
     @State private var canCustomerContinue: Bool = false
     @Binding var paymentMethodAdded: Bool
     
-    let customerId: String
-    
-    init(customerId: String, onboardingContainerViewModel: OnboardingContainerViewModel, paymentMethodAdded: Binding<Bool>) {
+    init(onboardingContainerViewModel: OnboardingContainerViewModel, paymentMethodAdded: Binding<Bool>) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
-        self.customerId = customerId
         self._paymentMethodAdded = paymentMethodAdded
     }
     
@@ -113,5 +110,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(customerId: "cus_123", onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), paymentMethodAdded: .constant(false))
+    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), paymentMethodAdded: .constant(false))
 }

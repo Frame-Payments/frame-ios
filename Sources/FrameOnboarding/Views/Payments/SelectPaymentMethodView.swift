@@ -27,10 +27,7 @@ struct SelectPaymentMethodView: View {
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
     
-    let customerId: String
-    
     let examplePaymentMethod = FrameObjects.PaymentMethod(id: "method_123", type: .card, object: "payment_method", created: 0, updated: 0, livemode: true, card: FrameObjects.PaymentCard(brand: "mastercard", expirationMonth: "08", expirationYear: "29", currency: "usd", lastFourDigits: "1111"))
-    let examplePaymentMethod2 = FrameObjects.PaymentMethod(id: "method_1234", type: .card, object: "payment_method", created: 0, updated: 0, livemode: true, card: FrameObjects.PaymentCard(brand: "visa", expirationMonth: "01", expirationYear: "26", currency: "usd", lastFourDigits: "0000"))
     
     var body: some View {
         NavigationStack {
@@ -38,7 +35,7 @@ struct SelectPaymentMethodView: View {
             case .selectPayment:
                 selectPaymentView
                     .navigationDestination(isPresented: $showAddPaymentMethod) {
-                        AddPaymentMethodView(customerId: customerId, onboardingContainerViewModel: onboardingContainerViewModel, paymentMethodAdded: $paymentMethodAdded)
+                        AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel, paymentMethodAdded: $paymentMethodAdded)
                             .navigationBarBackButtonHidden()
                     }
             case .verifyPayment:
@@ -98,11 +95,11 @@ struct SelectPaymentMethodView: View {
                 .font(.system(size: 14.0))
                 .padding(.horizontal)
             ScrollView {
-                headerScrollTitles(name: "Saved Payment Methods")
-//                paymentMethodView(paymentMethod: examplePaymentMethod) //**WARNING** REMOVE AFTER TESTING
-//                paymentMethodView(paymentMethod: examplePaymentMethod2) //**WARNING** REMOVE AFTER TESTING
-                ForEach(onboardingContainerViewModel.paymentMethods) { paymentMethod in
-                    paymentMethodView(paymentMethod: paymentMethod)
+                if !onboardingContainerViewModel.paymentMethods.isEmpty {
+                    headerScrollTitles(name: "Saved Payment Methods")
+                    ForEach(onboardingContainerViewModel.paymentMethods) { paymentMethod in
+                        paymentMethodView(paymentMethod: paymentMethod)
+                    }
                 }
                 headerScrollTitles(name: "Add Payment Method")
                 addPaymentMethodRow
@@ -183,6 +180,5 @@ struct SelectPaymentMethodView: View {
 #Preview {
     SelectPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()),
                             continueToNextStep: .constant(false),
-                            returnToPreviousStep: .constant(false),
-                            customerId: "cus_123")
+                            returnToPreviousStep: .constant(false))
 }

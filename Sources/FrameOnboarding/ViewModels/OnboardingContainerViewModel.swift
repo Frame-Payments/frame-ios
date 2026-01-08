@@ -15,9 +15,12 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Payment Method
     @Published var cardData = PaymentCardData()
+    @Published var bankAccount = FrameObjects.BankAccount()
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
+    @Published var selectedPayoutMethod: FrameObjects.PaymentMethod?
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []
+    @Published var payoutMethods: [FrameObjects.PaymentMethod] = []
     @Published var paymentMethodVerification: ThreeDSecureVerification?
     @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var filesToUpload: [FileUpload] = []
@@ -68,7 +71,8 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
             if let methods = paymentMethodResponse?.data {
-                self.paymentMethods = methods
+                self.paymentMethods = methods.filter({ $0.card != nil })
+                self.payoutMethods = methods.filter({ $0.ach != nil })
             }
         } catch let error {
             print(error)
@@ -89,6 +93,29 @@ class OnboardingContainerViewModel: ObservableObject {
             if let paymentMethod {
                 self.selectedPaymentMethod = paymentMethod
                 self.paymentMethods.append(paymentMethod)
+                
+                self.clearAccountDetails()
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+    
+    // Add new payout method to customer object
+    func addNewPayoutMethod() async {
+        do {
+            let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: bankAccount.accountType ?? .checking,
+                                                                             accountNumber: bankAccount.accountNumber ?? "",
+                                                                             routingNumber: bankAccount.routingNumber ?? "",
+                                                                             customer: customerId,
+                                                                             billing: createdBillingAddress)
+            let (payoutMethod, _) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
+            
+            if let payoutMethod {
+                self.selectedPayoutMethod = payoutMethod
+                self.payoutMethods.append(payoutMethod)
+                
+                self.clearAccountDetails()
             }
         } catch let error {
             print(error)
@@ -165,10 +192,22 @@ class OnboardingContainerViewModel: ObservableObject {
         return true
     }
     
+    func checkIfCustomerCanContinueWithPayoutMethod() -> Bool {
+        guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
+        guard bankAccount.accountNumber != nil, bankAccount.accountType != nil, bankAccount.routingNumber != nil, bankAccount.bankName != nil else { return false }
+        return true
+    }
+    
     func checkIfCustomerCanContinueWithDocs() -> Bool {
         guard filesToUpload.contains(where: { $0.fieldName == .front }) else { return false }
         guard filesToUpload.contains(where: { $0.fieldName == .back }) else { return false }
         guard filesToUpload.contains(where: { $0.fieldName == .selfie }) else { return false }
         return true
+    }
+    
+    func clearAccountDetails() {
+        self.cardData = PaymentCardData()
+        self.bankAccount = FrameObjects.BankAccount()
+        self.createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
     }
 }

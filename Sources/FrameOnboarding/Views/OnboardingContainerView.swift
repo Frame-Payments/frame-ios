@@ -15,6 +15,7 @@ public enum OnboardingFlow: String, CaseIterable, Identifiable {
 
     case countryVerification
     case confirmPaymentMethod
+    case confirmPayoutMethod
     case uploadDocuments
     case uploadSelfie
     case verificationSubmitted
@@ -25,7 +26,7 @@ public struct OnboardingContainerView: View {
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var currentStep: OnboardingFlow = .countryVerification
-    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .uploadDocuments, .verificationSubmitted]
+    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .confirmPayoutMethod, .uploadDocuments, .verificationSubmitted]
     @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
@@ -50,8 +51,11 @@ public struct OnboardingContainerView: View {
             case .confirmPaymentMethod:
                 SelectPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
                                         continueToNextStep: $continueToNextStep,
-                                        returnToPreviousStep: $returnToPreviousStep,
-                                        customerId: customerId)
+                                        returnToPreviousStep: $returnToPreviousStep)
+            case .confirmPayoutMethod:
+                SelectPayoutMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                       continueToNextStep: $continueToNextStep,
+                                       returnToPreviousStep: $returnToPreviousStep)
             case .countryVerification:
                 UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                        continueToNextStep: $continueToNextStep)
@@ -103,9 +107,12 @@ public struct OnboardingContainerView: View {
                     HStack {
                         ForEach(onboardingFlow) { step in
                             Image(progressiveSteps.contains(step) ? "filled-onboarding-indicator" : "empty-onboarding-indicator", bundle: FrameResources.module)
+                                .resizable()
+                                .frame(height: 5.0)
                         }
                     }
                     .padding(.bottom, 15.0)
+                    .padding(.horizontal)
                     Divider()
                 }
             }
