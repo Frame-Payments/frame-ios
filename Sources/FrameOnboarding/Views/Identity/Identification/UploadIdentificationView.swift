@@ -132,7 +132,7 @@ struct UploadIdentificationView: View {
     
     func identificationMethodView(docSide: UploadDocSide) -> some View {
         HStack {
-            Image(documentsAdded.keys.contains(docSide) ? "filled-identification-card" : "identification-card", bundle: FrameResources.module)
+            Image(onboardingContainerViewModel.filesToUpload.contains(where: { $0.fieldName == docSide.fieldName }) ? "filled-identification-card" : "identification-card", bundle: FrameResources.module)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48.0, height: 32.0)

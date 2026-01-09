@@ -77,15 +77,9 @@ struct AddPayoutMethodView: View {
         RoundedRectangle(cornerRadius: 10.0)
             .fill(.white)
             .stroke(.gray.opacity(0.3))
-            .frame(height: 150.0)
+            .frame(height: 100.0)
             .overlay {
                 VStack(spacing: 0) {
-                    TextField("",
-                              text: $onboardingContainerViewModel.bankAccount.bankName.orEmpty,
-                              prompt: Text("Bank Name"))
-                    .frame(height: 49.0)
-                    .padding(.horizontal)
-                    Divider()
                     TextField("",
                               text: $onboardingContainerViewModel.bankAccount.routingNumber.orEmpty,
                               prompt: Text("Routing Number"))

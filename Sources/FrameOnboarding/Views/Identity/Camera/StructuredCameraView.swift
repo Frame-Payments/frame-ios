@@ -17,8 +17,10 @@ struct StructuredCameraView: View {
     
     var body: some View {
         ZStack {
-            // CameraPreviewView(cameraService: cameraService)
-            //   .edgesIgnoringSafeArea(.all)
+            if cameraService.captureSession != nil {
+                CameraPreviewView(cameraService: cameraService)
+                    .edgesIgnoringSafeArea(.all)
+            }
             if photoType == .selfie {
                 GeometryReader { geo in
                    let holeSize = CGSize(width: 330, height: 400)
@@ -97,7 +99,7 @@ struct StructuredCameraView: View {
             }
         }
         .onAppear {
-            cameraService.setupAndStartSession()
+            cameraService.setupAndStartSession(useFrontCamera: photoType == .selfie)
         }
         .onDisappear {
             cameraService.stopSession()

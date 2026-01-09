@@ -11,18 +11,41 @@ import UIKit
 
 class CameraService: NSObject, ObservableObject, AVCapturePhotoCaptureDelegate {
     @Published var capturedImage: UIImage? = nil
-    var captureSession: AVCaptureSession?
-    var photoOutput: AVCapturePhotoOutput?
+    @Published var captureSession: AVCaptureSession?
+    @Published var photoOutput: AVCapturePhotoOutput?
 
-    func setupAndStartSession() {
+    func setupAndStartSession(useFrontCamera: Bool) {
         captureSession = AVCaptureSession()
         guard let captureSession = captureSession else { return }
+        guard let videoCaptureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: useFrontCamera ? .front : .back) else { return }
+        
+        captureSession.sessionPreset = .photo
+        
+        do {
+            try videoCaptureDevice.lockForConfiguration()
 
-        // Configure session preset
-        captureSession.sessionPreset = .photo // or .high
+            if videoCaptureDevice.isFocusModeSupported(.continuousAutoFocus) {
+                videoCaptureDevice.focusMode = .continuousAutoFocus
+            } else if videoCaptureDevice.isFocusModeSupported(.autoFocus) {
+                videoCaptureDevice.focusMode = .autoFocus
+            }
 
-        // Add device input
-        guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
+            if videoCaptureDevice.isExposureModeSupported(.continuousAutoExposure) {
+                videoCaptureDevice.exposureMode = .continuousAutoExposure
+            } else if videoCaptureDevice.isExposureModeSupported(.autoExpose) {
+                videoCaptureDevice.exposureMode = .autoExpose
+            }
+
+            // Optional: smoother changes, if supported
+            if videoCaptureDevice.isSmoothAutoFocusSupported {
+                videoCaptureDevice.isSmoothAutoFocusEnabled = true
+            }
+
+            videoCaptureDevice.unlockForConfiguration()
+        } catch {
+            print("Could not lock device for configuration: \(error)")
+        }
+
         do {
             let videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
             if captureSession.canAddInput(videoInput) {

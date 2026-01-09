@@ -106,7 +106,7 @@ struct SelectPayoutMethodView: View {
     
     func payoutMethodView(payoutMethod: FrameObjects.PaymentMethod) -> some View {
         HStack {
-            Image(payoutMethod.card?.brand ?? "", bundle: FrameResources.module)
+            Image("bank-icon", bundle: FrameResources.module)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48.0, height: 32.0)
@@ -116,7 +116,7 @@ struct SelectPayoutMethodView: View {
                     .bold()
                     .font(.system(size: 14.0))
                     .padding(.bottom, 1.0)
-                Text(payoutMethod.ach?.bankName ?? "")
+                Text((payoutMethod.ach?.accountType?.rawValue.capitalized ?? "") + " Account")
                     .font(.system(size: 12.0))
             }
             Spacer()
