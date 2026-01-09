@@ -35,9 +35,6 @@ struct UserIdentificationView: View {
     @Binding var continueToNextStep: Bool
     
     let idTypes = IdentificationTypes.allCases
-    let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
-                                         "Democratic Republic of Congo", "Iraq", "Libya",
-                                         "Mali", "Nicaragua", "Sudan", "Venezuela", "Yemen"]
     
     var body: some View {
         VStack {
@@ -64,7 +61,7 @@ struct UserIdentificationView: View {
         .sheet(isPresented: $showCountryPicker) {
             Picker(IdentificationSelection.country.rawValue, selection: $selectedCountry) {
                 ForEach(AvailableCountry.allCountries
-                    .filter({ !restrictedCountries.contains($0.displayName) })
+                    .filter({ !AvailableCountry.restrictedCountries.contains($0.displayName) })
                     .sorted(by: { $0.displayName < $1.displayName }),
                         id: \.self) { country in
                     Text(country.displayName)
