@@ -25,6 +25,9 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var filesToUpload: [FileUpload] = []
     
+    @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "", ssn: "",
+                                                                                                   address: FrameObjects.BillingAddress(postalCode: ""))
+    
     let customerId: String
     let components: SessionComponents
     
@@ -33,6 +36,41 @@ class OnboardingContainerViewModel: ObservableObject {
         self.components = components
     }
     
+    // Load existing customer object
+    func checkExistingCustomer() async {
+        do {
+            let (customer, _) = try await CustomersAPI.getCustomerWith(customerId: customerId)
+            if let customer {
+                let nameComponents = customer.name.components(separatedBy: " ")
+                let address = customer.shippingAddress ?? customer.billingAddress ?? FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
+                self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: nameComponents.first ?? "",
+                                                                                                     lastName: nameComponents.last ?? "",
+                                                                                                     dateOfBirth: customer.dateOfBirth ?? "",
+                                                                                                     email: customer.email ?? "",
+                                                                                                     phoneNumber: customer.phone ?? "",
+                                                                                                     ssn: "",
+                                                                                                     address: address)
+                
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+    
+    func updateExistingCustomer() async {
+        do {
+            let request = CustomerRequest.UpdateCustomerRequest(billingAddress: nil,
+                                                                shippingAddress: createdCustomerIdentity.address,
+                                                                name: createdCustomerIdentity.firstName + " " + createdCustomerIdentity.lastName,
+                                                                phone: createdCustomerIdentity.phoneNumber,
+                                                                email: createdCustomerIdentity.email,
+                                                                ssn: createdCustomerIdentity.ssn,
+                                                                dateOfBirth: createdCustomerIdentity.dateOfBirth)
+            let (_, _) = try await CustomersAPI.updateCustomerWith(customerId: customerId, request: request)
+        } catch let error {
+            print(error)
+        }
+    }
     // Check for existing onboarding session for Customer
     func checkExistingOnboardingSession() async {
         do {
@@ -192,7 +230,7 @@ class OnboardingContainerViewModel: ObservableObject {
     
     func createCustomerIdentity() async {
         do {
-            let (identity, _) = try await CustomerIdentityAPI.createCustomerIdentityWith(customerId: customerId)
+            let (identity, _) = try await CustomerIdentityAPI.createCustomerIdentity(request: createdCustomerIdentity)
             if let identity {
                 self.customerIdentity = identity
             }
@@ -212,6 +250,13 @@ class OnboardingContainerViewModel: ObservableObject {
         } catch let error {
             print(error)
         }
+    }
+    
+    func checkIfCustomerCanContinueWithPersonalInformation() -> Bool {
+        guard !createdCustomerIdentity.firstName.isEmpty, !createdCustomerIdentity.lastName.isEmpty, !createdCustomerIdentity.email.isEmpty,
+                !createdCustomerIdentity.phoneNumber.isEmpty, !createdCustomerIdentity.ssn.isEmpty, !createdCustomerIdentity.dateOfBirth.isEmpty else { return false }
+        guard createdCustomerIdentity.address.addressLine1 != nil, createdCustomerIdentity.address.city != nil, createdCustomerIdentity.address.state != nil, !createdCustomerIdentity.address.postalCode.isEmpty else { return false }
+        return true
     }
     
     func checkIfCustomerCanContinueWithPaymentMethod() -> Bool {

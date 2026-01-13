@@ -8,14 +8,14 @@
 import Foundation
 
 public class CustomerIdentityRequest {
-    public struct CreateCustomerIdentityRequest: Codable {
-        let firstName: String
-        let lastName: String
-        let dateOfBirth: String
-        let email: String
-        let phoneNumber: String
-        let ssn: String
-        let address: FrameObjects.BillingAddress
+    public struct CreateCustomerIdentityRequest: Codable, Equatable {
+        public var firstName: String
+        public var lastName: String
+        public var dateOfBirth: String
+        public var email: String
+        public var phoneNumber: String
+        public var ssn: String
+        public var address: FrameObjects.BillingAddress
         
         public init(firstName: String, lastName: String, dateOfBirth: String, email: String, phoneNumber: String, ssn: String, address: FrameObjects.BillingAddress) {
             self.firstName = firstName

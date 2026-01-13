@@ -24,13 +24,21 @@ struct UserIdentificationView: View {
         case id
         case country
     }
+    
+    enum UserIdentificationSteps: String, CaseIterable {
+        case intro
+        case information
+        case inputs
+    }
+    
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
-    @State private var showIdentityInputs: Bool = false
+    @State private var identitySteps: UserIdentificationSteps = .intro
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var showCountryPicker: Bool = false
     @State private var selectedIdType: IdentificationTypes = .driversLicense
     @State private var showIDPicker: Bool = false
+    @State private var canCustomerContinue: Bool = false
     
     @Binding var continueToNextStep: Bool
     
@@ -38,16 +46,24 @@ struct UserIdentificationView: View {
     
     var body: some View {
         VStack {
-            if showIdentityInputs {
-                verifyIdentityView
-            } else {
+            switch identitySteps {
+            case .intro:
                 identityIntro
                     .onAppear {
                         Task {
                             await onboardingContainerViewModel.checkExistingOnboardingSession()
+                            await onboardingContainerViewModel.checkExistingCustomer()
                         }
                     }
+            case .information:
+                customerInformationView
+            case .inputs:
+                verifyIdentityView
             }
+        }
+        
+        .onChange(of: onboardingContainerViewModel.createdCustomerIdentity) { oldValue, newValue in
+            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPersonalInformation()
         }
         .sheet(isPresented: $showIDPicker) {
             Picker(IdentificationSelection.id.rawValue, selection: $selectedIdType) {
@@ -86,10 +102,38 @@ struct UserIdentificationView: View {
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                if onboardingContainerViewModel.onboardingSession != nil {
-                    self.continueToNextStep = true
-                } else {
-                    showIdentityInputs.toggle()
+                self.identitySteps = .inputs
+            }
+            .padding(.bottom)
+        }
+    }
+    
+    var customerInformationView: some View {
+        VStack(alignment: .leading) {
+            PageHeaderView(headerTitle: "Personal Information") {
+                self.identitySteps = .inputs
+            }
+            ScrollView {
+                CustomerInformationView(emailAddress: $onboardingContainerViewModel.createdCustomerIdentity.email,
+                                        phoneNumber: $onboardingContainerViewModel.createdCustomerIdentity.phoneNumber,
+                                        firstName: $onboardingContainerViewModel.createdCustomerIdentity.firstName,
+                                        lastName: $onboardingContainerViewModel.createdCustomerIdentity.lastName,
+                                        dateOfBirth: $onboardingContainerViewModel.createdCustomerIdentity.dateOfBirth,
+                                        ssn: $onboardingContainerViewModel.createdCustomerIdentity.ssn)
+                BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdCustomerIdentity.address.addressLine1.orEmpty,
+                                         addressLineTwo: $onboardingContainerViewModel.createdCustomerIdentity.address.addressLine2.orEmpty,
+                                         city: $onboardingContainerViewModel.createdCustomerIdentity.address.city.orEmpty,
+                                         state: $onboardingContainerViewModel.createdCustomerIdentity.address.state.orEmpty,
+                                         zipCode: $onboardingContainerViewModel.createdCustomerIdentity.address.postalCode,
+                                         country: $onboardingContainerViewModel.createdCustomerIdentity.address.country.orEmpty,
+                                         headerTitle: "Current Address")
+            }
+            Spacer()
+            ContinueButton(enabled: $canCustomerContinue) {
+                Task {
+                    await onboardingContainerViewModel.updateExistingCustomer()
+                    await onboardingContainerViewModel.createCustomerIdentity()
+                    self.continueToNextStep.toggle()
                 }
             }
             .padding(.bottom)
@@ -99,7 +143,7 @@ struct UserIdentificationView: View {
     var verifyIdentityView: some View {
         VStack(alignment: .leading) {
             PageHeaderView(headerTitle: "Verify Your ID") {
-                self.showIdentityInputs = false
+                self.identitySteps = .intro
             }
             Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
                 .multilineTextAlignment(.center)
@@ -115,7 +159,7 @@ struct UserIdentificationView: View {
                 Task {
                     await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
                                                                                selectedCountry: selectedCountry)
-                    self.continueToNextStep.toggle()
+                    self.identitySteps = .information
                 }
             }
             .padding(.bottom)

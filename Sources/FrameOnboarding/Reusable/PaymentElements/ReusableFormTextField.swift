@@ -12,12 +12,18 @@ public struct ReusableFormTextField: View {
     @Binding var text: String
     @State var showDivider: Bool
     @State var keyboardType: UIKeyboardType = .default
+    @State var characterLimit: Int = 0
     
     public var body: some View {
         TextField("", text: $text, prompt: Text(prompt))
             .frame(height: 49.0)
             .keyboardType(keyboardType)
             .padding(.horizontal)
+            .onChange(of: text) { newValue in
+                if characterLimit > 0, newValue.count > characterLimit {
+                    text = String(newValue.prefix(characterLimit))
+                }
+            }
         if showDivider {
             Divider()
         }

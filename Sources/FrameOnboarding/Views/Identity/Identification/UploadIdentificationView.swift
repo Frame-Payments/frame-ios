@@ -160,7 +160,6 @@ struct UploadIdentificationView: View {
     
     func uploadDocsThenContinue() {
         Task {
-            await onboardingContainerViewModel.createCustomerIdentity()
             await onboardingContainerViewModel.uploadIdentificationDocuments()
             
             self.continueToNextStep.toggle()
