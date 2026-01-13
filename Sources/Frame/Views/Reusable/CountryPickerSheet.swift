@@ -15,7 +15,7 @@ public struct CountryPickerSheet: View {
     
     let allCountries = AvailableCountry.allCountries
     
-    public init(selectedCountry: Binding<AvailableCountry>, isPresented: Binding<Bool>, restrictedCountries: [String] = []) {
+    public init(selectedCountry: Binding<AvailableCountry>, isPresented: Binding<Bool>, restrictedCountries: [String] = AvailableCountry.restrictedCountries) {
         self._selectedCountry = selectedCountry
         self._isPresented = isPresented
         self.restrictedCountries = restrictedCountries

@@ -76,8 +76,7 @@ struct UserIdentificationView: View {
         }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(selectedCountry: $selectedCountry,
-                               isPresented: $showCountryPicker,
-                               restrictedCountries: AvailableCountry.restrictedCountries)
+                               isPresented: $showCountryPicker)
         }
     }
     
