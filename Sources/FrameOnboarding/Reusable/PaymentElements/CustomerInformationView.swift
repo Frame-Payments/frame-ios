@@ -27,6 +27,7 @@ public struct CustomerInformationView: View {
     
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var showCountryPicker: Bool = false
+
     
     public var body: some View {
         VStack(alignment: .leading) {
@@ -76,6 +77,14 @@ public struct CustomerInformationView: View {
                 }
                 .padding(.horizontal)
         }
+        .onAppear {
+            if !dateOfBirth.isEmpty, dateOfBirth.count == 10 {
+                let dateComponents = dateOfBirth.components(separatedBy: "-")
+                self.birthYear = dateComponents[0]
+                self.birthMonth = dateComponents[1]
+                self.birthDay = dateComponents[2]
+            }
+        }
         .onChange(of: birthYear, { oldValue, newValue in
             self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
         })
@@ -86,16 +95,9 @@ public struct CustomerInformationView: View {
             self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
         })
         .sheet(isPresented: $showCountryPicker) {
-            Picker("Countries", selection: $selectedCountry) {
-                ForEach(AvailableCountry.allCountries
-                    .filter({ !AvailableCountry.restrictedCountries.contains($0.displayName) })
-                    .sorted(by: { $0.displayName < $1.displayName }),
-                        id: \.self) { country in
-                    Text(country.displayName)
-                }
-            }
-            .pickerStyle(.wheel)
-            .presentationDetents([.height(200.0)])
+            CountryPickerSheet(selectedCountry: $selectedCountry,
+                               isPresented: $showCountryPicker,
+                               restrictedCountries: AvailableCountry.restrictedCountries)
         }
     }
 }

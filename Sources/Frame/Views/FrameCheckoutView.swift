@@ -51,7 +51,8 @@ public struct FrameCheckoutView: View {
         .sheet(isPresented: $isShowingPicker) {
             CountryPickerSheet(
                 selectedCountry: $checkoutViewModel.customerCountry,
-                isPresented: $isShowingPicker
+                isPresented: $isShowingPicker,
+                restrictedCountries: AvailableCountry.restrictedCountries
             )
             .presentationDetents([.fraction(0.3)])
             .presentationDragIndicator(.visible)

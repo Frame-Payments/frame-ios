@@ -59,16 +59,9 @@ public struct BillingAddressDetailView: View {
             self.countryText = selectedCountry.displayName
         })
         .sheet(isPresented: $showCountryPicker) {
-            Picker("Countries", selection: $selectedCountry) {
-                ForEach(AvailableCountry.allCountries
-                    .filter({ !AvailableCountry.restrictedCountries.contains($0.displayName) })
-                    .sorted(by: { $0.displayName < $1.displayName }),
-                        id: \.self) { country in
-                    Text(country.displayName)
-                }
-            }
-            .pickerStyle(.wheel)
-            .presentationDetents([.height(200.0)])
+            CountryPickerSheet(selectedCountry: $selectedCountry,
+                               isPresented: $showCountryPicker,
+                               restrictedCountries: AvailableCountry.restrictedCountries)
         }
     }
 }

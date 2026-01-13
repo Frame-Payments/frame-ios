@@ -75,16 +75,9 @@ struct UserIdentificationView: View {
             .presentationDetents([.height(200.0)])
         }
         .sheet(isPresented: $showCountryPicker) {
-            Picker(IdentificationSelection.country.rawValue, selection: $selectedCountry) {
-                ForEach(AvailableCountry.allCountries
-                    .filter({ !AvailableCountry.restrictedCountries.contains($0.displayName) })
-                    .sorted(by: { $0.displayName < $1.displayName }),
-                        id: \.self) { country in
-                    Text(country.displayName)
-                }
-            }
-            .pickerStyle(.wheel)
-            .presentationDetents([.height(200.0)])
+            CountryPickerSheet(selectedCountry: $selectedCountry,
+                               isPresented: $showCountryPicker,
+                               restrictedCountries: AvailableCountry.restrictedCountries)
         }
     }
     
