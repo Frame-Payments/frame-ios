@@ -20,7 +20,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     init() {
         // Note: To use this SDK, you must add your sandbox secret key here.
-        FrameNetworking.shared.initializeWithAPIKey("sk_sandbox_UgLVWB47FrscWdjEvtGvZkm3", debugMode: true)
+        FrameNetworking.shared.initializeWithAPIKey("INSERT_SANDBOX_KEY_HERE", debugMode: true)
         
         Task {
             await self.getCustomers()
