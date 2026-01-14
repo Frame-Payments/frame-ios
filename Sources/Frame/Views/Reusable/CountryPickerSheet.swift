@@ -8,10 +8,10 @@
 import SwiftUI
 
 public struct CountryPickerSheet: View {
-    @Binding public var selectedCountry: AvailableCountry
-    @Binding public var isPresented: Bool
+    @Binding var selectedCountry: AvailableCountry
+    @Binding var isPresented: Bool
 
-    @State public var restrictedCountries: [String] = []
+    @State var restrictedCountries: [String] = []
     
     let allCountries = AvailableCountry.allCountries
     
