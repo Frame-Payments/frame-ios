@@ -2,7 +2,7 @@
 //  SwiftUIView.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 1/9/26.
+//  Created by Frame Payments on 1/9/26.
 //
 
 import SwiftUI
