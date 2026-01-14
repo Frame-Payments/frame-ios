@@ -14,14 +14,14 @@ protocol AccountsProtocol {
     static func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest) async throws -> (FrameObjects.Account?, NetworkingError?)
     static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?)
     static func getAccountWith(accountId: String, forTesting: Bool) async throws -> (FrameObjects.Account?, NetworkingError?)
-    static func disableAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
+    static func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
     
     // completionHandlers
     static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void)
     static func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
-    static func disableAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
+    static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
 }
 
 // Accounts API
@@ -85,9 +85,9 @@ public class AccountssAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
     
-    public static func disableAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
+    public static func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
        guard !accountId.isEmpty else { return (nil, nil) }
-        let endpoint = AccountEndpoints.disableAccountWith(accountId: accountId)
+        let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
@@ -153,8 +153,8 @@ public class AccountssAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
     
-    public static func disableAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
-        let endpoint = AccountEndpoints.disableAccountWith(accountId: accountId)
+    public static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
+        let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
