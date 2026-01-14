@@ -13,13 +13,13 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
     case updateAccount(accountId: String)
     case getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType? , externalId: String?, includeDisabled: Bool = false)
     case getAccountWith(accountId: String)
-    case disableAccountWith(accountId: String)
+    case deleteAccountWith(accountId: String)
     
     var endpointURL: String {
         switch self {
         case .createAccount, .getAccounts:
             return "/v1/accounts"
-        case .updateAccount(let accountId), .getAccountWith(let accountId), .disableAccountWith(let accountId):
+        case .updateAccount(let accountId), .getAccountWith(let accountId), .deleteAccountWith(let accountId):
             return "/v1/accounts/\(accountId)"
         }
     }
@@ -30,7 +30,7 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
             return .POST
         case .updateAccount:
             return .PATCH
-        case .disableAccountWith:
+        case .deleteAccountWith:
             return .DELETE
         default:
             return .GET
