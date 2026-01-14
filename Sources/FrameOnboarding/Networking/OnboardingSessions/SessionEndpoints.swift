@@ -28,12 +28,12 @@ enum SessionEndpoints: FrameNetworkingEndpoints {
     
     var httpMethod: HTTPMethod {
         switch self {
-        case .createOnboardingSession, .updatePayoutMethod:
-            return .POST
+        case .getOnboardingSessionWithCustomer:
+            return .GET
         case .cancelOnboardingSession:
             return .PATCH
         default:
-            return .GET
+            return .POST
         }
     }
     

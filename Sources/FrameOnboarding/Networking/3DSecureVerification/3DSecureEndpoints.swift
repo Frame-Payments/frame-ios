@@ -30,10 +30,10 @@ enum ThreeDSecureEndpoints: FrameNetworkingEndpoints {
     
     var httpMethod: HTTPMethod {
         switch self {
-        case .create3DSecureVerification, .confirm3DSecureVerification, .resend3DSecureVerification:
-            return .POST
-        default:
+        case .retrieve3DSecureVerification:
             return .GET
+        default:
+            return .POST
         }
     }
     
