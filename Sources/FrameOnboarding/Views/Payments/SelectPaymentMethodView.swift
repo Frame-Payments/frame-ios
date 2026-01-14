@@ -133,7 +133,6 @@ struct SelectPaymentMethodView: View {
         .padding(.horizontal)
         .onTapGesture {
             self.showAddPaymentMethod = true
-//            self.currentPaymentStep = .addPayment
         }
     }
     

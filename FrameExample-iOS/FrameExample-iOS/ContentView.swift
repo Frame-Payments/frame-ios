@@ -63,7 +63,7 @@ struct ContentView: View {
         }
         .padding()
         .sheet(isPresented: $showOnboardingSheet, content: {
-            OnboardingContainerView(customerId: "debab238-9d04-410f-96cd-85855cb46f92")
+            OnboardingContainerView(customerId: "ENTER_TEST_CUSTOMER_ID")
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,
