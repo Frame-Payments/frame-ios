@@ -41,7 +41,7 @@ public class CustomerIdentityAPI: CustomerIdentityProtocol, @unchecked Sendable 
     }
     
     public static func createCustomerIdentityWith(customerId: String) async throws -> (FrameObjects.CustomerIdentity?, NetworkingError?) {
-       guard !customerIdentityId.isEmpty else { return (nil, nil) }
+       guard !customerId.isEmpty else { return (nil, nil) }
         let endpoint = CustomerIdentityEndpoints.createCustomerIdenityWith(customerId: customerId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -103,7 +103,7 @@ public class CustomerIdentityAPI: CustomerIdentityProtocol, @unchecked Sendable 
     }
     
     public static func createCustomerIdentityWith(customerId: String, completionHandler: @escaping @Sendable (FrameObjects.CustomerIdentity?, NetworkingError?) -> Void) {
-        guard !cus.isEmpty else { return completionHandler(nil, nil) }
+        guard !customerId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = CustomerIdentityEndpoints.createCustomerIdenityWith(customerId: customerId)
         
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
