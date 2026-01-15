@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import Frame_iOS
+@testable import Frame
 
 // Mock URLSessionDataTask
 class MockURLSessionDataTask: URLSessionDataTask, @unchecked Sendable {
