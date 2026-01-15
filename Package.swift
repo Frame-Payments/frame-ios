@@ -11,8 +11,10 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "Frame-iOS",
-            targets: ["Frame-iOS"]),
+            name: "Frame-iOS", targets: ["Frame"]),
+        .library(
+            name: "Frame-Onboarding", targets: ["FrameOnboarding"]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
@@ -22,7 +24,7 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "Frame-iOS",
+            name: "Frame",
             dependencies: [
                 .product(name: "EvervaultInputs", package: "evervault-ios"),
                 .product(name: "EvervaultEnclaves", package: "evervault-ios"),
@@ -33,9 +35,17 @@ let package = Package(
                 .define("EXCLUDE_MACOS", .when(platforms: [.macOS])) // 👈 Prevents macOS builds
             ]
         ),
+        .target(name: "FrameOnboarding",
+                dependencies: [
+                    .target(name: "Frame")
+                ],
+                swiftSettings: [
+                    .define("EXCLUDE_MACOS", .when(platforms: [.macOS]))
+                ]
+        ),
         .testTarget(
             name: "Frame-iOSTests",
-            dependencies: ["Frame-iOS"]
+            dependencies: ["Frame"]
         ),
     ]
 )
