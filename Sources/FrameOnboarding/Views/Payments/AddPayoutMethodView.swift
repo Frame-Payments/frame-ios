@@ -65,6 +65,7 @@ struct AddPayoutMethodView: View {
                                          state: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
                                          zipCode: $onboardingContainerViewModel.createdBillingAddress.postalCode,
                                          country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
+                KeyboardSpacing()
             }
         }
         ContinueButton(buttonText: "Add Bank Account", enabled: $canCustomerContinue) {

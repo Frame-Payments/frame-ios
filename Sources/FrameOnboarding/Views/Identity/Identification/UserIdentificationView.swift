@@ -75,8 +75,12 @@ struct UserIdentificationView: View {
             .presentationDetents([.height(200.0)])
         }
         .sheet(isPresented: $showCountryPicker) {
-            CountryPickerSheet(selectedCountry: $selectedCountry,
-                               isPresented: $showCountryPicker)
+            CountryPickerSheet(
+                selectedCountry: $selectedCountry,
+                isPresented: $showCountryPicker
+            )
+            .presentationDetents([.fraction(0.3)])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -119,6 +123,7 @@ struct UserIdentificationView: View {
                                          zipCode: $onboardingContainerViewModel.createdCustomerIdentity.address.postalCode,
                                          country: $onboardingContainerViewModel.createdCustomerIdentity.address.country.orEmpty,
                                          headerTitle: "Current Address")
+                KeyboardSpacing()
             }
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {

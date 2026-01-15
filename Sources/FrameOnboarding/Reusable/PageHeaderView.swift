@@ -10,6 +10,7 @@ import Frame
 
 struct PageHeaderView: View {
     var useCloseButton: Bool = false
+    
     let headerTitle: String
     let buttonAction: () -> ()
     

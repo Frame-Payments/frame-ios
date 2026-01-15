@@ -9,26 +9,29 @@ import SwiftUI
 import Frame
 
 public struct BillingAddressDetailView: View {
-    @Binding var addressLineOne: String
-    @Binding var addressLineTwo: String
-    @Binding var city: String
-    @Binding var state: String
-    @Binding var zipCode: String
-    @Binding var country: String
+    @Binding public var addressLineOne: String
+    @Binding public var addressLineTwo: String
+    @Binding public var city: String
+    @Binding public var state: String
+    @Binding public var zipCode: String
+    @Binding public var country: String
     
-    @State var countryText: String = ""
-    @State var headerTitle: String = "Billing Address"
-    @State var headerFont: Font = Font.subheadline
+    @State public var countryText: String = ""
+    @State public var headerTitle: String = "Billing Address"
+    @State public var headerFont: Font = Font.subheadline
+    @State public var showHeaderText: Bool = true
     
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var showCountryPicker: Bool = false
     
     public var body: some View {
         VStack(alignment: .leading) {
-            Text(headerTitle)
-                .bold()
-                .font(headerFont)
-                .padding([.horizontal, .top])
+            if showHeaderText {
+                Text(headerTitle)
+                    .bold()
+                    .font(headerFont)
+                    .padding([.horizontal, .top])
+            }
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(.white)
                 .stroke(.gray.opacity(0.3))
@@ -59,13 +62,22 @@ public struct BillingAddressDetailView: View {
             self.countryText = selectedCountry.displayName
         })
         .sheet(isPresented: $showCountryPicker) {
-            CountryPickerSheet(selectedCountry: $selectedCountry,
-                               isPresented: $showCountryPicker)
+            CountryPickerSheet(
+                selectedCountry: $selectedCountry,
+                isPresented: $showCountryPicker
+            )
+            .presentationDetents([.fraction(0.3)])
+            .presentationDragIndicator(.visible)
         }
     }
 }
 
 #Preview {
-    BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
-                             state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName))
+    VStack {
+        BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
+                                 state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName))
+        BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
+                                 state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName),
+                                 showHeaderText: false)
+    }
 }

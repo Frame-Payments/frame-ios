@@ -10,16 +10,19 @@ import EvervaultInputs
 import Frame
 
 public struct PaymentCardDetailView: View {
-    @Binding var cardData: PaymentCardData
+    @Binding public var cardData: PaymentCardData
     
-    @State var headerFont: Font = Font.subheadline
+    @State public var headerFont: Font = Font.subheadline
+    @State public var showHeaderText: Bool = true
     
     public var body: some View {
         VStack(alignment: .leading) {
-            Text("Card Details")
-                .bold()
-                .font(headerFont)
-                .padding([.horizontal])
+            if showHeaderText {
+                Text("Card Details")
+                    .bold()
+                    .font(headerFont)
+                    .padding([.horizontal])
+            }
             PaymentCardInput(cardData: $cardData)
                 .paymentCardInputStyle(EncryptedPaymentCardInput())
         }
@@ -27,5 +30,8 @@ public struct PaymentCardDetailView: View {
 }
 
 #Preview {
-    PaymentCardDetailView(cardData: .constant(PaymentCardData()))
+    VStack {
+        PaymentCardDetailView(cardData: .constant(PaymentCardData()))
+        PaymentCardDetailView(cardData: .constant(PaymentCardData()), showHeaderText: false)
+    }
 }

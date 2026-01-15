@@ -8,17 +8,20 @@
 import SwiftUI
 
 public struct BankAccountDetailView: View {
-    @Binding var routingNumber: String
-    @Binding var accountNumber: String
+    @Binding public var routingNumber: String
+    @Binding public var accountNumber: String
     
-    @State var headerFont: Font = Font.subheadline
+    @State public var headerFont: Font = Font.subheadline
+    @State public var showHeaderText: Bool = true
     
     public var body: some View {
         VStack(alignment: .leading) {
-            Text("Bank Account Details")
-                .bold()
-                .font(headerFont)
-                .padding([.horizontal, .top])
+            if showHeaderText {
+                Text("Bank Account Details")
+                    .bold()
+                    .font(headerFont)
+                    .padding([.horizontal, .top])
+            }
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(.white)
                 .stroke(.gray.opacity(0.3))
@@ -35,5 +38,8 @@ public struct BankAccountDetailView: View {
 }
 
 #Preview {
-    BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""))
+    VStack {
+        BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""))
+        BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""), showHeaderText: false)
+    }
 }

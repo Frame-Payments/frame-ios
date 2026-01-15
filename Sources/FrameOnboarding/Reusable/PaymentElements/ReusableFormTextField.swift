@@ -8,11 +8,11 @@
 import SwiftUI
 
 public struct ReusableFormTextField: View {
-    @State var prompt: String
-    @Binding var text: String
-    @State var showDivider: Bool
-    @State var keyboardType: UIKeyboardType = .default
-    @State var characterLimit: Int = 0
+    @State public var prompt: String
+    @Binding public var text: String
+    @State public var showDivider: Bool
+    @State public var keyboardType: UIKeyboardType = .default
+    @State public var characterLimit: Int = 0
     
     public var body: some View {
         TextField("", text: $text, prompt: Text(prompt))
@@ -31,5 +31,8 @@ public struct ReusableFormTextField: View {
 }
 
 #Preview {
-    ReusableFormTextField(prompt: "Example prompt", text: .constant(""), showDivider: true, keyboardType: . numberPad)
+    VStack {
+        ReusableFormTextField(prompt: "Example prompt", text: .constant(""), showDivider: true, keyboardType: . numberPad)
+        ReusableFormTextField(prompt: "Example prompt 2", text: .constant(""), showDivider: false, keyboardType: . numberPad)
+    }
 }

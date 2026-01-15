@@ -7,13 +7,15 @@
 
 import SwiftUI
 
-struct ContinueButton: View {
-    @State var buttonColor: Color = mainButtonColor
-    @State var buttonText: String = "Continue"
-    @Binding var enabled: Bool
-    var buttonAction: () -> ()
+public struct ContinueButton: View {
+    @State public var buttonColor: Color = mainButtonColor
+    @State public var buttonText: String = "Continue"
     
-    var body: some View {
+    @Binding public var enabled: Bool
+    
+    public var buttonAction: () -> ()
+    
+    public var body: some View {
         Button {
             buttonAction()
         } label: {

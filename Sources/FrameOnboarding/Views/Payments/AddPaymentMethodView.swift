@@ -22,7 +22,7 @@ struct AddPaymentMethodView: View {
     var body: some View {
         VStack(alignment: .leading) {
             addPaymentMethodView
-            Spacer()
+//            Spacer()
         }
         .onChange(of: onboardingContainerViewModel.cardData) { oldValue, newValue in
             self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod()
@@ -33,11 +33,11 @@ struct AddPaymentMethodView: View {
     }
     
     var addPaymentMethodView: some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                PageHeaderView(headerTitle: "Add New Payment Method") {
-                    self.dismiss()
-                }
+        VStack(alignment: .leading) {
+            PageHeaderView(headerTitle: "Add New Payment Method") {
+                self.dismiss()
+            }
+            ScrollView {
                 PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
                 BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
                                          addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
@@ -51,6 +51,7 @@ struct AddPaymentMethodView: View {
                         self.dismiss()
                     }
                 }
+                KeyboardSpacing()
             }
         }
     }

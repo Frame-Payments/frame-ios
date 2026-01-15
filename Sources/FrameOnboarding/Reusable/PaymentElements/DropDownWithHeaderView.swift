@@ -9,12 +9,12 @@ import SwiftUI
 import Frame
 
 public struct DropDownWithHeaderView: View {
-    @Binding var headerText: String
-    @Binding var dropDownText: String
-    @Binding var showDropdownPicker: Bool
+    @Binding public var headerText: String
+    @Binding public var dropDownText: String
+    @Binding public var showDropdownPicker: Bool
     
-    @State var showHeaderText: Bool = true
-    @State var showDropdownBorder: Bool = true
+    @State public var showHeaderText: Bool = true
+    @State public var showDropdownBorder: Bool = true
     
     public var body: some View {
         VStack(alignment: .leading) {
@@ -48,7 +48,7 @@ public struct DropDownWithHeaderView: View {
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 40.0) {
         DropDownWithHeaderView(headerText: .constant("Example Title"),
                                dropDownText: .constant("Example Text"),
                                showDropdownPicker: .constant(false))
@@ -56,6 +56,10 @@ public struct DropDownWithHeaderView: View {
                                dropDownText: .constant("Example Text"),
                                showDropdownPicker: .constant(false),
                                showHeaderText: false)
+        DropDownWithHeaderView(headerText: .constant("Example Title"),
+                               dropDownText: .constant("Example Text"),
+                               showDropdownPicker: .constant(false),
+                               showHeaderText: true, showDropdownBorder: false)
         DropDownWithHeaderView(headerText: .constant("Example Title"),
                                dropDownText: .constant("Example Text"),
                                showDropdownPicker: .constant(false),

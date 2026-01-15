@@ -73,6 +73,7 @@ public struct OnboardingContainerView: View {
             Spacer()
         }
         .ignoresSafeArea()
+        .keyboardDoneToolbar()
         .onChange(of: continueToNextStep) { oldValue, newValue in
             guard continueToNextStep else { return }
             guard onboardingFlow.last != currentStep else {
