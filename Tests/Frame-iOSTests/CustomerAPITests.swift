@@ -134,7 +134,7 @@ final class CustomerAPITests: XCTestCase {
         let customerOne = FrameObjects.Customer(id: "1234", livemode: false, name: "Tester")
         let customerTwo = FrameObjects.Customer(id: "12345", livemode: false, name: "Tester2")
         do {
-            let response = Frame.CustomerResponses.ListCustomersResponse(meta: nil, data: [customerOne, customerTwo])
+            let response = CustomerResponses.ListCustomersResponse(meta: nil, data: [customerOne, customerTwo])
             
             session.data = try JSONEncoder().encode(response)
             let (customersTwo, _) = try await CustomersAPI.getCustomers()
