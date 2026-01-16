@@ -37,16 +37,4 @@ public class CustomerIdentityRequest {
             case address
         }
     }
-    
-    public struct CreateIdentityWithCustomerRequest: Codable {
-        let customerId: String
-        
-        public init(customerId: String) {
-            self.customerId = customerId
-        }
-        
-        public enum CodingKeys: String, CodingKey {
-            case customerId = "customer_id"
-        }
-    }
 }
