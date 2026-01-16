@@ -18,8 +18,8 @@ import Sift
 public class FrameNetworking: ObservableObject {
     nonisolated(unsafe) public static let shared = FrameNetworking()
     
-    let jsonEncoder = JSONEncoder()
-    let jsonDecoder = JSONDecoder()
+    public let jsonEncoder = JSONEncoder()
+    public let jsonDecoder = JSONDecoder()
     
     var asyncURLSession: URLSessionProtocol = URLSession.shared
     var urlSession: URLSession = URLSession.shared
@@ -44,7 +44,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Async/Await
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, NetworkingError?) {
+    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
         
         var urlRequest = URLRequest(url: url)
@@ -82,7 +82,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Completion Handler
-    func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
+    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url)
@@ -135,11 +135,11 @@ public class FrameNetworking: ObservableObject {
         }
     }
     
-    func printDataForTesting(data: Data?) {
+    private func printDataForTesting(data: Data?) {
         print(returnErrorString(data: data))
     }
     
-    func returnErrorString(data: Data?) -> String {
+    private func returnErrorString(data: Data?) -> String {
         if let data, let jsonString = String(data: data, encoding: .utf8) {
             return jsonString
         }
