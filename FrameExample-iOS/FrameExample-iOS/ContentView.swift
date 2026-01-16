@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Frame
-import FrameOnboarding
 
 struct ExampleCartItem: FrameCartItem {
     var id: String
@@ -131,7 +130,7 @@ struct ContentView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text("**Payment Method ID:** \n\(method.id)")
-                            Text("**Customer ID:** \n\(method.customer ?? "")")
+                            Text("**Customer ID:** \n\(method.customerId ?? "")")
                         }
                         Spacer()
                     }
