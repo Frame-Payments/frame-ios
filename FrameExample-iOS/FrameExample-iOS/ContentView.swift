@@ -99,7 +99,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Customers")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.customers) { customer in
                     HStack {
@@ -124,7 +124,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Payment Methods")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.paymentMethods) { method in
                     HStack {
@@ -146,7 +146,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Subscriptions")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.subscriptions) { subscription in
                     HStack {
@@ -168,7 +168,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Subscription Phases")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.subscriptionPhases) { subscriptionPhase in
                     HStack {
@@ -190,7 +190,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Charge Intents")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.chargeIntents) { intent in
                     HStack {
@@ -213,7 +213,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Refunds")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.refunds) { refund in
                     HStack {
