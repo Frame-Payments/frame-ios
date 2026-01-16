@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class NetworkingConstants {
     static let mainAPIURL: String = "https://api.framepayments.com"
@@ -19,7 +20,30 @@ public enum HTTPMethod: String {
     case PUT
 }
 
-protocol FrameNetworkingEndpoints {
+public struct FileUpload {
+    public enum FieldName: String {
+        case front
+        case back
+        case selfie
+    }
+    
+    var data: Data {
+        return try image.jpegData(compressionQuality: 0.3) ?? Data()
+    }
+    public let image: UIImage
+    public let fieldName: FieldName
+    var fileName: String {
+        return "\(fieldName).jpg"
+    }
+    let mimeType: String = "image/jpeg"
+    
+    public init(image: UIImage, fieldName: FieldName) {
+        self.image = image
+        self.fieldName = fieldName
+    }
+}
+
+public protocol FrameNetworkingEndpoints {
     var endpointURL: String { get }
     var httpMethod: HTTPMethod { get }
     var queryItems: [URLQueryItem]? { get }
@@ -28,6 +52,12 @@ protocol FrameNetworkingEndpoints {
 // Custom protocol for URLSession
 public protocol URLSessionProtocol {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+public enum FrameResources {
+    public static var module: Bundle {
+        return Bundle.module
+    }
 }
 
 // Extend URLSession to conform to the protocol
