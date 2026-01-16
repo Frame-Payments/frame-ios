@@ -83,7 +83,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
         guard subscriptionId != "" && phaseId != "" else { return (nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
         
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (_, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         return error
     }
     

@@ -28,7 +28,7 @@ public struct FileUpload {
     }
     
     var data: Data {
-        return try image.jpegData(compressionQuality: 0.3) ?? Data()
+        return image.jpegData(compressionQuality: 0.3) ?? Data()
     }
     public let image: UIImage
     public let fieldName: FieldName
