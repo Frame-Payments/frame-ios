@@ -43,7 +43,7 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
             var queryItems: [URLQueryItem] = []
             if let status { queryItems.append(URLQueryItem(name: "status", value: status.rawValue)) }
             if let type { queryItems.append(URLQueryItem(name: "type", value: type.rawValue)) }
-            if let externalId { queryItems.append(URLQueryItem(name: "status", value: externalId)) }
+            if let externalId { queryItems.append(URLQueryItem(name: "external_id", value: externalId)) }
             queryItems.append(URLQueryItem(name: "include_disabled", value: includeDisabled.description))
             return queryItems
         default:
