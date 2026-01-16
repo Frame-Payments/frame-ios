@@ -32,7 +32,7 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Dispute.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -43,7 +43,7 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
         let endpoint = DisputeEndpoints.getDispute(disputeId: disputeId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Dispute.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -54,7 +54,7 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
         let endpoint = DisputeEndpoints.getDisputes(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(DisputeResponses.ListDisputesResponse.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(DisputeResponses.ListDisputesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -65,7 +65,7 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
         let endpoint = DisputeEndpoints.closeDispute(disputeId: disputeId)
         
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
-        if let data, let decodedResponse = try? JSONDecoder().decode(FrameObjects.Dispute.self, from: data) {
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)

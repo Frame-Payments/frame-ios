@@ -26,6 +26,7 @@ struct ContentView: View {
     @State var showChargeIntentsView: Bool = false
     @State var showRefundsView: Bool = false
     @State var showSubscriptionPhases: Bool = false
+    @State var showOnboardingSheet: Bool = false
     
     var body: some View {
         VStack {
@@ -37,6 +38,7 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
                 .padding()
             ScrollView {
+                onboardingButton
                 allCustomersButton
                     .disabled(viewModel.customers.isEmpty)
                     .opacity(viewModel.customers.isEmpty ? 0.3 : 1)
@@ -60,6 +62,9 @@ struct ContentView: View {
             cartButton
         }
         .padding()
+        .sheet(isPresented: $showOnboardingSheet, content: {
+            OnboardingContainerView(customerId: "ENTER_TEST_CUSTOMER_ID")
+        })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,
                           cartItems: [ExampleCartItem(id: "1",
@@ -230,6 +235,22 @@ struct ContentView: View {
             }
             .padding(.horizontal)
         }
+    }
+    
+    var onboardingButton: some View {
+        Button {
+            self.showOnboardingSheet = true
+        } label: {
+            Text("Show Onboarding Flow")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(.black)
+        .cornerRadius(10.0)
+        .padding()
     }
     
     var cartButton: some View {
