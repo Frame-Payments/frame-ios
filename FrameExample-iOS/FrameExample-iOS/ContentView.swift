@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Frame
-import FrameOnboarding
 
 struct ExampleCartItem: FrameCartItem {
     var id: String
@@ -100,7 +99,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Customers")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.customers) { customer in
                     HStack {
@@ -125,13 +124,13 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Payment Methods")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.paymentMethods) { method in
                     HStack {
                         VStack(alignment: .leading) {
                             Text("**Payment Method ID:** \n\(method.id)")
-                            Text("**Customer ID:** \n\(method.customer ?? "")")
+                            Text("**Customer ID:** \n\(method.customerId ?? "")")
                         }
                         Spacer()
                     }
@@ -147,7 +146,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Subscriptions")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.subscriptions) { subscription in
                     HStack {
@@ -169,7 +168,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Subscription Phases")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.subscriptionPhases) { subscriptionPhase in
                     HStack {
@@ -191,7 +190,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Charge Intents")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.chargeIntents) { intent in
                     HStack {
@@ -214,7 +213,7 @@ struct ContentView: View {
         ScrollView {
             VStack {
                 Text("Refunds")
-                    .font(.largeTitle)
+                    .font(.title)
                     .padding()
                 ForEach(viewModel.refunds) { refund in
                     HStack {
