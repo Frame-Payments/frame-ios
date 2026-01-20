@@ -11,36 +11,32 @@ enum VerificationStatus: String, Codable {
     case pending
     case succeeded
     case failed
+    case issued
 }
 
 struct ThreeDSecureVerification: Codable {
     let id: String
+    let customer: String
+    let paymentMethod: String
     let object: String
-    let customerId: String
-    let paymentMethodId: String
+    let livemode: Bool
     let status: VerificationStatus?
     let challengeURL: String
-    let challengeSentAt: Int
-    let challengeCompletedAt: Int?
-    let expiresAt: Int
+    let completed: Int?
     let created: Int
     let updated: Int
-    
+
     enum CodingKeys: String, CodingKey {
-        case id, object, status, created, updated
-        case customerId = "customer_id"
-        case paymentMethodId = "payment_method_id"
+        case id, customer, object, livemode, status, completed, created, updated
+        case paymentMethod = "payment_method"
         case challengeURL = "challenge_url"
-        case challengeSentAt = "challenge_sent_at"
-        case challengeCompletedAt = "challenge_completed_at"
-        case expiresAt = "expires_at"
     }
 }
 
 struct ThreeDSecureVerificationError: Codable {
     struct VerificationError: Codable {
-        let type: String?
-        let message: String?
+        let type: String
+        let message: String
         let existingIntentId: String?
         
         enum CodingKeys: String, CodingKey {
@@ -49,5 +45,5 @@ struct ThreeDSecureVerificationError: Codable {
         }
     }
 
-    let error: VerificationError?
+    let error: VerificationError
 }

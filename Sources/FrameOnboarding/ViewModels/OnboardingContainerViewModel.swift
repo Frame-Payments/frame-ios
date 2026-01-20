@@ -87,6 +87,7 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Create new onboarding session with Identification types
     func createOnboardingSession(selectedIdType: IdentificationTypes, selectedCountry: AvailableCountry) async {
+        guard onboardingSession == nil else { return }
         let metadata = SessionMetadata(appVersion: "1.0",
                                        deviceId: "",
                                        documentCountry: selectedCountry.displayName,
@@ -183,7 +184,7 @@ class OnboardingContainerViewModel: ObservableObject {
             let (verification, verificationError, _) = try await ThreeDSecureVerificationsAPI.create3DSecureVerification(request: request)
             if let verification {
                 paymentMethodVerification = verification
-            } else if let verificationError, let verificationId = verificationError.error?.existingIntentId {
+            } else if let verificationError, let verificationId = verificationError.error.existingIntentId {
                 await retrieve3DSChallenge(verificationId: verificationId)
             }
         } catch let error {
