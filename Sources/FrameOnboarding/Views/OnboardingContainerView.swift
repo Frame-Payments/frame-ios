@@ -17,7 +17,6 @@ public enum OnboardingFlow: String, CaseIterable, Identifiable {
     case confirmPaymentMethod
     case confirmPayoutMethod
     case uploadDocuments
-    case uploadSelfie
     case verificationSubmitted
 }
 
@@ -63,10 +62,6 @@ public struct OnboardingContainerView: View {
                 UploadIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                          continueToNextStep: $continueToNextStep,
                                          returnToPreviousStep: $returnToPreviousStep)
-            case .uploadSelfie:
-                UploadSelfieView(onboardingContainerViewModel: onboardingContainerViewModel,
-                                 continueToNextStep: $continueToNextStep,
-                                 returnToPreviousStep: $returnToPreviousStep)
             case .verificationSubmitted:
                 VerificationSubmittedView(continueToNextStep: $continueToNextStep)
             }
