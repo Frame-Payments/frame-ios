@@ -29,11 +29,12 @@ enum UploadDocSide: String {
 struct UploadIdentificationView: View {
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
-    @State private var showUploadInputs: Bool = false
+    @State private var showUploadInputs = false
     @State private var documentsAdded: [UploadDocSide: Image] = [:]
     @State private var showCamera = false
     @State private var cameraImage: UIImage?
     @State private var currentSelectedDoc: FileUpload.FieldName = .front
+    @State private var enabledContinueButton = true
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
@@ -69,7 +70,7 @@ struct UploadIdentificationView: View {
             Text("We’ll ask you to take photos of both the front and back to confirm your information.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(secondaryTextColor)
+                .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
@@ -87,7 +88,7 @@ struct UploadIdentificationView: View {
             Text("Take photos of the front and back of your government ID.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(secondaryTextColor)
+                .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 15.0)
                 .padding(.bottom, 8.0)
             ScrollView {
@@ -95,7 +96,8 @@ struct UploadIdentificationView: View {
                 listSelfieOptionsView
             }
             Spacer()
-            ContinueButton(buttonText: "Submit", enabled: .constant(true)) {
+            ContinueButton(buttonText: "Submit", enabled: $enabledContinueButton) {
+                self.enabledContinueButton = false
                 self.uploadDocsThenContinue()
             }
             .padding(.bottom)
@@ -161,7 +163,6 @@ struct UploadIdentificationView: View {
     func uploadDocsThenContinue() {
         Task {
             await onboardingContainerViewModel.uploadIdentificationDocuments()
-            
             self.continueToNextStep.toggle()
         }
     }

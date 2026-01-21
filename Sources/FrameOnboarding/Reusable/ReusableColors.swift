@@ -8,9 +8,11 @@
 import SwiftUI
 import Frame
 
-// Reusable colors
-let secondaryTextColor = Color("TextColorSecondary", bundle: FrameResources.module)
-let mainButtonColor = Color("MainButtonColor", bundle: FrameResources.module)
-let unfilledButtonColor = Color("UnfilledButtonColor", bundle: FrameResources.module)
-let unfilledButtonStrokeColor = Color("UnfilledButtonStrokeColor", bundle: FrameResources.module)
-let unfilledButtonTextColor = Color("UnfilledButtonTextColor", bundle: FrameResources.module)
+struct FrameColors {
+    // Reusable colors
+    static let secondaryTextColor = Color("TextColorSecondary", bundle: FrameResources.module)
+    static let mainButtonColor = Color("MainButtonColor", bundle: FrameResources.module)
+    static let unfilledButtonColor = Color("UnfilledButtonColor", bundle: FrameResources.module)
+    static let unfilledButtonStrokeColor = Color("UnfilledButtonStrokeColor", bundle: FrameResources.module)
+    static let unfilledButtonTextColor = Color("UnfilledButtonTextColor", bundle: FrameResources.module)
+}

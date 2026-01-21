@@ -94,7 +94,7 @@ struct UserIdentificationView: View {
             Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(secondaryTextColor)
+                .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
@@ -145,7 +145,7 @@ struct UserIdentificationView: View {
             Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(secondaryTextColor)
+                .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 20.0)
                 .padding(.bottom, 8.0)
             dropdownSelectionBox(titleName: "Issuing Country", selection: .country)

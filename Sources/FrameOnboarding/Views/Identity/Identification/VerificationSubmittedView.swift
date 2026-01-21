@@ -21,7 +21,7 @@ struct VerificationSubmittedView: View {
             Text("Congratulations! You’ve submitted your identity verification check. You’re ready to proceed.")
                 .multilineTextAlignment(.center)
                 .font(.system(size: 14.0))
-                .foregroundColor(secondaryTextColor)
+                .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(buttonText: "Done", enabled: .constant(true)) {

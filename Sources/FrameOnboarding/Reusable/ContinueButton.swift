@@ -8,8 +8,9 @@
 import SwiftUI
 
 public struct ContinueButton: View {
-    @State public var buttonColor: Color = mainButtonColor
+    @State public var buttonColor: Color = FrameColors.mainButtonColor
     @State public var buttonText: String = "Continue"
+    @State public var buttonTextColor: Color = .white
     
     @Binding public var enabled: Bool
     
@@ -20,15 +21,15 @@ public struct ContinueButton: View {
             buttonAction()
         } label: {
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(enabled ? buttonColor : unfilledButtonColor)
+                .fill(enabled ? buttonColor : FrameColors.unfilledButtonColor)
                 .overlay {
                     if !enabled {
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(unfilledButtonStrokeColor, lineWidth: 1.0)
+                            .stroke(FrameColors.unfilledButtonStrokeColor, lineWidth: 1.0)
                     }
                     Text(buttonText)
                         .bold()
-                        .foregroundColor(enabled ? .white : unfilledButtonTextColor)
+                        .foregroundColor(enabled ? buttonTextColor : FrameColors.unfilledButtonTextColor)
                 }
         }
         .disabled(!enabled)
