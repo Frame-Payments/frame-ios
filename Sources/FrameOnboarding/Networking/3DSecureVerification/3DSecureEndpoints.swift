@@ -12,7 +12,6 @@ enum ThreeDSecureEndpoints: FrameNetworkingEndpoints {
     //MARK: Onboarding Session Endpoints
     case create3DSecureVerification
     case retrieve3DSecureVerification(verificationId: String)
-    case confirm3DSecureVerification(verificationId: String)
     case resend3DSecureVerification(verificationId: String)
     
     var endpointURL: String {
@@ -21,8 +20,6 @@ enum ThreeDSecureEndpoints: FrameNetworkingEndpoints {
             return "/v1/3ds/intents"
         case .retrieve3DSecureVerification(let verificationId):
             return "/v1/3ds/intents/\(verificationId)"
-        case .confirm3DSecureVerification(let verificationId):
-            return "/v1/3ds/intents/\(verificationId)/confirm"
         case .resend3DSecureVerification(let verificationId):
             return "/v1/3ds/intents/\(verificationId)/resend"
         }

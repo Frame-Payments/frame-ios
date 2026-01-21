@@ -10,7 +10,7 @@ import Foundation
 enum CustomerIdentityEndpoints: FrameNetworkingEndpoints {
     //MARK: Customer Identity Endpoints
     case createCustomerIdentity
-    case createCustomerIdenityWith(customerId: String)
+    case createCustomerIdentityWith(customerId: String)
     case getCustomerIdentityWith(customerIdentityId: String)
     case submitForVerification(customerIdentityId: String)
     case uploadIdentityDocuments(customerIdentityId: String)
@@ -19,7 +19,7 @@ enum CustomerIdentityEndpoints: FrameNetworkingEndpoints {
         switch self {
         case .createCustomerIdentity:
             return "/v1/customer_identity_verifications"
-        case .createCustomerIdenityWith(let customerId):
+        case .createCustomerIdentityWith(let customerId):
             return "/v1/customers/\(customerId)/identity_verifications"
         case .getCustomerIdentityWith(let customerIdentityId):
             return "/v1/customer_identity_verifications/\(customerIdentityId)"

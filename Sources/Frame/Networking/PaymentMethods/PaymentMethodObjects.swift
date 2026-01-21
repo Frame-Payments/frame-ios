@@ -23,7 +23,7 @@ public class FrameObjects {
     
     public struct PaymentMethod: Codable, Sendable, Identifiable, Equatable {
         public let id: String
-        public var customer: String? // ID of the Customer
+        public var customerId: String?
         public var billing: BillingAddress? // Billing information associated with the PaymentMethod
         public let type: PaymentRequestType
         public let object: String
@@ -32,11 +32,11 @@ public class FrameObjects {
         public let livemode: Bool
         public var card: PaymentCard?
         public var ach: BankAccount?
-        public let status: PaymentMethodStatus?
+        public let status: PaymentMethodStatus
         
-        public init(id: String, customer: String? = nil, billing: BillingAddress? = nil, type: PaymentRequestType, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil, ach: BankAccount? = nil, status: PaymentMethodStatus? = nil) {
+        public init(id: String, customerId: String? = nil, billing: BillingAddress? = nil, type: PaymentRequestType, object: String, created: Int, updated: Int, livemode: Bool, card: PaymentCard? = nil, ach: BankAccount? = nil, status: PaymentMethodStatus) {
             self.id = id
-            self.customer = customer
+            self.customerId = customerId
             self.billing = billing
             self.type = type
             self.object = object
@@ -46,6 +46,11 @@ public class FrameObjects {
             self.card = card
             self.ach = ach
             self.status = status
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case id, billing, type, object, created, updated, livemode, card , ach, status
+            case customerId = "customer_id"
         }
     }
     

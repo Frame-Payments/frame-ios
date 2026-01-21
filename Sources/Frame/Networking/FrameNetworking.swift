@@ -235,11 +235,11 @@ public class FrameNetworking: ObservableObject {
         }
     }
     
-    func printDataForTesting(data: Data?) {
+    private func printDataForTesting(data: Data?) {
         print(returnErrorString(data: data))
     }
     
-    func returnErrorString(data: Data?) -> String {
+    private func returnErrorString(data: Data?) -> String {
         if let data, let jsonString = String(data: data, encoding: .utf8) {
             return jsonString
         }

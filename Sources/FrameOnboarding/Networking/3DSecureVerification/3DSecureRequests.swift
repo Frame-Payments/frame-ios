@@ -19,12 +19,4 @@ class ThreeDSecureRequests {
             case paymentMethodId = "payment_method_id"
         }
     }
-    
-    struct ConfirmThreeDSecureVerification: Encodable, Sendable {
-        let code: String
-        
-        init(code: String) {
-            self.code = code
-        }
-    }
 }
