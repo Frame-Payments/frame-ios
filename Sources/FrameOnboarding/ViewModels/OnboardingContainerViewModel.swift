@@ -8,6 +8,7 @@
 import Foundation
 import Frame
 import EvervaultInputs
+import CoreLocation
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
@@ -24,6 +25,8 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var paymentMethodVerification: ThreeDSecureVerification?
     @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var filesToUpload: [FileUpload] = []
+    @Published var ipAddress: String?
+    @Published var userCoordinates: CLLocationCoordinate2D?
     
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "", ssn: "",
                                                                                                    address: FrameObjects.BillingAddress(postalCode: ""))

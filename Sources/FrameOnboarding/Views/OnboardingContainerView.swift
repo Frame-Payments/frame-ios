@@ -16,6 +16,7 @@ public enum OnboardingFlow: String, CaseIterable, Identifiable {
     case countryVerification
     case confirmPaymentMethod
     case confirmPayoutMethod
+    case geolocationVerification
     case uploadDocuments
     case verificationSubmitted
 }
@@ -58,6 +59,9 @@ public struct OnboardingContainerView: View {
             case .countryVerification:
                 UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                        continueToNextStep: $continueToNextStep)
+            case .geolocationVerification:
+                GeolocationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                continueToNextStep: $continueToNextStep)
             case .uploadDocuments:
                 UploadIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                          continueToNextStep: $continueToNextStep,
