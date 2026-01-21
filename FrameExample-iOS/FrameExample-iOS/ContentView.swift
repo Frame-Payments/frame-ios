@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Frame
+import FrameOnboarding
 
 struct ExampleCartItem: FrameCartItem {
     var id: String

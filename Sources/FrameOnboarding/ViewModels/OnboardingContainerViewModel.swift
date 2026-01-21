@@ -203,20 +203,6 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
-    // Verify 3DS process with code
-    func verify3DSChallenge(verificationCode: String) async {
-        let confirmationRequest = ThreeDSecureRequests.ConfirmThreeDSecureVerification(code: verificationCode)
-        do {
-            let (verification, _) =  try await ThreeDSecureVerificationsAPI.confirm3DSecureVerification(verificationId: paymentMethodVerification?.id ?? "",
-                                                                                                        request: confirmationRequest)
-            if let verification {
-                self.paymentMethodVerification = verification
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-    
     // Resend 3DS code to customer
     func resend3DSChallenge() async {
         do {

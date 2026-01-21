@@ -37,9 +37,9 @@ struct SecurePMVerificationView: View {
                 .padding(.horizontal)
             codeContainerStack
             ContinueButton(enabled: $codeInput) {
-                Task {
-                    await onboardingContainerViewModel.verify3DSChallenge(verificationCode: enteredCode)
-                }
+//                Task {
+//                    await onboardingContainerViewModel.verify3DSChallenge(verificationCode: enteredCode)
+//                }
                 self.continueToNextStep = true
             }
             Button {
