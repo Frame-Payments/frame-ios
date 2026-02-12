@@ -25,7 +25,7 @@ protocol AccountsProtocol {
 }
 
 // Accounts API
-public class AccountssAPI: AccountsProtocol, @unchecked Sendable {
+public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     
     //MARK: Methods using async/await
     public static func createAccount(request: AccountRequest.CreateAccountRequest, forTesting: Bool = false) async throws -> (FrameObjects.Account?, NetworkingError?) {
