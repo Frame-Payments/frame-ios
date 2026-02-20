@@ -11,9 +11,9 @@ import XCTest
 final class CustomerIdentityAPITests: XCTestCase {
     let session = MockURLAsyncSession(data: nil,
                                       response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/customer_identity_verifications")!,
-                                                                           statusCode: 200,
-                                                                           httpVersion: nil,
-                                                                           headerFields: nil),
+                                                                         statusCode: 200,
+                                                                         httpVersion: nil,
+                                                                         headerFields: nil),
                                       error: nil)
     
     func testCreateCustomerIdentity() async {

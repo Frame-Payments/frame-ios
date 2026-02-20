@@ -10,17 +10,13 @@
 		9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */; };
 		9C1EBA4D2D3E129600E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EBA4C2D3E129600E6A301 /* Frame-iOS */; };
 		9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9CED70D22CA6BED500C3B45B /* Frame-iOS */; };
+		E0810B182EF324C400ACAD0B /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = E0810B172EF324C400ACAD0B /* Frame-iOS */; };
+		E0810B1A2EF324C900ACAD0B /* Frame-Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = E0810B192EF324C900ACAD0B /* Frame-Onboarding */; };
+		E0C2E6082F0DB2BC0026D8E7 /* Frame-Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = E0C2E6072F0DB2BC0026D8E7 /* Frame-Onboarding */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		9CED70A52CA5868900C3B45B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9CED708B2CA5868700C3B45B /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9CED70922CA5868700C3B45B;
-			remoteInfo = "FrameExample-iOS";
-		};
-		9CED70AF2CA5868900C3B45B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9CED708B2CA5868700C3B45B /* Project object */;
 			proxyType = 1;
@@ -32,7 +28,7 @@
 /* Begin PBXFileReference section */
 		9CED70932CA5868700C3B45B /* FrameExample-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "FrameExample-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CED70A42CA5868900C3B45B /* FrameExample-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "FrameExample-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9CED70AE2CA5868900C3B45B /* FrameExample-iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "FrameExample-iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0810B1B2EF3260300ACAD0B /* FrameExample-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "FrameExample-iOS.xctestplan"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -46,10 +42,11 @@
 			path = "FrameExample-iOSTests";
 			sourceTree = "<group>";
 		};
-		9CED70B12CA5868900C3B45B /* FrameExample-iOSUITests */ = {
+		E0810B692EF32F8E00ACAD0B /* Frame-iOSTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "FrameExample-iOSUITests";
-			sourceTree = "<group>";
+			name = "Frame-iOSTests";
+			path = "../Tests/Frame-iOSTests";
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -61,6 +58,7 @@
 				9C1EBA4D2D3E129600E6A301 /* Frame-iOS in Frameworks */,
 				9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */,
 				9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */,
+				E0C2E6082F0DB2BC0026D8E7 /* Frame-Onboarding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,13 +66,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9CED70AB2CA5868900C3B45B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				E0810B182EF324C400ACAD0B /* Frame-iOS in Frameworks */,
+				E0810B1A2EF324C900ACAD0B /* Frame-Onboarding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,9 +77,11 @@
 		9CED708A2CA5868700C3B45B = {
 			isa = PBXGroup;
 			children = (
+				E0810B692EF32F8E00ACAD0B /* Frame-iOSTests */,
+				E0810B1B2EF3260300ACAD0B /* FrameExample-iOS.xctestplan */,
 				9CED70952CA5868700C3B45B /* FrameExample-iOS */,
 				9CED70A72CA5868900C3B45B /* FrameExample-iOSTests */,
-				9CED70B12CA5868900C3B45B /* FrameExample-iOSUITests */,
+				E0810B162EF324C400ACAD0B /* Frameworks */,
 				9CED70942CA5868700C3B45B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -96,9 +91,15 @@
 			children = (
 				9CED70932CA5868700C3B45B /* FrameExample-iOS.app */,
 				9CED70A42CA5868900C3B45B /* FrameExample-iOSTests.xctest */,
-				9CED70AE2CA5868900C3B45B /* FrameExample-iOSUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E0810B162EF324C400ACAD0B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -124,6 +125,7 @@
 				9CED70D22CA6BED500C3B45B /* Frame-iOS */,
 				9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */,
 				9C1EBA4C2D3E129600E6A301 /* Frame-iOS */,
+				E0C2E6072F0DB2BC0026D8E7 /* Frame-Onboarding */,
 			);
 			productName = "FrameExample-iOS";
 			productReference = 9CED70932CA5868700C3B45B /* FrameExample-iOS.app */;
@@ -144,36 +146,16 @@
 			);
 			fileSystemSynchronizedGroups = (
 				9CED70A72CA5868900C3B45B /* FrameExample-iOSTests */,
+				E0810B692EF32F8E00ACAD0B /* Frame-iOSTests */,
 			);
 			name = "FrameExample-iOSTests";
 			packageProductDependencies = (
+				E0810B172EF324C400ACAD0B /* Frame-iOS */,
+				E0810B192EF324C900ACAD0B /* Frame-Onboarding */,
 			);
 			productName = "FrameExample-iOSTests";
 			productReference = 9CED70A42CA5868900C3B45B /* FrameExample-iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		9CED70AD2CA5868900C3B45B /* FrameExample-iOSUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9CED70BE2CA5868900C3B45B /* Build configuration list for PBXNativeTarget "FrameExample-iOSUITests" */;
-			buildPhases = (
-				9CED70AA2CA5868900C3B45B /* Sources */,
-				9CED70AB2CA5868900C3B45B /* Frameworks */,
-				9CED70AC2CA5868900C3B45B /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				9CED70B02CA5868900C3B45B /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				9CED70B12CA5868900C3B45B /* FrameExample-iOSUITests */,
-			);
-			name = "FrameExample-iOSUITests";
-			packageProductDependencies = (
-			);
-			productName = "FrameExample-iOSUITests";
-			productReference = 9CED70AE2CA5868900C3B45B /* FrameExample-iOSUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -183,17 +165,13 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2620;
 				ORGANIZATIONNAME = "Frame Payments";
 				TargetAttributes = {
 					9CED70922CA5868700C3B45B = {
 						CreatedOnToolsVersion = 16.0;
 					};
 					9CED70A32CA5868900C3B45B = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 9CED70922CA5868700C3B45B;
-					};
-					9CED70AD2CA5868900C3B45B = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 9CED70922CA5868700C3B45B;
 					};
@@ -218,7 +196,6 @@
 			targets = (
 				9CED70922CA5868700C3B45B /* FrameExample-iOS */,
 				9CED70A32CA5868900C3B45B /* FrameExample-iOSTests */,
-				9CED70AD2CA5868900C3B45B /* FrameExample-iOSUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -232,13 +209,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9CED70A22CA5868900C3B45B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9CED70AC2CA5868900C3B45B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -262,13 +232,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9CED70AA2CA5868900C3B45B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -276,11 +239,6 @@
 			isa = PBXTargetDependency;
 			target = 9CED70922CA5868700C3B45B /* FrameExample-iOS */;
 			targetProxy = 9CED70A52CA5868900C3B45B /* PBXContainerItemProxy */;
-		};
-		9CED70B02CA5868900C3B45B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 9CED70922CA5868700C3B45B /* FrameExample-iOS */;
-			targetProxy = 9CED70AF2CA5868900C3B45B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -342,6 +300,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -397,6 +356,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -411,9 +371,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"FrameExample-iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = MD2AM4B85J;
+				DEVELOPMENT_TEAM = 66W3876HW5;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "\"We use your camera to complete identity verification\"";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "\"We use your location to adhere to local and federal laws.\"";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -432,10 +396,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Frame.FrameExample-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = 1;
 				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
@@ -450,9 +414,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"FrameExample-iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = MD2AM4B85J;
+				DEVELOPMENT_TEAM = 66W3876HW5;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "\"We use your camera to complete identity verification\"";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "\"We use your location to adhere to local and federal laws.\"";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -471,10 +439,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.Frame.FrameExample-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = 1;
 				XROS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
@@ -525,50 +493,6 @@
 			};
 			name = Release;
 		};
-		9CED70BF2CA5868900C3B45B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Frame.FrameExample-iOSUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = "FrameExample-iOS";
-				XROS_DEPLOYMENT_TARGET = 2.0;
-			};
-			name = Debug;
-		};
-		9CED70C02CA5868900C3B45B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Frame.FrameExample-iOSUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = "FrameExample-iOS";
-				XROS_DEPLOYMENT_TARGET = 2.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -599,15 +523,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9CED70BE2CA5868900C3B45B /* Build configuration list for PBXNativeTarget "FrameExample-iOSUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9CED70BF2CA5868900C3B45B /* Debug */,
-				9CED70C02CA5868900C3B45B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -629,6 +544,21 @@
 		9CED70D22CA6BED500C3B45B /* Frame-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "Frame-iOS";
+		};
+		E0810B172EF324C400ACAD0B /* Frame-iOS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C1EBA4B2D3E129600E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */;
+			productName = "Frame-iOS";
+		};
+		E0810B192EF324C900ACAD0B /* Frame-Onboarding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C1EBA4B2D3E129600E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */;
+			productName = "Frame-Onboarding";
+		};
+		E0C2E6072F0DB2BC0026D8E7 /* Frame-Onboarding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C1EBA4B2D3E129600E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */;
+			productName = "Frame-Onboarding";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
