@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
-        .package(url: "https://github.com/SiftScience/sift-ios.git", branch: "master")
+        .package(url: "https://github.com/SiftScience/sift-ios.git", .revision("bcbbd164f4e83076688eda28fdbc93c09e104e1a"))
     ],
     targets: [
         .target(

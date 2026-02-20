@@ -106,13 +106,13 @@ extension FrameObjects {
         public let externalId: String?
         public let metadata: [String: String]?
         public let profile: AccountProfile?
-//        public let capabilities: [Capabilitiy]?
+        public let capabilities: [Capability]?
         public let createdAt: Int
         public let updatedAt: Int
         public let livemode: Bool
         
         public enum CodingKeys: String, CodingKey {
-            case id, object, metadata, profile, livemode
+            case id, object, metadata, profile, livemode, capabilities
             case accountType = "type"
             case accountStatus = "status"
             case externalId = "external_id"

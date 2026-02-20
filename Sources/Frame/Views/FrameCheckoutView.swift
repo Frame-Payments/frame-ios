@@ -25,6 +25,12 @@ public struct FrameCheckoutView: View {
     
     var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
     
+    public init(customerId: String?, paymentAmount: Int, checkoutCallback: @escaping (FrameObjects.ChargeIntent) -> ()) {
+        self.customerId = customerId
+        self.paymentAmount = paymentAmount
+        self.checkoutCallback = checkoutCallback
+    }
+    
     public var body: some View {
         VStack(alignment: .leading) {
             topHeaderBar
