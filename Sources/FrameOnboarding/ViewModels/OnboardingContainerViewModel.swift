@@ -12,8 +12,6 @@ import CoreLocation
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
-    @Published var onboardingSession: OnboardingSession?
-    
     // Payment Method
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount()
@@ -31,16 +29,18 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "", ssn: "",
                                                                                                    address: FrameObjects.BillingAddress(postalCode: ""))
     
-    let customerId: String
+    var customerId: String?
     let components: SessionComponents
     
-    init(customerId: String, components: SessionComponents) {
+    init(customerId: String?, components: SessionComponents) {
         self.customerId = customerId
         self.components = components
     }
     
     // Load existing customer object
     func checkExistingCustomer() async {
+        guard let customerId else { return }
+        
         do {
             let (customer, _) = try await CustomersAPI.getCustomerWith(customerId: customerId)
             if let customer {
@@ -61,6 +61,8 @@ class OnboardingContainerViewModel: ObservableObject {
     }
     
     func updateExistingCustomer() async {
+        guard let customerId else { return }
+        
         do {
             let request = CustomerRequest.UpdateCustomerRequest(billingAddress: nil,
                                                                 shippingAddress: createdCustomerIdentity.address,
@@ -74,42 +76,11 @@ class OnboardingContainerViewModel: ObservableObject {
             print(error)
         }
     }
-    // Check for existing onboarding session for Customer
-    func checkExistingOnboardingSession() async {
-        do {
-            let (sessionResponse, _) = try await SessionsAPI.getOnboardingSessionWithCustomer(customerId: customerId)
-            if let session = sessionResponse?.data?.first {
-                self.onboardingSession = session
-                
-                //TODO: Determine which step to skip to based off the existing onboarding session.
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-    
-    // Create new onboarding session with Identification types
-    func createOnboardingSession(selectedIdType: IdentificationTypes, selectedCountry: AvailableCountry) async {
-        guard onboardingSession == nil else { return }
-        let metadata = SessionMetadata(appVersion: "1.0",
-                                       deviceId: "",
-                                       documentCountry: selectedCountry.displayName,
-                                       documentType: selectedIdType.rawValue)
-        let request = SessionRequests.CreateOnboardingSession(customerId: customerId,
-                                                              metadata: metadata,
-                                                              components: components)
-        do {
-            let (sessionResponse, _) = try await SessionsAPI.createOnboardingSession(request: request)
-            if let sessionResponse {
-                self.onboardingSession = sessionResponse
-            }
-        } catch let error {
-            print(error)
-        }
-    }
     
     // Load existing Payment Methods for customer
     func loadExistingPaymentMethods() async {
+        guard let customerId else { return }
+        
         do {
             let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
             if let methods = paymentMethodResponse?.data {
@@ -158,20 +129,6 @@ class OnboardingContainerViewModel: ObservableObject {
                 self.payoutMethods.append(payoutMethod)
                 
                 self.clearAccountDetails()
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-    
-    func updatePayoutMethod() async {
-        guard let sessionId = onboardingSession?.id, let payoutMethodId = selectedPayoutMethod?.id else { return }
-        let request = SessionRequests.UpdatePayoutMethodRequest(payoutMethodId: payoutMethodId)
-        
-        do {
-            let (session, _) = try await SessionsAPI.updatePayoutMethod(sessionId: sessionId, request: request)
-            if let session {
-                self.onboardingSession = session
             }
         } catch let error {
             print(error)

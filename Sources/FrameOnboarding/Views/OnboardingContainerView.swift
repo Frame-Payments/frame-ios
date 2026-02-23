@@ -31,10 +31,7 @@ public struct OnboardingContainerView: View {
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     
-    let customerId: String
-    
     public init(customerId: String, customOnboardingFlow: [OnboardingFlow]? = nil) {
-        self.customerId = customerId
         self.onboardingContainerViewModel = OnboardingContainerViewModel(customerId: customerId,
                                                                          components: SessionComponents(paymentMethod: PaymentMethodComponent(enabled: true),
                                                                                                        identityVerification: IdentityVerificationComponent(enabled: true)))
