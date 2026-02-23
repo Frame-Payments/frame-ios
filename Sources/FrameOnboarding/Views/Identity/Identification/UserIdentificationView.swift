@@ -51,7 +51,8 @@ struct UserIdentificationView: View {
                 identityIntro
                     .onAppear {
                         Task {
-                            await onboardingContainerViewModel.checkExistingOnboardingSession()
+                            //TODO: Check steps/capabilities at the account level before preceding.
+//                            await onboardingContainerViewModel.checkExistingOnboardingSession()
                             await onboardingContainerViewModel.checkExistingCustomer()
                         }
                     }
@@ -154,8 +155,9 @@ struct UserIdentificationView: View {
             Spacer()
             ContinueButton(enabled: .constant(true)) {
                 Task {
-                    await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
-                                                                               selectedCountry: selectedCountry)
+                    //TODO: Figure out what to do with this information on the account level.
+//                    await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
+//                                                                               selectedCountry: selectedCountry)
                     self.identitySteps = .information
                 }
             }
@@ -197,7 +199,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()), continueToNextStep: .constant(false))
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: ""), continueToNextStep: .constant(false))
 }
 
 extension Color {

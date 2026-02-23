@@ -166,6 +166,6 @@ public struct GeolocationView: View {
 }
 
 #Preview {
-    GeolocationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()),
+    GeolocationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: ""),
                     continueToNextStep: .constant(false))
 }

@@ -32,9 +32,7 @@ public struct OnboardingContainerView: View {
     @State private var returnToPreviousStep: Bool = false
     
     public init(customerId: String, customOnboardingFlow: [OnboardingFlow]? = nil) {
-        self.onboardingContainerViewModel = OnboardingContainerViewModel(customerId: customerId,
-                                                                         components: SessionComponents(paymentMethod: PaymentMethodComponent(enabled: true),
-                                                                                                       identityVerification: IdentityVerificationComponent(enabled: true)))
+        self.onboardingContainerViewModel = OnboardingContainerViewModel(customerId: customerId)
         if let customOnboardingFlow {
             self.onboardingFlow = customOnboardingFlow
             self.currentStep = customOnboardingFlow.first ?? .countryVerification

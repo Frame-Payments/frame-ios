@@ -58,5 +58,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: "", components: SessionComponents()))
+    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: ""))
 }

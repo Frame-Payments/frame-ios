@@ -30,11 +30,9 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                    address: FrameObjects.BillingAddress(postalCode: ""))
     
     var customerId: String?
-    let components: SessionComponents
     
-    init(customerId: String?, components: SessionComponents) {
+    init(customerId: String?) {
         self.customerId = customerId
-        self.components = components
     }
     
     // Load existing customer object
