@@ -11,33 +11,11 @@ public class AccountRequest {
     
     public struct CreateAccountProfile: Codable, Sendable, Equatable {
         public let business: FrameObjects.BusinessAccount?
-        public let individual: CreateIndividualAccount?
-    }
-    
-    public struct CreateAccountInfo: Codable, Sendable, Equatable {
-        public let firstName: String
-        public let middleName: String?
-        public let lastName: String
-        public let suffix: String?
+        public let individual: FrameObjects.IndividualAccount?
         
-        enum CodingKeys: String, CodingKey {
-            case suffix
-            case firstName = "first_name"
-            case middleName = "middle_name"
-            case lastName = "last_name"
-        }
-    }
-    
-    public struct CreateIndividualAccount: Codable, Sendable, Equatable {
-        public let name: CreateAccountInfo
-        public let email: String
-        public let phone: FrameObjects.AccountPhoneNumber
-        public let address: FrameObjects.BillingAddress?
-        public let dob: Date?
-        public let ssn: String?
-        
-        enum CodingKeys: String, CodingKey {
-            case name, email, phone, address, dob, ssn
+        public init(business: FrameObjects.BusinessAccount?, individual: FrameObjects.IndividualAccount?) {
+            self.business = business
+            self.individual = individual
         }
     }
     
@@ -46,9 +24,9 @@ public class AccountRequest {
         public var externalId: String?
         public var termsOfService: FrameObjects.AccountTermsOfService?
         public var metadata: [String: String]?
-        public var profile: CreateAccountProfile
+        public var profile: CreateAccountProfile?
         
-        public init(accountType: FrameObjects.AccountType, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: CreateAccountProfile) {
+        public init(accountType: FrameObjects.AccountType, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: CreateAccountProfile? = nil) {
             self.accountType = accountType
             self.externalId = externalId
             self.termsOfService = termsOfService
@@ -64,33 +42,33 @@ public class AccountRequest {
         }
     }
     
-    // Update
+    // Update Account Objects
     public struct UpdateAccountProfile: Codable, Sendable, Equatable {
         public let business: UpdateBusinessAccount?
         public let individual: UpdateIndividualAccount?
-    }
-    
-    public struct UpdateAccountInfo: Codable, Sendable, Equatable {
-        public let firstName: String?
-        public let middleName: String?
-        public let lastName: String?
-        public let suffix: String?
         
-        enum CodingKeys: String, CodingKey {
-            case suffix
-            case firstName = "first_name"
-            case middleName = "middle_name"
-            case lastName = "last_name"
+        public init(business: UpdateBusinessAccount?, individual: UpdateIndividualAccount?) {
+            self.business = business
+            self.individual = individual
         }
     }
     
     public struct UpdateIndividualAccount: Codable, Sendable, Equatable {
-        public let name: UpdateAccountInfo?
+        public let name: FrameObjects.AccountNameInfo?
         public let email: String?
         public let phone: FrameObjects.AccountPhoneNumber?
         public let address: FrameObjects.BillingAddress?
-        public let dob: Date?
+        public let dob: String? // YYYY-MM-DD
         public let ssn: String?
+        
+        public init(name: FrameObjects.AccountNameInfo?, email: String?, phone: FrameObjects.AccountPhoneNumber?, address: FrameObjects.BillingAddress?, dob: String?, ssn: String?) {
+            self.name = name
+            self.email = email
+            self.phone = phone
+            self.address = address
+            self.dob = dob
+            self.ssn = ssn
+        }
         
         enum CodingKeys: String, CodingKey {
             case name, email, phone, address, dob, ssn
@@ -138,9 +116,9 @@ public class AccountRequest {
         public var externalId: String?
         public var termsOfService: FrameObjects.AccountTermsOfService?
         public var metadata: [String: String]?
-        public var profile: CreateAccountProfile?
+        public var profile: UpdateAccountProfile?
         
-        public init(accountType: FrameObjects.AccountType, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: CreateAccountProfile) {
+        public init(accountType: FrameObjects.AccountType? = nil, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: UpdateAccountProfile) {
             self.accountType = accountType
             self.externalId = externalId
             self.termsOfService = termsOfService
