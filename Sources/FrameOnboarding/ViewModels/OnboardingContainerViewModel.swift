@@ -25,48 +25,78 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var ipAddress: String?
     @Published var userCoordinates: CLLocationCoordinate2D?
     
-    @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "", ssn: "",
-                                                                                                   address: FrameObjects.BillingAddress(postalCode: ""))
+    @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
+                                                                                                   ssn: "", address: FrameObjects.BillingAddress(postalCode: ""))
     
+    let requiredCapabilities: [FrameObjects.Capabilities]
     var accountId: String?
     
-    init(accountId: String?) {
+    init(accountId: String?, requiredCapabilities: [FrameObjects.Capabilities]) {
         self.accountId = accountId
+        self.requiredCapabilities = requiredCapabilities
     }
+    
     // Load existing account object to show on account page.
     func checkExistingAccount() async {
         guard let accountId else { return }
         do {
             let (account, _) = try await AccountsAPI.getAccountWith(accountId: accountId)
             guard let profile = account?.profile?.individual else { return }
-            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? "",
-                                                                                                 lastName: profile.name?.lastName ?? "",
-                                                                                                 dateOfBirth: profile.dob ?? "",
+            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.firstName ?? "",
+                                                                                                 lastName: profile.lastName ?? "",
+                                                                                                 dateOfBirth: profile.birthdate ?? "",
                                                                                                  email: profile.email ?? "",
-                                                                                                 phoneNumber: profile.phone?.number ?? "",
-                                                                                                 ssn: "",
+                                                                                                 phoneNumber: profile.phoneNumber ?? "",
+                                                                                                 ssn: profile.ssnLastFour ?? "",
                                                                                                  address: profile.address ?? FrameObjects.BillingAddress(postalCode: ""))
         } catch let error {
             print(error)
         }
     }
     
-    // Create new individual account if no ID was previously provided to start onboarding and no information has been provided.
-    func createEmptyIndividualAccount() async {
+    // Create new individual account if no ID was previously provided to start onboarding.
+    func createIndividualAccount() async {
         do {
-            let request = AccountRequest.CreateAccountRequest(accountType: .individual)
+            let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
+                                                                                                              lastName: createdCustomerIdentity.lastName),
+                                                                           email: createdCustomerIdentity.email,
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
+                                                                                                                  countryCode: "+1"),
+                                                                           address: createdCustomerIdentity.address,
+                                                                           dob: createdCustomerIdentity.dateOfBirth,
+                                                                           ssn: createdCustomerIdentity.ssn)
+            let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile)
             let (account, _) = try await AccountsAPI.createAccount(request: request)
             
             guard let account else { return }
             self.accountId = account.id
+            
+            await addCapabilitiesToIndividualAccount()
         } catch let error {
             print(error)
+        }
+    }
+    
+    func addCapabilitiesToIndividualAccount() async {
+        guard let accountId else { return }
+        
+        do {
+            let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: requiredCapabilities)
+            let (capabilities, _) = try await CapabilitiesAPI.requestCapabilities(accountId: accountId, request: request)
+            
+            if let capabilities {
+                // Use this to find the requirements to show in subsequent screens, where do we pull the steps from?
+            }
+        } catch let error {
+            print (error)
         }
     }
     
     // Create new business account if no ID was previously provided to start onboarding.
     func createNewBusinessAccount() async { }
 
+    // Update individual account if ID was provided at the start of onboarding.
     func updateExistingIndividualAccount() async {
         guard let accountId else { return }
         

@@ -113,20 +113,25 @@ extension FrameObjects {
     }
     
     public struct IndividualAccount: Codable, Sendable, Equatable {
-        public let name: AccountNameInfo?
+        public let firstName: String?
+        public let middleName: String?
+        public let lastName: String?
+        public let suffix: String?
         public let email: String?
-        public let phone: FrameObjects.AccountPhoneNumber?
+        public let phoneNumber: String?
+        public let phoneCountryCode: String?
         public let address: FrameObjects.BillingAddress?
-        public let dob: String?
-        public let ssn: String?
+        public let birthdate: String?
+        public let ssnLastFour: String?
         
-        public init(name: AccountNameInfo, email: String, phone: FrameObjects.AccountPhoneNumber, address: FrameObjects.BillingAddress? = nil, dob: String? = nil, ssn: String? = nil) {
-            self.name = name
-            self.email = email
-            self.phone = phone
-            self.address = address
-            self.dob = dob
-            self.ssn = ssn
+        public enum CodingKeys: String, CodingKey {
+            case suffix, email, address, birthdate
+            case firstName = "first_name"
+            case middleName = "middle_name"
+            case lastName = "last_name"
+            case phoneNumber = "phone_number"
+            case phoneCountryCode = "phone_country_code"
+            case ssnLastFour = "ssn_last_four"
         }
     }
     
@@ -139,17 +144,16 @@ extension FrameObjects {
         public let metadata: [String: String]?
         public let profile: AccountProfile?
         public let capabilities: [Capability]?
-        public let createdAt: Int
-        public let updatedAt: Int
+        public let steps: [String]?
+        public let created: Int
+        public let updated: Int
         public let livemode: Bool
         
         public enum CodingKeys: String, CodingKey {
-            case id, object, metadata, profile, livemode, capabilities
+            case id, object, metadata, profile, livemode, capabilities, steps, created, updated
             case accountType = "type"
             case accountStatus = "status"
             case externalId = "external_id"
-            case createdAt = "created_at"
-            case updatedAt = "updated_at"
         }
     }
 }

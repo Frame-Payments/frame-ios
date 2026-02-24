@@ -9,6 +9,22 @@ import Foundation
 
 extension FrameObjects {
     
+    public enum Capabilities: String, Codable {
+        case kyc
+        case phoneVerification = "phone_verification"
+        case creatorShield = "creator_shield"
+        case cardSend = "card_send"
+        case cardReceive = "card_receive"
+        case bankAccountSend = "bank_account_send"
+        case bankAccountReceive = "bank_account_receive"
+        case geoCompliance = "geo_compliance"
+        case addressVerification = "address_verification"
+        case cardVerification = "card_verification" // Also enables card send capability
+        case bankAccountVerification = "bank_account_verification"
+        case kycPrefill = "kyc_prefill" // Also enables kyc capability
+        case ageVerification = "age_verification"
+    }
+    
     public struct CapabilityRequirement: Codable, Sendable, Equatable {
         public let id: String
         public let object: String

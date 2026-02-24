@@ -9,11 +9,29 @@ import Foundation
 
 public class AccountRequest {
     
+    public struct CreateIndividualAccount: Codable, Sendable, Equatable {
+        public let name: FrameObjects.AccountNameInfo
+        public let email: String
+        public let phone: FrameObjects.AccountPhoneNumber
+        public let address: FrameObjects.BillingAddress?
+        public let dob: String?
+        public let ssn: String?
+        
+        public init(name: FrameObjects.AccountNameInfo, email: String, phone: FrameObjects.AccountPhoneNumber, address: FrameObjects.BillingAddress?, dob: String?, ssn: String?) {
+            self.name = name
+            self.email = email
+            self.phone = phone
+            self.address = address
+            self.dob = dob
+            self.ssn = ssn
+        }
+    }
+    
     public struct CreateAccountProfile: Codable, Sendable, Equatable {
         public let business: FrameObjects.BusinessAccount?
-        public let individual: FrameObjects.IndividualAccount?
+        public let individual: CreateIndividualAccount?
         
-        public init(business: FrameObjects.BusinessAccount?, individual: FrameObjects.IndividualAccount?) {
+        public init(business: FrameObjects.BusinessAccount?, individual: CreateIndividualAccount?) {
             self.business = business
             self.individual = individual
         }

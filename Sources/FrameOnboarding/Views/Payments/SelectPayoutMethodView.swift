@@ -138,7 +138,7 @@ struct SelectPayoutMethodView: View {
 }
 
 #Preview {
-    SelectPayoutMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: ""),
+    SelectPayoutMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
                             continueToNextStep: .constant(false),
                             returnToPreviousStep: .constant(false))
 }

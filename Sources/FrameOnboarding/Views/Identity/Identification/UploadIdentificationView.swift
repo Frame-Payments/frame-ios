@@ -169,5 +169,5 @@ struct UploadIdentificationView: View {
 }
 
 #Preview {
-    UploadIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: ""), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+    UploadIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
 }

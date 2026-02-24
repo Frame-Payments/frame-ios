@@ -31,12 +31,9 @@ public struct OnboardingContainerView: View {
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     
-    public init(accountId: String? = nil, customOnboardingFlow: [OnboardingFlow]? = nil) {
-        self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId)
-        if let customOnboardingFlow {
-            self.onboardingFlow = customOnboardingFlow
-            self.currentStep = customOnboardingFlow.first ?? .countryVerification
-        }
+    public init(accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = []) {
+        self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId, requiredCapabilities: requiredCapabilities)
+        // Map capabilites to onboarding flow steps
     }
     
     public var body: some View {

@@ -10,9 +10,9 @@ import Foundation
 public class CapabilityRequest {
     
     public struct RequestCapabilitiesRequest: Codable {
-        public let capabilities: [String]
+        public let capabilities: [FrameObjects.Capabilities]
         
-        public init(capabilities: [String]) {
+        public init(capabilities: [FrameObjects.Capabilities]) {
             self.capabilities = capabilities
         }
     }

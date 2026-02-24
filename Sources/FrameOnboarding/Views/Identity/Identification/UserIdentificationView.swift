@@ -128,7 +128,11 @@ struct UserIdentificationView: View {
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
                 Task {
-                    await onboardingContainerViewModel.updateExistingIndividualAccount()
+                    if onboardingContainerViewModel.accountId == nil {
+                        await onboardingContainerViewModel.createIndividualAccount()
+                    } else {
+                        await onboardingContainerViewModel.updateExistingIndividualAccount()
+                    }
                     await onboardingContainerViewModel.createCustomerIdentity()
                     self.continueToNextStep.toggle()
                 }
@@ -198,7 +202,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: ""), continueToNextStep: .constant(false))
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), continueToNextStep: .constant(false))
 }
 
 extension Color {
