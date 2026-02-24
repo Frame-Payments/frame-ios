@@ -12,7 +12,6 @@ import CoreLocation
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
-    // Payment Method
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount()
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
@@ -29,47 +28,59 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "", ssn: "",
                                                                                                    address: FrameObjects.BillingAddress(postalCode: ""))
     
-    var customerId: String?
+    var accountId: String?
     
-    init(customerId: String?) {
-        self.customerId = customerId
+    init(accountId: String?) {
+        self.accountId = accountId
     }
-    
-    // Load existing customer object
-    func checkExistingCustomer() async {
-        guard let customerId else { return }
-        
+    // Load existing account object to show on account page.
+    func checkExistingAccount() async {
+        guard let accountId else { return }
         do {
-            let (customer, _) = try await CustomersAPI.getCustomerWith(customerId: customerId)
-            if let customer {
-                let nameComponents = customer.name.components(separatedBy: " ")
-                let address = customer.shippingAddress ?? customer.billingAddress ?? FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
-                self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: nameComponents.first ?? "",
-                                                                                                     lastName: nameComponents.last ?? "",
-                                                                                                     dateOfBirth: customer.dateOfBirth ?? "",
-                                                                                                     email: customer.email ?? "",
-                                                                                                     phoneNumber: customer.phone ?? "",
-                                                                                                     ssn: "",
-                                                                                                     address: address)
-                
-            }
+            let (account, _) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            guard let profile = account?.profile?.individual else { return }
+            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? "",
+                                                                                                 lastName: profile.name?.lastName ?? "",
+                                                                                                 dateOfBirth: profile.dob ?? "",
+                                                                                                 email: profile.email ?? "",
+                                                                                                 phoneNumber: profile.phone?.number ?? "",
+                                                                                                 ssn: "",
+                                                                                                 address: profile.address ?? FrameObjects.BillingAddress(postalCode: ""))
         } catch let error {
             print(error)
         }
     }
     
-    func updateExistingCustomer() async {
-        guard let customerId else { return }
+    // Create new individual account if no ID was previously provided to start onboarding and no information has been provided.
+    func createEmptyIndividualAccount() async {
+        do {
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual)
+            let (account, _) = try await AccountsAPI.createAccount(request: request)
+            
+            guard let account else { return }
+            self.accountId = account.id
+        } catch let error {
+            print(error)
+        }
+    }
+    
+    // Create new business account if no ID was previously provided to start onboarding.
+    func createNewBusinessAccount() async { }
+
+    func updateExistingIndividualAccount() async {
+        guard let accountId else { return }
         
         do {
-            let request = CustomerRequest.UpdateCustomerRequest(billingAddress: nil,
-                                                                shippingAddress: createdCustomerIdentity.address,
-                                                                name: createdCustomerIdentity.firstName + " " + createdCustomerIdentity.lastName,
-                                                                phone: createdCustomerIdentity.phoneNumber,
-                                                                email: createdCustomerIdentity.email,
-                                                                ssn: createdCustomerIdentity.ssn,
-                                                                dateOfBirth: createdCustomerIdentity.dateOfBirth)
-            let (_, _) = try await CustomersAPI.updateCustomerWith(customerId: customerId, request: request)
+            let individualAccount = AccountRequest.UpdateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
+                                                                                                              lastName: createdCustomerIdentity.lastName),
+                                                                           email: createdCustomerIdentity.email,
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
+                                                                                                                  countryCode: "+1"),
+                                                                           address: createdCustomerIdentity.address,
+                                                                           dob: createdCustomerIdentity.dateOfBirth,
+                                                                           ssn: createdCustomerIdentity.ssn)
+            let request = AccountRequest.UpdateAccountRequest(profile: AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount))
+            try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
         } catch let error {
             print(error)
         }
@@ -77,10 +88,10 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Load existing Payment Methods for customer
     func loadExistingPaymentMethods() async {
-        guard let customerId else { return }
+        guard let accountId else { return }
         
         do {
-            let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: customerId)
+            let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: accountId)
             if let methods = paymentMethodResponse?.data {
                 self.paymentMethods = methods.filter({ $0.card != nil })
                 self.payoutMethods = methods.filter({ $0.ach != nil })
@@ -97,7 +108,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                               expMonth: cardData.card.expMonth,
                                                                               expYear: cardData.card.expYear,
                                                                               cvc: cardData.card.cvc,
-                                                                              customer: customerId,
+                                                                              customer: accountId,
                                                                               billing: createdBillingAddress)
             let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
             
@@ -118,7 +129,7 @@ class OnboardingContainerViewModel: ObservableObject {
             let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: bankAccount.accountType ?? .checking,
                                                                              accountNumber: bankAccount.accountNumber ?? "",
                                                                              routingNumber: bankAccount.routingNumber ?? "",
-                                                                             customer: customerId,
+                                                                             customer: accountId,
                                                                              billing: createdBillingAddress)
             let (payoutMethod, _) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
             

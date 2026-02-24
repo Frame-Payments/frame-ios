@@ -31,8 +31,8 @@ public struct OnboardingContainerView: View {
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     
-    public init(customerId: String, customOnboardingFlow: [OnboardingFlow]? = nil) {
-        self.onboardingContainerViewModel = OnboardingContainerViewModel(customerId: customerId)
+    public init(accountId: String? = nil, customOnboardingFlow: [OnboardingFlow]? = nil) {
+        self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId)
         if let customOnboardingFlow {
             self.onboardingFlow = customOnboardingFlow
             self.currentStep = customOnboardingFlow.first ?? .countryVerification
@@ -116,5 +116,5 @@ public struct OnboardingContainerView: View {
 }
 
 #Preview {
-    OnboardingContainerView(customerId: "cust_123")
+    OnboardingContainerView()
 }

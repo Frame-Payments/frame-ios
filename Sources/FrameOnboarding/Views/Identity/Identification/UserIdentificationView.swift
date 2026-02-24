@@ -52,8 +52,7 @@ struct UserIdentificationView: View {
                     .onAppear {
                         Task {
                             //TODO: Check steps/capabilities at the account level before preceding.
-//                            await onboardingContainerViewModel.checkExistingOnboardingSession()
-                            await onboardingContainerViewModel.checkExistingCustomer()
+                            await onboardingContainerViewModel.checkExistingAccount()
                         }
                     }
             case .information:
@@ -129,7 +128,7 @@ struct UserIdentificationView: View {
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
                 Task {
-                    await onboardingContainerViewModel.updateExistingCustomer()
+                    await onboardingContainerViewModel.updateExistingIndividualAccount()
                     await onboardingContainerViewModel.createCustomerIdentity()
                     self.continueToNextStep.toggle()
                 }
@@ -199,7 +198,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: ""), continueToNextStep: .constant(false))
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: ""), continueToNextStep: .constant(false))
 }
 
 extension Color {

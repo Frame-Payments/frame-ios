@@ -136,7 +136,7 @@ struct SecurePMVerificationView: View {
 }
 
 #Preview {
-    SecurePMVerificationView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: ""),
+    SecurePMVerificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: ""),
                              continueToNextStep: .constant(false),
                              returnToPreviousStep: .constant(false))
 }

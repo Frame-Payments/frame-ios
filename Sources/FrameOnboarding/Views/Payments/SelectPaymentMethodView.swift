@@ -169,7 +169,7 @@ struct SelectPaymentMethodView: View {
 }
 
 #Preview {
-    SelectPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(customerId: ""),
+    SelectPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: ""),
                             continueToNextStep: .constant(false),
                             returnToPreviousStep: .constant(false))
 }

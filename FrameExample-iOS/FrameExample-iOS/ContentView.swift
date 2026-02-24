@@ -63,7 +63,9 @@ struct ContentView: View {
         }
         .padding()
         .sheet(isPresented: $showOnboardingSheet, content: {
-            OnboardingContainerView(customerId: "ENTER_TEST_CUSTOMER_ID")
+//            An existing account Id can be added here to onboarding an existing user.
+//            OnboardingContainerView(accountId: "ENTER_TEST_CUSTOMER_ID")
+            OnboardingContainerView()
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,
