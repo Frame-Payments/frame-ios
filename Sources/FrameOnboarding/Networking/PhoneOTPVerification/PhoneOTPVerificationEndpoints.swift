@@ -9,15 +9,15 @@ import Foundation
 import Frame
 
 enum PhoneOTPVerificationEndpoints: FrameNetworkingEndpoints {
-    case initialize
-    case verify
+    case create(accountId: String)
+    case confirm(accountId: String, verificationId: String)
 
     var endpointURL: String {
         switch self {
-        case .initialize:
-            return "/v1/phone-otp/initialize"
-        case .verify:
-            return "/v1/phone-otp/verify"
+        case .create(let accountId):
+            return "/v1/accounts/\(accountId)/phone_verifications"
+        case .confirm(let accountId, let verificationId):
+            return "/v1/accounts/\(accountId)/phone_verifications/\(verificationId)/confirm"
         }
     }
 
