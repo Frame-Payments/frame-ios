@@ -8,8 +8,10 @@
 import SwiftUI
 import EvervaultInputs
 
-struct EncryptedPaymentCardInput: PaymentCardInputStyle {
-    func makeBody(configuration: Configuration) -> some View {
+public struct EncryptedPaymentCardInput: PaymentCardInputStyle {
+    public init() {}
+    
+    public func makeBody(configuration: Configuration) -> some View {
         RoundedRectangle(cornerRadius: 10.0)
             .fill(.white)
             .stroke(.gray.opacity(0.3))
@@ -32,4 +34,10 @@ struct EncryptedPaymentCardInput: PaymentCardInputStyle {
             }
             .padding(.horizontal)
     }
+}
+
+#Preview {
+    // Evervault Card Input
+    PaymentCardInput(cardData: .constant(PaymentCardData()))
+        .paymentCardInputStyle(EncryptedPaymentCardInput())
 }

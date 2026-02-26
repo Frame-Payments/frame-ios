@@ -35,7 +35,7 @@ class SiftManager {
     
     //Set the login event the first chance you get customer details.
     class func collectLoginEvent(customerId: String, email: String) {
-        guard let sift = Sift.sharedInstance(), sift.userId.isEmpty else { return }
+        guard let sift = Sift.sharedInstance(), sift.userId == nil else { return }
         sift.userId = customerId
         
         let event = SiftEvent()

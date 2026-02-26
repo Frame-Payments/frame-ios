@@ -35,6 +35,27 @@ extension FrameObjects {
         }
     }
     
+    public struct AccountNameInfo: Codable, Sendable, Equatable {
+        public let firstName: String? // Required for Account Creation
+        public let middleName: String?
+        public let lastName: String? // Required for Account Creation
+        public let suffix: String?
+        
+        public init(firstName: String? = nil, middleName: String? = nil, lastName: String? = nil, suffix: String? = nil) {
+            self.firstName = firstName
+            self.middleName = middleName
+            self.lastName = lastName
+            self.suffix = suffix
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case suffix
+            case firstName = "first_name"
+            case middleName = "middle_name"
+            case lastName = "last_name"
+        }
+    }
+    
     public struct AccountProfile: Codable, Sendable, Equatable {
         public let business: BusinessAccount?
         public let individual: IndividualAccount?
@@ -43,6 +64,16 @@ extension FrameObjects {
     public struct AccountPhoneNumber: Codable, Sendable, Equatable {
         public let number: String
         public let countryCode: String
+        
+        public init(number: String, countryCode: String) {
+            self.number = number
+            self.countryCode = countryCode
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case number
+            case countryCode = "country_code"
+        }
     }
     
     public struct BusinessAccount: Codable, Sendable, Equatable {
@@ -82,18 +113,24 @@ extension FrameObjects {
     }
     
     public struct IndividualAccount: Codable, Sendable, Equatable {
-        public let firstName: String
+        public let firstName: String?
         public let middleName: String?
-        public let lastName: String
+        public let lastName: String?
         public let suffix: String?
-        public let email: String
+        public let email: String?
+        public let phoneNumber: String?
+        public let phoneCountryCode: String?
+        public let address: FrameObjects.BillingAddress?
+        public let birthdate: String?
         public let ssnLastFour: String?
         
-        enum CodingKeys: String, CodingKey {
-            case suffix, email
+        public enum CodingKeys: String, CodingKey {
+            case suffix, email, address, birthdate
             case firstName = "first_name"
             case middleName = "middle_name"
             case lastName = "last_name"
+            case phoneNumber = "phone_number"
+            case phoneCountryCode = "phone_country_code"
             case ssnLastFour = "ssn_last_four"
         }
     }
@@ -107,17 +144,16 @@ extension FrameObjects {
         public let metadata: [String: String]?
         public let profile: AccountProfile?
         public let capabilities: [Capability]?
-        public let createdAt: Int
-        public let updatedAt: Int
+        public let steps: [String]?
+        public let created: Int
+        public let updated: Int
         public let livemode: Bool
         
         public enum CodingKeys: String, CodingKey {
-            case id, object, metadata, profile, livemode, capabilities
+            case id, object, metadata, profile, livemode, capabilities, steps, created, updated
             case accountType = "type"
             case accountStatus = "status"
             case externalId = "external_id"
-            case createdAt = "created_at"
-            case updatedAt = "updated_at"
         }
     }
 }

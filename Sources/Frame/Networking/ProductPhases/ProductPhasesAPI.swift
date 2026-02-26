@@ -90,8 +90,9 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     public static func bulkUpdateProductPhases(productId: String, request: ProductPhaseRequests.BulkUpdateProductPhase) async throws -> (ProductPhasesResponses.ListProductPhasesResponse?, NetworkingError?) {
         guard productId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.bulkUpdateProductPhases(productId: productId)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
         
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {

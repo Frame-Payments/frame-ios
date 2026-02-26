@@ -1,5 +1,5 @@
 {
-  "originHash" : "f65325f290a8a6717928b72112883d084d58936799403adb070e93ee5bc9f68b",
+  "originHash" : "a6675f90d9770de362053d160a6ba447034a0771942bd0ba12b2e990aa381ee6",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -15,8 +15,39 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SiftScience/sift-ios.git",
       "state" : {
-        "branch" : "master",
         "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
+      }
+    },
+    {
+      "identity" : "swift.deviceauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.proveauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.provebase",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.provemobileauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "3.2.5"
       }
     }
   ],

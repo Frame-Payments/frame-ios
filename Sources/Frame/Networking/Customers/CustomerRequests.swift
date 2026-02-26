@@ -14,23 +14,28 @@ public class CustomerRequest {
         let name: String
         var phone: String?
         let email: String
+        var ssn: String? // XXX-XX-XXXX or XXXXXXXXXX format
+        var dateOfBirth: String? // YYYY-MM-DD format
         var description: String?
         var metadata: [String: String]?
         
-        public init(billingAddress: FrameObjects.BillingAddress? = nil, shippingAddress: FrameObjects.BillingAddress? = nil, name: String, phone: String? = nil, email: String, description: String? = nil, metadata: [String : String]? = nil) {
+        public init(billingAddress: FrameObjects.BillingAddress? = nil, shippingAddress: FrameObjects.BillingAddress? = nil, name: String, phone: String? = nil, email: String, ssn: String? = nil, dateOfBirth: String? = nil, description: String? = nil, metadata: [String : String]? = nil) {
             self.billingAddress = billingAddress
             self.shippingAddress = shippingAddress
             self.name = name
             self.phone = phone
             self.email = email
+            self.ssn = ssn
+            self.dateOfBirth = dateOfBirth
             self.description = description
             self.metadata = metadata
         }
         
         enum CodingKeys: String, CodingKey {
-            case name, phone, email, description, metadata
+            case name, phone, email, description, metadata, ssn
             case billingAddress = "billing_address"
             case shippingAddress = "shipping_address"
+            case dateOfBirth = "date_of_birth"
         }
     }
     
@@ -40,23 +45,28 @@ public class CustomerRequest {
         var name: String?
         var phone: String?
         var email: String?
+        var ssn: String? // XXX-XX-XXXX or XXXXXXXXXX format
+        var dateOfBirth: String? // YYYY-MM-DD format
         var description: String?
         var metadata: [String: String]?
         
-        public init(billingAddress: FrameObjects.BillingAddress? = nil, shippingAddress: FrameObjects.BillingAddress? = nil, name: String? = nil, phone: String? = nil, email: String? = nil, description: String? = nil, metadata: [String : String]? = nil) {
+        public init(billingAddress: FrameObjects.BillingAddress? = nil, shippingAddress: FrameObjects.BillingAddress? = nil, name: String? = nil, phone: String? = nil, email: String? = nil, ssn: String? = nil, dateOfBirth: String? = nil, description: String? = nil, metadata: [String : String]? = nil) {
             self.billingAddress = billingAddress
             self.shippingAddress = shippingAddress
             self.name = name
             self.phone = phone
             self.email = email
+            self.ssn = ssn
+            self.dateOfBirth = dateOfBirth
             self.description = description
             self.metadata = metadata
         }
         
         enum CodingKeys: String, CodingKey {
-            case name, phone, email, description, metadata
+            case name, phone, email, description, metadata, ssn
             case billingAddress = "billing_address"
             case shippingAddress = "shipping_address"
+            case dateOfBirth = "date_of_birth"
         }
     }
     
