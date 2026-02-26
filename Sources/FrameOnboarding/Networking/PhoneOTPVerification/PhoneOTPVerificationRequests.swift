@@ -8,33 +8,22 @@
 import Foundation
 
 class PhoneOTPVerificationRequests {
-    struct Initialize: Encodable, Sendable {
+    /// Create phone verification request. dateOfBirth must be YYYY-MM-DD.
+    struct CreateVerificationRequest: Encodable, Sendable {
+        let type: String
         let phoneNumber: String
         let dateOfBirth: String
-        let flowType: String
 
-        init(phoneNumber: String, dateOfBirth: String, flowType: String) {
+        init(type: String = "phone", phoneNumber: String, dateOfBirth: String) {
+            self.type = type
             self.phoneNumber = phoneNumber
             self.dateOfBirth = dateOfBirth
-            self.flowType = flowType
         }
 
         enum CodingKeys: String, CodingKey {
+            case type
             case phoneNumber = "phone_number"
             case dateOfBirth = "date_of_birth"
-            case flowType = "flow_type"
-        }
-    }
-
-    struct Verify: Encodable, Sendable {
-        let authId: String
-
-        init(authId: String) {
-            self.authId = authId
-        }
-
-        enum CodingKeys: String, CodingKey {
-            case authId = "auth_id"
         }
     }
 }
