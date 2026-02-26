@@ -23,9 +23,12 @@ struct UserIdentificationView: View {
     enum IdentificationSelection: String, CaseIterable {
         case id
         case country
+        case countryCode
     }
     
     enum UserIdentificationSteps: String, CaseIterable {
+        case phoneAuth
+        case verifyPhone
         case intro
         case information
         case inputs
@@ -35,10 +38,19 @@ struct UserIdentificationView: View {
     
     @State private var identitySteps: UserIdentificationSteps = .intro
     @State private var selectedCountry: AvailableCountry = .defaultCountry
+    @State private var phoneNumber: String = ""
+    @State private var birthYear: String = ""
+    @State private var birthMonth: String = ""
+    @State private var birthDay: String = ""
     @State private var showCountryPicker: Bool = false
     @State private var selectedIdType: IdentificationTypes = .driversLicense
     @State private var showIDPicker: Bool = false
+    @State private var canVerifyPhoneNumber: Bool = false
     @State private var canCustomerContinue: Bool = false
+    @State private var dateOfBirth: String = ""
+    
+    @State private var returnToPhoneNumberEntry: Bool = false
+    @State private var continueToCustomerInfoStep: Bool = false
     
     @Binding var continueToNextStep: Bool
     
@@ -47,6 +59,12 @@ struct UserIdentificationView: View {
     var body: some View {
         VStack {
             switch identitySteps {
+            case .phoneAuth:
+                authenticationView
+            case .verifyPhone:
+                SecurePMVerificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                         continueToNextStep: $continueToCustomerInfoStep,
+                                         returnToPreviousStep: $returnToPhoneNumberEntry)
             case .intro:
                 identityIntro
                     .onAppear {
@@ -61,10 +79,35 @@ struct UserIdentificationView: View {
                 verifyIdentityView
             }
         }
-        
+        .onChange(of: returnToPhoneNumberEntry, { oldValue, newValue in
+            if returnToPhoneNumberEntry {
+                self.identitySteps = .phoneAuth
+                self.returnToPhoneNumberEntry = false
+            }
+        })
+        .onChange(of: continueToCustomerInfoStep, { oldValue, newValue in
+            if continueToCustomerInfoStep {
+                self.identitySteps = .information
+            }
+        })
         .onChange(of: onboardingContainerViewModel.createdCustomerIdentity) { oldValue, newValue in
             self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPersonalInformation()
         }
+        .onChange(of: birthYear, { oldValue, newValue in
+            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
+        })
+        .onChange(of: birthMonth, { oldValue, newValue in
+            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
+        })
+        .onChange(of: birthDay, { oldValue, newValue in
+            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
+        })
+        .onChange(of: phoneNumber, { oldValue, newValue in
+            self.checkIfReadyToVerifyPhoneNumber()
+        })
+        .onChange(of: dateOfBirth, { oldValue, newValue in
+            self.checkIfReadyToVerifyPhoneNumber()
+        })
         .sheet(isPresented: $showIDPicker) {
             Picker(IdentificationSelection.id.rawValue, selection: $selectedIdType) {
                 ForEach(IdentificationTypes.allCases, id: \.self) { id in
@@ -98,7 +141,66 @@ struct UserIdentificationView: View {
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                self.identitySteps = .inputs
+                self.identitySteps = .phoneAuth
+            }
+            .padding(.bottom)
+        }
+    }
+    
+    var authenticationView: some View {
+        VStack(alignment: .leading) {
+            PageHeaderView(headerTitle: "Add Phone Number & DOB") {
+                self.identitySteps = .intro
+            }
+            Text("We’ll send you a code — it helps us keep your account secure.")
+                .font(.system(size: 14.0))
+                .foregroundColor(FrameColors.secondaryTextColor)
+                .padding(.horizontal, 20.0)
+                .padding(.bottom, 20.0)
+            Text("Phone Number")
+                .padding(.horizontal)
+                .fontWeight(.semibold)
+                .font(.system(size: 14.0))
+            HStack(alignment: .top, spacing: 0) {
+                dropdownSelectionBox(titleName: "", selection: .countryCode, dropdownText: "+1")
+                    .frame(width: 100.0)
+                RoundedRectangle(cornerRadius: 10.0)
+                    .fill(.white)
+                    .stroke(.gray.opacity(0.3))
+                    .frame(maxHeight: 56.0)
+                    .overlay {
+                        ReusableFormTextField(prompt: "Enter your phone number", text: $phoneNumber, showDivider: false, keyboardType: .numberPad, characterLimit: 10)
+                    }
+            }
+            .padding(.trailing)
+            .padding(.leading, 5.0)
+            
+            Text("Date of Birth")
+                .padding(.horizontal)
+                .fontWeight(.semibold)
+                .font(.system(size: 14.0))
+            RoundedRectangle(cornerRadius: 10.0)
+                .fill(.white)
+                .stroke(.gray.opacity(0.3))
+                .overlay {
+                    VStack(spacing: 0) {
+                        HStack {
+                            ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
+                            Divider()
+                            ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
+                            Divider()
+                            ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .frame(height: 55.0)
+            Spacer()
+            ContinueButton(enabled: .constant(canVerifyPhoneNumber)) {
+                Task {
+                    //TODO: Prove SDK OTP flow.
+                    self.identitySteps = .verifyPhone
+                }
             }
             .padding(.bottom)
         }
@@ -107,7 +209,7 @@ struct UserIdentificationView: View {
     var customerInformationView: some View {
         VStack(alignment: .leading) {
             PageHeaderView(headerTitle: "Personal Information") {
-                self.identitySteps = .inputs
+                self.identitySteps = .intro
             }
             ScrollView {
                 CustomerInformationView(emailAddress: $onboardingContainerViewModel.createdCustomerIdentity.email,
@@ -152,8 +254,8 @@ struct UserIdentificationView: View {
                 .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 20.0)
                 .padding(.bottom, 8.0)
-            dropdownSelectionBox(titleName: "Issuing Country", selection: .country)
-            dropdownSelectionBox(titleName: "ID Type", selection: .id)
+            dropdownSelectionBox(titleName: "Issuing Country", selection: .country, dropdownText: selectedCountry.displayName)
+            dropdownSelectionBox(titleName: "ID Type", selection: .id, dropdownText: selectedIdType.rawValue)
             
             Spacer()
             ContinueButton(enabled: .constant(true)) {
@@ -169,35 +271,46 @@ struct UserIdentificationView: View {
     }
     
     @ViewBuilder
-    func dropdownSelectionBox(titleName: String, selection: IdentificationSelection) -> some View {
-        Text(titleName)
-            .padding([.horizontal])
-            .fontWeight(.semibold)
-            .font(.system(size: 13.0))
-        HStack {
-            Text(selection == .id ? selectedIdType.rawValue : selectedCountry.displayName)
-                .fontWeight(.medium)
-                .font(.system(size: 14.0))
-                .padding()
-            Spacer()
-            Image("down-chevron", bundle: FrameResources.module)
-                .padding()
-        }
-        .frame(maxWidth: .infinity, minHeight: 42.0)
-        .contentShape(Rectangle())
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-        )
-        .padding([.horizontal, .bottom])
-        .onTapGesture {
-            switch selection {
-            case .id:
-                self.showIDPicker.toggle()
-            case .country:
-                self.showCountryPicker.toggle()
+    func dropdownSelectionBox(titleName: String, selection: IdentificationSelection, dropdownText: String) -> some View {
+        VStack(alignment: .leading) {
+            if titleName != "" {
+                Text(titleName)
+                    .padding([.horizontal])
+                    .fontWeight(.semibold)
+                    .font(.system(size: 13.0))
+            }
+            HStack {
+                Text(dropdownText)
+                    .fontWeight(.medium)
+                    .font(.system(size: 14.0))
+                    .frame(minWidth: 18.0)
+                    .padding(.leading)
+                Spacer()
+                Image("down-chevron", bundle: FrameResources.module)
+                    .padding(.trailing)
+            }
+            .frame(maxWidth: .infinity, minHeight: 56.0)
+            .contentShape(Rectangle())
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+            )
+            .padding([.horizontal, .bottom])
+            .onTapGesture {
+                switch selection {
+                case .id:
+                    self.showIDPicker.toggle()
+                case .country:
+                    self.showCountryPicker.toggle()
+                case .countryCode:
+                    return
+                }
             }
         }
+    }
+    
+    func checkIfReadyToVerifyPhoneNumber() {
+        self.canVerifyPhoneNumber = birthDay.count == 2 && birthMonth.count == 2 && birthYear.count == 4 && phoneNumber.count == 10
     }
 }
 

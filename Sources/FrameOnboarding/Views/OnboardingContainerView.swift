@@ -8,32 +8,53 @@
 import SwiftUI
 import Frame
 
-public enum OnboardingFlow: String, CaseIterable, Identifiable {
+public enum OnboardingFlow: Int, CaseIterable, Identifiable {
     public var id: String {
         return "\(self.rawValue)"
     }
 
-    case countryVerification
-    case confirmPaymentMethod
-    case confirmPayoutMethod
-    case geolocationVerification
-    case uploadDocuments
-    case verificationSubmitted
+//    case countryVerification
+    case confirmPaymentMethod = 1
+    case confirmPayoutMethod = 2
+    case geolocationVerification = 4
+    case personalInformation = 0
+    case uploadDocuments = 3
+    case verificationSubmitted = 5
+}
+
+extension FrameObjects.Capabilities {
+    public var onboardingStep: OnboardingFlow {
+        switch self {
+        case .kyc, .kycPrefill, .phoneVerification, .creatorShield:
+            return .personalInformation
+        case .cardVerification, .cardSend, .cardReceive, .addressVerification:
+            return .confirmPaymentMethod
+        case .bankAccountVerification, .bankAccountSend, .bankAccountReceive:
+            return .confirmPayoutMethod
+        case .geoCompliance:
+            return .geolocationVerification
+        case .ageVerification:
+            return .uploadDocuments
+        }
+    }
 }
 
 public struct OnboardingContainerView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
-    @State private var currentStep: OnboardingFlow = .countryVerification
-    @State private var onboardingFlow: [OnboardingFlow] = [.countryVerification, .confirmPaymentMethod, .confirmPayoutMethod, .uploadDocuments, .verificationSubmitted]
-    @State private var progressiveSteps: [OnboardingFlow] = [.countryVerification]
+    @State private var currentStep: OnboardingFlow = .personalInformation
+    @State private var onboardingFlow: [OnboardingFlow] = [.personalInformation, .confirmPaymentMethod, .confirmPayoutMethod, .uploadDocuments, .verificationSubmitted]
+    @State private var progressiveSteps: [OnboardingFlow] = [.personalInformation]
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     
     public init(accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = []) {
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId, requiredCapabilities: requiredCapabilities)
         // Map capabilites to onboarding flow steps
+        let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
+        self.onboardingFlow = Array(onboardingSet).sorted(by: { $0.rawValue > $1.rawValue })
+        self.onboardingFlow.append(.verificationSubmitted)
     }
     
     public var body: some View {
@@ -48,7 +69,7 @@ public struct OnboardingContainerView: View {
                 SelectPayoutMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
                                        continueToNextStep: $continueToNextStep,
                                        returnToPreviousStep: $returnToPreviousStep)
-            case .countryVerification:
+            case .personalInformation:
                 UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                        continueToNextStep: $continueToNextStep)
             case .geolocationVerification:
@@ -113,5 +134,5 @@ public struct OnboardingContainerView: View {
 }
 
 #Preview {
-    OnboardingContainerView()
+    OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardVerification, .bankAccountVerification, .ageVerification])
 }

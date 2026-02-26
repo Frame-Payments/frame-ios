@@ -10,18 +10,28 @@ import Foundation
 extension FrameObjects {
     
     public enum Capabilities: String, Codable {
+        // View - Identity and Phone Verification
         case kyc
+        case kycPrefill = "kyc_prefill" // Also enables base kyc capability
         case phoneVerification = "phone_verification"
+        // Backend capability, ensure a phone number, email or social is input during onboarding.
         case creatorShield = "creator_shield"
+        
+        // View - Add or Select Payment Method (Card)
+        case cardVerification = "card_verification" // Also enables card send capability
         case cardSend = "card_send"
         case cardReceive = "card_receive"
+        case addressVerification = "address_verification" // pertains only to credit and debit card with AVS done on backend, require address if capability is present.
+        
+        // View - Add or Select Payment Method (ACH)
+        case bankAccountVerification = "bank_account_verification"
         case bankAccountSend = "bank_account_send"
         case bankAccountReceive = "bank_account_receive"
+        
+        // View - Geocompliance Flow
         case geoCompliance = "geo_compliance"
-        case addressVerification = "address_verification"
-        case cardVerification = "card_verification" // Also enables card send capability
-        case bankAccountVerification = "bank_account_verification"
-        case kycPrefill = "kyc_prefill" // Also enables kyc capability
+        
+        // View - Upload Documents
         case ageVerification = "age_verification"
     }
     
