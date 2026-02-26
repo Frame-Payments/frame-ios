@@ -1,4 +1,8 @@
 // swift-tools-version: 5.10
+//
+// Prove SDK (FrameOnboarding): One-time registry setup may be required for resolution:
+//   swift package-registry set --global "https://prove.jfrog.io/artifactory/api/swift/libs-public-swift"
+//   swift package-registry login "https://prove.jfrog.io/artifactory/api/swift/libs-public-swift"  # Press Enter for public registry
 
 import PackageDescription
 
@@ -16,7 +20,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
-        .package(url: "https://github.com/SiftScience/sift-ios.git", .revision("bcbbd164f4e83076688eda28fdbc93c09e104e1a"))
+        .package(url: "https://github.com/SiftScience/sift-ios.git", .revision("bcbbd164f4e83076688eda28fdbc93c09e104e1a")),
+        .package(id: "swift.proveauth", from: "6.10.2")
     ],
     targets: [
         .target(
@@ -33,7 +38,8 @@ let package = Package(
         ),
         .target(name: "FrameOnboarding",
                 dependencies: [
-                    .target(name: "Frame")
+                    .target(name: "Frame"),
+                    .product(name: "ProveAuth", package: "swift.proveauth", condition: .when(platforms: [.iOS]))
                 ],
                 swiftSettings: [
                     .define("EXCLUDE_MACOS", .when(platforms: [.macOS]))

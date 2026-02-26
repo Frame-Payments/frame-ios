@@ -17,6 +17,38 @@
       "state" : {
         "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
       }
+    },
+    {
+      "identity" : "swift.deviceauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.proveauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.provebase",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.provemobileauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "3.2.5"
+      }
     }
   ],
   "version" : 3
