@@ -4,7 +4,7 @@ import FingerprintPro
 /// Configuration container for Fingerprint iOS SDK used by Frame.
 public enum FingerprintConfiguration {
     /// Public API key obtained from the Fingerprint dashboard.
-    public static var apiKey: String = "X2dydN5XW3oCU69tFmjl"
+    public static var apiKey: String = "YEn02ZgQBqkN8wEwXQgU"
 
     /// Backend region associated with the API key.
     /// Defaults to `.global` (US). Make sure this matches your workspace region.
