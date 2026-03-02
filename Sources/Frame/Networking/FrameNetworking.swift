@@ -37,10 +37,15 @@ public class FrameNetworking: ObservableObject {
         self.apiKey = key
         self.debugMode = debugMode
         
-        // Initializes Sift when the SDK is initialized.
+        // Initializes Sift and Sonar Session when the SDK is initialized.
         Task {
             await SiftManager.initializeSift()
+            await SessionManager.initializeSession()
         }
+    }
+
+    func currentSonarSessionId() -> String? {
+        SonarSessionStorage.currentSessionId()
     }
     
     // Async/Await

@@ -32,6 +32,8 @@ final class ChargeIntentsAPITests: XCTestCase {
             let (secondIntent, _) = try await ChargeIntentsAPI.createChargeIntent(request: request)
             XCTAssertNotNil(secondIntent)
             XCTAssertEqual(secondIntent?.shipping, chargeIntentResponse.shipping)
+            // Ensure sonar_session_id is optional and does not break decoding when omitted.
+            XCTAssertNil(secondIntent?.sonarSessionId)
         } catch {
             XCTFail("Error should not be thrown")
         }
