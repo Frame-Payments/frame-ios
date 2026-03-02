@@ -4,30 +4,23 @@ import Foundation
 
 public final class SessionManager {
     private let visitorId: String
-    private let storage: SessionStorage
+    private let storage: SessionStorage = UserDefaultsSessionStorage()
 
     /// - Parameters:
     ///   - visitorId: fingerprint visitor id
-    public init(
-        visitorId: String,
-        storage: SessionStorage = UserDefaultsSessionStorage()
-    ) {
+    public init(visitorId: String) {
         self.visitorId = visitorId
-        self.storage = storage
     }
 
-    /// Mirrors TS `initialize()`:
-    /// - if no session id, create
-    /// - else update
-    @discardableResult
-    public func initialize() async throws -> SessionId {
+    public func initialize() async {
         if storage.get() == nil {
-            return try await createSession()
+            await createSession()
+        } else {
+            await updateSession()
         }
-        return try await updateSession()
     }
 
-    private func createSession() async throws -> SessionId {
+    private func createSession() async {
         do {
             let endpoint = SonarSessionEndpoints.create
             let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprint_visitor_id: visitorId))
@@ -43,16 +36,15 @@ public final class SessionManager {
             
             let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
             setSession(response.sonar_session_id)
-            return response.sonar_session_id
         } catch {
             print("Failed to create charge session: \(error)")
-            throw error
         }
     }
 
-    private func updateSession() async throws -> SessionId {
+    private func updateSession() async {
         guard let current = storage.get() else {
-            return try await createSession()
+            await createSession()
+            return
         }
 
         do {
@@ -70,11 +62,11 @@ public final class SessionManager {
             
             let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
             setSession(response.sonar_session_id)
-            return response.sonar_session_id
         } catch {
             print("Failed to update session, creating new one: \(error)")
             clearStoredSessionId()
-            return try await createSession()
+            await createSession()
+            return
         }
     }
 
@@ -87,12 +79,12 @@ public final class SessionManager {
     }
     
     public static func initializeSession() async {
-        // GET FINGER PRINT ID FIRST
-        let manager = SessionManager(visitorId: "", storage: UserDefaultsSessionStorage())
         do {
-            try await manager.initialize()
-        } catch let error {
-            print(error)
+            guard let visitorId = try await FingerprintManager.getVisitorId() else { return }
+            let manager = SessionManager(visitorId: visitorId)
+            await manager.initialize()
+        } catch {
+            print("Failed to initialize session with Fingerprint visitorId: \(error)")
         }
     }
 }

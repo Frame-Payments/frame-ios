@@ -11,7 +11,7 @@ public enum SonarSessionEndpoints: FrameNetworkingEndpoints {
     case create
     case update(id: String)
     
-    var endpointURL: String {
+    public var endpointURL: String {
         switch self {
         case .create:
             return "/v1/charge_sessions"
@@ -20,7 +20,7 @@ public enum SonarSessionEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var httpMethod: HTTPMethod {
+    public var httpMethod: HTTPMethod {
         switch self {
         case .create:
             return .POST
@@ -29,5 +29,5 @@ public enum SonarSessionEndpoints: FrameNetworkingEndpoints {
         }
     }
     
-    var queryItems: [URLQueryItem]? { nil }
+    public var queryItems: [URLQueryItem]? { nil }
 }
