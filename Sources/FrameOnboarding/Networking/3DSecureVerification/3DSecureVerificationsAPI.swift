@@ -20,7 +20,7 @@ protocol ThreeDSecureVerificationsProtocol {
     static func resend3DSecureVerification(verificationId: String, completionHandler: @escaping @Sendable (ThreeDSecureVerification?, NetworkingError?) -> Void)
 }
 
-class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecked Sendable {
+public class ThreeDSecureVerificationsAPI: ThreeDSecureVerificationsProtocol, @unchecked Sendable {
     // async/await
     static func create3DSecureVerification(request: ThreeDSecureRequests.CreateThreeDSecureVerification) async throws -> (ThreeDSecureVerification?, ThreeDSecureVerificationError?, NetworkingError?) {
         let endpoint = ThreeDSecureEndpoints.create3DSecureVerification
