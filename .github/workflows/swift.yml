@@ -17,6 +17,11 @@ jobs:
       - name: Select Xcode 16.4
         run: sudo xcode-select -s /Applications/Xcode_16.4.app
 
+      - name: Configure Prove Swift Package Registry
+        run: |
+          swift package-registry set --global "https://prove.jfrog.io/artifactory/api/swift/libs-public-swift"
+          echo "" | swift package-registry login "https://prove.jfrog.io/artifactory/api/swift/libs-public-swift"
+
       - name: Resolve Swift Package Dependencies
         run: swift package resolve
 
