@@ -2,7 +2,7 @@
 //  File.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 3/2/26.
+//  Created by Framw Payments on 3/2/26.
 //
 
 import Foundation
@@ -10,9 +10,17 @@ import Foundation
 public typealias SessionId = String
 
 public struct SessionResponse: Decodable {
-    let sonar_session_id: String
+    let sonarSessionId: String
+    
+    enum CodingKeys: String, CodingKey {
+        case sonarSessionId = "sonar_session_id"
+    }
 }
 
 public struct SessionRequestBody: Encodable {
-    let fingerprint_visitor_id: String
+    let fingerprintVisitorId: String
+    
+    enum CodingKeys: String, CodingKey {
+        case fingerprintVisitorId = "fingerprint_visitor_id"
+    }
 }
