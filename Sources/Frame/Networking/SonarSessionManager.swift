@@ -23,7 +23,7 @@ public final class SessionManager {
     private func createSession() async {
         do {
             let endpoint = SonarSessionEndpoints.create
-            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprint_visitor_id: visitorId))
+            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
             let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
             
             if let error {
@@ -35,7 +35,7 @@ public final class SessionManager {
             }
             
             let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
-            setSession(response.sonar_session_id)
+            setSession(response.sonarSessionId)
         } catch {
             print("Failed to create charge session: \(error)")
         }
@@ -49,7 +49,7 @@ public final class SessionManager {
 
         do {
             let endpoint = SonarSessionEndpoints.update(id: current)
-            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprint_visitor_id: visitorId))
+            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
             let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
             
             if let error {
@@ -61,7 +61,7 @@ public final class SessionManager {
             }
             
             let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
-            setSession(response.sonar_session_id)
+            setSession(response.sonarSessionId)
         } catch {
             print("Failed to update session, creating new one: \(error)")
             clearStoredSessionId()
