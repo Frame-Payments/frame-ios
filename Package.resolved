@@ -1,5 +1,5 @@
 {
-  "originHash" : "f65325f290a8a6717928b72112883d084d58936799403adb070e93ee5bc9f68b",
+  "originHash" : "32bc9b5b8a915d27239d634f52ed39b55b7149d56470c41ee1af9c1702fdc63d",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -11,12 +11,52 @@
       }
     },
     {
+      "identity" : "fingerprintjs-pro-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/fingerprintjs/fingerprintjs-pro-ios",
+      "state" : {
+        "revision" : "21bcfcfd2e1bce943f668a7748f8a7e1154f0ac2",
+        "version" : "2.13.0"
+      }
+    },
+    {
       "identity" : "sift-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SiftScience/sift-ios.git",
       "state" : {
-        "branch" : "master",
         "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
+      }
+    },
+    {
+      "identity" : "swift.deviceauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.proveauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.provebase",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "6.10.2"
+      }
+    },
+    {
+      "identity" : "swift.provemobileauth",
+      "kind" : "registry",
+      "location" : "",
+      "state" : {
+        "version" : "3.2.5"
       }
     }
   ],
