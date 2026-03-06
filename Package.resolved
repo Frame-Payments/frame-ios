@@ -1,5 +1,5 @@
 {
-  "originHash" : "f65325f290a8a6717928b72112883d084d58936799403adb070e93ee5bc9f68b",
+  "originHash" : "0bf5d4fd7bbad62363ee6d4477b5bfe744f9217a9b87193ef9b204f88724963d",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -15,7 +15,6 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SiftScience/sift-ios.git",
       "state" : {
-        "branch" : "master",
         "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
       }
     }
