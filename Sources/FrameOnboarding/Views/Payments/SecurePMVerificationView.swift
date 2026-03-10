@@ -91,7 +91,7 @@ struct SecurePMVerificationView: View {
                     }
                 }
             }
-            if type == .threeDs {
+            if type == .threeDS {
                 Button {
                     Task {
                         await onboardingContainerViewModel.resend3DSChallenge()

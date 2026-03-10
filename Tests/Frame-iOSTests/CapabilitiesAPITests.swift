@@ -57,7 +57,7 @@ final class CapabilitiesAPITests: XCTestCase {
     func testRequestCapabilities() async {
         FrameNetworking.shared.asyncURLSession = session
         
-        let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: ["card_send"])
+        let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: [.cardSend])
         let response = try? await CapabilitiesAPI.requestCapabilities(accountId: "", request: request).0
         XCTAssertNil(response)
         
