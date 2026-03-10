@@ -27,7 +27,7 @@ final class AccountsAPITests: XCTestCase {
         let profile = AccountRequest.CreateAccountProfile(
             business: nil,
             individual: AccountRequest.CreateIndividualAccount(
-                name: AccountRequest.CreateAccountInfo(firstName: "John", middleName: nil, lastName: "Doe", suffix: nil),
+                name: FrameObjects.AccountNameInfo(firstName: "John", middleName: nil, lastName: "Doe", suffix: nil),
                 email: "john@test.com",
                 phone: phone,
                 address: nil,
@@ -57,8 +57,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -77,10 +78,10 @@ final class AccountsAPITests: XCTestCase {
         FrameNetworking.shared.asyncURLSession = session
         
         let phone = FrameObjects.AccountPhoneNumber(number: "1234567890", countryCode: "1")
-        let profile = AccountRequest.CreateAccountProfile(
+        let profile = AccountRequest.UpdateAccountProfile(
             business: nil,
-            individual: AccountRequest.CreateIndividualAccount(
-                name: AccountRequest.CreateAccountInfo(firstName: "John", middleName: nil, lastName: "Doe", suffix: nil),
+            individual: AccountRequest.UpdateIndividualAccount(
+                name: FrameObjects.AccountNameInfo(firstName: "John", middleName: nil, lastName: "Doe", suffix: nil),
                 email: "john@test.com",
                 phone: phone,
                 address: nil,
@@ -111,8 +112,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -142,8 +144,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         let accountTwo = FrameObjects.Account(
@@ -155,8 +158,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -190,8 +194,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -224,8 +229,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         

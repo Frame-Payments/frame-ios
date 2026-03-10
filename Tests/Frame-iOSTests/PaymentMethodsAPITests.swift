@@ -85,7 +85,7 @@ final class PaymentMethodsAPITests: XCTestCase {
     
     func testCreateCardPaymentMethod() async {
         FrameNetworking.shared.asyncURLSession = session
-        let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(type: .card, cardNumber: "44444444444444444", expMonth: "08", expYear: "2021", cvc: "333", customerId: nil, billing: nil)
+        let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(type: .card, cardNumber: "44444444444444444", expMonth: "08", expYear: "2021", cvc: "333", customer: nil, billing: nil)
         let receivedMethod = try? await PaymentMethodsAPI.createCardPaymentMethod(request: request).0
         XCTAssertNil(receivedMethod)
         
@@ -181,7 +181,7 @@ final class PaymentMethodsAPITests: XCTestCase {
             let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.attachPaymentMethodWith(paymentMethodId: paymentMethod.id, request: request)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
-            XCTAssertEqual(thirdReceivedMethod?.customer, paymentMethod.customer)
+            XCTAssertEqual(thirdReceivedMethod?.customerId, paymentMethod.customerId)
         } catch {
             XCTFail("Error should not be thrown")
         }
@@ -202,7 +202,7 @@ final class PaymentMethodsAPITests: XCTestCase {
             let (thirdReceivedMethod, _) = try await PaymentMethodsAPI.detachPaymentMethodWith(paymentMethodId: paymentMethod.id)
             XCTAssertNotNil(thirdReceivedMethod)
             XCTAssertEqual(thirdReceivedMethod?.type, paymentMethod.type)
-            XCTAssertNil(thirdReceivedMethod?.customer)
+            XCTAssertNil(thirdReceivedMethod?.customerId)
         } catch {
             XCTFail("Error should not be thrown")
         }

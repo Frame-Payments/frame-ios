@@ -112,6 +112,9 @@ public struct AvailableCountry: Hashable {
     public let displayName: String
     
     public static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
+    public static let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
+                                                       "Democratic Republic of Congo", "Iraq", "Libya",
+                                                       "Mali", "Nicaragua", "Sudan", "Venezuela", "Yemen"]
     
     public static let allCountries: [AvailableCountry] = {
         Locale.Region.isoRegions.map { region in

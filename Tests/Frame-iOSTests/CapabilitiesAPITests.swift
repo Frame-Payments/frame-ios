@@ -33,11 +33,13 @@ final class CapabilitiesAPITests: XCTestCase {
             id: "cap_1",
             object: "capability",
             name: "card_send",
+            accountId: "acc_123",
             status: "active",
             disabledReason: nil,
-            requirements: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890
+            currentlyDue: [],
+            created: "2026-03-05T21:43:23Z",
+            updated: "2026-03-05T21:43:23Z",
+            disabled: nil
         )
         let listResponse = CapabilityResponses.ListCapabilitiesResponse(data: [capability])
         
@@ -55,7 +57,7 @@ final class CapabilitiesAPITests: XCTestCase {
     func testRequestCapabilities() async {
         FrameNetworking.shared.asyncURLSession = session
         
-        let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: ["card_send"])
+        let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: [.cardSend])
         let response = try? await CapabilitiesAPI.requestCapabilities(accountId: "", request: request).0
         XCTAssertNil(response)
         
@@ -66,11 +68,13 @@ final class CapabilitiesAPITests: XCTestCase {
             id: "cap_1",
             object: "capability",
             name: "card_send",
+            accountId: "acc_123",
             status: "pending",
             disabledReason: nil,
-            requirements: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890
+            currentlyDue: [],
+            created: "2026-03-05T21:43:23Z",
+            updated: "2026-03-05T21:43:23Z",
+            disabled: nil
         )
         
         do {
@@ -97,11 +101,13 @@ final class CapabilitiesAPITests: XCTestCase {
             id: "cap_1",
             object: "capability",
             name: "card_send",
+            accountId: "acc_123",
             status: "active",
             disabledReason: nil,
-            requirements: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890
+            currentlyDue: [],
+            created: "2026-03-05T21:43:23Z",
+            updated: "2026-03-05T21:43:23Z",
+            disabled: nil
         )
         
         do {
@@ -128,11 +134,13 @@ final class CapabilitiesAPITests: XCTestCase {
             id: "cap_1",
             object: "capability",
             name: "card_send",
+            accountId: "acc_123",
             status: "disabled",
             disabledReason: "User requested",
-            requirements: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890
+            currentlyDue: [],
+            created: "2026-03-05T21:43:23Z",
+            updated: "2026-03-05T21:43:23Z",
+            disabled: true
         )
         
         do {
