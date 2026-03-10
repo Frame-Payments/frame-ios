@@ -2,7 +2,7 @@
 //  File.swift
 //  Frame-iOS
 //
-//  Created by Eric Townsend on 1/21/26.
+//  Created by Frame Payments on 1/21/26.
 //
 
 import Foundation
