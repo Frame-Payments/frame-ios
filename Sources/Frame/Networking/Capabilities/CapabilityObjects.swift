@@ -51,17 +51,20 @@ extension FrameObjects {
         public let id: String
         public let object: String
         public let name: String
+        public let accountId: String
         public let status: String
         public let disabledReason: String?
-        public let requirements: [CapabilityRequirement]?
-        public let createdAt: Int
-        public let updatedAt: Int
+        public let currentlyDue: [String]
+        public let created: String
+        public let updated: String
+        public let disabled: Bool?
         
         enum CodingKeys: String, CodingKey {
-            case id, object, name, status, requirements
+            case id, object, name, status
+            case accountId = "account_id"
             case disabledReason = "disabled_reason"
-            case createdAt = "created_at"
-            case updatedAt = "updated_at"
+            case currentlyDue = "currently_due"
+            case created, updated, disabled
         }
     }
 }

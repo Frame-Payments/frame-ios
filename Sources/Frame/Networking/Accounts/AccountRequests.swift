@@ -43,17 +43,19 @@ public class AccountRequest {
         public var termsOfService: FrameObjects.AccountTermsOfService?
         public var metadata: [String: String]?
         public var profile: CreateAccountProfile?
+        public var capabilities: [FrameObjects.Capabilities]?
         
-        public init(accountType: FrameObjects.AccountType, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: CreateAccountProfile? = nil) {
+        public init(accountType: FrameObjects.AccountType, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: CreateAccountProfile? = nil, capabilities: [FrameObjects.Capabilities]? = nil) {
             self.accountType = accountType
             self.externalId = externalId
             self.termsOfService = termsOfService
             self.metadata = metadata
             self.profile = profile
+            self.capabilities = capabilities
         }
         
         enum CodingKeys: String, CodingKey {
-            case profile, metadata
+            case profile, metadata, capabilities
             case accountType = "type"
             case externalId = "external_id"
             case termsOfService = "terms_of_service"

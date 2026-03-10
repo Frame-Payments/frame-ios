@@ -28,7 +28,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
             await self.getSubscriptions()
             await self.getChargeIntents()
             await self.getRefunds()
-            await self.getSubscriptionPhases(subscriptionId: "")
+//            await self.getSubscriptionPhases(subscriptionId: "")
 //            await self.getCustomerIdentity(customerIdentity: "")
         }
     }

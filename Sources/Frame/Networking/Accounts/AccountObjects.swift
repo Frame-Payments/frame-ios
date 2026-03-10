@@ -148,7 +148,35 @@ extension FrameObjects {
         public let created: Int
         public let updated: Int
         public let livemode: Bool
-        
+
+        public init(
+            id: String,
+            object: String,
+            accountType: AccountType,
+            accountStatus: AccountStatus,
+            externalId: String? = nil,
+            metadata: [String: String]? = nil,
+            profile: AccountProfile? = nil,
+            capabilities: [Capability]? = nil,
+            steps: [String]? = nil,
+            created: Int,
+            updated: Int,
+            livemode: Bool
+        ) {
+            self.id = id
+            self.object = object
+            self.accountType = accountType
+            self.accountStatus = accountStatus
+            self.externalId = externalId
+            self.metadata = metadata
+            self.profile = profile
+            self.capabilities = capabilities
+            self.steps = steps
+            self.created = created
+            self.updated = updated
+            self.livemode = livemode
+        }
+
         public enum CodingKeys: String, CodingKey {
             case id, object, metadata, profile, livemode, capabilities, steps, created, updated
             case accountType = "type"
