@@ -2,8 +2,7 @@
 //  ProveAuthService.swift
 //  Frame-iOS
 //
-//  Standalone service that runs Prove mobile auth (phone + DOB) and returns user info.
-//  Runs ProveAuth.authenticate() off the main thread; uses backend for token and verify.
+//  Service that runs Prove mobile auth with token from createVerification and calls confirmVerification on success.
 //
 
 import Foundation
@@ -23,32 +22,27 @@ public struct ProveUserInfo: Sendable {
     }
 }
 
-/// Backend that provides Prove auth token and verify. Implement with your backend (e.g. Frame proxy or app server).
-public protocol ProveAuthBackend: Sendable {
-    /// Obtain an auth token for the Prove SDK (e.g. from your backend's Prove Start with phone, DOB, flow type).
-    func getAuthToken(phoneNumber: String, dateOfBirth: String, flowType: String) async throws -> String
-
-    /// Verify the auth session and return user info (e.g. from your backend's Prove Validate/Challenge).
-    func verify(authId: String) async throws -> ProveUserInfo
-}
-
+/// Closure invoked when Prove auth completes. Performs confirmVerification with accountId and verificationId from create.
+public typealias ProveConfirmHandler = @Sendable (String, String) async throws -> Void
 
 public final class ProveAuthService: @unchecked Sendable {
-    private let backend: ProveAuthBackend
+    private let accountId: String
+    private let verificationId: String
+    private let confirmHandler: ProveConfirmHandler
     private let otpProvider: ProveOtpProvider?
 
-    public init(backend: ProveAuthBackend, otpProvider: ProveOtpProvider? = nil) {
-        self.backend = backend
+    public init(accountId: String, verificationId: String, confirmHandler: @escaping ProveConfirmHandler, otpProvider: ProveOtpProvider? = nil) {
+        self.accountId = accountId
+        self.verificationId = verificationId
+        self.confirmHandler = confirmHandler
         self.otpProvider = otpProvider
     }
 
-    /// Runs Prove mobile flow with phone and DOB; returns user info on success. Call from main or background.
-    public func authenticate(phoneNumber: String, dateOfBirth: String) async throws -> ProveUserInfo {
-        let authToken = try await backend.getAuthToken(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth, flowType: "mobile")
-
+    /// Runs Prove mobile flow with auth token from createVerification. Returns true on success after confirmVerification succeeds.
+    public func authenticateWith(authToken: String) async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
             let once = ProveOneTimeResume(continuation: continuation)
-            let finishStep = AuthFinishStep(backend: backend) { result in
+            let finishStep = AuthFinishStep(accountId: accountId, verificationId: verificationId, confirmHandler: confirmHandler) { result in
                 once.resume(with: result)
             }
             let otpStart = ProveOtpStartStep()
@@ -73,13 +67,13 @@ public final class ProveAuthService: @unchecked Sendable {
 
 private final class ProveOneTimeResume: @unchecked Sendable {
     private let lock = NSLock()
-    private var continuation: CheckedContinuation<ProveUserInfo, Error>?
+    private var continuation: CheckedContinuation<Bool, Error>?
 
-    init(continuation: CheckedContinuation<ProveUserInfo, Error>) {
+    init(continuation: CheckedContinuation<Bool, Error>) {
         self.continuation = continuation
     }
 
-    func resume(with result: Result<ProveUserInfo, Error>) {
+    func resume(with result: Result<Bool, Error>) {
         lock.lock()
         let cont = continuation
         continuation = nil
@@ -91,19 +85,23 @@ private final class ProveOneTimeResume: @unchecked Sendable {
 // MARK: - AuthFinishStep
 
 private final class AuthFinishStep: NSObject, ProveAuthFinishStep, @unchecked Sendable {
-    private let backend: ProveAuthBackend
-    private let onResult: @Sendable (Result<ProveUserInfo, Error>) -> Void
+    private let accountId: String
+    private let verificationId: String
+    private let confirmHandler: ProveConfirmHandler
+    private let onResult: @Sendable (Result<Bool, Error>) -> Void
 
-    init(backend: ProveAuthBackend, onResult: @escaping @Sendable (Result<ProveUserInfo, Error>) -> Void) {
-        self.backend = backend
+    init(accountId: String, verificationId: String, confirmHandler: @escaping ProveConfirmHandler, onResult: @escaping @Sendable (Result<Bool, Error>) -> Void) {
+        self.accountId = accountId
+        self.verificationId = verificationId
+        self.confirmHandler = confirmHandler
         self.onResult = onResult
     }
 
     func execute(authId: String) {
         Task {
             do {
-                let info = try await backend.verify(authId: authId)
-                onResult(.success(info))
+                try await confirmHandler(accountId, verificationId)
+                onResult(.success(true))
             } catch {
                 onResult(.failure(error))
             }
@@ -150,9 +148,7 @@ private final class ProveOtpFinishStep: NSObject, OtpFinishStep, @unchecked Send
 
 /// Errors that can occur during Prove authentication.
 public enum ProveAuthServiceError: Error, LocalizedError, Sendable {
-    /// Backend failed to return an auth token (e.g. network or invalid response).
-    case authTokenFailed(underlying: Error)
-    /// Backend verify failed (e.g. validation failed or network error).
+    /// Backend verify failed (e.g. confirmVerification failed or network error).
     case verifyFailed(underlying: Error)
     /// User cancelled or OTP provider returned nil.
     case cancelled
@@ -163,8 +159,6 @@ public enum ProveAuthServiceError: Error, LocalizedError, Sendable {
 
     public var errorDescription: String? {
         switch self {
-        case .authTokenFailed(let underlying):
-            return "Failed to get auth token: \(underlying.localizedDescription)"
         case .verifyFailed(let underlying):
             return "Verification failed: \(underlying.localizedDescription)"
         case .cancelled:
