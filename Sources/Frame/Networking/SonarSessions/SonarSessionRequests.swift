@@ -2,7 +2,7 @@
 //  File.swift
 //  Frame-iOS
 //
-//  Created by Framw Payments on 3/2/26.
+//  Created by Frame Payments on 3/2/26.
 //
 
 import Foundation
