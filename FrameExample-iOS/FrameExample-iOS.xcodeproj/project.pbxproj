@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */; };
-		9C1EBA4D2D3E129600E6A301 /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9C1EBA4C2D3E129600E6A301 /* Frame-iOS */; };
 		9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = 9CED70D22CA6BED500C3B45B /* Frame-iOS */; };
 		E0810B182EF324C400ACAD0B /* Frame-iOS in Frameworks */ = {isa = PBXBuildFile; productRef = E0810B172EF324C400ACAD0B /* Frame-iOS */; };
 		E0810B1A2EF324C900ACAD0B /* Frame-Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = E0810B192EF324C900ACAD0B /* Frame-Onboarding */; };
@@ -55,8 +53,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9C1EBA4D2D3E129600E6A301 /* Frame-iOS in Frameworks */,
-				9C1EBA002D3E0D9400E6A301 /* Frame-iOS in Frameworks */,
 				9CED70D32CA6BED500C3B45B /* Frame-iOS in Frameworks */,
 				E0C2E6082F0DB2BC0026D8E7 /* Frame-Onboarding in Frameworks */,
 			);
@@ -123,8 +119,6 @@
 			name = "FrameExample-iOS";
 			packageProductDependencies = (
 				9CED70D22CA6BED500C3B45B /* Frame-iOS */,
-				9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */,
-				9C1EBA4C2D3E129600E6A301 /* Frame-iOS */,
 				E0C2E6072F0DB2BC0026D8E7 /* Frame-Onboarding */,
 			);
 			productName = "FrameExample-iOS";
@@ -533,16 +527,9 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9C1EB9FF2D3E0D9400E6A301 /* Frame-iOS */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = "Frame-iOS";
-		};
-		9C1EBA4C2D3E129600E6A301 /* Frame-iOS */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = "Frame-iOS";
-		};
 		9CED70D22CA6BED500C3B45B /* Frame-iOS */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 9C1EBA4B2D3E129600E6A301 /* XCLocalSwiftPackageReference "../../frame-ios" */;
 			productName = "Frame-iOS";
 		};
 		E0810B172EF324C400ACAD0B /* Frame-iOS */ = {
