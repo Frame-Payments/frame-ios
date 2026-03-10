@@ -18,7 +18,9 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
-        .package(url: "https://github.com/SiftScience/sift-ios.git", .revision("bcbbd164f4e83076688eda28fdbc93c09e104e1a"))
+        .package(url: "https://github.com/SiftScience/sift-ios.git", .revision("bcbbd164f4e83076688eda28fdbc93c09e104e1a")),
+        .package(id: "swift.proveauth", from: "6.10.2"),
+        .package(url: "https://github.com/fingerprintjs/fingerprintjs-pro-ios", from: "2.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -26,9 +28,10 @@ let package = Package(
         .target(
             name: "Frame",
             dependencies: [
-                .product(name: "EvervaultInputs", package: "evervault-ios"),
-                .product(name: "EvervaultEnclaves", package: "evervault-ios"),
-                .product(name: "sift-ios", package: "sift-ios")
+                .product(name: "EvervaultCore", package: "evervault-ios", condition: .when(platforms: [.iOS])),
+                .product(name: "EvervaultInputs", package: "evervault-ios", condition: .when(platforms: [.iOS])),
+                .product(name: "sift-ios", package: "sift-ios", condition: .when(platforms: [.iOS])),
+                .product(name: "FingerprintPro", package: "fingerprintjs-pro-ios", condition: .when(platforms: [.iOS]))
             ],
             resources: [.process("Resources")],
             swiftSettings: [

@@ -21,9 +21,9 @@ public class ChargeIntentsRequests {
         let paymentMethodData: PaymentMethodData?
         let useFrameSDK: Bool = true
         var fraudSignals: FraudSignals?
-        let sonarSessionId: String?
+        var sonarSessionId: String?
         
-        public init(amount: Int, currency: String, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil, fraudSignals: FraudSignals? = nil, sonarSessionId: String? = nil) {
+        public init(amount: Int, currency: String, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil) {
             self.amount = amount
             self.currency = currency
             self.customer = customer
@@ -34,8 +34,6 @@ public class ChargeIntentsRequests {
             self.authorizationMode = authorizationMode
             self.customerData = customerData
             self.paymentMethodData = paymentMethodData
-            self.fraudSignals = fraudSignals
-            self.sonarSessionId = sonarSessionId
         }
         
         public enum CodingKeys: String, CodingKey {
