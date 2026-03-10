@@ -25,6 +25,13 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var ipAddress: String?
     @Published var userCoordinates: CLLocationCoordinate2D?
     
+    @Published var proveUserInfo: ProveUserInfo?
+    @Published var showProveOTPEntry: Bool = false
+    @Published var pendingTwilioVerificationId: String?
+    @Published var pendingTwilioVerificationAccountId: String?
+    
+    private var proveOTPContinuation: CheckedContinuation<String?, Never>?
+    
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
                                                                                                    ssn: "", address: FrameObjects.BillingAddress(postalCode: ""))
     
@@ -66,30 +73,30 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            dob: createdCustomerIdentity.dateOfBirth,
                                                                            ssn: createdCustomerIdentity.ssn)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
-            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile)
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: requiredCapabilities)
             let (account, _) = try await AccountsAPI.createAccount(request: request)
             
             guard let account else { return }
             self.accountId = account.id
-            
-            await addCapabilitiesToIndividualAccount()
         } catch let error {
             print(error)
         }
     }
     
-    func addCapabilitiesToIndividualAccount() async {
-        guard let accountId else { return }
-        
+    func createEmptyIndividualAccount(phoneNumber: String, dateOfBirth: String) async {
         do {
-            let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: requiredCapabilities)
-            let (capabilities, _) = try await CapabilitiesAPI.requestCapabilities(accountId: accountId, request: request)
+            let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "test", lastName: "test"), email: "test@test.com",
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: "+1"),
+                                                                           address: nil, dob: dateOfBirth, ssn: nil)
+            let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: requiredCapabilities)
+            let (account, _) = try await AccountsAPI.createAccount(request: request)
             
-            if let capabilities {
-                // Use this to find the requirements to show in subsequent screens, where do we pull the steps from?
-            }
+            guard let account else { return }
+            self.accountId = account.id
+            return
         } catch let error {
-            print (error)
+            print(error)
         }
     }
     
@@ -114,6 +121,78 @@ class OnboardingContainerViewModel: ObservableObject {
         } catch let error {
             print(error)
         }
+    }
+
+    // Start Phone Verification OTP Flow (Prove or Twilio)
+    func sendOTPVerification(phoneNumber: String, dateOfBirth: String) async {
+        if accountId == nil {
+            await createEmptyIndividualAccount(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+        }
+        guard let accountId else { return }
+
+        do {
+            let (response, _) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+            guard let response else { return }
+
+            if let proveAuthToken = response.proveAuthToken {
+                // Prove flow: run SDK, then confirm with verificationId from create response
+                let confirmHandler: ProveConfirmHandler = { accountId, verificationId in
+                    let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId)
+                    if let networkingError { throw networkingError }
+                    
+                    // what happens here?
+                }
+                let proveService = ProveAuthService(accountId: accountId, verificationId: response.id, confirmHandler: confirmHandler, otpProvider: { [weak self] in
+                    await self?.requestProveOTP()
+                })
+                _ = try await proveService.authenticateWith(authToken: proveAuthToken)
+            } else {
+                // Twilio flow: SMS sent, show OTP entry screen
+                pendingTwilioVerificationId = response.id
+                pendingTwilioVerificationAccountId = accountId
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+
+    /// Confirm Twilio OTP when user submits code on SecurePMVerificationView (phone type).
+    func confirmTwilioOTP(code: String) async {
+        guard let accountId = pendingTwilioVerificationAccountId,
+              let verificationId = pendingTwilioVerificationId else { return }
+
+        do {
+            let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
+            if let networkingError { throw networkingError }
+            self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+            self.pendingTwilioVerificationId = nil
+            self.pendingTwilioVerificationAccountId = nil
+            await checkExistingAccount()
+        } catch let error {
+            print(error)
+        }
+    }
+    
+    /// Called by otpProvider when Prove needs OTP. Suspends until user submits or cancels.
+    func requestProveOTP() async -> String? {
+        await withCheckedContinuation { continuation in
+            self.proveOTPContinuation = continuation
+            self.showProveOTPEntry = true
+        }
+    }
+    
+    /// Called when user submits OTP from the Prove OTP sheet.
+    func submitProveOTP(_ code: String) {
+        proveOTPContinuation?.resume(returning: code)
+        proveOTPContinuation = nil
+        showProveOTPEntry = false
+    }
+    
+    /// Called when user cancels the Prove OTP sheet.
+    func cancelProveOTP() {
+        proveOTPContinuation?.resume(returning: nil)
+        proveOTPContinuation = nil
+        showProveOTPEntry = false
     }
     
     // Load existing Payment Methods for customer

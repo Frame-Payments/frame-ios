@@ -62,7 +62,8 @@ struct UserIdentificationView: View {
             case .phoneAuth:
                 authenticationView
             case .verifyPhone:
-                SecurePMVerificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                SecurePMVerificationView(type: .phone,
+                                         onboardingContainerViewModel: onboardingContainerViewModel,
                                          continueToNextStep: $continueToCustomerInfoStep,
                                          returnToPreviousStep: $returnToPhoneNumberEntry)
             case .intro:
@@ -124,6 +125,15 @@ struct UserIdentificationView: View {
             )
             .presentationDetents([.fraction(0.3)])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: Binding(
+            get: { onboardingContainerViewModel.showProveOTPEntry },
+            set: { if !$0 { onboardingContainerViewModel.cancelProveOTP() } }
+        )) {
+            SecurePMVerificationView(type: .proveOtp,
+                                    onboardingContainerViewModel: onboardingContainerViewModel,
+                                    continueToNextStep: .constant(false),
+                                    returnToPreviousStep: .constant(false))
         }
     }
     
@@ -198,8 +208,12 @@ struct UserIdentificationView: View {
             Spacer()
             ContinueButton(enabled: .constant(canVerifyPhoneNumber)) {
                 Task {
-                    //TODO: Prove SDK OTP flow.
-                    self.identitySteps = .verifyPhone
+                    await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+                    if onboardingContainerViewModel.proveUserInfo != nil {
+                        self.identitySteps = .information
+                    } else if onboardingContainerViewModel.pendingTwilioVerificationId != nil {
+                        self.identitySteps = .verifyPhone
+                    }
                 }
             }
             .padding(.bottom)

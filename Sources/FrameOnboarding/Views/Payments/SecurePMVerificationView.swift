@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+enum CodeVerificationType {
+    case threeDS
+    case phone
+    case proveOtp
+}
+
 struct SecurePMVerificationView: View {
     @Environment(\.dismiss) var dismiss
     @FocusState private var focusedField: Int?
@@ -26,33 +32,78 @@ struct SecurePMVerificationView: View {
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
     
+    let type: CodeVerificationType
+
+    init(type: CodeVerificationType, onboardingContainerViewModel: OnboardingContainerViewModel, continueToNextStep: Binding<Bool>, returnToPreviousStep: Binding<Bool>) {
+        self.type = type
+        self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
+        self._continueToNextStep = continueToNextStep
+        self._returnToPreviousStep = returnToPreviousStep
+    }
+    
+    private var headerTitle: String {
+        switch type {
+        case .threeDS:
+            return "Verify Your Card"
+        case .phone, .proveOtp:
+            return "Enter Verification Code"
+        }
+    }
+
+    private var bodyText: String {
+        switch type {
+        case .threeDS:
+            return "We've sent a security code to your bank registered phone number ending in *"
+        case .phone, .proveOtp:
+            return "We've sent a verification code to your phone. Enter it below."
+        }
+    }
+
     var body: some View {
         VStack {
-            PageHeaderView(headerTitle: "Verify Your Card") {
-                self.returnToPreviousStep = true
+            PageHeaderView(headerTitle: headerTitle) {
+                switch type {
+                case .proveOtp:
+                    onboardingContainerViewModel.cancelProveOTP()
+                case .threeDS, .phone:
+                    self.returnToPreviousStep = true
+                }
             }
-            Text("We've sent a security code to your bank registered phone number ending in *")
-                .fontWeight(.light)
+            Text(bodyText)
+                .fontWeight(type == .proveOtp ? .regular : .light)
                 .font(.system(size: 14.0))
+                .foregroundColor(type == .proveOtp ? FrameColors.secondaryTextColor : .primary)
                 .padding(.horizontal)
             codeContainerStack
             ContinueButton(enabled: $codeInput) {
-//                Task {
-//                    await onboardingContainerViewModel.verify3DSChallenge(verificationCode: enteredCode)
-//                }
-                self.continueToNextStep = true
-            }
-            Button {
                 Task {
-                    await onboardingContainerViewModel.resend3DSChallenge()
-                    self.codeResent = true
+                    switch type {
+                    case .threeDS:
+                        await onboardingContainerViewModel.retrieve3DSChallenge(verificationId: enteredCode)
+                        self.continueToNextStep = true
+                    case .phone:
+                        await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode)
+                        if onboardingContainerViewModel.proveUserInfo != nil {
+                            self.continueToNextStep = true
+                        }
+                    case .proveOtp:
+                        onboardingContainerViewModel.submitProveOTP(enteredCode)
+                    }
                 }
-            } label: {
-                Text("Resend Code")
-                    .bold()
-                    .foregroundColor(.black)
             }
-            .disabled(codeResent)
+            if type == .threeDs {
+                Button {
+                    Task {
+                        await onboardingContainerViewModel.resend3DSChallenge()
+                        self.codeResent = true
+                    }
+                } label: {
+                    Text("Resend Code")
+                        .bold()
+                        .foregroundColor(.black)
+                }
+                .disabled(codeResent)
+            }
 
             Spacer()
         }
@@ -136,7 +187,8 @@ struct SecurePMVerificationView: View {
 }
 
 #Preview {
-    SecurePMVerificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
+    SecurePMVerificationView(type: .phone,
+                             onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
                              continueToNextStep: .constant(false),
                              returnToPreviousStep: .constant(false))
 }

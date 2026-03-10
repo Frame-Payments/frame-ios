@@ -38,7 +38,8 @@ struct SelectPaymentMethodView: View {
                             .navigationBarBackButtonHidden()
                     }
             case .verifyPayment:
-                SecurePMVerificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+                SecurePMVerificationView(type: .threeDS,
+                                         onboardingContainerViewModel: onboardingContainerViewModel,
                                          continueToNextStep: $paymentVerified,
                                          returnToPreviousStep: $returnToSelectPayment)
             }

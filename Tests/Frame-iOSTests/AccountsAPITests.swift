@@ -57,8 +57,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -111,8 +112,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -142,8 +144,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         let accountTwo = FrameObjects.Account(
@@ -155,8 +158,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -190,8 +194,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
@@ -224,8 +229,9 @@ final class AccountsAPITests: XCTestCase {
             metadata: nil,
             profile: nil,
             capabilities: nil,
-            createdAt: 1234567890,
-            updatedAt: 1234567890,
+            steps: nil,
+            created: 1234567890,
+            updated: 1234567890,
             livemode: false
         )
         
