@@ -14,7 +14,7 @@ import Frame
 protocol PhoneOTPVerificationProtocol {
     // async/await
     static func createVerification(accountId: String, phoneNumber: String, dateOfBirth: String) async throws -> (PhoneOTPVerificationCreateResponse?, NetworkingError?)
-    static func confirmVerification(accountId: String, verificationId: String) async throws -> (PhoneOTPVerificationConfirmResponse?, NetworkingError?)
+    static func confirmVerification(accountId: String, verificationId: String, code: String?) async throws -> (PhoneOTPVerificationConfirmResponse?, NetworkingError?)
 }
 
 public final class PhoneOTPVerificationAPI: PhoneOTPVerificationProtocol, @unchecked Sendable {
@@ -35,10 +35,15 @@ public final class PhoneOTPVerificationAPI: PhoneOTPVerificationProtocol, @unche
         }
     }
 
-    static func confirmVerification(accountId: String, verificationId: String) async throws -> (PhoneOTPVerificationConfirmResponse?, NetworkingError?) {
+    static func confirmVerification(accountId: String, verificationId: String, code: String? = nil) async throws -> (PhoneOTPVerificationConfirmResponse?, NetworkingError?) {
         let endpoint = PhoneOTPVerificationEndpoints.confirm(accountId: accountId, verificationId: verificationId)
+        var requestBody: Data?
+        if let code {
+            let request = PhoneOTPVerificationRequests.ConfirmVerificationRequest(code: code)
+            requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        }
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PhoneOTPVerificationConfirmResponse.self, from: data) {
             return (decodedResponse, error)
         } else {

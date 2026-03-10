@@ -8,10 +8,11 @@
 import Foundation
 
 public struct PhoneOTPVerificationCreateResponse: Codable {
-    let id: String
-    let type: String
-    let status: String
-    let proveAuthToken: String
+    public let id: String
+    public let type: String
+    public let status: String
+    /// Present when account has kyc_prefill (Prove flow); nil for Twilio flow.
+    public let proveAuthToken: String?
 
     enum CodingKeys: String, CodingKey {
         case id, type, status
@@ -22,9 +23,10 @@ public struct PhoneOTPVerificationCreateResponse: Codable {
 public struct PhoneOTPVerificationConfirmResponse: Codable {
     public let id: String
     public let status: String
-    public let prefillStatus: String
+    /// Present for Prove flow; nil for Twilio.
+    public let prefillStatus: String?
 
-    public init(id: String, status: String, prefillStatus: String) {
+    public init(id: String, status: String, prefillStatus: String? = nil) {
         self.id = id
         self.status = status
         self.prefillStatus = prefillStatus

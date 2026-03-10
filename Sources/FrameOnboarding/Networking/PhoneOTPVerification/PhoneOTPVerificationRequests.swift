@@ -8,6 +8,19 @@
 import Foundation
 
 class PhoneOTPVerificationRequests {
+    /// Confirm with OTP code (Twilio path). Empty body for Prove path.
+    struct ConfirmVerificationRequest: Encodable, Sendable {
+        let code: String?
+
+        init(code: String? = nil) {
+            self.code = code
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case code
+        }
+    }
+
     /// Create phone verification request. dateOfBirth must be YYYY-MM-DD.
     struct CreateVerificationRequest: Encodable, Sendable {
         let type: String
