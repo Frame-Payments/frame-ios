@@ -14,7 +14,11 @@ import Frame
 protocol PhoneOTPVerificationProtocol {
     // async/await
     static func createVerification(accountId: String, phoneNumber: String, dateOfBirth: String) async throws -> (PhoneOTPVerificationCreateResponse?, NetworkingError?)
-    static func confirmVerification(accountId: String, verificationId: String, code: String?) async throws -> (PhoneOTPVerificationConfirmResponse?, NetworkingError?)
+    static func confirmVerification(accountId: String, verificationId: String) async throws -> (PhoneOTPVerificationConfirmResponse?, NetworkingError?)
+
+    // completionHandlers
+    static func createVerification(accountId: String, phoneNumber: String, dateOfBirth: String, completionHandler: @escaping @Sendable (PhoneOTPVerificationCreateResponse?, NetworkingError?) -> Void)
+    static func confirmVerification(accountId: String, verificationId: String, completionHandler: @escaping @Sendable (PhoneOTPVerificationConfirmResponse?, NetworkingError?) -> Void)
 }
 
 public final class PhoneOTPVerificationAPI: PhoneOTPVerificationProtocol, @unchecked Sendable {
@@ -48,6 +52,36 @@ public final class PhoneOTPVerificationAPI: PhoneOTPVerificationProtocol, @unche
             return (decodedResponse, error)
         } else {
             return (nil, error)
+        }
+    }
+
+    // completionHandlers
+    static func createVerification(accountId: String, phoneNumber: String, dateOfBirth: String, completionHandler: @escaping @Sendable (PhoneOTPVerificationCreateResponse?, NetworkingError?) -> Void) {
+        let endpoint = PhoneOTPVerificationEndpoints.create(accountId: accountId)
+        let request = PhoneOTPVerificationRequests.CreateVerificationRequest(
+            phoneNumber: phoneNumber,
+            dateOfBirth: dateOfBirth
+        )
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PhoneOTPVerificationCreateResponse.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    static func confirmVerification(accountId: String, verificationId: String, completionHandler: @escaping @Sendable (PhoneOTPVerificationConfirmResponse?, NetworkingError?) -> Void) {
+        let endpoint = PhoneOTPVerificationEndpoints.confirm(accountId: accountId, verificationId: verificationId)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PhoneOTPVerificationConfirmResponse.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
         }
     }
 }

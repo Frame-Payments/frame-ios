@@ -11,7 +11,6 @@ public struct PhoneOTPVerificationCreateResponse: Codable {
     public let id: String
     public let type: String
     public let status: String
-    /// Present when account has kyc_prefill (Prove flow); nil for Twilio flow.
     public let proveAuthToken: String?
 
     enum CodingKeys: String, CodingKey {
@@ -23,7 +22,6 @@ public struct PhoneOTPVerificationCreateResponse: Codable {
 public struct PhoneOTPVerificationConfirmResponse: Codable {
     public let id: String
     public let status: String
-    /// Present for Prove flow; nil for Twilio.
     public let prefillStatus: String?
 
     public init(id: String, status: String, prefillStatus: String? = nil) {
