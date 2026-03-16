@@ -31,11 +31,11 @@ final class AccountsAPITests: XCTestCase {
                 email: "john@test.com",
                 phone: phone,
                 address: nil,
-                dob: nil,
+                birthdate: nil,
                 ssn: nil
             )
         )
-        var request = AccountRequest.CreateAccountRequest(
+        let request = AccountRequest.CreateAccountRequest(
             accountType: .individual,
             externalId: nil,
             termsOfService: nil,
@@ -77,19 +77,19 @@ final class AccountsAPITests: XCTestCase {
     func testUpdateAccountWith() async {
         FrameNetworking.shared.asyncURLSession = session
         
-        let phone = FrameObjects.AccountPhoneNumber(number: "1234567890", countryCode: "1")
         let profile = AccountRequest.UpdateAccountProfile(
             business: nil,
             individual: AccountRequest.UpdateIndividualAccount(
                 name: FrameObjects.AccountNameInfo(firstName: "John", middleName: nil, lastName: "Doe", suffix: nil),
                 email: "john@test.com",
-                phone: phone,
+                phoneNumber: "1234567890",
+                phoneCountryCode: "1",
                 address: nil,
-                dob: nil,
+                birthdate: nil,
                 ssn: nil
             )
         )
-        var request = AccountRequest.UpdateAccountRequest(
+        let request = AccountRequest.UpdateAccountRequest(
             accountType: .individual,
             externalId: nil,
             termsOfService: nil,

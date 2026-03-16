@@ -24,7 +24,7 @@ final class RefundsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(refund)
-            let (creationTwo, error) = try await RefundsAPI.createRefund(request: request)
+            let (creationTwo, _) = try await RefundsAPI.createRefund(request: request)
             XCTAssertNotNil(creationTwo)
             XCTAssertEqual(creationTwo?.amountRefunded, refund.amountRefunded)
         } catch {
@@ -45,7 +45,7 @@ final class RefundsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(RefundResponses.ListRefundsResponse(meta: nil, data: [refund, refundTwo]))
-            let (refunds, error) = try await RefundsAPI.getRefunds(chargeId: "1", chargeIntentId: "2")
+            let (refunds, _) = try await RefundsAPI.getRefunds(chargeId: "1", chargeIntentId: "2")
             XCTAssertNotNil(refunds)
             XCTAssertEqual(refunds?.data?[0].amountRefunded, refund.amountRefunded)
             XCTAssertEqual(refunds?.data?[1].amountRefunded, refundTwo.amountRefunded)
@@ -66,7 +66,7 @@ final class RefundsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(refund)
-            let (refundThree, error) = try await RefundsAPI.getRefundWith(refundId: "1234")
+            let (refundThree, _) = try await RefundsAPI.getRefundWith(refundId: "1234")
             XCTAssertNotNil(refundThree)
             XCTAssertEqual(refundThree?.amountRefunded, refund.amountRefunded)
         } catch {
@@ -86,7 +86,7 @@ final class RefundsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(refund)
-            let (cancellationThree, error) = try await RefundsAPI.cancelRefund(refundId: "1234")
+            let (cancellationThree, _) = try await RefundsAPI.cancelRefund(refundId: "1234")
             XCTAssertNotNil(cancellationThree)
             XCTAssertEqual(cancellationThree?.amountRefunded, refund.amountRefunded)
         } catch {

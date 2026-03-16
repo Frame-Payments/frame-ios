@@ -43,7 +43,7 @@ final class CustomerIdentityAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customerIdentity)
-            let (createdCustomerIdentityTwo, error) = try await CustomerIdentityAPI.createCustomerIdentity(request: request)
+            let (createdCustomerIdentityTwo, _) = try await CustomerIdentityAPI.createCustomerIdentity(request: request)
             XCTAssertNotNil(createdCustomerIdentityTwo)
             XCTAssertEqual(createdCustomerIdentityTwo?.status, customerIdentity.status)
             XCTAssertEqual(createdCustomerIdentityTwo?.id, customerIdentity.id)
@@ -72,7 +72,7 @@ final class CustomerIdentityAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(customerIdentity)
-            let (receivedCustomerIdentityThree, error) = try await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "1234")
+            let (receivedCustomerIdentityThree, _) = try await CustomerIdentityAPI.getCustomerIdentityWith(customerIdentityId: "1234")
             XCTAssertNotNil(receivedCustomerIdentityThree)
             XCTAssertEqual(receivedCustomerIdentityThree?.id, customerIdentity.id)
             XCTAssertEqual(receivedCustomerIdentityThree?.status, customerIdentity.status)

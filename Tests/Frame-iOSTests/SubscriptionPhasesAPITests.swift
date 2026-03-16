@@ -46,7 +46,7 @@ final class SubscriptionPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(mockPhase)
-            let (createdSecondSubscription, error) = try await SubscriptionPhasesAPI.createSubscriptionPhase(subscriptionId: "sub_123", request: request)
+            let (createdSecondSubscription, _) = try await SubscriptionPhasesAPI.createSubscriptionPhase(subscriptionId: "sub_123", request: request)
             XCTAssertNotNil(createdSecondSubscription)
             XCTAssertEqual(createdSecondSubscription?.pricingType, .relative)
             XCTAssertEqual(createdSecondSubscription?.durationType, .finite)
@@ -76,7 +76,7 @@ final class SubscriptionPhasesAPITests: XCTestCase {
         mockPhase.pricingType = .staticType
         do {
             session.data = try JSONEncoder().encode(mockPhase)
-            let (thirdUpdatedSubscription, error) = try await SubscriptionPhasesAPI.updateSubscriptionPhase(subscriptionId: "sub_123", phaseId: "phase_123", request: request)
+            let (thirdUpdatedSubscription, _) = try await SubscriptionPhasesAPI.updateSubscriptionPhase(subscriptionId: "sub_123", phaseId: "phase_123", request: request)
             XCTAssertNotNil(thirdUpdatedSubscription)
             XCTAssertEqual(thirdUpdatedSubscription?.pricingType, .staticType)
         } catch {
@@ -95,7 +95,7 @@ final class SubscriptionPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(listResponse)
-            let (secondSubscriptionPhase, error) = try await SubscriptionPhasesAPI.listAllSubscriptionPhases(subscriptionId: "sub_123")
+            let (secondSubscriptionPhase, _) = try await SubscriptionPhasesAPI.listAllSubscriptionPhases(subscriptionId: "sub_123")
             XCTAssertNotNil(secondSubscriptionPhase)
             XCTAssertEqual(secondSubscriptionPhase?.phases?.first?.id, "phase_123")
             XCTAssertEqual(secondSubscriptionPhase?.meta?.subscriptionId, "sub_12345")
@@ -115,7 +115,7 @@ final class SubscriptionPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(mockPhase)
-            let (thirdUpdatedSubscriptionPhase, error) = try await SubscriptionPhasesAPI.getSubscriptionPhase(subscriptionId: "sub_123", phaseId: "phase_123")
+            let (thirdUpdatedSubscriptionPhase, _) = try await SubscriptionPhasesAPI.getSubscriptionPhase(subscriptionId: "sub_123", phaseId: "phase_123")
             XCTAssertNotNil(thirdUpdatedSubscriptionPhase)
             XCTAssertEqual(thirdUpdatedSubscriptionPhase?.pricingType, .relative)
             XCTAssertEqual(thirdUpdatedSubscriptionPhase?.amount, 100)

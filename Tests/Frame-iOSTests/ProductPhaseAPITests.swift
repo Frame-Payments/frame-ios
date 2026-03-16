@@ -43,7 +43,7 @@ final class ProductPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(mockPhase)
-            let (createdSecondSubscription, error) = try await ProductPhasesAPI.createProductPhase(productId: "prod_123", request: request)
+            let (createdSecondSubscription, _) = try await ProductPhasesAPI.createProductPhase(productId: "prod_123", request: request)
             XCTAssertNotNil(createdSecondSubscription)
             XCTAssertEqual(createdSecondSubscription?.name, mockPhase.name)
             XCTAssertEqual(createdSecondSubscription?.periodCount, mockPhase.periodCount)
@@ -71,7 +71,7 @@ final class ProductPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(mockPhase)
-            let (thirdUpdatedSubscription, error) = try await ProductPhasesAPI.updateProductPhase(productId: "prod_123", phaseId: "phase_123", request: request)
+            let (thirdUpdatedSubscription, _) = try await ProductPhasesAPI.updateProductPhase(productId: "prod_123", phaseId: "phase_123", request: request)
             XCTAssertNotNil(thirdUpdatedSubscription)
             XCTAssertEqual(thirdUpdatedSubscription?.pricingType, mockPhase.pricingType)
         } catch {
@@ -90,7 +90,7 @@ final class ProductPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(listResponse)
-            let (secondSubscriptionPhase, error) = try await ProductPhasesAPI.listAllProductPhases(productId: "prod_123")
+            let (secondSubscriptionPhase, _) = try await ProductPhasesAPI.listAllProductPhases(productId: "prod_123")
             XCTAssertNotNil(secondSubscriptionPhase)
             XCTAssertEqual(secondSubscriptionPhase?.phases?.first?.id, "phase_123")
             XCTAssertEqual(secondSubscriptionPhase?.meta?.productId, "prod_123")

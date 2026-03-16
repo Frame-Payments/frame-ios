@@ -20,7 +20,7 @@ final class InvoiceLineItemsAPITests: XCTestCase {
     
     func testCreateInvoiceLineItem() async {
         FrameNetworking.shared.asyncURLSession = session
-        var request = InvoiceLineItemRequests.CreateLineItemRequest(product: "prod_1", quantity: 5)
+        let request = InvoiceLineItemRequests.CreateLineItemRequest(product: "prod_1", quantity: 5)
         XCTAssertNotNil(request.product)
         XCTAssertNotNil(request.quantity)
         
