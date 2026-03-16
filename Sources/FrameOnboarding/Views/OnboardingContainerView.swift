@@ -25,8 +25,13 @@ public enum OnboardingFlow: Int, CaseIterable, Identifiable {
 extension FrameObjects.Capabilities {
     public var onboardingStep: OnboardingFlow {
         switch self {
+        /* - Platforms will use either .kyc OR .kycprefill capability, not both.
+           - Phone verification is seperate from prefill, used to validate number for auth via Twilio.
+           - Phone verification is almost always REQUIRED */
         case .kyc, .kycPrefill, .phoneVerification, .creatorShield:
             return .personalInformation
+        /* - Card verification enables 3DS flow.
+           - Address Verification adds the address section to the Add Payment method screen. */
         case .cardVerification, .cardSend, .cardReceive, .addressVerification:
             return .confirmPaymentMethod
         case .bankAccountVerification, .bankAccountSend, .bankAccountReceive:
@@ -44,17 +49,20 @@ public struct OnboardingContainerView: View {
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var currentStep: OnboardingFlow = .personalInformation
-    @State private var onboardingFlow: [OnboardingFlow] = [.personalInformation, .confirmPaymentMethod, .confirmPayoutMethod, .uploadDocuments, .verificationSubmitted]
+    @State private var onboardingFlow: [OnboardingFlow] = [.personalInformation, .verificationSubmitted]
     @State private var progressiveSteps: [OnboardingFlow] = [.personalInformation]
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     
     public init(accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = []) {
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId, requiredCapabilities: requiredCapabilities)
-        // Map capabilites to onboarding flow steps
-        let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
-        self.onboardingFlow = Array(onboardingSet).sorted(by: { $0.rawValue > $1.rawValue })
-        self.onboardingFlow.append(.verificationSubmitted)
+        
+        if requiredCapabilities != [] {
+            // Map capabilites to onboarding flow steps
+            let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
+            self.onboardingFlow = Array(onboardingSet).sorted(by: { $0.rawValue > $1.rawValue })
+            self.onboardingFlow.append(.verificationSubmitted)
+        }
     }
     
     public var body: some View {

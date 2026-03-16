@@ -118,20 +118,41 @@ extension FrameObjects {
         public let lastName: String?
         public let suffix: String?
         public let email: String?
+        public let ssnLastFour: String?
         public let phoneNumber: String?
         public let phoneCountryCode: String?
         public let address: FrameObjects.BillingAddress?
         public let birthdate: String?
-        public let ssnLastFour: String?
         
         public enum CodingKeys: String, CodingKey {
             case suffix, email, address, birthdate
             case firstName = "first_name"
             case middleName = "middle_name"
             case lastName = "last_name"
+            case ssnLastFour = "ssn_last_four"
             case phoneNumber = "phone_number"
             case phoneCountryCode = "phone_country_code"
-            case ssnLastFour = "ssn_last_four"
+        }
+    }
+    
+    public struct AccountStep: Codable, Sendable, Equatable {
+        public let key: String
+        public let status: String
+        public let label: String
+        public let fields: [String]
+        public let currentlyDue: [String]
+
+        public init(key: String, status: String, label: String, fields: [String], currentlyDue: [String]) {
+            self.key = key
+            self.status = status
+            self.label = label
+            self.fields = fields
+            self.currentlyDue = currentlyDue
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case key, status, label, fields
+            case currentlyDue = "currently_due"
         }
     }
     
@@ -144,7 +165,7 @@ extension FrameObjects {
         public let metadata: [String: String]?
         public let profile: AccountProfile?
         public let capabilities: [Capability]?
-        public let steps: [String]?
+        public let steps: [AccountStep]?
         public let created: Int
         public let updated: Int
         public let livemode: Bool
@@ -158,7 +179,7 @@ extension FrameObjects {
             metadata: [String: String]? = nil,
             profile: AccountProfile? = nil,
             capabilities: [Capability]? = nil,
-            steps: [String]? = nil,
+            steps: [AccountStep]? = nil,
             created: Int,
             updated: Int,
             livemode: Bool
@@ -183,5 +204,9 @@ extension FrameObjects {
             case accountStatus = "status"
             case externalId = "external_id"
         }
+    }
+    
+    public struct AccountListResponse: Codable, Sendable, Equatable {
+        public let data: [Account]
     }
 }
