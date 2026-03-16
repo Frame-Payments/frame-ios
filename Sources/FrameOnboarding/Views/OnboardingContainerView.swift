@@ -28,7 +28,7 @@ extension FrameObjects.Capabilities {
         /* - Platforms will use either .kyc OR .kycprefill capability, not both.
            - Phone verification is seperate from prefill, used to validate number for auth via Twilio.
            - Phone verification is almost always REQUIRED */
-        case .kyc, .kycPrefill, .phoneVerification, .creatorShield:
+        case .ageVerification, .kyc, .kycPrefill, .phoneVerification, .creatorShield:
             return .personalInformation
         /* - Card verification enables 3DS flow.
            - Address Verification adds the address section to the Add Payment method screen. */
@@ -38,7 +38,7 @@ extension FrameObjects.Capabilities {
             return .confirmPayoutMethod
         case .geoCompliance:
             return .geolocationVerification
-        case .ageVerification:
+        default:
             return .uploadDocuments
         }
     }

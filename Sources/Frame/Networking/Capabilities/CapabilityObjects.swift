@@ -14,8 +14,9 @@ extension FrameObjects {
         case kyc
         case kycPrefill = "kyc_prefill" // Also enables base kyc capability
         case phoneVerification = "phone_verification"
-        // Backend capability, ensure a phone number, email or social is input during onboarding.
+        // Backend capability, the merchant should provide a profile_url when creating an account.
         case creatorShield = "creator_shield"
+        case ageVerification = "age_verification"
         
         // View - Add or Select Payment Method (Card)
         case cardVerification = "card_verification" // Also enables card send capability
@@ -32,7 +33,6 @@ extension FrameObjects {
         case geoCompliance = "geo_compliance"
         
         // View - Upload Documents
-        case ageVerification = "age_verification"
     }
     
     public struct CapabilityRequirement: Codable, Sendable, Equatable {

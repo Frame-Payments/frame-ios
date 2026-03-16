@@ -20,6 +20,7 @@ struct SelectPaymentMethodView: View {
     @State private var canCustomerContinue: Bool = false
     @State private var currentPaymentStep: ConfirmPaymentMethodSteps = .selectPayment
     @State private var showAddPaymentMethod: Bool = false
+    @State private var onlyAddressVerification: Bool = false
     @State private var paymentVerified: Bool = false
     @State private var returnToSelectPayment: Bool = false
     
@@ -34,7 +35,8 @@ struct SelectPaymentMethodView: View {
             case .selectPayment:
                 selectPaymentView
                     .navigationDestination(isPresented: $showAddPaymentMethod) {
-                        AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel)
+                        AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                             onlyAddressVerification: onlyAddressVerification)
                             .navigationBarBackButtonHidden()
                     }
             case .verifyPayment:
@@ -70,8 +72,19 @@ struct SelectPaymentMethodView: View {
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
                 Task {
-                    await onboardingContainerViewModel.start3DSecureProcess()
-                    self.currentPaymentStep = .verifyPayment
+                    // Check if address is present on the selected card.
+                    if onboardingContainerViewModel.requiredCapabilities.contains(.addressVerification), onboardingContainerViewModel.selectedPayoutMethod?.billing?.addressLine1 == nil {
+                        self.onlyAddressVerification = true
+                        self.showAddPaymentMethod = true
+                    }
+                    // Check if `card_verification` is active on the capabilities, start 3DS flow
+                    if onboardingContainerViewModel.requiredCapabilities.contains(.cardVerification) {
+                        await onboardingContainerViewModel.start3DSecureProcess()
+                        self.currentPaymentStep = .verifyPayment
+                    } else {
+                        //TODO: Save payment method to user/backend. This technically should never happen
+                        self.paymentVerified = true
+                    }
                 }
             }
             .padding(.bottom)

@@ -79,7 +79,8 @@ struct SecurePMVerificationView: View {
                 Task {
                     switch type {
                     case .threeDS:
-                        await onboardingContainerViewModel.retrieve3DSChallenge(verificationId: enteredCode)
+                        //TODO: Submit 3DS verification code to backend.
+//                        await onboardingContainerViewModel.retrieve3DSChallenge(verificationId: enteredCode)
                         self.continueToNextStep = true
                     case .phone:
                         await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode)

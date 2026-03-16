@@ -31,7 +31,7 @@ struct UserIdentificationView: View {
         case verifyPhone
         case intro
         case information
-        case inputs
+//        case inputs - Country input currently not in use.
     }
     
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
@@ -76,8 +76,8 @@ struct UserIdentificationView: View {
                     }
             case .information:
                 customerInformationView
-            case .inputs:
-                verifyIdentityView
+//            case .inputs:
+//                verifyIdentityView
             }
         }
         .onChange(of: returnToPhoneNumberEntry, { oldValue, newValue in
@@ -159,7 +159,7 @@ struct UserIdentificationView: View {
     
     var authenticationView: some View {
         VStack(alignment: .leading) {
-            PageHeaderView(headerTitle: "Add Phone Number & DOB") {
+            PageHeaderView(headerTitle: onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) ? "Enter Your Phone Number & DOB" : "Enter Your Phone Number") {
                 self.identitySteps = .intro
             }
             Text("We’ll send you a code — it helps us keep your account secure.")
@@ -184,27 +184,28 @@ struct UserIdentificationView: View {
             }
             .padding(.trailing)
             .padding(.leading, 5.0)
-            
-            Text("Date of Birth")
-                .padding(.horizontal)
-                .fontWeight(.semibold)
-                .font(.system(size: 14.0))
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(.white)
-                .stroke(.gray.opacity(0.3))
-                .overlay {
-                    VStack(spacing: 0) {
-                        HStack {
-                            ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                            Divider()
-                            ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                            Divider()
-                            ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
+            if onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) {
+                Text("Date of Birth")
+                    .padding(.horizontal)
+                    .fontWeight(.semibold)
+                    .font(.system(size: 14.0))
+                RoundedRectangle(cornerRadius: 10.0)
+                    .fill(.white)
+                    .stroke(.gray.opacity(0.3))
+                    .overlay {
+                        VStack(spacing: 0) {
+                            HStack {
+                                ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
+                                Divider()
+                                ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
+                                Divider()
+                                ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
+                            }
                         }
                     }
-                }
-                .padding(.horizontal)
-                .frame(height: 55.0)
+                    .padding(.horizontal)
+                    .frame(height: 55.0)
+            }
             Spacer()
             ContinueButton(enabled: .constant(canVerifyPhoneNumber)) {
                 Task {
@@ -257,32 +258,32 @@ struct UserIdentificationView: View {
         }
     }
     
-    var verifyIdentityView: some View {
-        VStack(alignment: .leading) {
-            PageHeaderView(headerTitle: "Verify Your ID") {
-                self.identitySteps = .intro
-            }
-            Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
-                .multilineTextAlignment(.center)
-                .font(.system(size: 14.0))
-                .foregroundColor(FrameColors.secondaryTextColor)
-                .padding(.horizontal, 20.0)
-                .padding(.bottom, 8.0)
-            dropdownSelectionBox(titleName: "Issuing Country", selection: .country, dropdownText: selectedCountry.displayName)
-            dropdownSelectionBox(titleName: "ID Type", selection: .id, dropdownText: selectedIdType.rawValue)
-            
-            Spacer()
-            ContinueButton(enabled: .constant(true)) {
-                Task {
-                    //TODO: Figure out what to do with this information on the account level.
-//                    await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
-//                                                                               selectedCountry: selectedCountry)
-                    self.identitySteps = .information
-                }
-            }
-            .padding(.bottom)
-        }
-    }
+//    var verifyIdentityView: some View {
+//        VStack(alignment: .leading) {
+//            PageHeaderView(headerTitle: "Verify Your ID") {
+//                self.identitySteps = .intro
+//            }
+//            Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
+//                .multilineTextAlignment(.center)
+//                .font(.system(size: 14.0))
+//                .foregroundColor(FrameColors.secondaryTextColor)
+//                .padding(.horizontal, 20.0)
+//                .padding(.bottom, 8.0)
+//            dropdownSelectionBox(titleName: "Issuing Country", selection: .country, dropdownText: selectedCountry.displayName)
+//            dropdownSelectionBox(titleName: "ID Type", selection: .id, dropdownText: selectedIdType.rawValue)
+//            
+//            Spacer()
+//            ContinueButton(enabled: .constant(true)) {
+//                Task {
+//                    //TODO: Figure out what to do with this information on the account level.
+////                    await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
+////                                                                               selectedCountry: selectedCountry)
+//                    self.identitySteps = .information
+//                }
+//            }
+//            .padding(.bottom)
+//        }
+//    }
     
     @ViewBuilder
     func dropdownSelectionBox(titleName: String, selection: IdentificationSelection, dropdownText: String) -> some View {
@@ -324,7 +325,11 @@ struct UserIdentificationView: View {
     }
     
     func checkIfReadyToVerifyPhoneNumber() {
-        self.canVerifyPhoneNumber = birthDay.count == 2 && birthMonth.count == 2 && birthYear.count == 4 && phoneNumber.count == 10
+        if onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) {
+            self.canVerifyPhoneNumber = birthDay.count == 2 && birthMonth.count == 2 && birthYear.count == 4 && phoneNumber.count == 10
+        } else {
+            self.canVerifyPhoneNumber = phoneNumber.count == 10
+        }
     }
 }
 

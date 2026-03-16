@@ -103,6 +103,9 @@ public struct CustomerInformationView: View {
 }
 
 #Preview {
-    CustomerInformationView(emailAddress: .constant(""), phoneNumber: .constant(""), firstName: .constant(""),
-                            lastName: .constant(""), dateOfBirth: .constant(""), ssn: .constant(""))
+    VStack {
+        CustomerInformationView(emailAddress: .constant(""), phoneNumber: .constant(""), firstName: .constant(""),
+                                lastName: .constant(""), dateOfBirth: .constant(""), ssn: .constant(""))
+        Spacer()
+    }
 }

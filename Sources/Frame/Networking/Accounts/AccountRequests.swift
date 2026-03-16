@@ -20,7 +20,7 @@ public class AccountRequest {
         public let profileURL: String?
 
         public init(
-            name: FrameObjects.AccountNameInfo, email: String, phone: FrameObjects.AccountPhoneNumber, address: FrameObjects.BillingAddress?, birthdate: String?, ssn: String?, ssnLast4: String?, profileURL: String?) {
+            name: FrameObjects.AccountNameInfo, email: String, phone: FrameObjects.AccountPhoneNumber, address: FrameObjects.BillingAddress?, birthdate: String?, ssn: String?, ssnLast4: String? = nil, profileURL: String? = nil) {
             self.name = name
             self.email = email
             self.phone = phone

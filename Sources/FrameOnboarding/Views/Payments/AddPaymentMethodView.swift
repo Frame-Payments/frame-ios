@@ -15,8 +15,11 @@ struct AddPaymentMethodView: View {
     
     @State private var canCustomerContinue: Bool = false
     
-    init(onboardingContainerViewModel: OnboardingContainerViewModel) {
+    var onlyAddressVerification: Bool = false
+    
+    init(onboardingContainerViewModel: OnboardingContainerViewModel, onlyAddressVerification: Bool) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
+        self.onlyAddressVerification = onlyAddressVerification
     }
     
     var body: some View {
@@ -28,7 +31,7 @@ struct AddPaymentMethodView: View {
             self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod()
         }
         .onChange(of: onboardingContainerViewModel.createdBillingAddress) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod()
+            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod(onlyAddress: onlyAddressVerification)
         }
     }
     
@@ -38,7 +41,9 @@ struct AddPaymentMethodView: View {
                 self.dismiss()
             }
             ScrollView {
-                PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
+                if !onlyAddressVerification {
+                    PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
+                }
                 BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
                                          addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
                                          city: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
@@ -47,7 +52,11 @@ struct AddPaymentMethodView: View {
                                          country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
                 ContinueButton(enabled: $canCustomerContinue) {
                     Task {
-                        await onboardingContainerViewModel.addNewPaymentMethod()
+                        if onlyAddressVerification {
+                            await onboardingContainerViewModel.updatePaymentMethod()
+                        } else {
+                            await onboardingContainerViewModel.addNewPaymentMethod()
+                        }
                         self.dismiss()
                     }
                 }
@@ -58,5 +67,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []))
+    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), onlyAddressVerification: false)
 }

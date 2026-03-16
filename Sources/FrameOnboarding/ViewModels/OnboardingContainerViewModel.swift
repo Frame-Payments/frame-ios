@@ -70,7 +70,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
                                                                                                                   countryCode: "+1"),
                                                                            address: createdCustomerIdentity.address,
-                                                                           dob: createdCustomerIdentity.dateOfBirth,
+                                                                           birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssn: createdCustomerIdentity.ssn)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: requiredCapabilities)
@@ -87,7 +87,7 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "test", lastName: "test"), email: "test@test.com",
                                                                            phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: "+1"),
-                                                                           address: nil, dob: dateOfBirth, ssn: nil)
+                                                                           address: nil, birthdate: dateOfBirth, ssn: nil)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: requiredCapabilities)
             let (account, _) = try await AccountsAPI.createAccount(request: request)
@@ -111,10 +111,10 @@ class OnboardingContainerViewModel: ObservableObject {
             let individualAccount = AccountRequest.UpdateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
                                                                                                               lastName: createdCustomerIdentity.lastName),
                                                                            email: createdCustomerIdentity.email,
-                                                                           phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
-                                                                                                                  countryCode: "+1"),
+                                                                           phoneNumber: createdCustomerIdentity.phoneNumber,
+                                                                           phoneCountryCode: "+1",
                                                                            address: createdCustomerIdentity.address,
-                                                                           dob: createdCustomerIdentity.dateOfBirth,
+                                                                           birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssn: createdCustomerIdentity.ssn)
             let request = AccountRequest.UpdateAccountRequest(profile: AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount))
             try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
@@ -232,6 +232,25 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
+    // Update an existing payment method with a billing address
+    func updatePaymentMethod() async {
+        guard let paymentMethodId = selectedPayoutMethod?.id else { return }
+        
+        do {
+            let request = PaymentMethodRequest.UpdatePaymentMethodRequest(billing: createdBillingAddress)
+            let (paymentMethod, _) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
+            
+            if let paymentMethod {
+                self.selectedPaymentMethod = paymentMethod
+                self.paymentMethods.append(paymentMethod)
+                
+                self.clearAccountDetails()
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+    
     // Add new payout method to customer object
     func addNewPayoutMethod() async {
         do {
@@ -324,9 +343,11 @@ class OnboardingContainerViewModel: ObservableObject {
         return true
     }
     
-    func checkIfCustomerCanContinueWithPaymentMethod() -> Bool {
+    func checkIfCustomerCanContinueWithPaymentMethod(onlyAddress: Bool = false) -> Bool {
         guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        guard cardData.isValid else { return false }
+        if !onlyAddress {
+            guard cardData.isValid else { return false }
+        }
         return true
     }
     
