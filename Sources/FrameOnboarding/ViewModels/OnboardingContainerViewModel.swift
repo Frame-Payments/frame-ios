@@ -12,6 +12,10 @@ import CoreLocation
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
+    @Published var onboardingFlow: [OnboardingFlow] = []
+    @Published var progressiveSteps: [OnboardingFlow] = []
+    @Published var requiredCapabilities: [FrameObjects.Capabilities]
+    
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount()
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
@@ -35,7 +39,6 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
                                                                                                    ssn: "", address: FrameObjects.BillingAddress(postalCode: ""))
     
-    let requiredCapabilities: [FrameObjects.Capabilities]
     var accountId: String?
     
     init(accountId: String?, requiredCapabilities: [FrameObjects.Capabilities]) {
@@ -44,7 +47,7 @@ class OnboardingContainerViewModel: ObservableObject {
     }
     
     // Load existing account object to show on account page.
-    func checkExistingAccount() async {
+    func checkExistingAccount(updateCapabilies: Bool = false) async {
         guard let accountId else { return }
         do {
             let (account, _) = try await AccountsAPI.getAccountWith(accountId: accountId)
@@ -56,9 +59,43 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                  phoneNumber: profile.phoneNumber ?? "",
                                                                                                  ssn: profile.ssnLastFour ?? "",
                                                                                                  address: profile.address ?? FrameObjects.BillingAddress(postalCode: ""))
+            guard updateCapabilies else { return }
+            if let capabilities = account?.capabilities {
+                let accountCapabilities = capabilities.flatMap({ FrameObjects.Capabilities(rawValue: $0.name) })
+                if requiredCapabilities == accountCapabilities {
+                    // Check what needs to be completed
+                    self.updateCapabilitiesBasedOnCompletion(accountCapabilities: capabilities)
+                } else {
+                    // Update capabilities to match what is required by merchant
+                    let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: requiredCapabilities)
+                    let (capabilities, _) = try await CapabilitiesAPI.requestCapabilities(accountId: accountId, request: request)
+                    // Then recheck account.
+                    await self.checkExistingAccount()
+                }
+            }
         } catch let error {
             print(error)
         }
+    }
+    
+    func updateCapabilitiesBasedOnCompletion(accountCapabilities: [FrameObjects.Capability]) {
+        // Check to see which capabilites are completed, skip any that are not needed.
+        accountCapabilities.forEach { capability in
+            let requiredCapability = FrameObjects.Capabilities(rawValue: capability.name)
+            if capability.status != "pending" {
+                self.requiredCapabilities.removeAll(where: { $0 == requiredCapability })
+            }
+        }
+        self.updateOnboardingFlow()
+    }
+    
+    func updateOnboardingFlow() {
+        let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
+        var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
+        onboardingArray.append(.verificationSubmitted)
+        
+        self.progressiveSteps = [onboardingArray.first ?? .personalInformation]
+        self.onboardingFlow = onboardingArray
     }
     
     // Create new individual account if no ID was previously provided to start onboarding.
@@ -139,13 +176,13 @@ class OnboardingContainerViewModel: ObservableObject {
                 let confirmHandler: ProveConfirmHandler = { accountId, verificationId in
                     let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId)
                     if let networkingError { throw networkingError }
-                    
-                    // what happens here?
                 }
                 let proveService = ProveAuthService(accountId: accountId, verificationId: response.id, confirmHandler: confirmHandler, otpProvider: { [weak self] in
                     await self?.requestProveOTP()
                 })
                 _ = try await proveService.authenticateWith(authToken: proveAuthToken)
+                self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+                await checkExistingAccount()
             } else {
                 // Twilio flow: SMS sent, show OTP entry screen
                 pendingTwilioVerificationId = response.id

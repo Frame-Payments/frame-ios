@@ -68,12 +68,6 @@ struct UserIdentificationView: View {
                                          returnToPreviousStep: $returnToPhoneNumberEntry)
             case .intro:
                 identityIntro
-                    .onAppear {
-                        Task {
-                            //TODO: Check steps/capabilities at the account level before preceding.
-                            await onboardingContainerViewModel.checkExistingAccount()
-                        }
-                    }
             case .information:
                 customerInformationView
 //            case .inputs:
@@ -207,6 +201,8 @@ struct UserIdentificationView: View {
                     .frame(height: 55.0)
             }
             Spacer()
+            TermsOfServiceView(padded: false)
+                .padding(.horizontal)
             ContinueButton(enabled: .constant(canVerifyPhoneNumber)) {
                 Task {
                     await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
@@ -224,7 +220,7 @@ struct UserIdentificationView: View {
     var customerInformationView: some View {
         VStack(alignment: .leading) {
             PageHeaderView(headerTitle: "Personal Information") {
-                self.identitySteps = .intro
+                self.identitySteps = .phoneAuth
             }
             ScrollView {
                 CustomerInformationView(emailAddress: $onboardingContainerViewModel.createdCustomerIdentity.email,
@@ -334,7 +330,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), continueToNextStep: .constant(false))
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill]), continueToNextStep: .constant(false))
 }
 
 extension Color {

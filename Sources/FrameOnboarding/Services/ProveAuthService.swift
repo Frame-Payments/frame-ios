@@ -30,6 +30,11 @@ public final class ProveAuthService: @unchecked Sendable {
     private let verificationId: String
     private let confirmHandler: ProveConfirmHandler
     private let otpProvider: ProveOtpProvider?
+    
+    private var proveAuth: ProveAuth?
+    private var authFinishStep: AuthFinishStep?
+    private var otpStartStep: ProveOtpStartStep?
+    private var otpFinishStep: ProveOtpFinishStep?
 
     public init(accountId: String, verificationId: String, confirmHandler: @escaping ProveConfirmHandler, otpProvider: ProveOtpProvider? = nil) {
         self.accountId = accountId
@@ -42,24 +47,35 @@ public final class ProveAuthService: @unchecked Sendable {
     public func authenticateWith(authToken: String) async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
             let once = ProveOneTimeResume(continuation: continuation)
-            let finishStep = AuthFinishStep(accountId: accountId, verificationId: verificationId, confirmHandler: confirmHandler) { result in
+            authFinishStep = AuthFinishStep(accountId: accountId, verificationId: verificationId, confirmHandler: confirmHandler) { [weak self] result in
+                self?.releaseRetainedSDKObjects()
                 once.resume(with: result)
             }
-            let otpStart = ProveOtpStartStep()
-            let otpFinish = ProveOtpFinishStep(otpProvider: otpProvider)
+            otpStartStep = ProveOtpStartStep()
+            otpFinishStep = ProveOtpFinishStep(otpProvider: otpProvider)
 
-            let proveAuth = ProveAuth.builder(authFinish: finishStep)
-                .withOtpFallback(otpStart: otpStart, otpFinish: otpFinish)
+            guard let authFinishStep, let otpStartStep, let otpFinishStep else { return }
+            proveAuth = ProveAuth.builder(authFinish: authFinishStep)
+                .withOtpFallback(otpStart: otpStartStep, otpFinish: otpFinishStep)
                 .build()
 
             DispatchQueue.global(qos: .userInitiated).async {
+                guard let proveAuth = self.proveAuth else { return }
                 proveAuth.authenticate(authToken: authToken) { error in
                     if error.errorDescription != nil {
+                        self.releaseRetainedSDKObjects()
                         once.resume(with: .failure(error))
                     }
                 }
             }
         }
+    }
+
+    private func releaseRetainedSDKObjects() {
+        proveAuth = nil
+        authFinishStep = nil
+        otpStartStep = nil
+        otpFinishStep = nil
     }
 }
 
@@ -142,31 +158,6 @@ private final class ProveOtpFinishStep: NSObject, OtpFinishStep, @unchecked Send
             } else {
                 callback.onError()
             }
-        }
-    }
-}
-
-/// Errors that can occur during Prove authentication.
-public enum ProveAuthServiceError: Error, LocalizedError, Sendable {
-    /// Backend verify failed (e.g. confirmVerification failed or network error).
-    case verifyFailed(underlying: Error)
-    /// User cancelled or OTP provider returned nil.
-    case cancelled
-    /// Prove SDK reported an error.
-    case sdkError(underlying: Error)
-    /// Unknown or unexpected error.
-    case unknown(underlying: Error)
-
-    public var errorDescription: String? {
-        switch self {
-        case .verifyFailed(let underlying):
-            return "Verification failed: \(underlying.localizedDescription)"
-        case .cancelled:
-            return "Authentication was cancelled."
-        case .sdkError(let underlying):
-            return "Prove SDK error: \(underlying.localizedDescription)"
-        case .unknown(let underlying):
-            return underlying.localizedDescription
         }
     }
 }

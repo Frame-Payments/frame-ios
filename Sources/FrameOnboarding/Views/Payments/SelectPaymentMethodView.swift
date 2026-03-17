@@ -82,7 +82,6 @@ struct SelectPaymentMethodView: View {
                         await onboardingContainerViewModel.start3DSecureProcess()
                         self.currentPaymentStep = .verifyPayment
                     } else {
-                        //TODO: Save payment method to user/backend. This technically should never happen
                         self.paymentVerified = true
                     }
                 }

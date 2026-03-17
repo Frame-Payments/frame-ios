@@ -54,7 +54,7 @@ extension FrameObjects {
         public let accountId: String
         public let status: String
         public let disabledReason: String?
-        public let currentlyDue: [String]
+        public let currentlyDue: [String]?
         public let created: String
         public let updated: String
         public let disabled: Bool?

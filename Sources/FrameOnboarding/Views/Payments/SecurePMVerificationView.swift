@@ -11,6 +11,15 @@ enum CodeVerificationType {
     case threeDS
     case phone
     case proveOtp
+    
+    var codeCount: Int {
+        switch self {
+        case .proveOtp:
+            return 4
+        default:
+            return 6
+        }
+    }
 }
 
 struct SecurePMVerificationView: View {
@@ -33,9 +42,11 @@ struct SecurePMVerificationView: View {
     @Binding var returnToPreviousStep: Bool
     
     let type: CodeVerificationType
+    let codeCount: Int
 
     init(type: CodeVerificationType, onboardingContainerViewModel: OnboardingContainerViewModel, continueToNextStep: Binding<Bool>, returnToPreviousStep: Binding<Bool>) {
         self.type = type
+        self.codeCount = type.codeCount
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
         self._continueToNextStep = continueToNextStep
         self._returnToPreviousStep = returnToPreviousStep
@@ -112,7 +123,10 @@ struct SecurePMVerificationView: View {
     
     var codeContainerStack: some View {
         HStack {
-            ForEach(0..<6, id: \.self) { index in
+            if codeCount == 4 {
+                Spacer().frame(height: 1.0)
+            }
+            ForEach(0..<codeCount, id: \.self) { index in
                 VStack {
                     switch index {
                     case 0:
@@ -136,6 +150,9 @@ struct SecurePMVerificationView: View {
                 }
                 .padding(.horizontal, 3.0)
             }
+            if codeCount == 4 {
+                Spacer().frame(height: 1.0)
+            }
         }
         .padding()
     }
@@ -149,7 +166,7 @@ struct SecurePMVerificationView: View {
             .fontWeight(.semibold)
             .focused($focusedField, equals: index)
             .onChange(of: input.wrappedValue) { oldValue, newValue in
-                if newValue.count == 6 { // one time code input | TODO: Need to test text code input.
+                if newValue.count == codeCount {
                     self.enteredCode = newValue
                     
                     let splitValue = newValue.components(separatedBy: "")
@@ -157,11 +174,13 @@ struct SecurePMVerificationView: View {
                     self.codeInputTwo = splitValue[1]
                     self.codeInputThree = splitValue[2]
                     self.codeInputFour = splitValue[3]
-                    self.codeInputFive = splitValue[4]
-                    self.codeInputSix = splitValue[5]
+                    if codeCount > 4 {
+                        self.codeInputFive = splitValue[4]
+                        self.codeInputSix = splitValue[5]
+                    }
                 } else {
                     input.wrappedValue = String(newValue.suffix(1))
-                    if index != 5 {
+                    if index != codeCount - 1 {
                         focusedField = index + 1
                     } else {
                         focusedField = nil
@@ -172,8 +191,14 @@ struct SecurePMVerificationView: View {
     }
     
     func updateMainCodeInput() {
-        self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour + codeInputFive + codeInputSix
-        self.codeInput = enteredCode.count == 6
+        switch type {
+        case .threeDS, .phone:
+            self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour + codeInputFive + codeInputSix
+        case .proveOtp:
+            self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour
+        }
+        
+        self.codeInput = enteredCode.count == codeCount
     }
     
     func replace(myString: String, _ index: Int, _ newChar: Character) -> String {

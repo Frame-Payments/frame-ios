@@ -14,12 +14,13 @@ public enum OnboardingFlow: Int, CaseIterable, Identifiable {
     }
 
 //    case countryVerification
-    case confirmPaymentMethod = 1
-    case confirmPayoutMethod = 2
-    case geolocationVerification = 4
+//    case geolocationVerification
+//    case uploadDocuments
+    
     case personalInformation = 0
-    case uploadDocuments = 3
-    case verificationSubmitted = 5
+    case confirmPaymentMethod = 1
+    case confirmBankAccount = 2
+    case verificationSubmitted = 3
 }
 
 extension FrameObjects.Capabilities {
@@ -28,18 +29,14 @@ extension FrameObjects.Capabilities {
         /* - Platforms will use either .kyc OR .kycprefill capability, not both.
            - Phone verification is seperate from prefill, used to validate number for auth via Twilio.
            - Phone verification is almost always REQUIRED */
-        case .ageVerification, .kyc, .kycPrefill, .phoneVerification, .creatorShield:
+        case .ageVerification, .kyc, .kycPrefill, .phoneVerification, .creatorShield, .geoCompliance:
             return .personalInformation
         /* - Card verification enables 3DS flow.
            - Address Verification adds the address section to the Add Payment method screen. */
         case .cardVerification, .cardSend, .cardReceive, .addressVerification:
             return .confirmPaymentMethod
         case .bankAccountVerification, .bankAccountSend, .bankAccountReceive:
-            return .confirmPayoutMethod
-        case .geoCompliance:
-            return .geolocationVerification
-        default:
-            return .uploadDocuments
+            return .confirmBankAccount
         }
     }
 }
@@ -49,8 +46,6 @@ public struct OnboardingContainerView: View {
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var currentStep: OnboardingFlow = .personalInformation
-    @State private var onboardingFlow: [OnboardingFlow] = [.personalInformation, .verificationSubmitted]
-    @State private var progressiveSteps: [OnboardingFlow] = [.personalInformation]
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     
@@ -60,8 +55,16 @@ public struct OnboardingContainerView: View {
         if requiredCapabilities != [] {
             // Map capabilites to onboarding flow steps
             let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
-            self.onboardingFlow = Array(onboardingSet).sorted(by: { $0.rawValue > $1.rawValue })
-            self.onboardingFlow.append(.verificationSubmitted)
+            var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
+            onboardingArray.append(.verificationSubmitted)
+            
+            onboardingContainerViewModel.progressiveSteps = [onboardingArray.first ?? .personalInformation]
+            onboardingContainerViewModel.onboardingFlow = onboardingArray
+            self._currentStep = State(initialValue: onboardingArray.first ?? .personalInformation)
+        } else {
+            onboardingContainerViewModel.progressiveSteps = [.personalInformation]
+            onboardingContainerViewModel.onboardingFlow = [.personalInformation, .verificationSubmitted]
+            self._currentStep = State(initialValue: .personalInformation)
         }
     }
     
@@ -73,20 +76,20 @@ public struct OnboardingContainerView: View {
                 SelectPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
                                         continueToNextStep: $continueToNextStep,
                                         returnToPreviousStep: $returnToPreviousStep)
-            case .confirmPayoutMethod:
+            case .confirmBankAccount:
                 SelectPayoutMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
                                        continueToNextStep: $continueToNextStep,
                                        returnToPreviousStep: $returnToPreviousStep)
             case .personalInformation:
                 UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                        continueToNextStep: $continueToNextStep)
-            case .geolocationVerification:
-                GeolocationView(onboardingContainerViewModel: onboardingContainerViewModel,
-                                continueToNextStep: $continueToNextStep)
-            case .uploadDocuments:
-                UploadIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
-                                         continueToNextStep: $continueToNextStep,
-                                         returnToPreviousStep: $returnToPreviousStep)
+//            case .geolocationVerification:
+//                GeolocationView(onboardingContainerViewModel: onboardingContainerViewModel,
+//                                continueToNextStep: $continueToNextStep)
+//            case .uploadDocuments:
+//                UploadIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
+//                                         continueToNextStep: $continueToNextStep,
+//                                         returnToPreviousStep: $returnToPreviousStep)
             case .verificationSubmitted:
                 VerificationSubmittedView(continueToNextStep: $continueToNextStep)
             }
@@ -94,29 +97,39 @@ public struct OnboardingContainerView: View {
         }
         .ignoresSafeArea()
         .keyboardDoneToolbar()
+        .onAppear {
+            if onboardingContainerViewModel.accountId != nil {
+                Task {
+                    await onboardingContainerViewModel.checkExistingAccount(updateCapabilies: true)
+                }
+            }
+        }
         .onChange(of: continueToNextStep) { oldValue, newValue in
             guard continueToNextStep else { return }
-            guard onboardingFlow.last != currentStep else {
+            guard onboardingContainerViewModel.onboardingFlow.last != currentStep else {
                 self.dismiss()
                 return
             } // Complete onboarding here.
             
-            let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
-            self.currentStep = onboardingFlow[index]
+            let index: Int = (onboardingContainerViewModel.onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
+            self.currentStep = onboardingContainerViewModel.onboardingFlow[index]
             self.continueToNextStep = false
         }
         .onChange(of: returnToPreviousStep, { oldValue, newValue in
             guard returnToPreviousStep else { return }
-            guard onboardingFlow.first != currentStep else { return }
+            guard onboardingContainerViewModel.onboardingFlow.first != currentStep else { return }
             
-            let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) - 1
-            self.currentStep = onboardingFlow[index]
+            let index: Int = (onboardingContainerViewModel.onboardingFlow.firstIndex(of: currentStep) ?? 0) - 1
+            self.currentStep = onboardingContainerViewModel.onboardingFlow[index]
             self.returnToPreviousStep = false
         })
         .onChange(of: currentStep) {
-            let index: Int = (onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
-            self.progressiveSteps = Array(self.onboardingFlow[0..<index])
+            let index: Int = (onboardingContainerViewModel.onboardingFlow.firstIndex(of: currentStep) ?? 0) + 1
+            onboardingContainerViewModel.progressiveSteps = Array(onboardingContainerViewModel.onboardingFlow[0..<index])
         }
+        .onChange(of: onboardingContainerViewModel.progressiveSteps, { oldValue, newValue in
+            self.currentStep = onboardingContainerViewModel.progressiveSteps.first ?? .personalInformation
+        })
     }
     
     var containerHeader: some View {
@@ -126,8 +139,8 @@ public struct OnboardingContainerView: View {
                 VStack {
                     Spacer()
                     HStack {
-                        ForEach(onboardingFlow) { step in
-                            Image(progressiveSteps.contains(step) ? "filled-onboarding-indicator" : "empty-onboarding-indicator", bundle: FrameResources.module)
+                        ForEach(onboardingContainerViewModel.onboardingFlow) { step in
+                            Image(onboardingContainerViewModel.progressiveSteps.contains(step) ? "filled-onboarding-indicator" : "empty-onboarding-indicator", bundle: FrameResources.module)
                                 .resizable()
                                 .frame(height: 5.0)
                         }
@@ -142,5 +155,5 @@ public struct OnboardingContainerView: View {
 }
 
 #Preview {
-    OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardVerification, .bankAccountVerification, .ageVerification])
+    OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification])
 }
