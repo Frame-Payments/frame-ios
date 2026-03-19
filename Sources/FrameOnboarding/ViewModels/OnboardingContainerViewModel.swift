@@ -28,6 +28,7 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var filesToUpload: [FileUpload] = []
     @Published var ipAddress: String?
     @Published var userCoordinates: CLLocationCoordinate2D?
+    @Published var termsOfServiceToken: String?
     
     @Published var proveUserInfo: ProveUserInfo?
     @Published var showProveOTPEntry: Bool = false
@@ -155,6 +156,15 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            ssn: createdCustomerIdentity.ssn)
             let request = AccountRequest.UpdateAccountRequest(profile: AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount))
             try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
+        } catch let error {
+            print(error)
+        }
+    }
+
+    func generateTermsOfServiceToken() async {
+        do {
+            let (response, _) = try await TermsOfServiceAPI.createToken()
+            self.termsOfServiceToken = response?.token
         } catch let error {
             print(error)
         }

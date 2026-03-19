@@ -156,6 +156,14 @@ struct UserIdentificationView: View {
             PageHeaderView(headerTitle: onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) ? "Enter Your Phone Number & DOB" : "Enter Your Phone Number") {
                 self.identitySteps = .intro
             }
+            .onAppear {
+                if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) &&
+                    onboardingContainerViewModel.termsOfServiceToken == nil {
+                    Task {
+                        await onboardingContainerViewModel.generateTermsOfServiceToken()
+                    }
+                }
+            }
             Text("We’ll send you a code — it helps us keep your account secure.")
                 .font(.system(size: 14.0))
                 .foregroundColor(FrameColors.secondaryTextColor)
