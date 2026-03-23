@@ -18,20 +18,20 @@ extension FrameObjects {
     }
     
     public struct AccountTermsOfService: Codable {
-        public var acceptedAt: Int?
+        public var token: String?
         public var ipAddress: String?
-        public var userAgent: String?
+        public var acceptedAt: String?
         
-        public init(acceptedAt: Int?, ipAddress: String?, userAgent: String?) {
-            self.acceptedAt = acceptedAt
+        public init(token: String?, ipAddress: String? = nil, acceptedAt: String? = nil) {
+            self.token = token
             self.ipAddress = ipAddress
-            self.userAgent = userAgent
+            self.acceptedAt = acceptedAt
         }
         
         enum CodingKeys: String, CodingKey {
-            case acceptedAt = "accepted_at"
+            case token
             case ipAddress = "ip_address"
-            case userAgent = "user_agent"
+            case acceptedAt = "accepted_at"
         }
     }
     

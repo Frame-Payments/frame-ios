@@ -237,7 +237,7 @@ public class AccountRequest {
         public var metadata: [String: String]?
         public var profile: UpdateAccountProfile?
         
-        public init(accountType: FrameObjects.AccountType? = nil, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: UpdateAccountProfile) {
+        public init(accountType: FrameObjects.AccountType? = nil, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : String]? = nil, profile: UpdateAccountProfile? = nil) {
             self.accountType = accountType
             self.externalId = externalId
             self.termsOfService = termsOfService

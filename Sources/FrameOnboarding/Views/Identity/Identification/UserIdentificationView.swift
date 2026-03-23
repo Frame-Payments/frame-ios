@@ -29,14 +29,13 @@ struct UserIdentificationView: View {
     enum UserIdentificationSteps: String, CaseIterable {
         case phoneAuth
         case verifyPhone
-        case intro
         case information
 //        case inputs - Country input currently not in use.
     }
     
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
-    @State private var identitySteps: UserIdentificationSteps = .intro
+    @State private var identitySteps: UserIdentificationSteps = .phoneAuth
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var phoneNumber: String = ""
     @State private var birthYear: String = ""
@@ -53,6 +52,7 @@ struct UserIdentificationView: View {
     @State private var continueToCustomerInfoStep: Bool = false
     
     @Binding var continueToNextStep: Bool
+    @Binding var returnToPreviousStep: Bool
     
     let idTypes = IdentificationTypes.allCases
     
@@ -66,8 +66,6 @@ struct UserIdentificationView: View {
                                          onboardingContainerViewModel: onboardingContainerViewModel,
                                          continueToNextStep: $continueToCustomerInfoStep,
                                          returnToPreviousStep: $returnToPhoneNumberEntry)
-            case .intro:
-                identityIntro
             case .information:
                 customerInformationView
 //            case .inputs:
@@ -131,30 +129,10 @@ struct UserIdentificationView: View {
         }
     }
     
-    var identityIntro: some View {
-        VStack(spacing: 15.0) {
-            Spacer()
-            Image("shield-icon", bundle: FrameResources.module)
-            Text("Verify Your Identity")
-                .font(.system(size: 18.0))
-                .fontWeight(.semibold)
-            Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
-                .multilineTextAlignment(.center)
-                .font(.system(size: 14.0))
-                .foregroundColor(FrameColors.secondaryTextColor)
-                .padding(.horizontal, 24.0)
-            Spacer()
-            ContinueButton(enabled: .constant(true)) {
-                self.identitySteps = .phoneAuth
-            }
-            .padding(.bottom)
-        }
-    }
-    
     var authenticationView: some View {
         VStack(alignment: .leading) {
             PageHeaderView(headerTitle: onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) ? "Enter Your Phone Number & DOB" : "Enter Your Phone Number") {
-                self.identitySteps = .intro
+                self.returnToPreviousStep.toggle()
             }
             .onAppear {
                 if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) &&
@@ -209,8 +187,10 @@ struct UserIdentificationView: View {
                     .frame(height: 55.0)
             }
             Spacer()
-            TermsOfServiceView(padded: false)
-                .padding(.horizontal)
+            if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) {
+                TermsOfServiceView(padded: false)
+                    .padding(.horizontal)
+            }
             ContinueButton(enabled: .constant(canVerifyPhoneNumber)) {
                 Task {
                     await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
@@ -262,33 +242,6 @@ struct UserIdentificationView: View {
         }
     }
     
-//    var verifyIdentityView: some View {
-//        VStack(alignment: .leading) {
-//            PageHeaderView(headerTitle: "Verify Your ID") {
-//                self.identitySteps = .intro
-//            }
-//            Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
-//                .multilineTextAlignment(.center)
-//                .font(.system(size: 14.0))
-//                .foregroundColor(FrameColors.secondaryTextColor)
-//                .padding(.horizontal, 20.0)
-//                .padding(.bottom, 8.0)
-//            dropdownSelectionBox(titleName: "Issuing Country", selection: .country, dropdownText: selectedCountry.displayName)
-//            dropdownSelectionBox(titleName: "ID Type", selection: .id, dropdownText: selectedIdType.rawValue)
-//            
-//            Spacer()
-//            ContinueButton(enabled: .constant(true)) {
-//                Task {
-//                    //TODO: Figure out what to do with this information on the account level.
-////                    await onboardingContainerViewModel.createOnboardingSession(selectedIdType: selectedIdType,
-////                                                                               selectedCountry: selectedCountry)
-//                    self.identitySteps = .information
-//                }
-//            }
-//            .padding(.bottom)
-//        }
-//    }
-    
     @ViewBuilder
     func dropdownSelectionBox(titleName: String, selection: IdentificationSelection, dropdownText: String) -> some View {
         VStack(alignment: .leading) {
@@ -338,7 +291,7 @@ struct UserIdentificationView: View {
 }
 
 #Preview {
-    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill]), continueToNextStep: .constant(false))
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill]), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
 }
 
 extension Color {

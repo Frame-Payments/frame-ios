@@ -64,8 +64,8 @@ struct ContentView: View {
         .padding()
         .sheet(isPresented: $showOnboardingSheet, content: {
 //            An existing account Id can be added here to onboarding an existing user.
-//            OnboardingContainerView(accountId: "ENTER_TEST_CUSTOMER_ID", requiredCapabilities: [])
-            OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardVerification, .bankAccountVerification, .ageVerification])
+//            OnboardingContainerView(accountId: "ENTER_TEST_ACCOUNT_ID", requiredCapabilities: [])
+            OnboardingContainerView(requiredCapabilities: [.kyc, .kycPrefill, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification])
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,

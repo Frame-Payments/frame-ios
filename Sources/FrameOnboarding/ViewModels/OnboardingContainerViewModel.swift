@@ -14,10 +14,11 @@ import CoreLocation
 class OnboardingContainerViewModel: ObservableObject {
     @Published var onboardingFlow: [OnboardingFlow] = []
     @Published var progressiveSteps: [OnboardingFlow] = []
+    @Published var currentStep: OnboardingFlow = .personalInformation
     @Published var requiredCapabilities: [FrameObjects.Capabilities]
     
     @Published var cardData = PaymentCardData()
-    @Published var bankAccount = FrameObjects.BankAccount()
+    @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
     @Published var selectedPayoutMethod: FrameObjects.PaymentMethod?
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
@@ -41,6 +42,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                    ssn: "", address: FrameObjects.BillingAddress(postalCode: ""))
     
     var accountId: String?
+    let formatter = ISO8601DateFormatter()
     
     init(accountId: String?, requiredCapabilities: [FrameObjects.Capabilities]) {
         self.accountId = accountId
@@ -63,7 +65,7 @@ class OnboardingContainerViewModel: ObservableObject {
             guard updateCapabilies else { return }
             if let capabilities = account?.capabilities {
                 let accountCapabilities = capabilities.flatMap({ FrameObjects.Capabilities(rawValue: $0.name) })
-                if requiredCapabilities == accountCapabilities {
+                if Set(accountCapabilities).isSuperset(of: Set(requiredCapabilities)) {
                     // Check what needs to be completed
                     self.updateCapabilitiesBasedOnCompletion(accountCapabilities: capabilities)
                 } else {
@@ -83,7 +85,7 @@ class OnboardingContainerViewModel: ObservableObject {
         // Check to see which capabilites are completed, skip any that are not needed.
         accountCapabilities.forEach { capability in
             let requiredCapability = FrameObjects.Capabilities(rawValue: capability.name)
-            if capability.status != "pending" {
+            if capability.currentlyDue?.isEmpty == true {
                 self.requiredCapabilities.removeAll(where: { $0 == requiredCapability })
             }
         }
@@ -95,8 +97,8 @@ class OnboardingContainerViewModel: ObservableObject {
         var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
         onboardingArray.append(.verificationSubmitted)
         
-        self.progressiveSteps = [onboardingArray.first ?? .personalInformation]
         self.onboardingFlow = onboardingArray
+        self.currentStep = onboardingArray.first ?? .personalInformation
     }
     
     // Create new individual account if no ID was previously provided to start onboarding.
@@ -110,8 +112,9 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssn: createdCustomerIdentity.ssn)
+            let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
-            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: requiredCapabilities)
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
             let (account, _) = try await AccountsAPI.createAccount(request: request)
             
             guard let account else { return }
@@ -127,7 +130,8 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: "+1"),
                                                                            address: nil, birthdate: dateOfBirth, ssn: nil)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
-            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: requiredCapabilities)
+            let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
             let (account, _) = try await AccountsAPI.createAccount(request: request)
             
             guard let account else { return }
@@ -264,7 +268,8 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                               expMonth: cardData.card.expMonth,
                                                                               expYear: cardData.card.expYear,
                                                                               cvc: cardData.card.cvc,
-                                                                              customer: accountId,
+                                                                              customer: nil,
+                                                                              account: accountId,
                                                                               billing: createdBillingAddress)
             let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
             
@@ -304,7 +309,8 @@ class OnboardingContainerViewModel: ObservableObject {
             let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: bankAccount.accountType ?? .checking,
                                                                              accountNumber: bankAccount.accountNumber ?? "",
                                                                              routingNumber: bankAccount.routingNumber ?? "",
-                                                                             customer: accountId,
+                                                                             customer: nil,
+                                                                             account: accountId,
                                                                              billing: createdBillingAddress)
             let (payoutMethod, _) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
             
@@ -400,7 +406,7 @@ class OnboardingContainerViewModel: ObservableObject {
     
     func checkIfCustomerCanContinueWithPayoutMethod() -> Bool {
         guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        guard bankAccount.accountNumber != nil, bankAccount.routingNumber != nil, bankAccount.bankName != nil else { return false }
+        guard bankAccount.accountNumber != nil, bankAccount.routingNumber != nil, bankAccount.accountType != nil else { return false }
         return true
     }
     

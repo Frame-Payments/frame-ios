@@ -37,8 +37,6 @@ struct SelectPayoutMethodView: View {
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
                 Task {
-                    //TODO: Update the payout method via the backend.
-//                    await onboardingContainerViewModel.updatePayoutMethod()
                     self.continueToNextStep = true
                 }
             }

@@ -65,6 +65,9 @@ public class FrameNetworking: ObservableObject {
         
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
+        if let ipAddress = SiftManager.getIPAddress() {
+            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+        }
         
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
@@ -114,6 +117,9 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
+        if let ipAddress = SiftManager.getIPAddress() {
+            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+        }
         
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
@@ -152,6 +158,10 @@ public class FrameNetworking: ObservableObject {
         
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
+        
+        if let ipAddress = SiftManager.getIPAddress() {
+            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+        }
         
         urlSession.dataTask(with: urlRequest) { data, response, error in
             var networkingError: NetworkingError?
@@ -203,6 +213,10 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
         urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
+        
+        if let ipAddress = SiftManager.getIPAddress() {
+            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+        }
         
         urlSession.dataTask(with: urlRequest) { data, response, error in
             var networkingError: NetworkingError?

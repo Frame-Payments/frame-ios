@@ -13,12 +13,7 @@ enum CodeVerificationType {
     case proveOtp
     
     var codeCount: Int {
-        switch self {
-        case .proveOtp:
-            return 4
-        default:
-            return 6
-        }
+        return 6
     }
 }
 
@@ -191,13 +186,7 @@ struct SecurePMVerificationView: View {
     }
     
     func updateMainCodeInput() {
-        switch type {
-        case .threeDS, .phone:
-            self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour + codeInputFive + codeInputSix
-        case .proveOtp:
-            self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour
-        }
-        
+        self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour + codeInputFive + codeInputSix
         self.codeInput = enteredCode.count == codeCount
     }
     

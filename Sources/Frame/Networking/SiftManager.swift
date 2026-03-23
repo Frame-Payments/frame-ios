@@ -8,7 +8,7 @@
 import Foundation
 import Sift
 
-class SiftManager {
+public class SiftManager {
     enum SiftTransactionType: String {
         case sale = "$sale"
         case authorize = "$authorize"
@@ -48,7 +48,7 @@ class SiftManager {
         sift.upload()
     }
     
-    class func getIPAddress() -> String? {
+    public class func getIPAddress() -> String? {
         var address : String?
 
         var ifaddr : UnsafeMutablePointer<ifaddrs>?

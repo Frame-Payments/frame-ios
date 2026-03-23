@@ -76,14 +76,17 @@ struct SelectPaymentMethodView: View {
                     if onboardingContainerViewModel.requiredCapabilities.contains(.addressVerification), onboardingContainerViewModel.selectedPayoutMethod?.billing?.addressLine1 == nil {
                         self.onlyAddressVerification = true
                         self.showAddPaymentMethod = true
-                    }
-                    // Check if `card_verification` is active on the capabilities, start 3DS flow
-                    if onboardingContainerViewModel.requiredCapabilities.contains(.cardVerification) {
-                        await onboardingContainerViewModel.start3DSecureProcess()
-                        self.currentPaymentStep = .verifyPayment
                     } else {
                         self.paymentVerified = true
                     }
+                    
+                    //TODO: Check if `card_verification` is active on the capabilities, start 3DS flow
+//                    if onboardingContainerViewModel.requiredCapabilities.contains(.cardVerification) {
+//                        await onboardingContainerViewModel.start3DSecureProcess()
+//                        self.currentPaymentStep = .verifyPayment
+//                    } else {
+//                        self.paymentVerified = true
+//                    }
                 }
             }
             .padding(.bottom)

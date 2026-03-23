@@ -34,6 +34,7 @@ struct AddPayoutMethodView: View {
             self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPayoutMethod()
         }
         .onChange(of: selectedAccountType, { oldValue, newValue in
+            self.onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
             self.accountTypeString = selectedAccountType.rawValue.capitalized
         })
         .sheet(isPresented: $showAccountTypePicker) {

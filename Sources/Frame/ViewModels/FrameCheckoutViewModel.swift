@@ -100,6 +100,7 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                           expYear: cardData.card.expYear,
                                                                           cvc: cardData.card.cvc,
                                                                           customer: currentCustomerId,
+                                                                          account: nil,
                                                                           billing: billingAddress)
         let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
         guard let paymentMethodId = paymentMethod?.id else { return (nil, currentCustomerId) }
