@@ -86,10 +86,10 @@ extension FrameObjects {
         public var einLastFour: String?
         public var mcc: String?
         public var naics: String?
-        public var address: BillingAddress?
+        public var address: AccountBillingAddress?
         public var phone: AccountPhoneNumber?
         
-        public init(legalBusinessName: String, doingBusinessAs: String? = nil, businessType: String, email: String, website: String? = nil, description: String? = nil, einLastFour: String? = nil, mcc: String? = nil, naics: String? = nil, address: BillingAddress? = nil, phone: AccountPhoneNumber? = nil) {
+        public init(legalBusinessName: String, doingBusinessAs: String? = nil, businessType: String, email: String, website: String? = nil, description: String? = nil, einLastFour: String? = nil, mcc: String? = nil, naics: String? = nil, address: AccountBillingAddress? = nil, phone: AccountPhoneNumber? = nil) {
             self.legalBusinessName = legalBusinessName
             self.doingBusinessAs = doingBusinessAs
             self.businessType = businessType
@@ -121,7 +121,7 @@ extension FrameObjects {
         public let ssnLastFour: String?
         public let phoneNumber: String?
         public let phoneCountryCode: String?
-        public let address: FrameObjects.BillingAddress?
+        public let address: FrameObjects.AccountBillingAddress?
         public let birthdate: String?
         
         public enum CodingKeys: String, CodingKey {
@@ -132,6 +132,32 @@ extension FrameObjects {
             case ssnLastFour = "ssn_last_four"
             case phoneNumber = "phone_number"
             case phoneCountryCode = "phone_country_code"
+        }
+    }
+    
+    public struct AccountBillingAddress: Codable, Sendable, Equatable {
+        public var city: String?
+        public var country: String?
+        public var state: String?
+        public var postalCode: String
+        public var addressLine1: String?
+        public var addressLine2: String?
+        
+        public init(city: String? = nil, country: String? = nil, state: String? = nil, postalCode: String, addressLine1: String? = nil, addressLine2: String? = nil) {
+            self.city = city
+            self.country = country
+            self.state = state
+            self.postalCode = postalCode
+            self.addressLine1 = addressLine1
+            self.addressLine2 = addressLine2
+        }
+        
+        public enum CodingKeys: String, CodingKey {
+            case city, country
+            case state = "state_or_province"
+            case postalCode = "postal_code"
+            case addressLine1 = "line_1"
+            case addressLine2 = "line_2"
         }
     }
     

@@ -55,13 +55,17 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (account, _) = try await AccountsAPI.getAccountWith(accountId: accountId)
             guard let profile = account?.profile?.individual else { return }
+            let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
+                                                             state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
+                                                             addressLine1: profile.address?.addressLine1, addressLine2: profile.address?.addressLine2)
             self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.firstName ?? "",
                                                                                                  lastName: profile.lastName ?? "",
                                                                                                  dateOfBirth: profile.birthdate ?? "",
                                                                                                  email: profile.email ?? "",
                                                                                                  phoneNumber: profile.phoneNumber ?? "",
                                                                                                  ssn: profile.ssnLastFour ?? "",
-                                                                                                 address: profile.address ?? FrameObjects.BillingAddress(postalCode: ""))
+                                                                                                 address: profileAddress ?? FrameObjects.BillingAddress(postalCode: ""))
+            
             guard updateCapabilies else { return }
             if let capabilities = account?.capabilities {
                 let accountCapabilities = capabilities.flatMap({ FrameObjects.Capabilities(rawValue: $0.name) })
@@ -157,7 +161,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            phoneCountryCode: "+1",
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssn: createdCustomerIdentity.ssn)
+                                                                           ssnLast4: createdCustomerIdentity.ssn)
             let request = AccountRequest.UpdateAccountRequest(profile: AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount))
             try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
         } catch let error {

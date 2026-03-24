@@ -240,6 +240,9 @@ struct UserIdentificationView: View {
             }
             .padding(.bottom)
         }
+        .onAppear {
+            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPersonalInformation()
+        }
     }
     
     @ViewBuilder

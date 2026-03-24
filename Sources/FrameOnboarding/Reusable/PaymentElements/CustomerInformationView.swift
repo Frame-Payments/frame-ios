@@ -50,29 +50,8 @@ public struct CustomerInformationView: View {
                     }
                 }
                 .padding(.horizontal)
-            Text("Birthday & SSN")
-                .bold()
-                .font(headerFont)
-                .padding([.horizontal, .top])
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(.white)
-                .stroke(.gray.opacity(0.3))
-                .frame(height: 100.0)
-                .overlay {
-                    VStack(spacing: 0) {
-                        HStack {
-                            ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                            Divider()
-                            ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                            Divider()
-                            ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
-                        }
-                        .frame(height: 49.0)
-                        Divider()
-                        ReusableFormTextField(prompt: "Social Security Number", text: $ssn, showDivider: false, keyboardType: .numberPad, characterLimit: 9)
-                    }
-                }
-                .padding(.horizontal)
+            birthdayView
+            socialSecurityView
         }
         .onAppear {
             if !dateOfBirth.isEmpty, dateOfBirth.count == 10 {
@@ -99,6 +78,62 @@ public struct CustomerInformationView: View {
             .presentationDetents([.fraction(0.3)])
             .presentationDragIndicator(.visible)
         }
+    }
+    
+    @ViewBuilder
+    var birthdayView: some View {
+        Text("Birthday")
+            .bold()
+            .font(headerFont)
+            .padding([.horizontal, .top])
+        RoundedRectangle(cornerRadius: 10.0)
+            .fill(.white)
+            .stroke(.gray.opacity(0.3))
+            .frame(height: 50.0)
+            .overlay {
+                VStack(spacing: 0) {
+                    HStack {
+                        ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
+                        Divider()
+                        ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
+                        Divider()
+                        ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
+                    }
+                    .frame(height: 49.0)
+                }
+            }
+            .padding(.horizontal)
+    }
+    
+    @ViewBuilder
+    var socialSecurityView: some View {
+        Text("Social Security Number")
+            .bold()
+            .font(headerFont)
+            .padding([.horizontal, .top])
+        RoundedRectangle(cornerRadius: 10.0)
+            .fill(.white)
+            .stroke(.gray.opacity(0.3))
+            .frame(height: 50.0)
+            .overlay {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        RoundedRectangle(cornerRadius: 10.0)
+                            .fill(.gray.opacity(0.3))
+                            .stroke(.gray.opacity(0.3))
+                            .frame(width: 120.0, height: 50.0)
+                            .overlay {
+                                Text("Last 4 Digits")
+                                    .font(.footnote)
+                                    .bold()
+                                    .foregroundColor(.black)
+                            }
+                        ReusableFormTextField(prompt: "SSN", text: $ssn, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
+                    }
+                    
+                }
+            }
+            .padding(.horizontal)
     }
 }
 
