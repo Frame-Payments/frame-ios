@@ -58,11 +58,11 @@ class OnboardingContainerViewModel: ObservableObject {
             let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
                                                              state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
                                                              addressLine1: profile.address?.addressLine1, addressLine2: profile.address?.addressLine2)
-            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.firstName ?? "",
-                                                                                                 lastName: profile.lastName ?? "",
+            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? profile.firstName ?? "",
+                                                                                                 lastName: profile.name?.lastName ?? profile.lastName ?? "",
                                                                                                  dateOfBirth: profile.birthdate ?? "",
                                                                                                  email: profile.email ?? "",
-                                                                                                 phoneNumber: profile.phoneNumber ?? "",
+                                                                                                 phoneNumber: profile.phone?.number ?? profile.phoneNumber ?? "",
                                                                                                  ssn: profile.ssnLastFour ?? "",
                                                                                                  address: profileAddress)
             
@@ -256,7 +256,7 @@ class OnboardingContainerViewModel: ObservableObject {
         guard let accountId else { return }
         
         do {
-            let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithCustomer(customerId: accountId)
+            let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(accountId: accountId)
             if let methods = paymentMethodResponse?.data {
                 self.paymentMethods = methods.filter({ $0.card != nil })
                 self.payoutMethods = methods.filter({ $0.ach != nil })

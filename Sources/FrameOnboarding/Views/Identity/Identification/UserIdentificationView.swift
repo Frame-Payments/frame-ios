@@ -234,7 +234,7 @@ struct UserIdentificationView: View {
                     } else {
                         await onboardingContainerViewModel.updateExistingIndividualAccount()
                     }
-                    await onboardingContainerViewModel.createCustomerIdentity()
+//                    await onboardingContainerViewModel.createCustomerIdentity()
                     self.continueToNextStep.toggle()
                 }
             }
