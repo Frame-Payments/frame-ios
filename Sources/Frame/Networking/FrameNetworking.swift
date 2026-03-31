@@ -29,10 +29,6 @@ public class FrameNetworking: ObservableObject {
     
     var isEvervaultConfigured: Bool = false
     
-    init() {
-        self.configureEvervault()
-    }
-    
     public func initializeWithAPIKey(_ key: String, debugMode: Bool = false) {
         self.apiKey = key
         self.debugMode = debugMode
@@ -41,6 +37,10 @@ public class FrameNetworking: ObservableObject {
         Task {
             await SiftManager.initializeSift()
             await SessionManager.initializeSession()
+        }
+        
+        if !isEvervaultConfigured {
+            self.configureEvervault()
         }
     }
 

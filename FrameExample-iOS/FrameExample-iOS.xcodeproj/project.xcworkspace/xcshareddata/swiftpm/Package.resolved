@@ -24,7 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SiftScience/sift-ios.git",
       "state" : {
-        "revision" : "bcbbd164f4e83076688eda28fdbc93c09e104e1a"
+        "revision" : "4596ed3f5023298dc5d598196d29e1b9f7b78948",
+        "version" : "2.2.5"
       }
     },
     {
