@@ -85,7 +85,7 @@ final class PaymentMethodsAPITests: XCTestCase {
     
     func testCreateCardPaymentMethod() async {
         FrameNetworking.shared.asyncURLSession = session
-        let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(type: .card, cardNumber: "44444444444444444", expMonth: "08", expYear: "2021", cvc: "333", customer: nil, billing: nil)
+        let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(type: .card, cardNumber: "44444444444444444", expMonth: "08", expYear: "2021", cvc: "333", customer: nil, account: nil, billing: nil)
         let receivedMethod = try? await PaymentMethodsAPI.createCardPaymentMethod(request: request).0
         XCTAssertNil(receivedMethod)
         
@@ -118,7 +118,7 @@ final class PaymentMethodsAPITests: XCTestCase {
     
     func testCreateACHPaymentMethod() async {
         FrameNetworking.shared.asyncURLSession = session
-        let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: .checking, accountNumber: "1234567890123456789", routingNumber: "123456789", customer: nil, billing: nil)
+        let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: .checking, accountNumber: "1234567890123456789", routingNumber: "123456789", customer: nil, account: nil, billing: nil)
         let receivedMethod = try? await PaymentMethodsAPI.createACHPaymentMethod(request: request).0
         XCTAssertNil(receivedMethod)
         

@@ -137,15 +137,35 @@ final class ChargeIntentsAPITests: XCTestCase {
         let request = ChargeIntentsRequests.UpdateChargeIntentRequest()
         let intentOne = try? await ChargeIntentsAPI.updateChargeIntent(intentId: "", request: request).0
         XCTAssertNil(intentOne)
-        
+
         let intentTwo = try? await ChargeIntentsAPI.updateChargeIntent(intentId: "123", request: request).0
         XCTAssertNil(intentTwo)
-        
+
         do {
             session.data = try JSONEncoder().encode(chargeIntentResponse)
             let (intentThree, _) = try await ChargeIntentsAPI.updateChargeIntent(intentId: "1234", request: request)
             XCTAssertNotNil(intentThree)
             XCTAssertEqual(intentThree?.shipping, chargeIntentResponse.shipping)
+        } catch {
+            XCTFail("Error should not be thrown")
+        }
+    }
+
+    func testVoidRemainingChargeIntent() async {
+        FrameNetworking.shared.asyncURLSession = session
+
+        let voidOne = try? await ChargeIntentsAPI.voidRemainingChargeIntent(intentId: "").0
+        XCTAssertNil(voidOne)
+
+        let voidTwo = try? await ChargeIntentsAPI.voidRemainingChargeIntent(intentId: "123").0
+        XCTAssertNil(voidTwo)
+
+        do {
+            session.data = try JSONEncoder().encode(chargeIntentResponse)
+            let (voidThree, _) = try await ChargeIntentsAPI.voidRemainingChargeIntent(intentId: "1234")
+            XCTAssertNotNil(voidThree)
+            XCTAssertEqual(voidThree?.id, chargeIntentResponse.id)
+            XCTAssertEqual(voidThree?.amount, chargeIntentResponse.amount)
         } catch {
             XCTFail("Error should not be thrown")
         }

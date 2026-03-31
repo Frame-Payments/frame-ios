@@ -14,19 +14,31 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
     case getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType? , externalId: String?, includeDisabled: Bool = false)
     case getAccountWith(accountId: String)
     case deleteAccountWith(accountId: String)
-    
+    case searchAccounts(email: String)
+    case getAccountPaymentMethods(accountId: String)
+    case restrictAccount(accountId: String)
+    case unrestrictAccount(accountId: String)
+
     var endpointURL: String {
         switch self {
         case .createAccount, .getAccounts:
             return "/v1/accounts"
         case .updateAccount(let accountId), .getAccountWith(let accountId), .deleteAccountWith(let accountId):
             return "/v1/accounts/\(accountId)"
+        case .searchAccounts:
+            return "/v1/accounts/search"
+        case .getAccountPaymentMethods(let accountId):
+            return "/v1/accounts/\(accountId)/payment_methods"
+        case .restrictAccount(let accountId):
+            return "/v1/accounts/\(accountId)/restrict"
+        case .unrestrictAccount(let accountId):
+            return "/v1/accounts/\(accountId)/unrestrict"
         }
     }
-    
+
     var httpMethod: HTTPMethod {
         switch self {
-        case .createAccount:
+        case .createAccount, .restrictAccount, .unrestrictAccount:
             return .POST
         case .updateAccount:
             return .PATCH
@@ -36,7 +48,7 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
             return .GET
         }
     }
-    
+
     var queryItems: [URLQueryItem]? {
         switch self {
         case .getAccounts(let status, let type, let externalId, let includeDisabled):
@@ -46,6 +58,8 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
             if let externalId { queryItems.append(URLQueryItem(name: "external_id", value: externalId)) }
             queryItems.append(URLQueryItem(name: "include_disabled", value: includeDisabled.description))
             return queryItems
+        case .searchAccounts(let email):
+            return [URLQueryItem(name: "email", value: email)]
         default:
             return nil
         }

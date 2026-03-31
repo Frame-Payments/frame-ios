@@ -16,7 +16,8 @@ enum ChargeIntentEndpoints: FrameNetworkingEndpoints {
     case getChargeIntent(intentId: String)
     case getAllChargeIntents(perPage: Int?, page : Int?)
     case updateChargeIntent(intentId: String)
-    
+    case voidRemainingChargeIntent(intentId: String)
+
     var endpointURL: String {
         switch self {
         case .cancelChargeIntent(let intentId):
@@ -25,16 +26,18 @@ enum ChargeIntentEndpoints: FrameNetworkingEndpoints {
             return "/v1/charge_intents/\(intentId)/capture"
         case .confirmChargeIntent(let intentId):
             return "/v1/charge_intents/\(intentId)/confirm"
+        case .voidRemainingChargeIntent(let intentId):
+            return "/v1/charge_intents/\(intentId)/void_remaining"
         case .getChargeIntent(let intentId), .updateChargeIntent(let intentId):
             return "/v1/charge_intents/\(intentId)"
         case .getAllChargeIntents, .createChargeIntent:
             return "/v1/charge_intents/"
         }
     }
-    
+
     var httpMethod: HTTPMethod {
         switch self {
-        case .createChargeIntent, .cancelChargeIntent, .captureChargeIntent, .confirmChargeIntent:
+        case .createChargeIntent, .cancelChargeIntent, .captureChargeIntent, .confirmChargeIntent, .voidRemainingChargeIntent:
             return .POST
         case .updateChargeIntent:
             return .PATCH

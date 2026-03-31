@@ -12,7 +12,8 @@ enum DisputeEndpoints: FrameNetworkingEndpoints {
     case getDispute(disputeId: String)
     case getDisputes(chargeId: String?, chargeIntentId: String?, perPage: Int?, page: Int?)
     case closeDispute(disputeId: String)
-    
+    case uploadDocuments(disputeId: String)
+
     var endpointURL: String {
         switch self {
         case .updateDispute(let disputeId), .getDispute(let disputeId):
@@ -21,14 +22,16 @@ enum DisputeEndpoints: FrameNetworkingEndpoints {
             return "/v1/disputes/"
         case .closeDispute(let disputeId):
             return "/v1/disputes/\(disputeId)/close"
+        case .uploadDocuments(let disputeId):
+            return "/v1/disputes/\(disputeId)/documents"
         }
     }
-    
+
     var httpMethod: HTTPMethod {
         switch self {
         case .updateDispute:
             return .PATCH
-        case .closeDispute:
+        case .closeDispute, .uploadDocuments:
             return .POST
         default:
             return .GET

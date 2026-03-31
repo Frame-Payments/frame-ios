@@ -12,6 +12,7 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     case getPaymentMethods(perPage: Int?, page : Int?)
     case getPaymentMethodWith(paymentMethodId: String)
     case getPaymentMethodsWithCustomer(customerId: String)
+    case getPaymentMethodsWithAccount(accountId: String)
     case createPaymentMethod
     case updatePaymentMethodWith(paymentMethodId: String)
     case attachPaymentMethodWith(paymentMethodId: String)
@@ -27,6 +28,8 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
             return "/v1/payment_methods/\(paymentMethodId)"
         case .getPaymentMethodsWithCustomer(let customerId):
             return "/v1/customers/\(customerId)/payment_methods"
+        case .getPaymentMethodsWithAccount(let accountId):
+            return  "/v1/accounts/\(accountId)/payment_methods"
         case .attachPaymentMethodWith(let paymentMethodId):
             return "/v1/payment_methods/\(paymentMethodId)/attach"
         case .detachPaymentMethodWith(let paymentMethodId):

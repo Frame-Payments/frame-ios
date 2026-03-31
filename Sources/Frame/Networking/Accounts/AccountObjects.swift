@@ -113,19 +113,21 @@ extension FrameObjects {
     }
     
     public struct IndividualAccount: Codable, Sendable, Equatable {
+        public let name: FrameObjects.AccountNameInfo?
         public let firstName: String?
         public let middleName: String?
         public let lastName: String?
         public let suffix: String?
         public let email: String?
         public let ssnLastFour: String?
+        public let phone: FrameObjects.AccountPhoneNumber?
         public let phoneNumber: String?
         public let phoneCountryCode: String?
         public let address: FrameObjects.AccountBillingAddress?
         public let birthdate: String?
         
         public enum CodingKeys: String, CodingKey {
-            case suffix, email, address, birthdate
+            case suffix, email, address, birthdate, name, phone
             case firstName = "first_name"
             case middleName = "middle_name"
             case lastName = "last_name"

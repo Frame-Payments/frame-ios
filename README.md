@@ -186,15 +186,17 @@ let intent = try await ChargeIntentsAPI.createChargeIntent(chargeIntent)
 
 ### FrameCheckoutView
 
-A full, pre-built checkout view. Provide a charge intent ID and a customer ID and the component handles the rest:
+A full, pre-built checkout view. Provide a payment amount, an optional customer ID, and a checkout callback:
 
 ```swift
 import Frame_iOS
 
 FrameCheckoutView(
-    chargeIntentId: intent.id,
-    customerId: customer.id
-)
+    customerId: customer.id,
+    paymentAmount: 4999
+) { chargeIntent in
+    // Handle completed charge intent
+}
 ```
 
 ### FrameCartView

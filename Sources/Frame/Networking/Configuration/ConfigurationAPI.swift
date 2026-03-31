@@ -51,10 +51,15 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         guard let data = try? JSONEncoder().encode(value) else { return }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: data
+            kSecAttrAccount as String: key
         ]
-        SecItemAdd(query as CFDictionary, nil)
+        let attributes: [String: Any] = [kSecValueData as String: data]
+        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+        if status == errSecItemNotFound {
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            SecItemAdd(addQuery as CFDictionary, nil)
+        }
     }
     
     public static func retrieveFromKeychain(key: String) -> Data? {
