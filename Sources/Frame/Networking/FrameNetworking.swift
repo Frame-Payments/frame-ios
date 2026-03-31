@@ -42,6 +42,10 @@ public class FrameNetworking: ObservableObject {
             await SiftManager.initializeSift()
             await SessionManager.initializeSession()
         }
+        
+        if !isEvervaultConfigured {
+            self.configureEvervault()
+        }
     }
 
     func currentSonarSessionId() -> String? {
