@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import UIKit
 @testable import Frame
 
 final class DisputesAPITests: XCTestCase {
@@ -78,14 +79,30 @@ final class DisputesAPITests: XCTestCase {
         FrameNetworking.shared.asyncURLSession = session
         let cancellation = try? await DisputesAPI.closeDispute(disputeId: "disp_1").0
         XCTAssertNil(cancellation)
-        
+
         let cancellationTwo = try? await DisputesAPI.closeDispute(disputeId: "disp_1").0
         XCTAssertNil(cancellationTwo)
-        
+
         do {
             session.data = try JSONEncoder().encode(disputeResponse)
             let (cancellationThree, _) = try await DisputesAPI.closeDispute(disputeId: "disp_1")
             XCTAssertNotNil(cancellationThree)
+        } catch {
+            XCTFail("Error should not be thrown")
+        }
+    }
+
+    func testUploadDocuments() async {
+        FrameNetworking.shared.asyncURLSession = session
+
+        let emptyIdError = try? await DisputesAPI.uploadDocuments(disputeId: "", files: [])
+        XCTAssertNil(emptyIdError)
+
+        do {
+            session.data = Data()
+            let file = FileUpload(image: UIImage(), fieldName: .front)
+            let uploadError = try await DisputesAPI.uploadDocuments(disputeId: "disp_1", files: [file])
+            XCTAssertNil(uploadError)
         } catch {
             XCTFail("Error should not be thrown")
         }

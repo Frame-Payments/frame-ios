@@ -25,7 +25,7 @@ public enum SonarSessionEndpoints: FrameNetworkingEndpoints {
         case .create:
             return .POST
         case .update:
-            return .PUT
+            return .PATCH
         }
     }
     

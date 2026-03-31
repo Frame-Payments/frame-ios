@@ -15,6 +15,7 @@ protocol PaymentMethodProtocol {
     static func getPaymentMethods(page: Int?, perPage: Int?) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
     static func getPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func getPaymentMethodsWithCustomer(customerId: String, forTesting: Bool) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
+    static func getPaymentMethodsWithAccount(accountId: String, forTesting: Bool) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
     static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest)  async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
@@ -27,6 +28,7 @@ protocol PaymentMethodProtocol {
     static func getPaymentMethods(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
     static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
+    static func getPaymentMethodsWithAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
     static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
@@ -77,6 +79,22 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
+
+    public static func getPaymentMethodsWithAccount(accountId: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
+      guard !accountId.isEmpty else { return (nil, nil) }
+        let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithAccount(accountId: accountId)
+        
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+            if !forTesting {
+                // Redundancy incase no Customer API calls are ever made.
+                SiftManager.collectLoginEvent(customerId: accountId, email: "")
+            }
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
     
     // Note: You do not need to encrypt if you are using card details the EncryptedPaymentCardInput element
     public static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
@@ -89,12 +107,16 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
                 FrameNetworking.shared.configureEvervault()
             }
             
-            encryptedRequest.cardNumber = try await Evervault.shared.encrypt(request.cardNumber) as! String
-            encryptedRequest.cvc = try await Evervault.shared.encrypt(request.cvc) as! String
+            guard let encryptedCardNumber = try await Evervault.shared.encrypt(request.cardNumber) as? String,
+                  let encryptedCvc = try await Evervault.shared.encrypt(request.cvc) as? String else {
+                throw NetworkingError.unknownError
+            }
+            encryptedRequest.cardNumber = encryptedCardNumber
+            encryptedRequest.cvc = encryptedCvc
         }
-        
+
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
-        
+
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
@@ -215,6 +237,19 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             }
         }
     }
+
+    public static func getPaymentMethodsWithAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
+        let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithAccount(accountId: accountId)
+        
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+                SiftManager.collectLoginEvent(customerId: accountId, email: "")
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
     
     // Note: You do not need to encrypt if you are using card details the EncryptedPaymentCardInput element
     public static func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
@@ -230,8 +265,13 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
                         FrameNetworking.shared.configureEvervault()
                     }
                     
-                    encryptedRequest.cardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as! String
-                    encryptedRequest.cvc = try await Evervault.shared.encrypt(immutableRequest.cvc) as! String
+                    guard let encryptedCardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as? String,
+                          let encryptedCvc = try await Evervault.shared.encrypt(immutableRequest.cvc) as? String else {
+                        completionHandler(nil, nil)
+                        return
+                    }
+                    encryptedRequest.cardNumber = encryptedCardNumber
+                    encryptedRequest.cvc = encryptedCvc
                 }
 
                 let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)

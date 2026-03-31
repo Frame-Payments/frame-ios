@@ -90,8 +90,9 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     public static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
-        
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionPhasesResponses.ListSubscriptionPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {

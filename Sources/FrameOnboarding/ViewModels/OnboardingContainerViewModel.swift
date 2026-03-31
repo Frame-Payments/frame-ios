@@ -64,11 +64,11 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                  email: profile.email ?? "",
                                                                                                  phoneNumber: profile.phoneNumber ?? "",
                                                                                                  ssn: profile.ssnLastFour ?? "",
-                                                                                                 address: profileAddress ?? FrameObjects.BillingAddress(postalCode: ""))
+                                                                                                 address: profileAddress)
             
             guard updateCapabilies else { return }
             if let capabilities = account?.capabilities {
-                let accountCapabilities = capabilities.flatMap({ FrameObjects.Capabilities(rawValue: $0.name) })
+                let accountCapabilities = capabilities.compactMap({ FrameObjects.Capabilities(rawValue: $0.name) })
                 if Set(accountCapabilities).isSuperset(of: Set(requiredCapabilities)) {
                     // Check what needs to be completed
                     self.updateCapabilitiesBasedOnCompletion(accountCapabilities: capabilities)
@@ -130,7 +130,8 @@ class OnboardingContainerViewModel: ObservableObject {
     
     func createEmptyIndividualAccount(phoneNumber: String, dateOfBirth: String) async {
         do {
-            let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "test", lastName: "test"), email: "test@test.com",
+            let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "", lastName: ""),
+                                                                           email: "",
                                                                            phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: "+1"),
                                                                            address: nil, birthdate: dateOfBirth, ssn: nil)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)

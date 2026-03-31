@@ -15,13 +15,21 @@ protocol AccountsProtocol {
     static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?)
     static func getAccountWith(accountId: String, forTesting: Bool) async throws -> (FrameObjects.Account?, NetworkingError?)
     static func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
-    
+    static func searchAccounts(email: String) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?)
+    static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
+    static func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
+    static func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
+
     // completionHandlers
     static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void)
     static func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
+    static func searchAccounts(email: String, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void)
+    static func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
+    static func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
+    static func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
 }
 
 // Accounts API
@@ -88,7 +96,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     public static func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
-        
+
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
@@ -96,7 +104,55 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
-    
+
+    public static func searchAccounts(email: String) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?) {
+        guard !email.isEmpty else { return (nil, nil) }
+        let endpoint = AccountEndpoints.searchAccounts(email: email)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
+    public static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
+        guard !accountId.isEmpty else { return (nil, nil) }
+        let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
+    public static func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
+        guard !accountId.isEmpty else { return (nil, nil) }
+        let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
+    public static func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
+        guard !accountId.isEmpty else { return (nil, nil) }
+        let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
     //MARK: Methods using completion handler
     public static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.createAccount
@@ -155,7 +211,59 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     
     public static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
-        
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    public static func searchAccounts(email: String, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void) {
+        guard !email.isEmpty else { return completionHandler(nil, nil) }
+        let endpoint = AccountEndpoints.searchAccounts(email: email)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    public static func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
+        guard !accountId.isEmpty else { return completionHandler(nil, nil) }
+        let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    public static func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
+        guard !accountId.isEmpty else { return completionHandler(nil, nil) }
+        let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    public static func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
+        guard !accountId.isEmpty else { return completionHandler(nil, nil) }
+        let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
+
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
