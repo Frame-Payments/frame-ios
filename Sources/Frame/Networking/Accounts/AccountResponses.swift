@@ -12,4 +12,12 @@ public class AccountResponses {
         public let meta: FrameMetadata?
         public let data: [FrameObjects.Account]?
     }
+
+    public struct PlaidLinkTokenResponse: Codable {
+        public let linkToken: String
+
+        enum CodingKeys: String, CodingKey {
+            case linkToken = "link_token"
+        }
+    }
 }

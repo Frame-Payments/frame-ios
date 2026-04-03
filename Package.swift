@@ -22,7 +22,8 @@ let package = Package(
         .package(url: "https://github.com/evervault/evervault-ios.git", from: "1.3.0"),
         .package(url: "https://github.com/SiftScience/sift-ios.git", from: "2.2.5"),
         .package(id: "swift.proveauth", from: "6.10.2"),
-        .package(url: "https://github.com/fingerprintjs/fingerprintjs-pro-ios", from: "2.0.0")
+        .package(url: "https://github.com/fingerprintjs/fingerprintjs-pro-ios", from: "2.0.0"),
+        .package(url: "https://github.com/plaid/plaid-ios", from: "5.6.0")
     ],
     targets: [
         .target(
@@ -41,7 +42,8 @@ let package = Package(
         .target(name: "FrameOnboarding",
                 dependencies: [
                     .target(name: "Frame"),
-                    .product(name: "ProveAuth", package: "swift.proveauth", condition: .when(platforms: [.iOS]))
+                    .product(name: "ProveAuth", package: "swift.proveauth", condition: .when(platforms: [.iOS])),
+                    .product(name: "LinkKit", package: "plaid-ios", condition: .when(platforms: [.iOS]))
                 ],
                 swiftSettings: [
                     .define("EXCLUDE_MACOS", .when(platforms: [.macOS]))

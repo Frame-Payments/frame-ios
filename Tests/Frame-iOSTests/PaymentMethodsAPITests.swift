@@ -249,4 +249,55 @@ final class PaymentMethodsAPITests: XCTestCase {
             XCTFail("Error should not be thrown")
         }
     }
+
+    func testConnectPlaidBankAccount() async {
+        FrameNetworking.shared.asyncURLSession = session
+
+        let request = PaymentMethodRequest.ConnectPlaidBankAccountRequest(
+            account: "acc_123",
+            publicToken: "public-sandbox-abc123",
+            accountId: "plaid-account-xyz",
+            institutionName: "Chase",
+            subtype: "checking"
+        )
+
+        // Verify request fields encode correctly
+        XCTAssertEqual(request.account, "acc_123")
+        XCTAssertEqual(request.publicToken, "public-sandbox-abc123")
+        XCTAssertEqual(request.accountId, "plaid-account-xyz")
+        XCTAssertEqual(request.institutionName, "Chase")
+        XCTAssertEqual(request.subtype, "checking")
+
+        // No session data → returns nil
+        let nilResult = try? await PaymentMethodsAPI.connectPlaidBankAccount(request: request).0
+        XCTAssertNil(nilResult)
+
+        // Valid response data → decodes PaymentMethod
+        let paymentMethod = FrameObjects.PaymentMethod(id: "pm_123", type: .ach, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        do {
+            session.data = try JSONEncoder().encode(paymentMethod)
+            let (connectedMethod, _) = try await PaymentMethodsAPI.connectPlaidBankAccount(request: request)
+            XCTAssertNotNil(connectedMethod)
+            XCTAssertEqual(connectedMethod?.id, paymentMethod.id)
+            XCTAssertEqual(connectedMethod?.type, .ach)
+        } catch {
+            XCTFail("Error should not be thrown")
+        }
+    }
+
+    func testConnectPlaidBankAccountNetworkError() async {
+        FrameNetworking.shared.asyncURLSession = session
+
+        let request = PaymentMethodRequest.ConnectPlaidBankAccountRequest(
+            account: "acc_123",
+            publicToken: "public-sandbox-abc123",
+            accountId: "plaid-account-xyz",
+            institutionName: nil,
+            subtype: nil
+        )
+
+        // No session data → returns nil result
+        let (result, _) = (try? await PaymentMethodsAPI.connectPlaidBankAccount(request: request)) ?? (nil, nil)
+        XCTAssertNil(result)
+    }
 }
