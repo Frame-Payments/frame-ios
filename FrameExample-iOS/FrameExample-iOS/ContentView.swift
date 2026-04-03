@@ -42,6 +42,23 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
                 .padding()
             ScrollView {
+                cartButton
+                // Apple Pay button — only visible on devices that support Apple Pay
+                FrameApplePayButton(
+                    amount: 35000,
+                    currency: "usd",
+                    owner: .customer("ENTER_TEST_CUSTOMER_ID"),
+                    merchantId: applePayMerchantId
+                ) { result in
+                    switch result {
+                    case .success(let chargeIntent):
+                        applePayResult = "Payment succeeded! ChargeIntent: \(chargeIntent.id)"
+                    case .failure(let error):
+                        applePayResult = "Payment failed: \(error.localizedDescription)"
+                    }
+                }
+                .padding(.horizontal)
+                Divider()
                 onboardingButton
                 allCustomersButton
                     .disabled(viewModel.customers.isEmpty)
@@ -62,22 +79,6 @@ struct ContentView: View {
                     .disabled(viewModel.subscriptionPhases.isEmpty)
                     .opacity(viewModel.subscriptionPhases.isEmpty ? 0.3 : 1)
             }
-            Spacer()
-            cartButton
-            // Apple Pay button — only visible on devices that support Apple Pay
-            FrameApplePayButton(
-                amount: 35000,
-                currency: "usd",
-                merchantId: applePayMerchantId
-            ) { result in
-                switch result {
-                case .success(let chargeIntent):
-                    applePayResult = "Payment succeeded! ChargeIntent: \(chargeIntent.id)"
-                case .failure(let error):
-                    applePayResult = "Payment failed: \(error.localizedDescription)"
-                }
-            }
-            .padding(.horizontal)
         }
         .padding()
         .alert("Apple Pay Result", isPresented: Binding(
@@ -285,7 +286,7 @@ struct ContentView: View {
         Button {
             self.showCheckoutView = true
         } label: {
-            Text("Checkout")
+            Text("Show Checkout")
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity, alignment: .center)

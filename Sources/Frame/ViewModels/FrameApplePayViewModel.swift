@@ -9,9 +9,9 @@ import Foundation
 import PassKit
 
 @MainActor
-class FrameApplePayViewModel: NSObject, ObservableObject {
+public class FrameApplePayViewModel: NSObject, ObservableObject {
 
-    enum PaymentMethodOwner {
+    public enum PaymentMethodOwner {
         case customer(String)
         case account(String)
     }
@@ -27,7 +27,7 @@ class FrameApplePayViewModel: NSObject, ObservableObject {
 
     var completion: ((Result<FrameObjects.ChargeIntent, Error>) -> Void)?
 
-    init(amount: Int,
+    public init(amount: Int,
          currency: String,
          owner: PaymentMethodOwner,
          merchantId: String,
@@ -79,7 +79,7 @@ class FrameApplePayViewModel: NSObject, ObservableObject {
 extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
 
     /// Called when the user authorizes payment. Uses the async overload available on iOS 16+.
-    func paymentAuthorizationController(
+    public func paymentAuthorizationController(
         _ controller: PKPaymentAuthorizationController,
         didAuthorizePayment payment: PKPayment
     ) async -> PKPaymentAuthorizationResult {
@@ -143,7 +143,7 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
         }
     }
 
-    func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
+    public func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
         controller.dismiss()
     }
 }

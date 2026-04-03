@@ -44,7 +44,7 @@ public struct FrameCheckoutView: View {
             Divider()
             ScrollView {
                 if !merchantId.isEmpty {
-                    paymentButtons
+                    applePayButton
                     paymentDivider
                 }
                 if checkoutViewModel.customerPaymentOptions != nil {
@@ -103,16 +103,14 @@ public struct FrameCheckoutView: View {
             Rectangle().fill(.gray.opacity(0.3))
                 .frame(height: 1)
         }
-        .padding(.horizontal)
+        .padding()
     }
     
     @ViewBuilder
-    var paymentButtons: some View {
-        FrameApplePayButton(
-            amount: paymentAmount,
-            customerId: customerId,
-            merchantId: merchantId
-        ) { result in
+    var applePayButton: some View {
+        FrameApplePayButton(amount: paymentAmount,
+                            owner: .customer(customerId ?? ""),
+                            merchantId: merchantId) { result in
             if case .success(let chargeIntent) = result {
                 checkoutCallback(chargeIntent)
                 dismiss()
