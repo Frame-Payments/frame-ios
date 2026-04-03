@@ -110,7 +110,7 @@ final class ProductPhasesAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(mockPhase)
-            let (thirdUpdatedSubscriptionPhase, error) = try await ProductPhasesAPI.getProductPhase(productId: "prod_123", phaseId: "phase_123")
+            let (thirdUpdatedSubscriptionPhase, _) = try await ProductPhasesAPI.getProductPhase(productId: "prod_123", phaseId: "phase_123")
             XCTAssertNotNil(thirdUpdatedSubscriptionPhase)
             XCTAssertEqual(thirdUpdatedSubscriptionPhase?.pricingType, mockPhase.pricingType)
             XCTAssertEqual(thirdUpdatedSubscriptionPhase?.amount, mockPhase.amount)

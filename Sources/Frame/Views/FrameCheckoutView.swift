@@ -10,7 +10,7 @@ import EvervaultInputs
 
 public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject var checkoutViewModel: FrameCheckoutViewModel = FrameCheckoutViewModel()
+    @StateObject var checkoutViewModel: FrameCheckoutViewModel
     
     @State private var rotationAngle = 0.0
     @State var showLoadingState: Bool = false
@@ -20,15 +20,22 @@ public struct FrameCheckoutView: View {
     
     let customerId: String?
     let paymentAmount: Int
-    
+    let merchantId: String
+
     var colors: [Color] = [Color.white, Color.white.opacity(0.3)]
-    
+
     var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
     
-    public init(customerId: String?, paymentAmount: Int, checkoutCallback: @escaping (FrameObjects.ChargeIntent) -> ()) {
+    public init(customerId: String?, paymentAmount: Int, merchantId: String = "", checkoutCallback: @escaping (FrameObjects.ChargeIntent) -> ()) {
         self.customerId = customerId
         self.paymentAmount = paymentAmount
+        self.merchantId = merchantId
         self.checkoutCallback = checkoutCallback
+        _checkoutViewModel = StateObject(wrappedValue: FrameCheckoutViewModel(
+            customerId: customerId,
+            amount: paymentAmount,
+            merchantId: merchantId
+        ))
     }
     
     public var body: some View {
@@ -36,8 +43,10 @@ public struct FrameCheckoutView: View {
             topHeaderBar
             Divider()
             ScrollView {
-//                paymentButtons - Hiding Apple & Google Pay buttons until we add the implementation
-//                paymentDivider
+                if !merchantId.isEmpty {
+                    applePayButton
+                    paymentDivider
+                }
                 if checkoutViewModel.customerPaymentOptions != nil {
                     existingPaymentCardScroll
                         .padding([.leading, .bottom])
@@ -52,7 +61,7 @@ public struct FrameCheckoutView: View {
             }
         }
         .task {
-            await checkoutViewModel.loadCustomerPaymentMethods(customerId: customerId, amount: paymentAmount)
+            await checkoutViewModel.loadCustomerPaymentMethods()
         }
         .sheet(isPresented: $isShowingPicker) {
             CountryPickerSheet(
@@ -94,17 +103,20 @@ public struct FrameCheckoutView: View {
             Rectangle().fill(.gray.opacity(0.3))
                 .frame(height: 1)
         }
-        .padding(.horizontal)
+        .padding()
     }
     
     @ViewBuilder
-    var paymentButtons: some View {
-        FramePaymentButton(blackButton: useBlackButtons, paymentOption: .apple) {
-            checkoutViewModel.payWithApplePay()
+    var applePayButton: some View {
+        FrameApplePayButton(amount: paymentAmount,
+                            owner: .customer(customerId ?? ""),
+                            merchantId: merchantId) { result in
+            if case .success(let chargeIntent) = result {
+                checkoutCallback(chargeIntent)
+                dismiss()
+            }
         }
-        FramePaymentButton(blackButton: useBlackButtons, paymentOption: .google) {
-            checkoutViewModel.payWithGooglePay()
-        }
+        .padding(.horizontal)
     }
     
     var existingPaymentCardScroll: some View {

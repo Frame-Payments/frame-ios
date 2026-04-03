@@ -25,7 +25,7 @@ final class SubscriptionsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(subscription)
-            let (createdSecondSubscription, error) = try await SubscriptionsAPI.createSubscription(request: request)
+            let (createdSecondSubscription, _) = try await SubscriptionsAPI.createSubscription(request: request)
             XCTAssertNotNil(createdSecondSubscription)
             XCTAssertEqual(createdSecondSubscription?.currency, subscription.currency)
         } catch {
@@ -47,7 +47,7 @@ final class SubscriptionsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(subscription)
-            let (thirdUpdatedSubscription, error) = try await SubscriptionsAPI.updateSubscription(subscriptionId: "1234", request: request)
+            let (thirdUpdatedSubscription, _) = try await SubscriptionsAPI.updateSubscription(subscriptionId: "1234", request: request)
             XCTAssertNotNil(thirdUpdatedSubscription)
             XCTAssertEqual(thirdUpdatedSubscription?.currency, subscription.currency)
         } catch {
@@ -67,7 +67,7 @@ final class SubscriptionsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(SubscriptionResponses.ListSubscriptionsResponse(meta: nil, data: [firstSubscription, secondSubscription]))
-            let (secondReceivedSubscriptions, error) = try await SubscriptionsAPI.getSubscriptions()
+            let (secondReceivedSubscriptions, _) = try await SubscriptionsAPI.getSubscriptions()
             XCTAssertNotNil(secondReceivedSubscriptions)
             XCTAssertEqual(secondReceivedSubscriptions?.data?[0].currency, firstSubscription.currency)
             XCTAssertEqual(secondReceivedSubscriptions?.data?[1].currency, secondSubscription.currency)
@@ -90,7 +90,7 @@ final class SubscriptionsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(subscription)
-            let (thirdReceivedSubscription, error) = try await SubscriptionsAPI.getSubscription(subscriptionId: "1234")
+            let (thirdReceivedSubscription, _) = try await SubscriptionsAPI.getSubscription(subscriptionId: "1234")
             XCTAssertNotNil(thirdReceivedSubscription)
             XCTAssertEqual(thirdReceivedSubscription?.currency, subscription.currency)
         } catch {
@@ -111,7 +111,7 @@ final class SubscriptionsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(SubscriptionResponses.ListSubscriptionsResponse(meta: nil, data: [firstSubscription, secondSubscription]))
-            let (secondSearch, error) = try await SubscriptionsAPI.searchSubscription(request: request)
+            let (secondSearch, _) = try await SubscriptionsAPI.searchSubscription(request: request)
             XCTAssertNotNil(secondSearch)
             XCTAssertEqual(secondSearch?[0].currency, firstSubscription.currency)
             XCTAssertEqual(secondSearch?[1].currency, secondSubscription.currency)
@@ -133,7 +133,7 @@ final class SubscriptionsAPITests: XCTestCase {
         
         do {
             session.data = try JSONEncoder().encode(subscription)
-            let (thirdCancelledSubscription, error) = try await SubscriptionsAPI.getSubscription(subscriptionId: "1234")
+            let (thirdCancelledSubscription, _) = try await SubscriptionsAPI.getSubscription(subscriptionId: "1234")
             XCTAssertNotNil(thirdCancelledSubscription)
             XCTAssertEqual(thirdCancelledSubscription?.currency, subscription.currency)
         } catch {
