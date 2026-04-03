@@ -12,6 +12,7 @@ public class ChargeIntentsRequests {
         let amount: Int
         let currency: String
         let customer: String?
+        let account: String? // use instead of customer, not with it.
         let description: String?
         let paymentMethod: String?
         let confirm: Bool
@@ -23,10 +24,11 @@ public class ChargeIntentsRequests {
         var fraudSignals: FraudSignals?
         var sonarSessionId: String?
         
-        public init(amount: Int, currency: String, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil) {
+        public init(amount: Int, currency: String, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, receiptEmail: String? = nil, authorizationMode: FrameObjects.AuthorizationMode? = nil, customerData: CustomerData? = nil, paymentMethodData: PaymentMethodData? = nil) {
             self.amount = amount
             self.currency = currency
             self.customer = customer
+            self.account = account
             self.description = description
             self.paymentMethod = paymentMethod
             self.confirm = confirm
@@ -37,7 +39,7 @@ public class ChargeIntentsRequests {
         }
         
         public enum CodingKeys: String, CodingKey {
-            case amount, currency, customer, description, confirm
+            case amount, currency, customer, description, confirm, account
             case paymentMethod = "payment_method"
             case receiptEmail = "receipt_email"
             case authorizationMode = "authorization_mode"
@@ -53,15 +55,17 @@ public class ChargeIntentsRequests {
         let amount: Int?
         let currency: String?
         let customer: String?
+        let account: String?
         let description: String?
         let paymentMethod: String?
         let confirm: Bool?
         let receiptEmail: String?
         
-        public init(amount: Int? = nil, currency: String? = nil, customer: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool? = nil, receiptEmail: String? = nil) {
+        public init(amount: Int? = nil, currency: String? = nil, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool? = nil, receiptEmail: String? = nil) {
             self.amount = amount
             self.currency = currency
             self.customer = customer
+            self.account = account
             self.description = description
             self.paymentMethod = paymentMethod
             self.confirm = confirm
@@ -69,7 +73,7 @@ public class ChargeIntentsRequests {
         }
         
         public enum CodingKeys: String, CodingKey {
-            case amount, currency, customer, description, confirm
+            case amount, currency, customer, description, confirm, account
             case paymentMethod = "payment_method"
             case receiptEmail = "receipt_email"
         }

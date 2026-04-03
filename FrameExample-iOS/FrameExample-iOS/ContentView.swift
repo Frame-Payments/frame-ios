@@ -27,6 +27,10 @@ struct ContentView: View {
     @State var showRefundsView: Bool = false
     @State var showSubscriptionPhases: Bool = false
     @State var showOnboardingSheet: Bool = false
+    @State var applePayResult: String? = nil
+
+    // Replace with your Apple Pay merchant ID registered in your entitlements
+    let applePayMerchantId: String = "merchant.com.yourapp"
     
     var body: some View {
         VStack {
@@ -60,8 +64,30 @@ struct ContentView: View {
             }
             Spacer()
             cartButton
+            // Apple Pay button — only visible on devices that support Apple Pay
+            FrameApplePayButton(
+                amount: 35000,
+                currency: "usd",
+                merchantId: applePayMerchantId
+            ) { result in
+                switch result {
+                case .success(let chargeIntent):
+                    applePayResult = "Payment succeeded! ChargeIntent: \(chargeIntent.id)"
+                case .failure(let error):
+                    applePayResult = "Payment failed: \(error.localizedDescription)"
+                }
+            }
+            .padding(.horizontal)
         }
         .padding()
+        .alert("Apple Pay Result", isPresented: Binding(
+            get: { applePayResult != nil },
+            set: { if !$0 { applePayResult = nil } }
+        )) {
+            Button("OK") { applePayResult = nil }
+        } message: {
+            Text(applePayResult ?? "")
+        }
         .sheet(isPresented: $showOnboardingSheet, content: {
 //            An existing account Id can be added here to onboarding an existing user.
 //            OnboardingContainerView(accountId: "ENTER_TEST_ACCOUNT_ID", requiredCapabilities: [])
