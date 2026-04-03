@@ -20,7 +20,6 @@ The Frame iOS SDK gives you everything you need to build a polished payment expe
 - [Apple Pay](#apple-pay)
 - [Frame Onboarding](#frame-onboarding)
 - [Examples](#examples)
-- [React Native](#react-native)
 - [Privacy](#privacy)
 - [Support](#support)
 
@@ -83,7 +82,7 @@ import Frame_iOS
 @main
 struct MyApp: App {
     init() {
-        FrameNetworking.shared.initializeWithAPIKey("sk_your_secret_key_here")
+        FrameNetworking.shared.initializeWithAPIKey("sk_your_secret_key_here", debugMode: false)
     }
 
     var body: some Scene {
@@ -138,15 +137,22 @@ All API classes are stateless — call them directly without creating an instanc
 | Class | Description |
 |-------|-------------|
 | `CustomersAPI` | Create, retrieve, update, delete, and search customers |
+| `CustomerIdentityAPI` | Customer identity verification |
 | `PaymentMethodsAPI` | Add and manage payment methods |
 | `ChargeIntentsAPI` | Create and manage charge intents |
+| `ApplePayAPI` | Apple Pay token processing |
 | `SubscriptionsAPI` | Subscription lifecycle management |
+| `SubscriptionPhasesAPI` | Subscription phase management |
 | `InvoicesAPI` | Invoice retrieval and operations |
+| `InvoiceLineItemsAPI` | Invoice line item management |
 | `ProductsAPI` | Product catalog management |
+| `ProductPhasesAPI` | Product phase management |
 | `RefundsAPI` | Initiate and track refunds |
 | `DisputesAPI` | Dispute retrieval and management |
 | `AccountsAPI` | Account details and configuration |
 | `CapabilitiesAPI` | Account capability verification |
+| `TermsOfServiceAPI` | Terms of service management |
+| `ConfigurationAPI` | SDK configuration |
 | `PhoneOTPVerificationAPI` | Phone number OTP verification |
 | `ThreeDSecureVerificationsAPI` | 3D Secure payment verification |
 | `GeocomplianceAPI` | Location compliance checking |
@@ -207,15 +213,15 @@ A customizable cart and checkout component. Conform your item model to `FrameCar
 ```swift
 struct CartItem: FrameCartItem {
     var id: String
-    var name: String
-    var price: Int
-    var quantity: Int
+    var imageURL: String
+    var title: String
+    var amountInCents: Int
 }
 
 FrameCartView(
-    items: cartItems,
-    shippingCost: 599,
-    customerId: customer.id
+    customer: customer,
+    cartItems: cartItems,
+    shippingAmountInCents: 599
 )
 ```
 
@@ -271,7 +277,7 @@ import Frame_iOS
 FrameApplePayButton(
     amount: 4999,                              // amount in cents ($49.99)
     currency: "usd",
-    customerId: "cus_123",                     // optional Frame customer ID
+    owner: .customer("cus_123"),               // .customer or .account
     merchantId: "merchant.com.yourcompany.appname"
 ) { result in
     switch result {
@@ -283,12 +289,12 @@ FrameApplePayButton(
 }
 ```
 
-Use `accountId` instead of `customerId` if your integration is account-based:
+Use `.account` instead of `.customer` if your integration is account-based:
 
 ```swift
 FrameApplePayButton(
     amount: 4999,
-    accountId: "acc_456",
+    owner: .account("acc_456"),
     merchantId: "merchant.com.yourcompany.appname"
 ) { result in ... }
 ```
@@ -300,6 +306,7 @@ The button type and style can be configured to match your UI:
 ```swift
 FrameApplePayButton(
     amount: 4999,
+    owner: .customer("cus_123"),
     merchantId: "merchant.com.yourcompany.appname",
     buttonType: .pay,        // .buy (default), .pay, .checkout, .plain, etc.
     buttonStyle: .white      // .black (default), .white, .whiteOutline
@@ -466,66 +473,6 @@ The `FrameExample-iOS` app in this repository demonstrates:
 - Listing customers, payment methods, subscriptions, charge intents, and refunds
 
 To run the example app, open `FrameExample-iOS/FrameExample-iOS.xcodeproj` in Xcode and run the target on a simulator or device.
-
----
-
-## React Native
-
-The Frame iOS SDK can be bridged into a React Native project through a native module.
-
-### 1. Create a Bridge File
-
-Inside the `ios/` folder of your React Native project, create a new Swift file (e.g. `FrameBridge.swift`):
-
-```swift
-import Foundation
-import Frame_iOS
-
-@objc(FrameBridge)
-class FrameBridge: NSObject {
-
-    @objc static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
-
-    @objc func initialize(_ apiKey: String) {
-        FrameNetworking.shared.initializeWithAPIKey(apiKey)
-    }
-
-    @objc func getCustomers(
-        _ resolve: @escaping RCTPromiseResolveBlock,
-        rejecter reject: @escaping RCTPromiseRejectBlock
-    ) {
-        Task {
-            do {
-                let customers = try await CustomersAPI.getCustomers()
-                resolve(customers)
-            } catch {
-                reject("GET_CUSTOMERS_ERROR", error.localizedDescription, error)
-            }
-        }
-    }
-}
-```
-
-### 2. Register the Module
-
-Ensure the module is registered in your `AppDelegate`. With React Native 0.60+, autolinking handles this automatically.
-
-### 3. Use from JavaScript
-
-```javascript
-import { NativeModules } from 'react-native';
-const { FrameBridge } = NativeModules;
-
-// Initialize
-FrameBridge.initialize('sk_your_secret_key_here');
-
-// Call APIs
-FrameBridge.getCustomers()
-  .then(customers => console.log(customers))
-  .catch(error => console.error(error));
-```
 
 ---
 
