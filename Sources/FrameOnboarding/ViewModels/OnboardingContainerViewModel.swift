@@ -35,6 +35,8 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var showProveOTPEntry: Bool = false
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
+    @Published var plaidLinkToken: String?
+    @Published var isConnectingPlaidBank: Bool = false
     
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
     
@@ -330,6 +332,46 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
+    // Fetch a Plaid link token for the current account
+    func fetchPlaidLinkToken() async {
+        guard let accountId, !isConnectingPlaidBank, plaidLinkToken == nil else { return }
+        isConnectingPlaidBank = true
+        do {
+            let (response, _) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
+            if response?.linkToken == nil {
+                isConnectingPlaidBank = false
+            }
+            self.plaidLinkToken = response?.linkToken
+        } catch let error {
+            isConnectingPlaidBank = false
+            print(error)
+        }
+    }
+
+    // Handle successful Plaid bank connection
+    func handlePlaidSuccess(publicToken: String, plaidAccountId: String, institutionName: String?, subtype: String?) async {
+        guard let accountId else { return }
+        isConnectingPlaidBank = true
+        defer { isConnectingPlaidBank = false }
+        do {
+            let request = PaymentMethodRequest.ConnectPlaidBankAccountRequest(
+                account: accountId,
+                publicToken: publicToken,
+                accountId: plaidAccountId,
+                institutionName: institutionName,
+                subtype: subtype
+            )
+            let (payoutMethod, _) = try await PaymentMethodsAPI.connectPlaidBankAccount(request: request)
+            if let payoutMethod {
+                self.selectedPayoutMethod = payoutMethod
+                self.payoutMethods.append(payoutMethod)
+                self.clearAccountDetails()
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+
     // Start 3DS process with select payment method
     func start3DSecureProcess() async {
         guard let paymentMethodId = selectedPaymentMethod?.id else { return }

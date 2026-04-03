@@ -23,7 +23,8 @@ protocol PaymentMethodProtocol {
     static func detachPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func blockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
     static func unblockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
-    
+    static func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)
+
     //MARK: Methods using completionHandler
     static func getPaymentMethods(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
     static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
@@ -36,6 +37,7 @@ protocol PaymentMethodProtocol {
     static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
     static func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
+    static func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)
 }
 
 // Payments Methods API
@@ -198,8 +200,19 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
-    
-    
+
+    public static func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
+        let endpoint = PaymentMethodEndpoints.connectPlaidBankAccount
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
     //MARK: Methods using completion handler
     public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
@@ -353,8 +366,21 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     
     public static func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.unblockPaymentMethodWith(paymentMethodId: paymentMethodId)
-        
+
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    public static func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
+        let endpoint = PaymentMethodEndpoints.connectPlaidBankAccount
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
