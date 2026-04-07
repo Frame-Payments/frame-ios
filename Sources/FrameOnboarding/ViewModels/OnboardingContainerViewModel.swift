@@ -9,6 +9,7 @@ import Foundation
 import Frame
 import EvervaultInputs
 import CoreLocation
+import LinkKit
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
@@ -35,8 +36,8 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var showProveOTPEntry: Bool = false
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
-    @Published var plaidLinkToken: String?
     @Published var isConnectingPlaidBank: Bool = false
+    private var plaidHandler: Handler?
     
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
     
@@ -332,16 +333,50 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
-    // Fetch a Plaid link token for the current account
-    func fetchPlaidLinkToken() async {
-        guard let accountId, !isConnectingPlaidBank, plaidLinkToken == nil else { return }
+    // Fetch Plaid link token and open the Plaid Link UI
+    func openPlaidLink(from viewController: UIViewController, onSuccess: @escaping () -> Void) async {
+        guard let accountId, !isConnectingPlaidBank else { return }
         isConnectingPlaidBank = true
         do {
             let (response, _) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
-            if response?.linkToken == nil {
+            guard let token = response?.linkToken else {
                 isConnectingPlaidBank = false
+                return
             }
-            self.plaidLinkToken = response?.linkToken
+            var config = LinkTokenConfiguration(token: token) { [weak self] success in
+                Task { @MainActor in
+                    guard let self,
+                          let account = success.metadata.accounts.first,
+                          !account.id.isEmpty else {
+                        self?.isConnectingPlaidBank = false
+                        return
+                    }
+                    await self.handlePlaidSuccess(
+                        publicToken: success.publicToken,
+                        plaidAccountId: account.id,
+                        institutionName: success.metadata.institution.name,
+                        subtype: account.subtype.description
+                    )
+                    onSuccess()
+                }
+            }
+            config.onExit = { [weak self] (exit: LinkExit) in
+                Task { @MainActor in
+                    self?.isConnectingPlaidBank = false
+                }
+                if let error = exit.error {
+                    print("Plaid Link exited with error: \(error.displayMessage ?? String(describing: error.errorCode))")
+                }
+            }
+            let result = Plaid.create(config)
+            switch result {
+            case .success(let handler):
+                self.plaidHandler = handler
+                handler.open(presentUsing: .viewController(viewController))
+            case .failure(let error):
+                isConnectingPlaidBank = false
+                print("Plaid.create failed: \(error.localizedDescription)")
+            }
         } catch let error {
             isConnectingPlaidBank = false
             print(error)

@@ -8,7 +8,6 @@
 import SwiftUI
 import EvervaultInputs
 import Frame
-import LinkKit
 
 struct AddPayoutMethodView: View {
     @Environment(\.dismiss) var dismiss
@@ -19,7 +18,6 @@ struct AddPayoutMethodView: View {
     @State private var canCustomerContinue: Bool = false
     @State private var showAccountTypePicker: Bool = false
     @State private var showManualForm: Bool = false
-    @State private var plaidHandler: Handler?
 
     init(onboardingContainerViewModel: OnboardingContainerViewModel) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
@@ -40,43 +38,6 @@ struct AddPayoutMethodView: View {
             self.onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
             self.accountTypeString = selectedAccountType.rawValue.capitalized
         })
-        .onChange(of: onboardingContainerViewModel.plaidLinkToken) { _, token in
-            guard let token else { return }
-            onboardingContainerViewModel.plaidLinkToken = nil
-            var config = LinkTokenConfiguration(token: token) { success in
-                Task { @MainActor in
-                    guard let account = success.metadata.accounts.first,
-                          !account.id.isEmpty else {
-                        onboardingContainerViewModel.isConnectingPlaidBank = false
-                        return
-                    }
-                    await onboardingContainerViewModel.handlePlaidSuccess(
-                        publicToken: success.publicToken,
-                        plaidAccountId: account.id,
-                        institutionName: success.metadata.institution?.name,
-                        subtype: account.subtype.rawValue
-                    )
-                    self.dismiss()
-                }
-            }
-            config.onExit = { exit in
-                Task { @MainActor in
-                    onboardingContainerViewModel.isConnectingPlaidBank = false
-                }
-                if let error = exit.error {
-                    print("Plaid Link exited with error: \(error.displayMessage ?? error.errorCode)")
-                }
-            }
-            let result = Plaid.create(config)
-            switch result {
-            case .success(let handler):
-                self.plaidHandler = handler
-                handler.open(presentUsing: .viewController(topViewController()))
-            case .failure(let error):
-                onboardingContainerViewModel.isConnectingPlaidBank = false
-                print("Plaid.create failed: \(error.localizedDescription)")
-            }
-        }
         .sheet(isPresented: $showAccountTypePicker) {
             Picker("type", selection: $selectedAccountType) {
                 ForEach(FrameObjects.PaymentAccountType.allCases, id: \.self) { type in
@@ -97,7 +58,9 @@ struct AddPayoutMethodView: View {
             VStack(alignment: .leading, spacing: 16) {
                 ContinueButton(buttonText: "Connect Bank Account", enabled: .constant(!onboardingContainerViewModel.isConnectingPlaidBank)) {
                     Task {
-                        await onboardingContainerViewModel.fetchPlaidLinkToken()
+                        await onboardingContainerViewModel.openPlaidLink(from: topViewController()) {
+                            self.dismiss()
+                        }
                     }
                 }
                 .overlay {

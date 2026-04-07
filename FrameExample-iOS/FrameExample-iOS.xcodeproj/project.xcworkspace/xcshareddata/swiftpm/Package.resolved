@@ -20,6 +20,15 @@
       }
     },
     {
+      "identity" : "plaid-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/plaid/plaid-ios",
+      "state" : {
+        "revision" : "f2c27234d8df71673c03f8f22d780879c2e93784",
+        "version" : "5.6.1"
+      }
+    },
+    {
       "identity" : "sift-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SiftScience/sift-ios.git",
