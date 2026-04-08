@@ -24,13 +24,15 @@ public class FrameNetworking: ObservableObject {
     var asyncURLSession: URLSessionProtocol = URLSession.shared
     var urlSession: URLSession = URLSession.shared
     
-    private var apiKey: String = "" // API Key used to authenticate each request - Bearer Token
+    private var apiSecretKey: String = "" // API Key used to authenticate each request - Bearer Token
+    private var apiPublishableKey: String = "" // Publishable key for client-side only endpoints
     private var debugMode: Bool = false // Print API data on task calls.
-    
+
     var isEvervaultConfigured: Bool = false
-    
-    public func initializeWithAPIKey(_ key: String, debugMode: Bool = false) {
-        self.apiKey = key
+
+    public func initializeWithAPIKey(_ key: String, publishableKey: String, debugMode: Bool = false) {
+        self.apiSecretKey = key
+        self.apiPublishableKey = publishableKey
         self.debugMode = debugMode
         
         // Initializes Sift and Sonar Session when the SDK is initialized.
@@ -49,21 +51,22 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Async/Await
-    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil) async throws -> (Data?, NetworkingError?) {
+    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, usePublishableKey: Bool = false) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
-        
+
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
         if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        
+
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
-        
-        urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
+        let authKey = usePublishableKey && !apiPublishableKey.isEmpty ? apiPublishableKey : apiSecretKey
+        urlRequest.setValue("Bearer \(authKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
@@ -115,7 +118,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpBody = body
         urlRequest.setValue(multipart.contentTypeHeader, forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
-        urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("Bearer \(apiSecretKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
@@ -142,7 +145,7 @@ public class FrameNetworking: ObservableObject {
     }
     
     // Completion Handler
-    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
+    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, usePublishableKey: Bool = false, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
         
         var urlRequest = URLRequest(url: url)
@@ -156,7 +159,8 @@ public class FrameNetworking: ObservableObject {
             urlRequest.url?.append(queryItems: queryItems)
         }
         
-        urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        let authKey = usePublishableKey && !apiPublishableKey.isEmpty ? apiPublishableKey : apiSecretKey
+        urlRequest.setValue("Bearer \(authKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         if let ipAddress = SiftManager.getIPAddress() {
@@ -211,7 +215,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpBody = body
         urlRequest.setValue(multipart.contentTypeHeader, forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
-        urlRequest.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("Bearer \(apiSecretKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         
         if let ipAddress = SiftManager.getIPAddress() {

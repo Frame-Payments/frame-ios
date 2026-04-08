@@ -32,7 +32,7 @@ public class ApplePayAPI {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, usePublishableKey: true)
         if let data, let decoded = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decoded, error)
         }
@@ -47,7 +47,7 @@ public class ApplePayAPI {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, usePublishableKey: true)
         if let data, let decoded = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decoded, error)
         }
