@@ -24,22 +24,39 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var cardData = PaymentCardData()
     
     var customerId: String?
-    var amount: Int = 0
-    
-    func loadCustomerPaymentMethods(customerId: String?, amount: Int, forTesting: Bool = false) async {
-        self.amount = amount
-        
-        guard let customerId else { return }
+    var amount: Int
+    var merchantId: String
+
+    private var applePayViewModel: FrameApplePayViewModel?
+
+    init(customerId: String?, amount: Int, merchantId: String = "") {
         self.customerId = customerId
-        
+        self.amount = amount
+        self.merchantId = merchantId
+    }
+
+    func loadCustomerPaymentMethods(forTesting: Bool = false) async {
+        guard let customerId else { return }
+
         let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId, forTesting: forTesting).0
         self.customerPaymentOptions = customer?.paymentMethods
         self.customerName = customer?.name ?? ""
         self.customerEmail = customer?.email ?? ""
     }
     
-    //TODO: Integrate for Apple Pay and Google Pay
-    func payWithApplePay() { }
+    func payWithApplePay(completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
+        guard !merchantId.isEmpty else { return }
+        applePayViewModel = FrameApplePayViewModel(
+            amount: amount,
+            currency: "usd",
+            owner: customerId.map { .customer($0) } ?? .customer(""),
+            merchantId: merchantId,
+            completion: completion
+        )
+        applePayViewModel?.presentApplePay()
+    }
+
+    //TODO: Integrate Google Pay
     func payWithGooglePay() { }
     
     func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.ChargeIntent? {

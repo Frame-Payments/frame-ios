@@ -85,7 +85,7 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView(customerId: customer?.id, paymentAmount: cartViewModel.finalTotal) { chargeIntent in
+                FrameCheckoutView(customerId: customer?.id, paymentAmount: cartViewModel.finalTotal, merchantId: "test.merchant.id") { chargeIntent in
                     self.dismiss()
                 }
                 .toolbar(.hidden)
