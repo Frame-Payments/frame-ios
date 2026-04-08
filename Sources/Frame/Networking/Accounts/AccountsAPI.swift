@@ -19,6 +19,7 @@ protocol AccountsProtocol {
     static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)
     static func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
     static func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
+    static func getPlaidLinkToken(accountId: String) async throws -> (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?)
 
     // completionHandlers
     static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
@@ -30,6 +31,7 @@ protocol AccountsProtocol {
     static func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void)
     static func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
+    static func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void)
 }
 
 // Accounts API
@@ -153,6 +155,18 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    public static func getPlaidLinkToken(accountId: String) async throws -> (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) {
+        guard !accountId.isEmpty else { return (nil, nil) }
+        let endpoint = AccountEndpoints.getPlaidLinkToken(accountId: accountId)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.PlaidLinkTokenResponse.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
     //MARK: Methods using completion handler
     public static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.createAccount
@@ -266,6 +280,19 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    public static func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void) {
+        guard !accountId.isEmpty else { return completionHandler(nil, nil) }
+        let endpoint = AccountEndpoints.getPlaidLinkToken(accountId: accountId)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.PlaidLinkTokenResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

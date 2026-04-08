@@ -18,6 +18,7 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
     case getAccountPaymentMethods(accountId: String)
     case restrictAccount(accountId: String)
     case unrestrictAccount(accountId: String)
+    case getPlaidLinkToken(accountId: String)
 
     var endpointURL: String {
         switch self {
@@ -33,6 +34,8 @@ enum AccountEndpoints: FrameNetworkingEndpoints {
             return "/v1/accounts/\(accountId)/restrict"
         case .unrestrictAccount(let accountId):
             return "/v1/accounts/\(accountId)/unrestrict"
+        case .getPlaidLinkToken(let accountId):
+            return "/v1/accounts/\(accountId)/plaid_link_token"
         }
     }
 
