@@ -29,6 +29,7 @@ extension FrameObjects {
         public let currency: String
         public let latestCharge: LatestCharge?
         public let customer: FrameObjects.Customer?
+        public let account: FrameObjects.Account? 
         public let paymentMethod: FrameObjects.PaymentMethod?
         public let shipping: FrameObjects.BillingAddress?
         public let status: FrameObjects.ChargeIntentStatus
@@ -41,11 +42,12 @@ extension FrameObjects {
         public let updated: Int
         public let livemode: Bool
         
-        public init(id: String, currency: String, latestCharge: FrameObjects.LatestCharge? = nil, customer: FrameObjects.Customer? = nil, paymentMethod: FrameObjects.PaymentMethod? = nil, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String? = nil, authorizationMode: FrameObjects.AuthorizationMode, failureDescription: String? = nil, object: String, amount: Int, created: Int, updated: Int, livemode: Bool) {
+        public init(id: String, currency: String, latestCharge: FrameObjects.LatestCharge? = nil, customer: FrameObjects.Customer? = nil, account: FrameObjects.Account? = nil, paymentMethod: FrameObjects.PaymentMethod? = nil, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String? = nil, authorizationMode: FrameObjects.AuthorizationMode, failureDescription: String? = nil, object: String, amount: Int, created: Int, updated: Int, livemode: Bool) {
             self.id = id
             self.currency = currency
             self.latestCharge = latestCharge
             self.customer = customer
+            self.account = account
             self.paymentMethod = paymentMethod
             self.shipping = shipping
             self.status = status
@@ -60,7 +62,7 @@ extension FrameObjects {
         }
         
         public enum CodingKeys: String, CodingKey {
-            case id, currency, customer, shipping, status, description, object, amount, created, livemode, updated
+            case id, currency, customer, shipping, status, description, object, amount, created, livemode, updated, account
             case latestCharge = "latest_charge"
             case paymentMethod = "payment_method"
             case authorizationMode = "authorization_mode"
@@ -81,15 +83,16 @@ extension FrameObjects {
         public let chargeIntent: String
         public let refunded: Bool
         public let failureMessage: String?
-        public  let description: String?
+        public let description: String?
         public let status: FrameObjects.ChargeIntentStatus?
-        public  let paymentMethodDetails: FrameObjects.PaymentMethod?
+        public let paymentMethodDetails: FrameObjects.PaymentMethod?
         public let customer: String?
+        public let account: String?
         public let paymentMethod: String?
         public let amount: Int
         
         public enum CodingKeys: String, CodingKey {
-            case id, currency, created, updated, livemode, captured, disputed, refunded, description, status, customer, amount
+            case id, currency, created, updated, livemode, captured, disputed, refunded, description, status, customer, amount, account
             case amountCaptured = "amount_captured"
             case amountRefunded = "amount_refunded"
             case chargeIntent = "charge_intent"

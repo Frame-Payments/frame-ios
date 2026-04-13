@@ -19,22 +19,24 @@ final class CheckoutViewModelTests: XCTestCase {
         FrameNetworking.shared.asyncURLSession = session
         
         // Test with invalid customer ID
-        let viewModel = FrameCheckoutViewModel()
-        await viewModel.loadCustomerPaymentMethods(customerId: "", amount: 100, forTesting: true)
+        let viewModel = FrameCheckoutViewModel(customerId: "", amount: 100)
+        await viewModel.loadCustomerPaymentMethods()
         XCTAssertNil(viewModel.customerPaymentOptions)
         
         // Test with valid customer ID with no payment methods
-        await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100, forTesting: true)
-        XCTAssertNil(viewModel.customerPaymentOptions)
+        let viewModelTwo = FrameCheckoutViewModel(customerId: "1", amount: 100)
+        await viewModelTwo.loadCustomerPaymentMethods()
+        XCTAssertNil(viewModelTwo.customerPaymentOptions)
         
         // Test with valid customer ID with payment method
         let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
         let customer = FrameObjects.Customer(id: "1", livemode: false, name: "Tester", paymentMethods: [paymentMethod])
         
         session.data = try? JSONEncoder().encode(customer)
-        await viewModel.loadCustomerPaymentMethods(customerId: "1", amount: 100, forTesting: true)
-        XCTAssertNotNil(viewModel.customerPaymentOptions)
-        XCTAssertEqual(viewModel.customerPaymentOptions?.first?.id, "1")
+        let viewModelThree = FrameCheckoutViewModel(customerId: "1", amount: 100)
+        await viewModelThree.loadCustomerPaymentMethods()
+        XCTAssertNotNil(viewModelThree.customerPaymentOptions)
+        XCTAssertEqual(viewModelThree.customerPaymentOptions?.first?.id, "1")
     }
     
     @MainActor func testCreatePaymentMethod() async {
@@ -55,7 +57,7 @@ final class CheckoutViewModelTests: XCTestCase {
         
         // Test with no customer country or customer Zip Code
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: true, card: paymentCard, status: .active))
-        let viewModel = FrameCheckoutViewModel()
+        let viewModel = FrameCheckoutViewModel(customerId: "", amount: 100)
         viewModel.customerZipCode = ""
         let firstMethod = try? await viewModel.createPaymentMethod()
         XCTAssertNil(firstMethod?.paymentId)

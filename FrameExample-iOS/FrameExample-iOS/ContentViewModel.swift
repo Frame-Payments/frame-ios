@@ -19,8 +19,10 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     @Published var refunds: [FrameObjects.Refund] = []
     
     init() {
-        // Note: To use this SDK, you must add your sandbox secret key here.
-        FrameNetworking.shared.initializeWithAPIKey("INSERT_SANDBOX_KEY_HERE", debugMode: true)
+        // Note: To use this SDK, you must add your sandbox publishable and secret keys here.
+        FrameNetworking.shared.initializeWithAPIKey("ENTER_SECRET_KEY_HERE",
+                                                    publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
+                                                    debugMode: true)
         
         Task {
             await self.getCustomers()
