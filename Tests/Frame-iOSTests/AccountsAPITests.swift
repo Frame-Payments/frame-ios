@@ -375,4 +375,35 @@ final class AccountsAPITests: XCTestCase {
             XCTFail("Error should not be thrown: \(error)")
         }
     }
+
+    func testGetPlaidLinkToken() async {
+        FrameNetworking.shared.asyncURLSession = session
+
+        // Empty accountId → guard fires, returns nil without a network call
+        let nilResult = try? await AccountsAPI.getPlaidLinkToken(accountId: "").0
+        XCTAssertNil(nilResult)
+
+        // Valid accountId, no data in session → returns nil
+        let noDataResult = try? await AccountsAPI.getPlaidLinkToken(accountId: "acc_123").0
+        XCTAssertNil(noDataResult)
+
+        // Valid accountId, valid response data → decodes link_token
+        let response = AccountResponses.PlaidLinkTokenResponse(linkToken: "link-sandbox-abc123")
+        do {
+            session.data = try FrameNetworking.shared.jsonEncoder.encode(response)
+            let (tokenResponse, _) = try await AccountsAPI.getPlaidLinkToken(accountId: "acc_123")
+            XCTAssertNotNil(tokenResponse)
+            XCTAssertEqual(tokenResponse?.linkToken, "link-sandbox-abc123")
+        } catch {
+            XCTFail("Error should not be thrown: \(error)")
+        }
+    }
+
+    func testGetPlaidLinkTokenNetworkError() async {
+        FrameNetworking.shared.asyncURLSession = session
+
+        // No session data → network error path → returns nil result and non-nil error
+        let (result, error) = (try? await AccountsAPI.getPlaidLinkToken(accountId: "acc_123")) ?? (nil, nil)
+        XCTAssertNil(result)
+    }
 }

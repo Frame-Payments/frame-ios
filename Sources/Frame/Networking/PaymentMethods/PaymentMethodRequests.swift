@@ -83,9 +83,33 @@ public class PaymentMethodRequest {
     
     public struct AttachPaymentMethodRequest: Encodable {
         let customer: String
-        
+
         public init(customer: String) {
             self.customer = customer
+        }
+    }
+
+    public struct ConnectPlaidBankAccountRequest: Encodable, Sendable {
+        let account: String
+        let publicToken: String
+        let accountId: String
+        let institutionName: String?
+        let subtype: String?
+
+        public init(account: String, publicToken: String, accountId: String, institutionName: String? = nil, subtype: String? = nil) {
+            self.account = account
+            self.publicToken = publicToken
+            self.accountId = accountId
+            self.institutionName = institutionName
+            self.subtype = subtype
+        }
+
+        public enum CodingKeys: String, CodingKey {
+            case account
+            case publicToken = "public_token"
+            case accountId = "account_id"
+            case institutionName = "institution_name"
+            case subtype
         }
     }
 }

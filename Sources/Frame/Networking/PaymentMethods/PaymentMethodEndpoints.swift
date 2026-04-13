@@ -19,11 +19,14 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     case detachPaymentMethodWith(paymentMethodId: String)
     case blockPaymentMethodWith(paymentMethodId: String)
     case unblockPaymentMethodWith(paymentMethodId: String)
+    case connectPlaidBankAccount
     
     var endpointURL: String {
         switch self {
         case .getPaymentMethods, .createPaymentMethod:
             return "/v1/payment_methods"
+        case .connectPlaidBankAccount:
+            return "/v1/payment_methods/connect_plaid"
         case .getPaymentMethodWith(let paymentMethodId), .updatePaymentMethodWith(let paymentMethodId):
             return "/v1/payment_methods/\(paymentMethodId)"
         case .getPaymentMethodsWithCustomer(let customerId):
@@ -43,7 +46,7 @@ enum PaymentMethodEndpoints: FrameNetworkingEndpoints {
     
     var httpMethod: HTTPMethod {
         switch self {
-        case .createPaymentMethod, .attachPaymentMethodWith, .detachPaymentMethodWith, .blockPaymentMethodWith, .unblockPaymentMethodWith:
+        case .createPaymentMethod, .attachPaymentMethodWith, .detachPaymentMethodWith, .blockPaymentMethodWith, .unblockPaymentMethodWith, .connectPlaidBankAccount:
             return .POST
         case .updatePaymentMethodWith:
             return .PATCH

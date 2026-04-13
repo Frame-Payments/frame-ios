@@ -1,5 +1,5 @@
 {
-  "originHash" : "f735b721566553bef1511e5842dce3d2f3668db648ef186ef5c8eba6df263db1",
+  "originHash" : "e7af49ea0a52ddea93871b81416ecf8a10a9c89cc3ad5e06e57e4e3ce5acc1d2",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "21bcfcfd2e1bce943f668a7748f8a7e1154f0ac2",
         "version" : "2.13.0"
+      }
+    },
+    {
+      "identity" : "plaid-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/plaid/plaid-ios",
+      "state" : {
+        "revision" : "f2c27234d8df71673c03f8f22d780879c2e93784",
+        "version" : "5.6.1"
       }
     },
     {

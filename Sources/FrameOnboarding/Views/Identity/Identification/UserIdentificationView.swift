@@ -47,6 +47,7 @@ struct UserIdentificationView: View {
     @State private var canVerifyPhoneNumber: Bool = false
     @State private var canCustomerContinue: Bool = false
     @State private var dateOfBirth: String = ""
+    @State private var isSendingOTP: Bool = false
     
     @State private var returnToPhoneNumberEntry: Bool = false
     @State private var continueToCustomerInfoStep: Bool = false
@@ -191,9 +192,11 @@ struct UserIdentificationView: View {
                 TermsOfServiceView(padded: false)
                     .padding(.horizontal)
             }
-            ContinueButton(enabled: .constant(canVerifyPhoneNumber)) {
+            ContinueButton(enabled: .constant(canVerifyPhoneNumber && !isSendingOTP)) {
                 Task {
+                    isSendingOTP = true
                     await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+                    isSendingOTP = false
                     if onboardingContainerViewModel.proveUserInfo != nil {
                         self.identitySteps = .information
                     } else if onboardingContainerViewModel.pendingTwilioVerificationId != nil {
