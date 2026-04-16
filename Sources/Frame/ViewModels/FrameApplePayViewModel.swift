@@ -44,12 +44,20 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         PKPaymentAuthorizationController.canMakePayments(usingNetworks: supportedNetworks)
     }
 
-    /// Presents the Apple Pay sheet. Must be called on the main thread.
+    /// Presents the Apple Pay sheet. Device attestation must have already
+    /// completed at SDK init — the button is hidden until that succeeds.
     func presentApplePay() {
-        let request = buildPaymentRequest()
-        let controller = PKPaymentAuthorizationController(paymentRequest: request)
-        controller.delegate = self
-        controller.present()
+        guard !isProcessing else { return }
+        isProcessing = true
+
+        Task {
+            defer { isProcessing = false }
+
+            let request = buildPaymentRequest()
+            let controller = PKPaymentAuthorizationController(paymentRequest: request)
+            controller.delegate = self
+            await controller.present()
+        }
     }
 
     private static let supportedNetworks: [PKPaymentNetwork] = [

@@ -28,7 +28,7 @@ public class ApplePayAPI {
         from payment: PKPayment,
         customerId: String? = nil
     ) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
-        let request = try buildRequest(from: payment, customerId: customerId, accountId: nil)
+        let request = try await buildAttestedRequest(from: payment, customerId: customerId, accountId: nil)
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
@@ -43,7 +43,7 @@ public class ApplePayAPI {
         from payment: PKPayment,
         accountId: String? = nil
     ) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
-        let request = try buildRequest(from: payment, customerId: nil, accountId: accountId)
+        let request = try await buildAttestedRequest(from: payment, customerId: nil, accountId: accountId)
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
@@ -59,7 +59,10 @@ public class ApplePayAPI {
     static func buildRequest(
         from payment: PKPayment,
         customerId: String?,
-        accountId: String?
+        accountId: String?,
+        deviceKeyId: String? = nil,
+        deviceAssertion: String? = nil,
+        deviceClientData: String? = nil
     ) throws -> ApplePayRequests.CreateApplePayPaymentMethodRequest {
         // Decode the encrypted payment data JSON from PKPaymentToken
         let paymentDataJSON = try decodePaymentData(payment.token.paymentData)
@@ -98,7 +101,10 @@ public class ApplePayAPI {
             requestId: UUID().uuidString,
             payerName: payment.billingContact?.name.map { formatName($0) },
             payerEmail: payment.billingContact?.emailAddress,
-            details: tokenDetails
+            details: tokenDetails,
+            deviceKeyId: deviceKeyId,
+            deviceAssertion: deviceAssertion,
+            deviceClientData: deviceClientData
         )
 
         let wallet = ApplePayRequests.ApplePayWallet(applePay: applePayDetails)
@@ -107,6 +113,29 @@ public class ApplePayAPI {
             wallet: wallet,
             customer: customerId,
             account: accountId
+        )
+    }
+
+    // MARK: - Device Attestation
+
+    /// Generates a device assertion and builds the request with attestation data.
+    /// The device must be attested before calling this method.
+    static func buildAttestedRequest(
+        from payment: PKPayment,
+        customerId: String?,
+        accountId: String?
+    ) async throws -> ApplePayRequests.CreateApplePayPaymentMethodRequest {
+        let assertion = try await DeviceAttestationManager.shared.generateAssertionForPayment(
+            paymentData: payment.token.paymentData
+        )
+
+        return try buildRequest(
+            from: payment,
+            customerId: customerId,
+            accountId: accountId,
+            deviceKeyId: assertion.keyId,
+            deviceAssertion: assertion.assertion,
+            deviceClientData: assertion.clientData
         )
     }
 
