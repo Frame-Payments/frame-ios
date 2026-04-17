@@ -53,12 +53,20 @@ public class ApplePayRequests {
         let payerName: String?
         let payerEmail: String?
         let details: ApplePayTokenDetails
+        let deviceKeyId: String?
+        let deviceAssertion: String?
+        let deviceClientData: String?
 
-        public init(requestId: String, payerName: String? = nil, payerEmail: String? = nil, details: ApplePayTokenDetails) {
+        public init(requestId: String, payerName: String? = nil, payerEmail: String? = nil,
+                    details: ApplePayTokenDetails,
+                    deviceKeyId: String? = nil, deviceAssertion: String? = nil, deviceClientData: String? = nil) {
             self.requestId = requestId
             self.payerName = payerName
             self.payerEmail = payerEmail
             self.details = details
+            self.deviceKeyId = deviceKeyId
+            self.deviceAssertion = deviceAssertion
+            self.deviceClientData = deviceClientData
         }
 
         enum CodingKeys: String, CodingKey {
@@ -67,6 +75,9 @@ public class ApplePayRequests {
             case payerName = "payerName"
             case payerEmail = "payerEmail"
             case details
+            case deviceKeyId = "device_key_id"
+            case deviceAssertion = "device_assertion"
+            case deviceClientData = "device_client_data"
         }
     }
 

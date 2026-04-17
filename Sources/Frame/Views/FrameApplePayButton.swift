@@ -20,6 +20,7 @@ public struct FrameApplePayButton: View {
     let completion: (Result<FrameObjects.ChargeIntent, Error>) -> Void
 
     @StateObject private var viewModel: FrameApplePayViewModel
+    @ObservedObject private var attestationManager = DeviceAttestationManager.shared
 
     public init(amount: Int,
                 currency: String = "usd",
@@ -48,7 +49,7 @@ public struct FrameApplePayButton: View {
     // MARK: - Body
 
     public var body: some View {
-        if FrameApplePayViewModel.canMakePayments() {
+        if FrameApplePayViewModel.canMakePayments() && attestationManager.isDeviceAttested {
             PKPaymentButtonWrapper(
                 buttonType: buttonType,
                 buttonStyle: buttonStyle

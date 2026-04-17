@@ -35,10 +35,11 @@ public class FrameNetworking: ObservableObject {
         self.apiPublishableKey = publishableKey
         self.debugMode = debugMode
         
-        // Initializes Sift and Sonar Session when the SDK is initialized.
+        // Initializes Sift, Sonar Session, and Device Attestation when the SDK is initialized.
         Task {
             await SiftManager.initializeSift()
             await SessionManager.initializeSession()
+            _ = try? await DeviceAttestationManager.shared.attestDevice()
         }
         
         if !isEvervaultConfigured {
