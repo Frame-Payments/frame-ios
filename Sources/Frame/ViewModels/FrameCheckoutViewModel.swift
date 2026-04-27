@@ -10,6 +10,10 @@ import EvervaultInputs
 
 @MainActor
 class FrameCheckoutViewModel: ObservableObject {
+    enum CheckoutField: Hashable {
+        case name, email, addressLine1, city, state, zip, country, card
+    }
+
     @Published var customerPaymentOptions: [FrameObjects.PaymentMethod]?
     @Published var customerName: String = ""
     @Published var customerEmail: String = ""
@@ -19,20 +23,24 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var customerState: String = ""
     @Published var customerCountry: AvailableCountry = AvailableCountry.defaultCountry
     @Published var customerZipCode: String = ""
-    
+
     @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
     @Published var cardData = PaymentCardData()
-    
+
+    @Published var fieldErrors: [CheckoutField: String] = [:]
+
     var customerId: String?
     var amount: Int
     var merchantId: String
+    let addressMode: FrameAddressMode
 
     private var applePayViewModel: FrameApplePayViewModel?
 
-    init(customerId: String?, amount: Int, merchantId: String = "") {
+    init(customerId: String?, amount: Int, merchantId: String = "", addressMode: FrameAddressMode = .required) {
         self.customerId = customerId
         self.amount = amount
         self.merchantId = merchantId
+        self.addressMode = addressMode
     }
 
     func loadCustomerPaymentMethods(forTesting: Bool = false) async {
@@ -43,7 +51,7 @@ class FrameCheckoutViewModel: ObservableObject {
         self.customerName = customer?.name ?? ""
         self.customerEmail = customer?.email ?? ""
     }
-    
+
     func payWithApplePay(completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
         guard !merchantId.isEmpty else { return }
         applePayViewModel = FrameApplePayViewModel(
@@ -58,13 +66,83 @@ class FrameCheckoutViewModel: ObservableObject {
 
     //TODO: Integrate Google Pay
     func payWithGooglePay() { }
-    
+
+    func clearError(_ field: CheckoutField) {
+        fieldErrors[field] = nil
+    }
+
+    var hasUsablePaymentInput: Bool {
+        if selectedCustomerPaymentOption != nil { return true }
+        return !cardData.card.number.isEmpty && cardData.isPotentiallyValid
+    }
+
+    /// True if any address field carries a non-empty value.
+    private var hasAnyAddressInput: Bool {
+        !customerAddressLine1.isEmpty
+            || !customerAddressLine2.isEmpty
+            || !customerCity.isEmpty
+            || !customerState.isEmpty
+            || !customerZipCode.isEmpty
+    }
+
+    /// Whether to validate (and ultimately send) a billing address based on `addressMode`
+    /// and current field state. OPTIONAL is all-or-nothing: any input promotes the block
+    /// to required-shape validation.
+    private var shouldValidateAddress: Bool {
+        switch addressMode {
+        case .required: return true
+        case .optional: return hasAnyAddressInput
+        case .hidden: return false
+        }
+    }
+
+    /// Run all validations, populate `fieldErrors`, and return whether the form is valid.
+    /// When `forSavedCard` is true, the new-card field is not validated.
+    @discardableResult
+    func validateAll(forSavedCard: Bool) -> Bool {
+        var errors: [CheckoutField: String] = [:]
+
+        if let err = Validators.validateFullName(customerName) {
+            errors[.name] = err
+        }
+        if let err = Validators.validateEmail(customerEmail) {
+            errors[.email] = err
+        }
+        if !forSavedCard {
+            if let err = Validators.validateCard(cardData) {
+                errors[.card] = err
+            }
+        }
+        if shouldValidateAddress {
+            if let err = Validators.validateNonEmpty(customerAddressLine1, fieldName: "Address line 1") {
+                errors[.addressLine1] = err
+            }
+            if let err = Validators.validateNonEmpty(customerCity, fieldName: "City") {
+                errors[.city] = err
+            }
+            if let err = Validators.validateNonEmpty(customerState, fieldName: "State") {
+                errors[.state] = err
+            }
+            if let err = Validators.validateZipUS(customerZipCode) {
+                errors[.zip] = err
+            }
+            if customerCountry.alpha2Code.isEmpty {
+                errors[.country] = "Select a country"
+            }
+        }
+
+        fieldErrors = errors
+        return errors.isEmpty
+    }
+
     func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.ChargeIntent? {
         guard amount != 0 else { return nil }
         var paymentMethodId: String?
-        
-        if selectedCustomerPaymentOption == nil {
-            guard customerZipCode.count == 5 else { return nil }
+
+        let usingSavedCard = selectedCustomerPaymentOption != nil
+        guard validateAll(forSavedCard: usingSavedCard) else { return nil }
+
+        if !usingSavedCard {
             let customerInfo = try? await createPaymentMethod(customerId: customerId)
             paymentMethodId = customerInfo?.paymentId
             customerId = customerInfo?.customerId
@@ -72,7 +150,7 @@ class FrameCheckoutViewModel: ObservableObject {
             paymentMethodId = selectedCustomerPaymentOption?.id
         }
         guard paymentMethodId != nil else { return nil }
-        
+
         //TODO: Allow developers to pass description here of charge.
         let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: amount,
                                                                       currency: "usd",
@@ -84,22 +162,25 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                       authorizationMode: .automatic,
                                                                       customerData: nil,
                                                                       paymentMethodData: nil)
-        
+
         // Create Charge Intent, return this on completion.
         let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
         if let chargeError { throw chargeError }
         return chargeIntent
     }
-    
+
     func createPaymentMethod(customerId: String? = nil) async throws -> (paymentId: String?, customerId: String?)  {
-        guard !customerAddressLine1.isEmpty, !customerCity.isEmpty, !customerState.isEmpty, !customerZipCode.isEmpty, cardData.isPotentiallyValid else { return (nil, nil) }
-        let billingAddress = FrameObjects.BillingAddress(city: customerCity,
-                                                         country: customerCountry.alpha2Code,
-                                                         state: customerState,
-                                                         postalCode: customerZipCode,
-                                                         addressLine1: customerAddressLine1,
-                                                         addressLine2: customerAddressLine2)
-        
+        guard validateAll(forSavedCard: false) else { return (nil, nil) }
+
+        let billingAddress: FrameObjects.BillingAddress? = shouldValidateAddress
+            ? FrameObjects.BillingAddress(city: customerCity,
+                                          country: customerCountry.alpha2Code,
+                                          state: customerState,
+                                          postalCode: customerZipCode,
+                                          addressLine1: customerAddressLine1,
+                                          addressLine2: customerAddressLine2)
+            : nil
+
         var currentCustomerId: String = ""
         if customerId == nil {
             //1. Create the new user to assign the payment method to.
@@ -110,7 +191,7 @@ class FrameCheckoutViewModel: ObservableObject {
         } else if let customerId {
             currentCustomerId = customerId
         }
-        
+
         //2. Create the payment method
         let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(cardNumber: cardData.card.number,
                                                                           expMonth: cardData.card.expMonth,
@@ -128,12 +209,12 @@ class FrameCheckoutViewModel: ObservableObject {
 public struct AvailableCountry: Hashable {
     public let alpha2Code: String
     public let displayName: String
-    
+
     public static let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: "US", displayName: "United States")
     public static let restrictedCountries: [String] = ["Iran", "Russia", "North Korea", "Syria", "Cuba",
                                                        "Democratic Republic of Congo", "Iraq", "Libya",
                                                        "Mali", "Nicaragua", "Sudan", "Venezuela", "Yemen"]
-    
+
     public static let allCountries: [AvailableCountry] = {
         Locale.Region.isoRegions.map { region in
             let name = Locale().localizedString(forRegionCode: region.identifier) ?? region.identifier

@@ -11,10 +11,7 @@ public struct FrameApplePayButton: View {
 
     // MARK: - Configuration
 
-    let amount: Int
-    let currency: String
-    let owner: FrameApplePayViewModel.PaymentMethodOwner
-    let merchantId: String
+    let addCheckoutDivider: Bool
     let buttonType: PKPaymentButtonType
     let buttonStyle: PKPaymentButtonStyle
     let completion: (Result<FrameObjects.ChargeIntent, Error>) -> Void
@@ -26,13 +23,12 @@ public struct FrameApplePayButton: View {
                 currency: String = "usd",
                 owner: FrameApplePayViewModel.PaymentMethodOwner,
                 merchantId: String,
+                addCheckoutDivider: Bool = false,
                 buttonType: PKPaymentButtonType = .buy,
                 buttonStyle: PKPaymentButtonStyle = .black,
                 completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
-        self.amount = amount
-        self.currency = currency
-        self.owner = owner
-        self.merchantId = merchantId
+
+        self.addCheckoutDivider = addCheckoutDivider
         self.buttonType = buttonType
         self.buttonStyle = buttonStyle
         self.completion = completion
@@ -58,8 +54,23 @@ public struct FrameApplePayButton: View {
             }
             .frame(height: 50)
             .disabled(viewModel.isProcessing)
+            
+            if addCheckoutDivider {
+                paymentDivider
+            }
         }
         // Renders nothing if Apple Pay is unavailable on this device
+    }
+    
+    var paymentDivider: some View {
+        HStack(spacing: 10.0) {
+            Rectangle().fill(.gray.opacity(0.3))
+                .frame(height: 1)
+            Text("Or")
+            Rectangle().fill(.gray.opacity(0.3))
+                .frame(height: 1)
+        }
+        .padding()
     }
 }
 
