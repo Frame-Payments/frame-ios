@@ -52,7 +52,6 @@ public struct FrameCheckoutView: View {
             ScrollView {
                 if !merchantId.isEmpty {
                     applePayButton
-                    paymentDivider
                 }
                 if checkoutViewModel.customerPaymentOptions != nil {
                     existingPaymentCardScroll
@@ -105,22 +104,12 @@ public struct FrameCheckoutView: View {
         .padding(.top)
     }
 
-    var paymentDivider: some View {
-        HStack(spacing: 10.0) {
-            Rectangle().fill(.gray.opacity(0.3))
-                .frame(height: 1)
-            Text("Or")
-            Rectangle().fill(.gray.opacity(0.3))
-                .frame(height: 1)
-        }
-        .padding()
-    }
-
     @ViewBuilder
     var applePayButton: some View {
         FrameApplePayButton(amount: paymentAmount,
                             owner: .customer(customerId ?? ""),
-                            merchantId: merchantId) { result in
+                            merchantId: merchantId,
+                            addCheckoutDivider: true) { result in
             if case .success(let chargeIntent) = result {
                 checkoutCallback(chargeIntent)
                 dismiss()
@@ -236,7 +225,8 @@ public struct FrameCheckoutView: View {
                                    error: errorBinding(.city))
                 ValidatedTextField(prompt: "State",
                                    text: $checkoutViewModel.customerState,
-                                   error: errorBinding(.state))
+                                   error: errorBinding(.state),
+                                   characterLimit: 2)
             }
             Divider()
             HStack {
@@ -288,7 +278,8 @@ public struct FrameCheckoutView: View {
     }
 
     var checkoutButton: some View {
-        Button {
+        let canCheckout = checkoutViewModel.hasUsablePaymentInput
+        return Button {
             Task {
                 self.showLoadingState = true
                 let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
@@ -300,7 +291,7 @@ public struct FrameCheckoutView: View {
             }
         } label: {
             RoundedRectangle(cornerRadius: 10)
-                .fill(.black)
+                .fill(canCheckout ? .black : Color.gray.opacity(0.4))
                 .frame(height: 50.0)
                 .overlay {
                     if showLoadingState {
@@ -318,7 +309,7 @@ public struct FrameCheckoutView: View {
                 }
         }
         .padding(.horizontal)
-        .disabled(showLoadingState)
+        .disabled(showLoadingState || !canCheckout)
     }
 
     var loadingSpinner: some View {

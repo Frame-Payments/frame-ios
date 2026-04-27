@@ -13,6 +13,13 @@ enum Validators {
             : nil
     }
 
+    static func validateFullName(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "Full name is required" }
+        let parts = trimmed.split(whereSeparator: { $0.isWhitespace }).filter { !$0.isEmpty }
+        return parts.count >= 2 ? nil : "Enter first and last name"
+    }
+
     static func validateEmail(_ value: String) -> String? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return "Email is required" }

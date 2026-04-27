@@ -52,7 +52,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor private func fillValidCustomerInfo(_ vm: FrameCheckoutViewModel) {
-        vm.customerName = "Tester"
+        vm.customerName = "Tester McTest"
         vm.customerEmail = "tester@example.com"
         vm.cardData = validCardData()
     }
@@ -78,7 +78,7 @@ final class CheckoutViewModelTests: XCTestCase {
         // Test with no customer country or customer Zip Code
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: true, card: paymentCard, status: .active))
         let viewModel = FrameCheckoutViewModel(customerId: "", amount: 100)
-        viewModel.customerName = "Tester"
+        viewModel.customerName = "Tester McTest"
         viewModel.customerEmail = "tester@example.com"
         viewModel.customerZipCode = ""
         let firstMethod = try? await viewModel.createPaymentMethod()
@@ -122,6 +122,16 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNil(Validators.validateNonEmpty("hello", fieldName: "Name"))
         XCTAssertNotNil(Validators.validateNonEmpty("", fieldName: "Name"))
         XCTAssertNotNil(Validators.validateNonEmpty("   ", fieldName: "Name"))
+    }
+
+    func testValidateFullName() {
+        XCTAssertNil(Validators.validateFullName("Tester McTest"))
+        XCTAssertNil(Validators.validateFullName("Mary Jane Watson"))
+        XCTAssertNil(Validators.validateFullName("  Tester   McTest  "))
+        XCTAssertNotNil(Validators.validateFullName(""))
+        XCTAssertNotNil(Validators.validateFullName("   "))
+        XCTAssertNotNil(Validators.validateFullName("Tester"))
+        XCTAssertNotNil(Validators.validateFullName("Tester  "))
     }
 
     func testValidateEmail() {
@@ -183,7 +193,7 @@ final class CheckoutViewModelTests: XCTestCase {
 
     @MainActor func testInvalidEmail_failsValidation() {
         let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
-        vm.customerName = "Tester"
+        vm.customerName = "Tester McTest"
         vm.customerEmail = "not-an-email"
         vm.cardData = validCardData()
         XCTAssertFalse(vm.validateAll(forSavedCard: false))
@@ -208,7 +218,7 @@ final class CheckoutViewModelTests: XCTestCase {
 
     @MainActor func testSavedCardSelected_skipsCardValidation() {
         let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
-        vm.customerName = "Tester"
+        vm.customerName = "Tester McTest"
         vm.customerEmail = "tester@example.com"
         // No cardData filled — saved-card path should still pass.
         let saved = FrameObjects.PaymentMethod(id: "saved", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
@@ -225,9 +235,37 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.fieldErrors[.email])
     }
 
+    @MainActor func testSingleName_failsValidation() {
+        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        vm.customerName = "OnlyOne"
+        vm.customerEmail = "tester@example.com"
+        vm.cardData = validCardData()
+        XCTAssertFalse(vm.validateAll(forSavedCard: false))
+        XCTAssertNotNil(vm.fieldErrors[.name])
+    }
+
+    @MainActor func testHasUsablePaymentInput_defaultFalse() {
+        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        // Default cardData has empty number and no saved card selected.
+        XCTAssertFalse(vm.hasUsablePaymentInput)
+    }
+
+    @MainActor func testHasUsablePaymentInput_savedCardEnables() {
+        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let saved = FrameObjects.PaymentMethod(id: "saved", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        vm.selectedCustomerPaymentOption = saved
+        XCTAssertTrue(vm.hasUsablePaymentInput)
+    }
+
+    @MainActor func testHasUsablePaymentInput_validCardEnables() {
+        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        vm.cardData = validCardData()
+        XCTAssertTrue(vm.hasUsablePaymentInput)
+    }
+
     @MainActor func testSavedCardSelected_stillValidatesAddressInRequired() {
         let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .required)
-        vm.customerName = "Tester"
+        vm.customerName = "Tester McTest"
         vm.customerEmail = "tester@example.com"
         // Address blank — should still error in required mode even on saved-card path.
         XCTAssertFalse(vm.validateAll(forSavedCard: true))

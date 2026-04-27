@@ -71,6 +71,11 @@ class FrameCheckoutViewModel: ObservableObject {
         fieldErrors[field] = nil
     }
 
+    var hasUsablePaymentInput: Bool {
+        if selectedCustomerPaymentOption != nil { return true }
+        return !cardData.card.number.isEmpty && cardData.isPotentiallyValid
+    }
+
     /// True if any address field carries a non-empty value.
     private var hasAnyAddressInput: Bool {
         !customerAddressLine1.isEmpty
@@ -97,7 +102,7 @@ class FrameCheckoutViewModel: ObservableObject {
     func validateAll(forSavedCard: Bool) -> Bool {
         var errors: [CheckoutField: String] = [:]
 
-        if let err = Validators.validateNonEmpty(customerName, fieldName: "Name") {
+        if let err = Validators.validateFullName(customerName) {
             errors[.name] = err
         }
         if let err = Validators.validateEmail(customerEmail) {
