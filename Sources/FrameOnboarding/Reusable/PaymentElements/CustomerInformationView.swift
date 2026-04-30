@@ -8,25 +8,42 @@
 import SwiftUI
 import Frame
 
-public struct CustomerInformationView: View {
-    @Binding public var emailAddress: String
-    @Binding public var phoneNumber: String
-    @Binding public var firstName: String
-    @Binding public var lastName: String
-    @Binding public var dateOfBirth: String
-    @Binding public var ssn: String
-    
+struct CustomerInformationView: View {
+    @ObservedObject var viewModel: OnboardingContainerViewModel
+
+    @Binding var emailAddress: String
+    @Binding var phoneNumber: String
+    @Binding var firstName: String
+    @Binding var lastName: String
+    @Binding var dateOfBirth: String
+    @Binding var ssn: String
+
     @State private var birthYear: String = ""
     @State private var birthMonth: String = ""
     @State private var birthDay: String = ""
-    
-    @State public var headerTitle: String = "Customer Information"
-    @State public var headerFont: Font = Font.subheadline
-    
-    @State private var selectedCountry: AvailableCountry = .defaultCountry
-    @State private var showCountryPicker: Bool = false
-    
-    public var body: some View {
+
+    @State var headerTitle: String = "Customer Information"
+    @State var headerFont: Font = Font.subheadline
+
+    init(viewModel: OnboardingContainerViewModel,
+         emailAddress: Binding<String>,
+         phoneNumber: Binding<String>,
+         firstName: Binding<String>,
+         lastName: Binding<String>,
+         dateOfBirth: Binding<String>,
+         ssn: Binding<String>,
+         headerTitle: String = "Customer Information") {
+        self.viewModel = viewModel
+        self._emailAddress = emailAddress
+        self._phoneNumber = phoneNumber
+        self._firstName = firstName
+        self._lastName = lastName
+        self._dateOfBirth = dateOfBirth
+        self._ssn = ssn
+        self._headerTitle = State(initialValue: headerTitle)
+    }
+
+    var body: some View {
         VStack(alignment: .leading) {
             Text(headerTitle)
                 .bold()
@@ -39,14 +56,25 @@ public struct CustomerInformationView: View {
                 .overlay {
                     VStack(spacing: 0) {
                         HStack {
-                            ReusableFormTextField(prompt: "First Name", text: $firstName, showDivider: false)
+                            ValidatedTextField(prompt: "First Name",
+                                               text: $firstName,
+                                               error: viewModel.errorBinding(.personalFirstName))
                             Divider()
-                            ReusableFormTextField(prompt: "Last Name", text: $lastName, showDivider: false)
+                            ValidatedTextField(prompt: "Last Name",
+                                               text: $lastName,
+                                               error: viewModel.errorBinding(.personalLastName))
                         }
                         .frame(height: 49.0)
                         Divider()
-                        ReusableFormTextField(prompt: "Email Address", text: $emailAddress, showDivider: true)
-                        ReusableFormTextField(prompt: "Phone Number", text: $phoneNumber, showDivider: false, keyboardType: .numberPad, characterLimit: 10)
+                        ValidatedTextField(prompt: "Email Address",
+                                           text: $emailAddress,
+                                           error: viewModel.errorBinding(.personalEmail),
+                                           keyboardType: .emailAddress)
+                        Divider()
+                        PhoneNumberTextField(prompt: "Phone Number",
+                                             text: $phoneNumber,
+                                             error: viewModel.errorBinding(.personalPhone),
+                                             regionCode: viewModel.phoneCountry.alpha2)
                     }
                 }
                 .padding(.horizontal)
@@ -54,32 +82,29 @@ public struct CustomerInformationView: View {
             socialSecurityView
         }
         .onAppear {
-            if !dateOfBirth.isEmpty, dateOfBirth.count == 10 {
-                let dateComponents = dateOfBirth.components(separatedBy: "-")
-                self.birthYear = dateComponents[0]
-                self.birthMonth = dateComponents[1]
-                self.birthDay = dateComponents[2]
-            }
+            seedBirthComponentsFromStoredValue()
         }
         .onChange(of: birthYear, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
+            self.dateOfBirth = OnboardingContainerViewModel.formatDateOfBirth(year: birthYear, month: birthMonth, day: birthDay)
         })
         .onChange(of: birthMonth, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
+            self.dateOfBirth = OnboardingContainerViewModel.formatDateOfBirth(year: birthYear, month: birthMonth, day: birthDay)
         })
         .onChange(of: birthDay, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
+            self.dateOfBirth = OnboardingContainerViewModel.formatDateOfBirth(year: birthYear, month: birthMonth, day: birthDay)
         })
-        .sheet(isPresented: $showCountryPicker) {
-            CountryPickerSheet(
-                selectedCountry: $selectedCountry,
-                isPresented: $showCountryPicker
-            )
-            .presentationDetents([.fraction(0.3)])
-            .presentationDragIndicator(.visible)
-        }
     }
-    
+
+    /// Splits a stored YYYY-M(M)-D(D) string back into the three editable components.
+    /// Tolerates unpadded month/day so legacy data (e.g. "1990-1-5") still hydrates the form.
+    private func seedBirthComponentsFromStoredValue() {
+        let parts = dateOfBirth.components(separatedBy: "-")
+        guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
+        self.birthYear = parts[0]
+        self.birthMonth = parts[1]
+        self.birthDay = parts[2]
+    }
+
     @ViewBuilder
     var birthdayView: some View {
         Text("Birthday")
@@ -91,20 +116,29 @@ public struct CustomerInformationView: View {
             .stroke(.gray.opacity(0.3))
             .frame(height: 50.0)
             .overlay {
-                VStack(spacing: 0) {
-                    HStack {
-                        ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                        Divider()
-                        ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                        Divider()
-                        ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
-                    }
-                    .frame(height: 49.0)
+                HStack {
+                    ValidatedTextField(prompt: "Month",
+                                       text: $birthMonth,
+                                       error: viewModel.errorBinding(.personalBirthMonth),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 2)
+                    Divider()
+                    ValidatedTextField(prompt: "Day",
+                                       text: $birthDay,
+                                       error: viewModel.errorBinding(.personalBirthDay),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 2)
+                    Divider()
+                    ValidatedTextField(prompt: "Year",
+                                       text: $birthYear,
+                                       error: viewModel.errorBinding(.personalBirthYear),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 4)
                 }
             }
             .padding(.horizontal)
     }
-    
+
     @ViewBuilder
     var socialSecurityView: some View {
         Text("Social Security Number")
@@ -116,31 +150,24 @@ public struct CustomerInformationView: View {
             .stroke(.gray.opacity(0.3))
             .frame(height: 50.0)
             .overlay {
-                VStack(spacing: 0) {
-                    HStack(spacing: 0) {
-                        RoundedRectangle(cornerRadius: 10.0)
-                            .fill(.gray.opacity(0.3))
-                            .stroke(.gray.opacity(0.3))
-                            .frame(width: 120.0, height: 50.0)
-                            .overlay {
-                                Text("Last 4 Digits")
-                                    .font(.footnote)
-                                    .bold()
-                                    .foregroundColor(.black)
-                            }
-                        ReusableFormTextField(prompt: "SSN", text: $ssn, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
-                    }
-                    
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 10.0)
+                        .fill(.gray.opacity(0.3))
+                        .stroke(.gray.opacity(0.3))
+                        .frame(width: 120.0, height: 50.0)
+                        .overlay {
+                            Text("Last 4 Digits")
+                                .font(.footnote)
+                                .bold()
+                                .foregroundColor(.black)
+                        }
+                    ValidatedTextField(prompt: "SSN",
+                                       text: $ssn,
+                                       error: viewModel.errorBinding(.personalSSN),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 4)
                 }
             }
             .padding(.horizontal)
-    }
-}
-
-#Preview {
-    VStack {
-        CustomerInformationView(emailAddress: .constant(""), phoneNumber: .constant(""), firstName: .constant(""),
-                                lastName: .constant(""), dateOfBirth: .constant(""), ssn: .constant(""))
-        Spacer()
     }
 }

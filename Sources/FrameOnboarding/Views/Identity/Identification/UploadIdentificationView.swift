@@ -97,12 +97,11 @@ struct UploadIdentificationView: View {
             }
             Spacer()
             ContinueButton(buttonText: "Submit", enabled: $enabledContinueButton) {
+                guard onboardingContainerViewModel.validateAllDocs() else { return }
                 self.enabledContinueButton = false
                 self.uploadDocsThenContinue()
             }
             .padding(.bottom)
-            .opacity(onboardingContainerViewModel.checkIfCustomerCanContinueWithDocs() ? 1.0 : 0.3)
-            .disabled(!onboardingContainerViewModel.checkIfCustomerCanContinueWithDocs())
         }
     }
     

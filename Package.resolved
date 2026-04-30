@@ -1,5 +1,5 @@
 {
-  "originHash" : "e7af49ea0a52ddea93871b81416ecf8a10a9c89cc3ad5e06e57e4e3ce5acc1d2",
+  "originHash" : "03a4b191fa4b346487c8d2341c798d4b3e1afcbe37f386c274dc8efde54ba74c",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "21bcfcfd2e1bce943f668a7748f8a7e1154f0ac2",
         "version" : "2.13.0"
+      }
+    },
+    {
+      "identity" : "phonenumberkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/marmelroy/PhoneNumberKit.git",
+      "state" : {
+        "revision" : "840ca3a89ced1a190e20ac93666ff3cdb376c973",
+        "version" : "4.2.11"
       }
     },
     {

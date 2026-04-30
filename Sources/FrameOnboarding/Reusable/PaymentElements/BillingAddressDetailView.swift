@@ -8,23 +8,64 @@
 import SwiftUI
 import Frame
 
-public struct BillingAddressDetailView: View {
-    @Binding public var addressLineOne: String
-    @Binding public var addressLineTwo: String
-    @Binding public var city: String
-    @Binding public var state: String
-    @Binding public var zipCode: String
-    @Binding public var country: String
-    
-    @State public var countryText: String = ""
-    @State public var headerTitle: String = "Billing Address"
-    @State public var headerFont: Font = Font.subheadline
-    @State public var showHeaderText: Bool = true
-    
+struct BillingAddressDetailView: View {
+    @ObservedObject var viewModel: OnboardingContainerViewModel
+    let addressNamespace: AddressNamespace
+
+    @Binding var addressLineOne: String
+    @Binding var addressLineTwo: String
+    @Binding var city: String
+    @Binding var state: String
+    @Binding var zipCode: String
+    @Binding var country: String
+
+    @State var headerTitle: String = "Billing Address"
+    @State var headerFont: Font = Font.subheadline
+    @State var showHeaderText: Bool = true
+
     @State private var selectedCountry: AvailableCountry = .defaultCountry
+    @State private var countryText: String = ""
     @State private var showCountryPicker: Bool = false
-    
-    public var body: some View {
+
+    init(viewModel: OnboardingContainerViewModel,
+         addressNamespace: AddressNamespace,
+         addressLineOne: Binding<String>,
+         addressLineTwo: Binding<String>,
+         city: Binding<String>,
+         state: Binding<String>,
+         zipCode: Binding<String>,
+         country: Binding<String>,
+         headerTitle: String = "Billing Address",
+         showHeaderText: Bool = true) {
+        self.viewModel = viewModel
+        self.addressNamespace = addressNamespace
+        self._addressLineOne = addressLineOne
+        self._addressLineTwo = addressLineTwo
+        self._city = city
+        self._state = state
+        self._zipCode = zipCode
+        self._country = country
+        self._headerTitle = State(initialValue: headerTitle)
+        self._showHeaderText = State(initialValue: showHeaderText)
+    }
+
+    private var allowsInternational: Bool { addressNamespace == .personal }
+
+    private var format: AddressFormat {
+        allowsInternational
+            ? AddressFormat.format(forCountry: selectedCountry.alpha2Code)
+            : AddressFormat.format(forCountry: "US")
+    }
+
+    private var fields: (line1: OnboardingField, city: OnboardingField, state: OnboardingField, postal: OnboardingField) {
+        switch addressNamespace {
+        case .personal: return (.personalAddressLine1, .personalCity, .personalState, .personalPostal)
+        case .payment:  return (.paymentAddressLine1, .paymentCity, .paymentState, .paymentPostal)
+        case .payout:   return (.payoutAddressLine1, .payoutCity, .payoutState, .payoutPostal)
+        }
+    }
+
+    var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
                 Text(headerTitle)
@@ -38,46 +79,67 @@ public struct BillingAddressDetailView: View {
                 .frame(height: 250.0)
                 .overlay {
                     VStack(spacing: 0) {
-                        ReusableFormTextField(prompt: "Address Line 1", text: $addressLineOne, showDivider: true)
-                        ReusableFormTextField(prompt: "Address Line 2", text: $addressLineTwo, showDivider: true)
+                        ValidatedTextField(prompt: "Address Line 1",
+                                           text: $addressLineOne,
+                                           error: viewModel.errorBinding(fields.line1))
+                        Divider()
+                        ValidatedTextField(prompt: "Address Line 2",
+                                           text: $addressLineTwo,
+                                           error: .constant(nil))
+                        Divider()
                         HStack {
-                            ReusableFormTextField(prompt: "City", text: $city, showDivider: false)
-                            ReusableFormTextField(prompt: "State", text: $state, showDivider: false, characterLimit: 2)
+                            ValidatedTextField(prompt: "City",
+                                               text: $city,
+                                               error: viewModel.errorBinding(fields.city))
+                            Divider()
+                            ValidatedTextField(prompt: format.stateLabel,
+                                               text: $state,
+                                               error: viewModel.errorBinding(fields.state),
+                                               characterLimit: format.stateMaxLength)
                         }
                         .frame(height: 49.0)
                         Divider()
-                        ReusableFormTextField(prompt: "Zip Code", text: $zipCode, showDivider: true, keyboardType: .numberPad, characterLimit: 5)
-                        DropDownWithHeaderView(headerText: .constant(""), dropDownText: $countryText, showDropdownPicker: $showCountryPicker,
-                                               showHeaderText: false, showDropdownBorder: false)
+                        ValidatedTextField(prompt: format.postalLabel,
+                                           text: $zipCode,
+                                           error: viewModel.errorBinding(fields.postal),
+                                           keyboardType: format.postalKeyboard,
+                                           characterLimit: addressNamespace == .personal ? nil : 5)
+                        if allowsInternational {
+                            DropDownWithHeaderView(headerText: .constant(""),
+                                                   dropDownText: $countryText,
+                                                   showDropdownPicker: $showCountryPicker,
+                                                   showHeaderText: false,
+                                                   showDropdownBorder: false)
+                        }
                     }
                 }
                 .padding(.horizontal)
         }
         .onAppear {
+            if !allowsInternational {
+                self.country = "US"
+                if let us = AvailableCountry.allCountries.first(where: { $0.alpha2Code == "US" }) {
+                    self.selectedCountry = us
+                }
+            }
+            if !country.isEmpty,
+               let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == country }) {
+                self.selectedCountry = match
+            }
             self.country = selectedCountry.alpha2Code
             self.countryText = selectedCountry.displayName
         }
-        .onChange(of: selectedCountry, { oldValue, newValue in
+        .onChange(of: selectedCountry) { _, _ in
             self.country = selectedCountry.alpha2Code
             self.countryText = selectedCountry.displayName
-        })
+        }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(
                 selectedCountry: $selectedCountry,
                 isPresented: $showCountryPicker
             )
-            .presentationDetents([.fraction(0.3)])
+            .presentationDetents([.fraction(0.4)])
             .presentationDragIndicator(.visible)
         }
-    }
-}
-
-#Preview {
-    VStack {
-        BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
-                                 state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName))
-        BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
-                                 state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName),
-                                 showHeaderText: false)
     }
 }

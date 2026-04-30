@@ -6,15 +6,27 @@
 //
 
 import SwiftUI
+import Frame
 
-public struct BankAccountDetailView: View {
-    @Binding public var routingNumber: String
-    @Binding public var accountNumber: String
-    
-    @State public var headerFont: Font = Font.subheadline
-    @State public var showHeaderText: Bool = true
-    
-    public var body: some View {
+struct BankAccountDetailView: View {
+    @ObservedObject var viewModel: OnboardingContainerViewModel
+    @Binding var routingNumber: String
+    @Binding var accountNumber: String
+
+    @State var headerFont: Font = Font.subheadline
+    @State var showHeaderText: Bool = true
+
+    init(viewModel: OnboardingContainerViewModel,
+         routingNumber: Binding<String>,
+         accountNumber: Binding<String>,
+         showHeaderText: Bool = true) {
+        self.viewModel = viewModel
+        self._routingNumber = routingNumber
+        self._accountNumber = accountNumber
+        self._showHeaderText = State(initialValue: showHeaderText)
+    }
+
+    var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
                 Text("Bank Account Details")
@@ -28,18 +40,20 @@ public struct BankAccountDetailView: View {
                 .frame(height: 100.0)
                 .overlay {
                     VStack(spacing: 0) {
-                        ReusableFormTextField(prompt: "Routing Number", text: $routingNumber, showDivider: true)
-                        ReusableFormTextField(prompt: "Account Number", text: $accountNumber, showDivider: false, keyboardType: .numberPad)
+                        ValidatedTextField(prompt: "Routing Number",
+                                           text: $routingNumber,
+                                           error: viewModel.errorBinding(.payoutRouting),
+                                           keyboardType: .numberPad,
+                                           characterLimit: 9)
+                        Divider()
+                        ValidatedTextField(prompt: "Account Number",
+                                           text: $accountNumber,
+                                           error: viewModel.errorBinding(.payoutAccountNumber),
+                                           keyboardType: .numberPad,
+                                           characterLimit: 17)
                     }
                 }
                 .padding(.horizontal)
         }
-    }
-}
-
-#Preview {
-    VStack {
-        BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""))
-        BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""), showHeaderText: false)
     }
 }

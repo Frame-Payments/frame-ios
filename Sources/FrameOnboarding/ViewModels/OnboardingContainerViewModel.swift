@@ -6,10 +6,51 @@
 //
 
 import Foundation
+import SwiftUI
 import Frame
 import EvervaultInputs
 import CoreLocation
 import LinkKit
+
+enum OnboardingField: Hashable {
+    case authPhone, authBirthMonth, authBirthDay, authBirthYear
+    case personalFirstName, personalLastName, personalEmail, personalPhone
+    case personalBirthMonth, personalBirthDay, personalBirthYear, personalSSN
+    case personalAddressLine1, personalCity, personalState, personalPostal, personalCountry
+    case paymentAddressLine1, paymentCity, paymentState, paymentPostal
+    case payoutAddressLine1, payoutCity, payoutState, payoutPostal
+    case paymentCard
+    case payoutRouting, payoutAccountNumber, payoutAccountType
+    case docFront, docBack, docSelfie
+
+    /// Which screen / surface this field belongs to. Drives error-dictionary partitioning so
+    /// validating one screen doesn't clobber errors on another.
+    var group: OnboardingFieldGroup {
+        switch self {
+        case .authPhone, .authBirthMonth, .authBirthDay, .authBirthYear:
+            return .phoneAuth
+        case .personalFirstName, .personalLastName, .personalEmail, .personalPhone,
+             .personalBirthMonth, .personalBirthDay, .personalBirthYear, .personalSSN,
+             .personalAddressLine1, .personalCity, .personalState, .personalPostal, .personalCountry:
+            return .personal
+        case .paymentAddressLine1, .paymentCity, .paymentState, .paymentPostal, .paymentCard:
+            return .payment
+        case .payoutAddressLine1, .payoutCity, .payoutState, .payoutPostal,
+             .payoutRouting, .payoutAccountNumber, .payoutAccountType:
+            return .payout
+        case .docFront, .docBack, .docSelfie:
+            return .docs
+        }
+    }
+}
+
+enum OnboardingFieldGroup {
+    case phoneAuth, personal, payment, payout, docs
+}
+
+enum AddressNamespace {
+    case personal, payment, payout
+}
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
@@ -17,7 +58,7 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var progressiveSteps: [OnboardingFlow] = []
     @Published var currentStep: OnboardingFlow = .personalInformation
     @Published var requiredCapabilities: [FrameObjects.Capabilities]
-    
+
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
@@ -31,14 +72,21 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var ipAddress: String?
     @Published var userCoordinates: CLLocationCoordinate2D?
     @Published var termsOfServiceToken: String?
-    
+
+    @Published var fieldErrors: [OnboardingField: String] = [:]
+    @Published var phoneCountry: PhoneCountrySelection = .default
+    @Published var authPhoneNumber: String = ""
+    @Published var authBirthMonth: String = ""
+    @Published var authBirthDay: String = ""
+    @Published var authBirthYear: String = ""
+
     @Published var proveUserInfo: ProveUserInfo?
     @Published var showProveOTPEntry: Bool = false
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
     @Published var isConnectingPlaidBank: Bool = false
     private var plaidHandler: Handler?
-    
+
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
     
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
@@ -115,7 +163,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                               lastName: createdCustomerIdentity.lastName),
                                                                            email: createdCustomerIdentity.email,
                                                                            phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
-                                                                                                                  countryCode: "+1"),
+                                                                                                                  countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssn: createdCustomerIdentity.ssn)
@@ -135,7 +183,7 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "", lastName: ""),
                                                                            email: "",
-                                                                           phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: "+1"),
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: phoneCountry.dialCode),
                                                                            address: nil, birthdate: dateOfBirth, ssn: nil)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
@@ -162,7 +210,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                               lastName: createdCustomerIdentity.lastName),
                                                                            email: createdCustomerIdentity.email,
                                                                            phoneNumber: createdCustomerIdentity.phoneNumber,
-                                                                           phoneCountryCode: "+1",
+                                                                           phoneCountryCode: phoneCountry.dialCode,
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssnLast4: createdCustomerIdentity.ssn)
@@ -471,34 +519,169 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
-    func checkIfCustomerCanContinueWithPersonalInformation() -> Bool {
-        guard !createdCustomerIdentity.firstName.isEmpty, !createdCustomerIdentity.lastName.isEmpty, !createdCustomerIdentity.email.isEmpty,
-                !createdCustomerIdentity.phoneNumber.isEmpty, !createdCustomerIdentity.ssn.isEmpty, !createdCustomerIdentity.dateOfBirth.isEmpty else { return false }
-        guard createdCustomerIdentity.address.addressLine1 != nil, createdCustomerIdentity.address.city != nil, createdCustomerIdentity.address.state != nil, !createdCustomerIdentity.address.postalCode.isEmpty else { return false }
-        return true
+    func errorBinding(_ field: OnboardingField) -> Binding<String?> {
+        Binding(
+            get: { [weak self] in self?.fieldErrors[field] },
+            set: { [weak self] new in self?.fieldErrors[field] = new }
+        )
     }
-    
-    func checkIfCustomerCanContinueWithPaymentMethod(onlyAddress: Bool = false) -> Bool {
-        guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        if !onlyAddress {
-            guard cardData.isValid else { return false }
+
+    /// Assembles an ISO 8601 date-of-birth string ("YYYY-MM-DD") with zero-padded month/day.
+    /// Returns an empty string if any component is empty.
+    static func formatDateOfBirth(year: String, month: String, day: String) -> String {
+        guard !year.isEmpty, !month.isEmpty, !day.isEmpty else { return "" }
+        let paddedYear = year.count >= 4 ? year : String(repeating: "0", count: 4 - year.count) + year
+        let paddedMonth = month.count == 2 ? month : "0" + month
+        let paddedDay = day.count == 2 ? day : "0" + day
+        return "\(paddedYear)-\(paddedMonth)-\(paddedDay)"
+    }
+
+    /// Replaces all errors for the given group with `errors`, leaving fields in other groups
+    /// untouched. Returns whether `errors` is empty.
+    @discardableResult
+    private func applyValidation(group: OnboardingFieldGroup, errors: [OnboardingField: String]) -> Bool {
+        var merged = fieldErrors.filter { $0.key.group != group }
+        merged.merge(errors) { _, new in new }
+        fieldErrors = merged
+        return errors.isEmpty
+    }
+
+    @discardableResult
+    func validateAllPhoneAuth() -> Bool {
+        var errors: [OnboardingField: String] = [:]
+
+        if let err = Validators.validatePhoneE164(authPhoneNumber, regionCode: phoneCountry.alpha2) {
+            errors[.authPhone] = err
         }
-        return true
+
+        if requiredCapabilities.contains(.kycPrefill) {
+            if let err = Validators.validateDateOfBirth(year: authBirthYear, month: authBirthMonth, day: authBirthDay) {
+                errors[.authBirthMonth] = err
+                errors[.authBirthDay] = err
+                errors[.authBirthYear] = err
+            }
+        }
+
+        return applyValidation(group: .phoneAuth, errors: errors)
     }
-    
-    func checkIfCustomerCanContinueWithPayoutMethod() -> Bool {
-        guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        guard bankAccount.accountNumber != nil, bankAccount.routingNumber != nil, bankAccount.accountType != nil else { return false }
-        return true
+
+    @discardableResult
+    func validateAllPersonalInformation() -> Bool {
+        var errors: [OnboardingField: String] = [:]
+
+        if let err = Validators.validateNonEmpty(createdCustomerIdentity.firstName, fieldName: "First name") {
+            errors[.personalFirstName] = err
+        }
+        if let err = Validators.validateNonEmpty(createdCustomerIdentity.lastName, fieldName: "Last name") {
+            errors[.personalLastName] = err
+        }
+        if let err = Validators.validateEmail(createdCustomerIdentity.email) {
+            errors[.personalEmail] = err
+        }
+        if let err = Validators.validatePhoneE164(createdCustomerIdentity.phoneNumber, regionCode: phoneCountry.alpha2) {
+            errors[.personalPhone] = err
+        }
+
+        let dobComponents = createdCustomerIdentity.dateOfBirth.components(separatedBy: "-")
+        let year = dobComponents.count == 3 ? dobComponents[0] : ""
+        let month = dobComponents.count == 3 ? dobComponents[1] : ""
+        let day = dobComponents.count == 3 ? dobComponents[2] : ""
+        if let err = Validators.validateDateOfBirth(year: year, month: month, day: day) {
+            errors[.personalBirthMonth] = err
+            errors[.personalBirthDay] = err
+            errors[.personalBirthYear] = err
+        }
+
+        if let err = Validators.validateSSNLast4(createdCustomerIdentity.ssn) {
+            errors[.personalSSN] = err
+        }
+
+        let address = createdCustomerIdentity.address
+        if let err = Validators.validateNonEmpty(address.addressLine1 ?? "", fieldName: "Address line 1") {
+            errors[.personalAddressLine1] = err
+        }
+        if let err = Validators.validateNonEmpty(address.city ?? "", fieldName: "City") {
+            errors[.personalCity] = err
+        }
+        let stateLabel = AddressFormat.format(forCountry: address.country ?? "US").stateLabel
+        if let err = Validators.validateNonEmpty(address.state ?? "", fieldName: stateLabel) {
+            errors[.personalState] = err
+        }
+        if let err = Validators.validatePostalCode(address.postalCode, countryCode: address.country ?? "US") {
+            errors[.personalPostal] = err
+        }
+        if let err = Validators.validateNonEmpty(address.country ?? "", fieldName: "Country") {
+            errors[.personalCountry] = err
+        }
+
+        return applyValidation(group: .personal, errors: errors)
     }
-    
-    func checkIfCustomerCanContinueWithDocs() -> Bool {
-        guard filesToUpload.contains(where: { $0.fieldName == .front }) else { return false }
-        guard filesToUpload.contains(where: { $0.fieldName == .back }) else { return false }
-        guard filesToUpload.contains(where: { $0.fieldName == .selfie }) else { return false }
-        return true
+
+    @discardableResult
+    func validateAllPaymentMethod(onlyAddress: Bool = false) -> Bool {
+        var errors: [OnboardingField: String] = [:]
+
+        if let err = Validators.validateNonEmpty(createdBillingAddress.addressLine1 ?? "", fieldName: "Address line 1") {
+            errors[.paymentAddressLine1] = err
+        }
+        if let err = Validators.validateNonEmpty(createdBillingAddress.city ?? "", fieldName: "City") {
+            errors[.paymentCity] = err
+        }
+        if let err = Validators.validateNonEmpty(createdBillingAddress.state ?? "", fieldName: "State") {
+            errors[.paymentState] = err
+        }
+        if let err = Validators.validateZipUS(createdBillingAddress.postalCode) {
+            errors[.paymentPostal] = err
+        }
+
+        if !onlyAddress {
+            if let err = Validators.validateCard(cardData) {
+                errors[.paymentCard] = err
+            }
+        }
+
+        return applyValidation(group: .payment, errors: errors)
     }
-    
+
+    @discardableResult
+    func validateAllPayoutMethod() -> Bool {
+        var errors: [OnboardingField: String] = [:]
+
+        if let err = Validators.validateNonEmpty(createdBillingAddress.addressLine1 ?? "", fieldName: "Address line 1") {
+            errors[.payoutAddressLine1] = err
+        }
+        if let err = Validators.validateNonEmpty(createdBillingAddress.city ?? "", fieldName: "City") {
+            errors[.payoutCity] = err
+        }
+        if let err = Validators.validateNonEmpty(createdBillingAddress.state ?? "", fieldName: "State") {
+            errors[.payoutState] = err
+        }
+        if let err = Validators.validateZipUS(createdBillingAddress.postalCode) {
+            errors[.payoutPostal] = err
+        }
+        if let err = Validators.validateRoutingNumberUS(bankAccount.routingNumber ?? "") {
+            errors[.payoutRouting] = err
+        }
+        if let err = Validators.validateAccountNumberUS(bankAccount.accountNumber ?? "") {
+            errors[.payoutAccountNumber] = err
+        }
+        if bankAccount.accountType == nil {
+            errors[.payoutAccountType] = "Select an account type"
+        }
+
+        return applyValidation(group: .payout, errors: errors)
+    }
+
+    @discardableResult
+    func validateAllDocs() -> Bool {
+        var errors: [OnboardingField: String] = [:]
+        if !filesToUpload.contains(where: { $0.fieldName == .front }) { errors[.docFront] = "Front of ID is required" }
+        if !filesToUpload.contains(where: { $0.fieldName == .back }) { errors[.docBack] = "Back of ID is required" }
+        if !filesToUpload.contains(where: { $0.fieldName == .selfie }) { errors[.docSelfie] = "Selfie is required" }
+
+        return applyValidation(group: .docs, errors: errors)
+    }
+
     func clearAccountDetails() {
         self.cardData = PaymentCardData()
         self.bankAccount = FrameObjects.BankAccount()

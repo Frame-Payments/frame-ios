@@ -81,16 +81,17 @@ public class FrameObjects {
     
     public struct PaymentCard: Codable, Sendable, Equatable {
         public let brand: String
-        public let expirationMonth: String
-        public let expirationYear: String
+        public let expirationMonth: String?
+        public let expirationYear: String?
         public let issuer: String?
         public let currency: String?
         public let segment: String?
         public let type: String?
         public let lastFourDigits: String
-        
-        public init(brand: String, expirationMonth: String, expirationYear: String, issuer: String? = nil, currency: String?, segment: String? = nil,
-                    type: String? = nil, lastFourDigits: String) {
+        public let wallet: Wallet?
+
+        public init(brand: String, expirationMonth: String? = nil, expirationYear: String? = nil, issuer: String? = nil, currency: String?, segment: String? = nil,
+                    type: String? = nil, lastFourDigits: String, wallet: Wallet? = nil) {
             self.brand = brand
             self.expirationMonth = expirationMonth
             self.expirationYear = expirationYear
@@ -99,14 +100,35 @@ public class FrameObjects {
             self.segment = segment
             self.type = type
             self.lastFourDigits = lastFourDigits
+            self.wallet = wallet
         }
-        
+
         public enum CodingKeys: String, CodingKey {
-            case brand, issuer, currency, segment, type
+            case brand, issuer, currency, segment, type, wallet
             case expirationMonth = "exp_month"
             case expirationYear = "exp_year"
             case lastFourDigits = "last_four"
         }
+    }
+
+    public struct Wallet: Codable, Sendable, Equatable {
+        public let type: WalletType
+        public let dynamicLast4: String?
+
+        public init(type: WalletType, dynamicLast4: String? = nil) {
+            self.type = type
+            self.dynamicLast4 = dynamicLast4
+        }
+
+        public enum CodingKeys: String, CodingKey {
+            case type
+            case dynamicLast4 = "dynamic_last4"
+        }
+    }
+
+    public enum WalletType: String, Codable, Sendable, Equatable {
+        case applePay = "apple_pay"
+        case googlePay = "google_pay"
     }
     
     public struct BankAccount: Codable, Sendable, Equatable {

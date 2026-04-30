@@ -12,29 +12,25 @@ import Frame
 struct AddPaymentMethodView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
-    
-    @State private var canCustomerContinue: Bool = false
-    
+
     var onlyAddressVerification: Bool = false
-    
+
     init(onboardingContainerViewModel: OnboardingContainerViewModel, onlyAddressVerification: Bool) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
         self.onlyAddressVerification = onlyAddressVerification
     }
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             addPaymentMethodView
-//            Spacer()
         }
-        .onChange(of: onboardingContainerViewModel.cardData) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod()
-        }
-        .onChange(of: onboardingContainerViewModel.createdBillingAddress) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPaymentMethod(onlyAddress: onlyAddressVerification)
+        .onChange(of: onboardingContainerViewModel.cardData) { _, _ in
+            if onboardingContainerViewModel.fieldErrors[.paymentCard] != nil {
+                onboardingContainerViewModel.fieldErrors[.paymentCard] = nil
+            }
         }
     }
-    
+
     var addPaymentMethodView: some View {
         VStack(alignment: .leading) {
             PageHeaderView(headerTitle: "Add New Payment Method") {
@@ -43,14 +39,24 @@ struct AddPaymentMethodView: View {
             ScrollView {
                 if !onlyAddressVerification {
                     PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
+                    if let cardError = onboardingContainerViewModel.fieldErrors[.paymentCard] {
+                        Text(cardError)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                    }
                 }
-                BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
+                BillingAddressDetailView(viewModel: onboardingContainerViewModel,
+                                         addressNamespace: .payment,
+                                         addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
                                          addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
                                          city: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
                                          state: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
                                          zipCode: $onboardingContainerViewModel.createdBillingAddress.postalCode,
                                          country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
-                ContinueButton(enabled: $canCustomerContinue) {
+                ContinueButton(enabled: .constant(true)) {
+                    guard onboardingContainerViewModel.validateAllPaymentMethod(onlyAddress: onlyAddressVerification) else { return }
                     Task {
                         if onlyAddressVerification {
                             await onboardingContainerViewModel.updatePaymentMethod()

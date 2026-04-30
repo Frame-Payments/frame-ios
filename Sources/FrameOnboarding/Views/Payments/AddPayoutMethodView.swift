@@ -15,7 +15,6 @@ struct AddPayoutMethodView: View {
 
     @State private var selectedAccountType: FrameObjects.PaymentAccountType = .checking
     @State private var accountTypeString: String = FrameObjects.PaymentAccountType.checking.rawValue.capitalized
-    @State private var canCustomerContinue: Bool = false
     @State private var showAccountTypePicker: Bool = false
     @State private var showManualForm: Bool = false
 
@@ -27,12 +26,6 @@ struct AddPayoutMethodView: View {
         VStack(alignment: .leading) {
             addPayoutMethodView
             Spacer()
-        }
-        .onChange(of: onboardingContainerViewModel.bankAccount) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPayoutMethod()
-        }
-        .onChange(of: onboardingContainerViewModel.createdBillingAddress) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPayoutMethod()
         }
         .onChange(of: selectedAccountType, { oldValue, newValue in
             self.onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
@@ -78,21 +71,25 @@ struct AddPayoutMethodView: View {
                 .padding(.bottom, 8)
 
                 if showManualForm {
-                    BankAccountDetailView(routingNumber: $onboardingContainerViewModel.bankAccount.routingNumber.orEmpty,
+                    BankAccountDetailView(viewModel: onboardingContainerViewModel,
+                                          routingNumber: $onboardingContainerViewModel.bankAccount.routingNumber.orEmpty,
                                           accountNumber: $onboardingContainerViewModel.bankAccount.accountNumber.orEmpty)
                     DropDownWithHeaderView(headerText: .constant("Account Type"),
                                            dropDownText: $accountTypeString,
                                            showDropdownPicker: $showAccountTypePicker)
-                    BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
+                    BillingAddressDetailView(viewModel: onboardingContainerViewModel,
+                                             addressNamespace: .payout,
+                                             addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
                                              addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
                                              city: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
                                              state: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
                                              zipCode: $onboardingContainerViewModel.createdBillingAddress.postalCode,
                                              country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
                     KeyboardSpacing()
-                    ContinueButton(buttonText: "Add Bank Account", enabled: $canCustomerContinue) {
+                    ContinueButton(buttonText: "Add Bank Account", enabled: .constant(true)) {
+                        onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
+                        guard onboardingContainerViewModel.validateAllPayoutMethod() else { return }
                         Task {
-                            onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
                             await onboardingContainerViewModel.addNewPayoutMethod()
                             self.dismiss()
                         }
