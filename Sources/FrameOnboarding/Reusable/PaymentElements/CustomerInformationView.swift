@@ -78,12 +78,14 @@ public struct CustomerInformationView: View {
             viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
         }
         .onChange(of: viewModel.identity.dateOfBirth) { _, newValue in
-            // If the source dateOfBirth is replaced (e.g. async hydration after mount), re-seed.
+            // Re-seed from async hydration (e.g. checkExistingAccount populating identity after mount).
+            // Skip if the user has already started typing — otherwise zero-padding would rewrite their input mid-entry.
+            guard birthYear.isEmpty, birthMonth.isEmpty, birthDay.isEmpty else { return }
             let parts = newValue.components(separatedBy: "-")
             guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
-            if parts[0] != birthYear { birthYear = parts[0] }
-            if parts[1] != birthMonth { birthMonth = parts[1] }
-            if parts[2] != birthDay { birthDay = parts[2] }
+            birthYear = parts[0]
+            birthMonth = parts[1]
+            birthDay = parts[2]
         }
     }
 
@@ -104,7 +106,7 @@ public struct CustomerInformationView: View {
                 .bold()
                 .font(headerFont)
             Spacer()
-            if let dobError = firstDateOfBirthError() {
+            if let dobError = viewModel.firstDateOfBirthError {
                 Text(dobError)
                     .font(.caption)
                     .foregroundColor(.red)
@@ -140,12 +142,6 @@ public struct CustomerInformationView: View {
                 }
             }
             .padding(.horizontal)
-    }
-
-    private func firstDateOfBirthError() -> String? {
-        return viewModel.errorBinding(.birthMonth).wrappedValue
-            ?? viewModel.errorBinding(.birthDay).wrappedValue
-            ?? viewModel.errorBinding(.birthYear).wrappedValue
     }
 
     @ViewBuilder

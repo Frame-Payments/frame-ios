@@ -65,4 +65,10 @@ public final class CustomerInformationViewModel: ObservableObject {
             set: { [weak self] in self?.errors[field] = $0 }
         )
     }
+
+    /// Returns the first non-nil DOB field error in display order (month → day → year),
+    /// so the header row can surface a single compact message rather than three.
+    public var firstDateOfBirthError: String? {
+        errors[.birthMonth] ?? errors[.birthDay] ?? errors[.birthYear]
+    }
 }
