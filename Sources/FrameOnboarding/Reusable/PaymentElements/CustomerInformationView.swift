@@ -39,18 +39,21 @@ public struct CustomerInformationView: View {
                         HStack {
                             ValidatedTextField(prompt: "First Name",
                                                text: $viewModel.identity.firstName,
-                                               error: viewModel.errorBinding(.firstName))
+                                               error: viewModel.errorBinding(.firstName),
+                                               inlineError: true)
                             Divider()
                             ValidatedTextField(prompt: "Last Name",
                                                text: $viewModel.identity.lastName,
-                                               error: viewModel.errorBinding(.lastName))
+                                               error: viewModel.errorBinding(.lastName),
+                                               inlineError: true)
                         }
                         .frame(height: 49.0)
                         Divider()
                         ValidatedTextField(prompt: "Email Address",
                                            text: $viewModel.identity.email,
                                            error: viewModel.errorBinding(.email),
-                                           keyboardType: .emailAddress)
+                                           keyboardType: .emailAddress,
+                                           inlineError: true)
                         Divider()
                         PhoneNumberTextField(prompt: "Phone Number",
                                              text: $viewModel.identity.phoneNumber,
@@ -96,10 +99,18 @@ public struct CustomerInformationView: View {
 
     @ViewBuilder
     var birthdayView: some View {
-        Text("Birthday")
-            .bold()
-            .font(headerFont)
-            .padding([.horizontal, .top])
+        HStack {
+            Text("Birthday")
+                .bold()
+                .font(headerFont)
+            Spacer()
+            if let dobError = firstDateOfBirthError() {
+                Text(dobError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding([.horizontal, .top])
         RoundedRectangle(cornerRadius: 10.0)
             .fill(.white)
             .stroke(.gray.opacity(0.3))
@@ -110,22 +121,31 @@ public struct CustomerInformationView: View {
                                        text: $birthMonth,
                                        error: viewModel.errorBinding(.birthMonth),
                                        keyboardType: .numberPad,
-                                       characterLimit: 2)
+                                       characterLimit: 2,
+                                       compactError: true)
                     Divider()
                     ValidatedTextField(prompt: "Day",
                                        text: $birthDay,
                                        error: viewModel.errorBinding(.birthDay),
                                        keyboardType: .numberPad,
-                                       characterLimit: 2)
+                                       characterLimit: 2,
+                                       compactError: true)
                     Divider()
                     ValidatedTextField(prompt: "Year",
                                        text: $birthYear,
                                        error: viewModel.errorBinding(.birthYear),
                                        keyboardType: .numberPad,
-                                       characterLimit: 4)
+                                       characterLimit: 4,
+                                       compactError: true)
                 }
             }
             .padding(.horizontal)
+    }
+
+    private func firstDateOfBirthError() -> String? {
+        return viewModel.errorBinding(.birthMonth).wrappedValue
+            ?? viewModel.errorBinding(.birthDay).wrappedValue
+            ?? viewModel.errorBinding(.birthYear).wrappedValue
     }
 
     @ViewBuilder
@@ -154,7 +174,8 @@ public struct CustomerInformationView: View {
                                        text: $viewModel.identity.ssn,
                                        error: viewModel.errorBinding(.ssn),
                                        keyboardType: .numberPad,
-                                       characterLimit: 4)
+                                       characterLimit: 4,
+                                       inlineError: true)
                 }
             }
             .padding(.horizontal)
