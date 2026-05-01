@@ -85,7 +85,6 @@ struct AddPayoutMethodView: View {
                                            dropDownText: $accountTypeString,
                                            showDropdownPicker: $showAccountTypePicker)
                     BillingAddressDetailView(viewModel: billingVM)
-                    KeyboardSpacing()
                     ContinueButton(buttonText: "Add Bank Account", enabled: .constant(true)) {
                         bankVM.account.accountType = selectedAccountType
                         let bankOK = bankVM.validate()
@@ -98,6 +97,7 @@ struct AddPayoutMethodView: View {
                             self.dismiss()
                         }
                     }
+                    KeyboardSpacing(spacingHeight: 200.0)
                 }
             }
         }

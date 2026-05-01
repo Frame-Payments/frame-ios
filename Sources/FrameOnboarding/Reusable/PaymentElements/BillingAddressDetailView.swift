@@ -47,26 +47,30 @@ public struct BillingAddressDetailView: View {
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(.white)
                 .stroke(.gray.opacity(0.3))
-                .frame(height: 250.0)
+                .frame(minHeight: allowsInternational ? 250.0 : 200.0)
                 .overlay {
                     VStack(spacing: 0) {
                         ValidatedTextField(prompt: "Address Line 1",
                                            text: $viewModel.address.addressLine1.orEmpty,
-                                           error: viewModel.errorBinding(.line1))
+                                           error: viewModel.errorBinding(.line1),
+                                           inlineError: true)
                         Divider()
                         ValidatedTextField(prompt: "Address Line 2",
                                            text: $viewModel.address.addressLine2.orEmpty,
-                                           error: .constant(nil))
+                                           error: .constant(nil),
+                                           inlineError: true)
                         Divider()
                         HStack {
                             ValidatedTextField(prompt: "City",
                                                text: $viewModel.address.city.orEmpty,
-                                               error: viewModel.errorBinding(.city))
+                                               error: viewModel.errorBinding(.city),
+                                               inlineError: true)
                             Divider()
                             ValidatedTextField(prompt: format.stateLabel,
                                                text: $viewModel.address.state.orEmpty,
                                                error: viewModel.errorBinding(.state),
-                                               characterLimit: format.stateMaxLength)
+                                               characterLimit: format.stateMaxLength,
+                                               inlineError: true)
                         }
                         .frame(height: 49.0)
                         Divider()
@@ -74,7 +78,8 @@ public struct BillingAddressDetailView: View {
                                            text: $viewModel.address.postalCode,
                                            error: viewModel.errorBinding(.postal),
                                            keyboardType: format.postalKeyboard,
-                                           characterLimit: allowsInternational ? nil : 5)
+                                           characterLimit: allowsInternational ? nil : 5,
+                                           inlineError: true)
                         if allowsInternational {
                             DropDownWithHeaderView(headerText: .constant(""),
                                                    dropDownText: $countryText,

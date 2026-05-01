@@ -81,6 +81,5 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
-                         onlyAddressVerification: false)
+    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), onlyAddressVerification: false)
 }

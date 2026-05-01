@@ -14,6 +14,7 @@ public struct ValidatedTextField: View {
     private var characterLimit: Int?
     private var compactError: Bool
     private var errorSpacing: CGFloat
+    private var inlineError: Bool
 
     public init(prompt: String,
                 text: Binding<String>,
@@ -21,6 +22,7 @@ public struct ValidatedTextField: View {
                 keyboardType: UIKeyboardType = .default,
                 characterLimit: Int? = nil,
                 compactError: Bool = false,
+                inlineError: Bool = false,
                 errorSpacing: CGFloat = 4) {
         self.prompt = prompt
         self._text = text
@@ -28,27 +30,49 @@ public struct ValidatedTextField: View {
         self.keyboardType = keyboardType
         self.characterLimit = characterLimit
         self.compactError = compactError
+        self.inlineError = inlineError
         self.errorSpacing = errorSpacing
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: compactError ? 0 : errorSpacing) {
-            TextField("", text: $text, prompt: Text(prompt))
-                .keyboardType(keyboardType)
-                .frame(height: 49.0)
-                .padding(.horizontal)
-                .onChange(of: text) { _, newValue in
-                    if let limit = characterLimit, newValue.count > limit {
-                        text = String(newValue.prefix(limit))
+            if inlineError {
+                HStack(spacing: errorSpacing) {
+                    TextField("", text: $text, prompt: Text(prompt))
+                        .keyboardType(keyboardType)
+                        .frame(height: 49.0)
+                        .padding(.horizontal)
+                        .onChange(of: text) { _, newValue in
+                            if let limit = characterLimit, newValue.count > limit {
+                                text = String(newValue.prefix(limit))
+                            }
+                            if error != nil { error = nil }
+                        }
+                    if let error, !compactError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        Spacer()
                     }
-                    if error != nil { error = nil }
                 }
-            if let error, !compactError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundColor(.red)
+            } else {
+                TextField("", text: $text, prompt: Text(prompt))
+                    .keyboardType(keyboardType)
+                    .frame(height: 49.0)
                     .padding(.horizontal)
-                    .padding(.bottom, errorSpacing)
+                    .onChange(of: text) { _, newValue in
+                        if let limit = characterLimit, newValue.count > limit {
+                            text = String(newValue.prefix(limit))
+                        }
+                        if error != nil { error = nil }
+                    }
+                if let error, !compactError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.horizontal)
+                        .padding(.bottom, errorSpacing)
+                }
             }
         }
     }

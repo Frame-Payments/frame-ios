@@ -38,13 +38,15 @@ public struct BankAccountDetailView: View {
                                            text: $viewModel.account.routingNumber.orEmpty,
                                            error: viewModel.errorBinding(.routing),
                                            keyboardType: .numberPad,
-                                           characterLimit: 9)
+                                           characterLimit: 9,
+                                           inlineError: true)
                         Divider()
                         ValidatedTextField(prompt: "Account Number",
                                            text: $viewModel.account.accountNumber.orEmpty,
                                            error: viewModel.errorBinding(.account),
                                            keyboardType: .numberPad,
-                                           characterLimit: 17)
+                                           characterLimit: 17,
+                                           inlineError: true)
                     }
                 }
                 .padding(.horizontal)
