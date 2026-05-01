@@ -14,13 +14,6 @@ import LinkKit
 
 enum OnboardingField: Hashable {
     case authPhone, authBirthMonth, authBirthDay, authBirthYear
-    case personalFirstName, personalLastName, personalEmail, personalPhone
-    case personalBirthMonth, personalBirthDay, personalBirthYear, personalSSN
-    case personalAddressLine1, personalCity, personalState, personalPostal, personalCountry
-    case paymentAddressLine1, paymentCity, paymentState, paymentPostal
-    case payoutAddressLine1, payoutCity, payoutState, payoutPostal
-    case paymentCard
-    case payoutRouting, payoutAccountNumber, payoutAccountType
     case docFront, docBack, docSelfie
 
     /// Which screen / surface this field belongs to. Drives error-dictionary partitioning so
@@ -29,15 +22,6 @@ enum OnboardingField: Hashable {
         switch self {
         case .authPhone, .authBirthMonth, .authBirthDay, .authBirthYear:
             return .phoneAuth
-        case .personalFirstName, .personalLastName, .personalEmail, .personalPhone,
-             .personalBirthMonth, .personalBirthDay, .personalBirthYear, .personalSSN,
-             .personalAddressLine1, .personalCity, .personalState, .personalPostal, .personalCountry:
-            return .personal
-        case .paymentAddressLine1, .paymentCity, .paymentState, .paymentPostal, .paymentCard:
-            return .payment
-        case .payoutAddressLine1, .payoutCity, .payoutState, .payoutPostal,
-             .payoutRouting, .payoutAccountNumber, .payoutAccountType:
-            return .payout
         case .docFront, .docBack, .docSelfie:
             return .docs
         }
@@ -45,11 +29,7 @@ enum OnboardingField: Hashable {
 }
 
 enum OnboardingFieldGroup {
-    case phoneAuth, personal, payment, payout, docs
-}
-
-enum AddressNamespace {
-    case personal, payment, payout
+    case phoneAuth, docs
 }
 
 @MainActor
@@ -526,16 +506,6 @@ class OnboardingContainerViewModel: ObservableObject {
         )
     }
 
-    /// Assembles an ISO 8601 date-of-birth string ("YYYY-MM-DD") with zero-padded month/day.
-    /// Returns an empty string if any component is empty.
-    static func formatDateOfBirth(year: String, month: String, day: String) -> String {
-        guard !year.isEmpty, !month.isEmpty, !day.isEmpty else { return "" }
-        let paddedYear = year.count >= 4 ? year : String(repeating: "0", count: 4 - year.count) + year
-        let paddedMonth = month.count == 2 ? month : "0" + month
-        let paddedDay = day.count == 2 ? day : "0" + day
-        return "\(paddedYear)-\(paddedMonth)-\(paddedDay)"
-    }
-
     /// Replaces all errors for the given group with `errors`, leaving fields in other groups
     /// untouched. Returns whether `errors` is empty.
     @discardableResult
@@ -563,113 +533,6 @@ class OnboardingContainerViewModel: ObservableObject {
         }
 
         return applyValidation(group: .phoneAuth, errors: errors)
-    }
-
-    @discardableResult
-    func validateAllPersonalInformation() -> Bool {
-        var errors: [OnboardingField: String] = [:]
-
-        if let err = Validators.validateNonEmpty(createdCustomerIdentity.firstName, fieldName: "First name") {
-            errors[.personalFirstName] = err
-        }
-        if let err = Validators.validateNonEmpty(createdCustomerIdentity.lastName, fieldName: "Last name") {
-            errors[.personalLastName] = err
-        }
-        if let err = Validators.validateEmail(createdCustomerIdentity.email) {
-            errors[.personalEmail] = err
-        }
-        if let err = Validators.validatePhoneE164(createdCustomerIdentity.phoneNumber, regionCode: phoneCountry.alpha2) {
-            errors[.personalPhone] = err
-        }
-
-        let dobComponents = createdCustomerIdentity.dateOfBirth.components(separatedBy: "-")
-        let year = dobComponents.count == 3 ? dobComponents[0] : ""
-        let month = dobComponents.count == 3 ? dobComponents[1] : ""
-        let day = dobComponents.count == 3 ? dobComponents[2] : ""
-        if let err = Validators.validateDateOfBirth(year: year, month: month, day: day) {
-            errors[.personalBirthMonth] = err
-            errors[.personalBirthDay] = err
-            errors[.personalBirthYear] = err
-        }
-
-        if let err = Validators.validateSSNLast4(createdCustomerIdentity.ssn) {
-            errors[.personalSSN] = err
-        }
-
-        let address = createdCustomerIdentity.address
-        if let err = Validators.validateNonEmpty(address.addressLine1 ?? "", fieldName: "Address line 1") {
-            errors[.personalAddressLine1] = err
-        }
-        if let err = Validators.validateNonEmpty(address.city ?? "", fieldName: "City") {
-            errors[.personalCity] = err
-        }
-        let stateLabel = AddressFormat.format(forCountry: address.country ?? "US").stateLabel
-        if let err = Validators.validateNonEmpty(address.state ?? "", fieldName: stateLabel) {
-            errors[.personalState] = err
-        }
-        if let err = Validators.validatePostalCode(address.postalCode, countryCode: address.country ?? "US") {
-            errors[.personalPostal] = err
-        }
-        if let err = Validators.validateNonEmpty(address.country ?? "", fieldName: "Country") {
-            errors[.personalCountry] = err
-        }
-
-        return applyValidation(group: .personal, errors: errors)
-    }
-
-    @discardableResult
-    func validateAllPaymentMethod(onlyAddress: Bool = false) -> Bool {
-        var errors: [OnboardingField: String] = [:]
-
-        if let err = Validators.validateNonEmpty(createdBillingAddress.addressLine1 ?? "", fieldName: "Address line 1") {
-            errors[.paymentAddressLine1] = err
-        }
-        if let err = Validators.validateNonEmpty(createdBillingAddress.city ?? "", fieldName: "City") {
-            errors[.paymentCity] = err
-        }
-        if let err = Validators.validateNonEmpty(createdBillingAddress.state ?? "", fieldName: "State") {
-            errors[.paymentState] = err
-        }
-        if let err = Validators.validateZipUS(createdBillingAddress.postalCode) {
-            errors[.paymentPostal] = err
-        }
-
-        if !onlyAddress {
-            if let err = Validators.validateCard(cardData) {
-                errors[.paymentCard] = err
-            }
-        }
-
-        return applyValidation(group: .payment, errors: errors)
-    }
-
-    @discardableResult
-    func validateAllPayoutMethod() -> Bool {
-        var errors: [OnboardingField: String] = [:]
-
-        if let err = Validators.validateNonEmpty(createdBillingAddress.addressLine1 ?? "", fieldName: "Address line 1") {
-            errors[.payoutAddressLine1] = err
-        }
-        if let err = Validators.validateNonEmpty(createdBillingAddress.city ?? "", fieldName: "City") {
-            errors[.payoutCity] = err
-        }
-        if let err = Validators.validateNonEmpty(createdBillingAddress.state ?? "", fieldName: "State") {
-            errors[.payoutState] = err
-        }
-        if let err = Validators.validateZipUS(createdBillingAddress.postalCode) {
-            errors[.payoutPostal] = err
-        }
-        if let err = Validators.validateRoutingNumberUS(bankAccount.routingNumber ?? "") {
-            errors[.payoutRouting] = err
-        }
-        if let err = Validators.validateAccountNumberUS(bankAccount.accountNumber ?? "") {
-            errors[.payoutAccountNumber] = err
-        }
-        if bankAccount.accountType == nil {
-            errors[.payoutAccountType] = "Select an account type"
-        }
-
-        return applyValidation(group: .payout, errors: errors)
     }
 
     @discardableResult

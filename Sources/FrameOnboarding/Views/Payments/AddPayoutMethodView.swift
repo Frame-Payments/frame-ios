@@ -12,6 +12,8 @@ import Frame
 struct AddPayoutMethodView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
+    @StateObject private var billingVM: BillingAddressViewModel
+    @StateObject private var bankVM: BankAccountViewModel
 
     @State private var selectedAccountType: FrameObjects.PaymentAccountType = .checking
     @State private var accountTypeString: String = FrameObjects.PaymentAccountType.checking.rawValue.capitalized
@@ -20,6 +22,13 @@ struct AddPayoutMethodView: View {
 
     init(onboardingContainerViewModel: OnboardingContainerViewModel) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
+        self._billingVM = StateObject(wrappedValue: BillingAddressViewModel(
+            address: onboardingContainerViewModel.createdBillingAddress,
+            mode: .usOnly
+        ))
+        self._bankVM = StateObject(wrappedValue: BankAccountViewModel(
+            account: onboardingContainerViewModel.bankAccount
+        ))
     }
 
     var body: some View {
@@ -28,7 +37,7 @@ struct AddPayoutMethodView: View {
             Spacer()
         }
         .onChange(of: selectedAccountType, { oldValue, newValue in
-            self.onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
+            self.bankVM.account.accountType = selectedAccountType
             self.accountTypeString = selectedAccountType.rawValue.capitalized
         })
         .sheet(isPresented: $showAccountTypePicker) {
@@ -71,24 +80,19 @@ struct AddPayoutMethodView: View {
                 .padding(.bottom, 8)
 
                 if showManualForm {
-                    BankAccountDetailView(viewModel: onboardingContainerViewModel,
-                                          routingNumber: $onboardingContainerViewModel.bankAccount.routingNumber.orEmpty,
-                                          accountNumber: $onboardingContainerViewModel.bankAccount.accountNumber.orEmpty)
+                    BankAccountDetailView(viewModel: bankVM)
                     DropDownWithHeaderView(headerText: .constant("Account Type"),
                                            dropDownText: $accountTypeString,
                                            showDropdownPicker: $showAccountTypePicker)
-                    BillingAddressDetailView(viewModel: onboardingContainerViewModel,
-                                             addressNamespace: .payout,
-                                             addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
-                                             addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
-                                             city: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
-                                             state: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
-                                             zipCode: $onboardingContainerViewModel.createdBillingAddress.postalCode,
-                                             country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
+                    BillingAddressDetailView(viewModel: billingVM)
                     KeyboardSpacing()
                     ContinueButton(buttonText: "Add Bank Account", enabled: .constant(true)) {
-                        onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
-                        guard onboardingContainerViewModel.validateAllPayoutMethod() else { return }
+                        bankVM.account.accountType = selectedAccountType
+                        let bankOK = bankVM.validate()
+                        let addressOK = billingVM.validate()
+                        guard bankOK, addressOK else { return }
+                        onboardingContainerViewModel.bankAccount = bankVM.account
+                        onboardingContainerViewModel.createdBillingAddress = billingVM.address
                         Task {
                             await onboardingContainerViewModel.addNewPayoutMethod()
                             self.dismiss()

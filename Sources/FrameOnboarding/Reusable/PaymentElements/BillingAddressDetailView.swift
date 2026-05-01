@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  BillingAddressDetailView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 1/9/26.
@@ -8,64 +8,35 @@
 import SwiftUI
 import Frame
 
-struct BillingAddressDetailView: View {
-    @ObservedObject var viewModel: OnboardingContainerViewModel
-    let addressNamespace: AddressNamespace
+public struct BillingAddressDetailView: View {
+    @ObservedObject var viewModel: BillingAddressViewModel
 
-    @Binding var addressLineOne: String
-    @Binding var addressLineTwo: String
-    @Binding var city: String
-    @Binding var state: String
-    @Binding var zipCode: String
-    @Binding var country: String
-
-    @State var headerTitle: String = "Billing Address"
-    @State var headerFont: Font = Font.subheadline
-    @State var showHeaderText: Bool = true
+    @State private var headerTitle: String
+    @State private var showHeaderText: Bool
+    @State private var headerFont: Font = Font.subheadline
 
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var countryText: String = ""
     @State private var showCountryPicker: Bool = false
 
-    init(viewModel: OnboardingContainerViewModel,
-         addressNamespace: AddressNamespace,
-         addressLineOne: Binding<String>,
-         addressLineTwo: Binding<String>,
-         city: Binding<String>,
-         state: Binding<String>,
-         zipCode: Binding<String>,
-         country: Binding<String>,
-         headerTitle: String = "Billing Address",
-         showHeaderText: Bool = true) {
+    public init(viewModel: BillingAddressViewModel,
+                headerTitle: String = "Billing Address",
+                showHeaderText: Bool = true) {
         self.viewModel = viewModel
-        self.addressNamespace = addressNamespace
-        self._addressLineOne = addressLineOne
-        self._addressLineTwo = addressLineTwo
-        self._city = city
-        self._state = state
-        self._zipCode = zipCode
-        self._country = country
         self._headerTitle = State(initialValue: headerTitle)
         self._showHeaderText = State(initialValue: showHeaderText)
     }
 
-    private var allowsInternational: Bool { addressNamespace == .personal }
+    private var allowsInternational: Bool { viewModel.mode == .international }
 
     private var format: AddressFormat {
-        allowsInternational
-            ? AddressFormat.format(forCountry: selectedCountry.alpha2Code)
-            : AddressFormat.format(forCountry: "US")
+        let code = allowsInternational
+            ? selectedCountry.alpha2Code
+            : "US"
+        return AddressFormat.format(forCountry: code)
     }
 
-    private var fields: (line1: OnboardingField, city: OnboardingField, state: OnboardingField, postal: OnboardingField) {
-        switch addressNamespace {
-        case .personal: return (.personalAddressLine1, .personalCity, .personalState, .personalPostal)
-        case .payment:  return (.paymentAddressLine1, .paymentCity, .paymentState, .paymentPostal)
-        case .payout:   return (.payoutAddressLine1, .payoutCity, .payoutState, .payoutPostal)
-        }
-    }
-
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
                 Text(headerTitle)
@@ -80,30 +51,30 @@ struct BillingAddressDetailView: View {
                 .overlay {
                     VStack(spacing: 0) {
                         ValidatedTextField(prompt: "Address Line 1",
-                                           text: $addressLineOne,
-                                           error: viewModel.errorBinding(fields.line1))
+                                           text: $viewModel.address.addressLine1.orEmpty,
+                                           error: viewModel.errorBinding(.line1))
                         Divider()
                         ValidatedTextField(prompt: "Address Line 2",
-                                           text: $addressLineTwo,
+                                           text: $viewModel.address.addressLine2.orEmpty,
                                            error: .constant(nil))
                         Divider()
                         HStack {
                             ValidatedTextField(prompt: "City",
-                                               text: $city,
-                                               error: viewModel.errorBinding(fields.city))
+                                               text: $viewModel.address.city.orEmpty,
+                                               error: viewModel.errorBinding(.city))
                             Divider()
                             ValidatedTextField(prompt: format.stateLabel,
-                                               text: $state,
-                                               error: viewModel.errorBinding(fields.state),
+                                               text: $viewModel.address.state.orEmpty,
+                                               error: viewModel.errorBinding(.state),
                                                characterLimit: format.stateMaxLength)
                         }
                         .frame(height: 49.0)
                         Divider()
                         ValidatedTextField(prompt: format.postalLabel,
-                                           text: $zipCode,
-                                           error: viewModel.errorBinding(fields.postal),
+                                           text: $viewModel.address.postalCode,
+                                           error: viewModel.errorBinding(.postal),
                                            keyboardType: format.postalKeyboard,
-                                           characterLimit: addressNamespace == .personal ? nil : 5)
+                                           characterLimit: allowsInternational ? nil : 5)
                         if allowsInternational {
                             DropDownWithHeaderView(headerText: .constant(""),
                                                    dropDownText: $countryText,
@@ -117,21 +88,26 @@ struct BillingAddressDetailView: View {
         }
         .onAppear {
             if !allowsInternational {
-                self.country = "US"
+                viewModel.address.country = "US"
                 if let us = AvailableCountry.allCountries.first(where: { $0.alpha2Code == "US" }) {
-                    self.selectedCountry = us
+                    selectedCountry = us
                 }
+            } else if let savedCountry = viewModel.address.country, !savedCountry.isEmpty,
+                      let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == savedCountry }) {
+                selectedCountry = match
             }
-            if !country.isEmpty,
-               let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == country }) {
-                self.selectedCountry = match
-            }
-            self.country = selectedCountry.alpha2Code
-            self.countryText = selectedCountry.displayName
+            viewModel.address.country = selectedCountry.alpha2Code
+            countryText = selectedCountry.displayName
         }
         .onChange(of: selectedCountry) { _, _ in
-            self.country = selectedCountry.alpha2Code
-            self.countryText = selectedCountry.displayName
+            viewModel.address.country = selectedCountry.alpha2Code
+            countryText = selectedCountry.displayName
+            // If a postal error is already visible, refresh it for the new country's rules
+            // so the message switches from US ZIP to the new country's format guidance.
+            if allowsInternational, viewModel.errors[.postal] != nil {
+                viewModel.errors[.postal] = Validators.validatePostalCode(viewModel.address.postalCode,
+                                                                          countryCode: selectedCountry.alpha2Code)
+            }
         }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(
@@ -141,5 +117,24 @@ struct BillingAddressDetailView: View {
             .presentationDetents([.fraction(0.4)])
             .presentationDragIndicator(.visible)
         }
+    }
+}
+
+#Preview("US only") {
+    @Previewable @StateObject var vm = BillingAddressViewModel(mode: .usOnly)
+    VStack {
+        BillingAddressDetailView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
+    }
+}
+
+#Preview("International") {
+    @Previewable @StateObject var vm = BillingAddressViewModel(
+        address: FrameObjects.BillingAddress(country: "GB", postalCode: ""),
+        mode: .international
+    )
+    VStack {
+        BillingAddressDetailView(viewModel: vm, headerTitle: "Current Address")
+        Button("Validate") { _ = vm.validate() }
     }
 }

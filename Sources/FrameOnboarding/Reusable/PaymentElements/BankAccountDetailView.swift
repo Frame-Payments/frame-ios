@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  BankAccountDetailView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 1/9/26.
@@ -8,25 +8,19 @@
 import SwiftUI
 import Frame
 
-struct BankAccountDetailView: View {
-    @ObservedObject var viewModel: OnboardingContainerViewModel
-    @Binding var routingNumber: String
-    @Binding var accountNumber: String
+public struct BankAccountDetailView: View {
+    @ObservedObject var viewModel: BankAccountViewModel
 
-    @State var headerFont: Font = Font.subheadline
-    @State var showHeaderText: Bool = true
+    @State private var headerFont: Font = Font.subheadline
+    @State private var showHeaderText: Bool
 
-    init(viewModel: OnboardingContainerViewModel,
-         routingNumber: Binding<String>,
-         accountNumber: Binding<String>,
-         showHeaderText: Bool = true) {
+    public init(viewModel: BankAccountViewModel,
+                showHeaderText: Bool = true) {
         self.viewModel = viewModel
-        self._routingNumber = routingNumber
-        self._accountNumber = accountNumber
         self._showHeaderText = State(initialValue: showHeaderText)
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
                 Text("Bank Account Details")
@@ -41,19 +35,27 @@ struct BankAccountDetailView: View {
                 .overlay {
                     VStack(spacing: 0) {
                         ValidatedTextField(prompt: "Routing Number",
-                                           text: $routingNumber,
-                                           error: viewModel.errorBinding(.payoutRouting),
+                                           text: $viewModel.account.routingNumber.orEmpty,
+                                           error: viewModel.errorBinding(.routing),
                                            keyboardType: .numberPad,
                                            characterLimit: 9)
                         Divider()
                         ValidatedTextField(prompt: "Account Number",
-                                           text: $accountNumber,
-                                           error: viewModel.errorBinding(.payoutAccountNumber),
+                                           text: $viewModel.account.accountNumber.orEmpty,
+                                           error: viewModel.errorBinding(.account),
                                            keyboardType: .numberPad,
                                            characterLimit: 17)
                     }
                 }
                 .padding(.horizontal)
         }
+    }
+}
+
+#Preview {
+    @Previewable @StateObject var vm = BankAccountViewModel()
+    VStack {
+        BankAccountDetailView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
     }
 }

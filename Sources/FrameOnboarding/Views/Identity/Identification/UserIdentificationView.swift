@@ -34,6 +34,8 @@ struct UserIdentificationView: View {
     }
     
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
+    @StateObject private var personalAddressVM: BillingAddressViewModel
+    @StateObject private var customerInfoVM: CustomerInformationViewModel
 
     @State private var identitySteps: UserIdentificationSteps = .phoneAuth
     @State private var selectedCountry: AvailableCountry = .defaultCountry
@@ -48,8 +50,24 @@ struct UserIdentificationView: View {
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
-    
+
     let idTypes = IdentificationTypes.allCases
+
+    init(onboardingContainerViewModel: OnboardingContainerViewModel,
+         continueToNextStep: Binding<Bool>,
+         returnToPreviousStep: Binding<Bool>) {
+        self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
+        self._continueToNextStep = continueToNextStep
+        self._returnToPreviousStep = returnToPreviousStep
+        self._personalAddressVM = StateObject(wrappedValue: BillingAddressViewModel(
+            address: onboardingContainerViewModel.createdCustomerIdentity.address,
+            mode: .international
+        ))
+        self._customerInfoVM = StateObject(wrappedValue: CustomerInformationViewModel(
+            identity: onboardingContainerViewModel.createdCustomerIdentity,
+            phoneCountry: onboardingContainerViewModel.phoneCountry
+        ))
+    }
     
     var body: some View {
         VStack {
@@ -78,6 +96,14 @@ struct UserIdentificationView: View {
                 self.identitySteps = .information
             }
         })
+        .onChange(of: onboardingContainerViewModel.createdCustomerIdentity) { _, newValue in
+            // Propagate async-hydrated identity (e.g. from checkExistingAccount) into the element VMs.
+            customerInfoVM.identity = newValue
+            personalAddressVM.address = newValue.address
+        }
+        .onChange(of: onboardingContainerViewModel.phoneCountry) { _, newValue in
+            customerInfoVM.phoneCountry = newValue
+        }
         .sheet(isPresented: $showIDPicker) {
             Picker(IdentificationSelection.id.rawValue, selection: $selectedIdType) {
                 ForEach(IdentificationTypes.allCases, id: \.self) { id in
@@ -231,7 +257,7 @@ struct UserIdentificationView: View {
                 guard onboardingContainerViewModel.validateAllPhoneAuth() else { return }
                 Task {
                     isSendingOTP = true
-                    let dob = OnboardingContainerViewModel.formatDateOfBirth(
+                    let dob = DateOfBirthFormatter.format(
                         year: onboardingContainerViewModel.authBirthYear,
                         month: onboardingContainerViewModel.authBirthMonth,
                         day: onboardingContainerViewModel.authBirthDay
@@ -256,27 +282,19 @@ struct UserIdentificationView: View {
                 self.identitySteps = .phoneAuth
             }
             ScrollView {
-                CustomerInformationView(viewModel: onboardingContainerViewModel,
-                                        emailAddress: $onboardingContainerViewModel.createdCustomerIdentity.email,
-                                        phoneNumber: $onboardingContainerViewModel.createdCustomerIdentity.phoneNumber,
-                                        firstName: $onboardingContainerViewModel.createdCustomerIdentity.firstName,
-                                        lastName: $onboardingContainerViewModel.createdCustomerIdentity.lastName,
-                                        dateOfBirth: $onboardingContainerViewModel.createdCustomerIdentity.dateOfBirth,
-                                        ssn: $onboardingContainerViewModel.createdCustomerIdentity.ssn)
-                BillingAddressDetailView(viewModel: onboardingContainerViewModel,
-                                         addressNamespace: .personal,
-                                         addressLineOne: $onboardingContainerViewModel.createdCustomerIdentity.address.addressLine1.orEmpty,
-                                         addressLineTwo: $onboardingContainerViewModel.createdCustomerIdentity.address.addressLine2.orEmpty,
-                                         city: $onboardingContainerViewModel.createdCustomerIdentity.address.city.orEmpty,
-                                         state: $onboardingContainerViewModel.createdCustomerIdentity.address.state.orEmpty,
-                                         zipCode: $onboardingContainerViewModel.createdCustomerIdentity.address.postalCode,
-                                         country: $onboardingContainerViewModel.createdCustomerIdentity.address.country.orEmpty,
+                CustomerInformationView(viewModel: customerInfoVM)
+                BillingAddressDetailView(viewModel: personalAddressVM,
                                          headerTitle: "Current Address")
                 KeyboardSpacing()
             }
             Spacer()
             ContinueButton(enabled: .constant(true)) {
-                guard onboardingContainerViewModel.validateAllPersonalInformation() else { return }
+                let infoOK = customerInfoVM.validate()
+                let addressOK = personalAddressVM.validate()
+                guard infoOK, addressOK else { return }
+                onboardingContainerViewModel.createdCustomerIdentity = customerInfoVM.identity
+                onboardingContainerViewModel.createdCustomerIdentity.address = personalAddressVM.address
+                onboardingContainerViewModel.phoneCountry = customerInfoVM.phoneCountry
                 Task {
                     if onboardingContainerViewModel.accountId == nil {
                         await onboardingContainerViewModel.createIndividualAccount()

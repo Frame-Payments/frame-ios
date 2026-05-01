@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  CustomerInformationView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 1/9/26.
@@ -8,42 +8,23 @@
 import SwiftUI
 import Frame
 
-struct CustomerInformationView: View {
-    @ObservedObject var viewModel: OnboardingContainerViewModel
-
-    @Binding var emailAddress: String
-    @Binding var phoneNumber: String
-    @Binding var firstName: String
-    @Binding var lastName: String
-    @Binding var dateOfBirth: String
-    @Binding var ssn: String
+public struct CustomerInformationView: View {
+    @ObservedObject var viewModel: CustomerInformationViewModel
 
     @State private var birthYear: String = ""
     @State private var birthMonth: String = ""
     @State private var birthDay: String = ""
 
-    @State var headerTitle: String = "Customer Information"
-    @State var headerFont: Font = Font.subheadline
+    @State private var headerTitle: String
+    @State private var headerFont: Font = Font.subheadline
 
-    init(viewModel: OnboardingContainerViewModel,
-         emailAddress: Binding<String>,
-         phoneNumber: Binding<String>,
-         firstName: Binding<String>,
-         lastName: Binding<String>,
-         dateOfBirth: Binding<String>,
-         ssn: Binding<String>,
-         headerTitle: String = "Customer Information") {
+    public init(viewModel: CustomerInformationViewModel,
+                headerTitle: String = "Customer Information") {
         self.viewModel = viewModel
-        self._emailAddress = emailAddress
-        self._phoneNumber = phoneNumber
-        self._firstName = firstName
-        self._lastName = lastName
-        self._dateOfBirth = dateOfBirth
-        self._ssn = ssn
         self._headerTitle = State(initialValue: headerTitle)
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading) {
             Text(headerTitle)
                 .bold()
@@ -57,23 +38,23 @@ struct CustomerInformationView: View {
                     VStack(spacing: 0) {
                         HStack {
                             ValidatedTextField(prompt: "First Name",
-                                               text: $firstName,
-                                               error: viewModel.errorBinding(.personalFirstName))
+                                               text: $viewModel.identity.firstName,
+                                               error: viewModel.errorBinding(.firstName))
                             Divider()
                             ValidatedTextField(prompt: "Last Name",
-                                               text: $lastName,
-                                               error: viewModel.errorBinding(.personalLastName))
+                                               text: $viewModel.identity.lastName,
+                                               error: viewModel.errorBinding(.lastName))
                         }
                         .frame(height: 49.0)
                         Divider()
                         ValidatedTextField(prompt: "Email Address",
-                                           text: $emailAddress,
-                                           error: viewModel.errorBinding(.personalEmail),
+                                           text: $viewModel.identity.email,
+                                           error: viewModel.errorBinding(.email),
                                            keyboardType: .emailAddress)
                         Divider()
                         PhoneNumberTextField(prompt: "Phone Number",
-                                             text: $phoneNumber,
-                                             error: viewModel.errorBinding(.personalPhone),
+                                             text: $viewModel.identity.phoneNumber,
+                                             error: viewModel.errorBinding(.phone),
                                              regionCode: viewModel.phoneCountry.alpha2)
                     }
                 }
@@ -84,25 +65,33 @@ struct CustomerInformationView: View {
         .onAppear {
             seedBirthComponentsFromStoredValue()
         }
-        .onChange(of: birthYear, { oldValue, newValue in
-            self.dateOfBirth = OnboardingContainerViewModel.formatDateOfBirth(year: birthYear, month: birthMonth, day: birthDay)
-        })
-        .onChange(of: birthMonth, { oldValue, newValue in
-            self.dateOfBirth = OnboardingContainerViewModel.formatDateOfBirth(year: birthYear, month: birthMonth, day: birthDay)
-        })
-        .onChange(of: birthDay, { oldValue, newValue in
-            self.dateOfBirth = OnboardingContainerViewModel.formatDateOfBirth(year: birthYear, month: birthMonth, day: birthDay)
-        })
+        .onChange(of: birthYear) { _, _ in
+            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        }
+        .onChange(of: birthMonth) { _, _ in
+            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        }
+        .onChange(of: birthDay) { _, _ in
+            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        }
+        .onChange(of: viewModel.identity.dateOfBirth) { _, newValue in
+            // If the source dateOfBirth is replaced (e.g. async hydration after mount), re-seed.
+            let parts = newValue.components(separatedBy: "-")
+            guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
+            if parts[0] != birthYear { birthYear = parts[0] }
+            if parts[1] != birthMonth { birthMonth = parts[1] }
+            if parts[2] != birthDay { birthDay = parts[2] }
+        }
     }
 
     /// Splits a stored YYYY-M(M)-D(D) string back into the three editable components.
     /// Tolerates unpadded month/day so legacy data (e.g. "1990-1-5") still hydrates the form.
     private func seedBirthComponentsFromStoredValue() {
-        let parts = dateOfBirth.components(separatedBy: "-")
+        let parts = viewModel.identity.dateOfBirth.components(separatedBy: "-")
         guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
-        self.birthYear = parts[0]
-        self.birthMonth = parts[1]
-        self.birthDay = parts[2]
+        birthYear = parts[0]
+        birthMonth = parts[1]
+        birthDay = parts[2]
     }
 
     @ViewBuilder
@@ -119,19 +108,19 @@ struct CustomerInformationView: View {
                 HStack {
                     ValidatedTextField(prompt: "Month",
                                        text: $birthMonth,
-                                       error: viewModel.errorBinding(.personalBirthMonth),
+                                       error: viewModel.errorBinding(.birthMonth),
                                        keyboardType: .numberPad,
                                        characterLimit: 2)
                     Divider()
                     ValidatedTextField(prompt: "Day",
                                        text: $birthDay,
-                                       error: viewModel.errorBinding(.personalBirthDay),
+                                       error: viewModel.errorBinding(.birthDay),
                                        keyboardType: .numberPad,
                                        characterLimit: 2)
                     Divider()
                     ValidatedTextField(prompt: "Year",
                                        text: $birthYear,
-                                       error: viewModel.errorBinding(.personalBirthYear),
+                                       error: viewModel.errorBinding(.birthYear),
                                        keyboardType: .numberPad,
                                        characterLimit: 4)
                 }
@@ -162,12 +151,20 @@ struct CustomerInformationView: View {
                                 .foregroundColor(.black)
                         }
                     ValidatedTextField(prompt: "SSN",
-                                       text: $ssn,
-                                       error: viewModel.errorBinding(.personalSSN),
+                                       text: $viewModel.identity.ssn,
+                                       error: viewModel.errorBinding(.ssn),
                                        keyboardType: .numberPad,
                                        characterLimit: 4)
                 }
             }
             .padding(.horizontal)
+    }
+}
+
+#Preview {
+    @Previewable @StateObject var vm = CustomerInformationViewModel()
+    ScrollView {
+        CustomerInformationView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
     }
 }

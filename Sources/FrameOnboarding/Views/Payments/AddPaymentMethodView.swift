@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  AddPaymentMethodView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 12/11/25.
@@ -12,12 +12,18 @@ import Frame
 struct AddPaymentMethodView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
+    @StateObject private var billingVM: BillingAddressViewModel
+    @State private var cardError: String?
 
     var onlyAddressVerification: Bool = false
 
     init(onboardingContainerViewModel: OnboardingContainerViewModel, onlyAddressVerification: Bool) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
         self.onlyAddressVerification = onlyAddressVerification
+        self._billingVM = StateObject(wrappedValue: BillingAddressViewModel(
+            address: onboardingContainerViewModel.createdBillingAddress,
+            mode: .usOnly
+        ))
     }
 
     var body: some View {
@@ -25,9 +31,7 @@ struct AddPaymentMethodView: View {
             addPaymentMethodView
         }
         .onChange(of: onboardingContainerViewModel.cardData) { _, _ in
-            if onboardingContainerViewModel.fieldErrors[.paymentCard] != nil {
-                onboardingContainerViewModel.fieldErrors[.paymentCard] = nil
-            }
+            cardError = nil
         }
     }
 
@@ -39,7 +43,7 @@ struct AddPaymentMethodView: View {
             ScrollView {
                 if !onlyAddressVerification {
                     PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
-                    if let cardError = onboardingContainerViewModel.fieldErrors[.paymentCard] {
+                    if let cardError {
                         Text(cardError)
                             .font(.caption)
                             .foregroundColor(.red)
@@ -47,16 +51,20 @@ struct AddPaymentMethodView: View {
                             .padding(.horizontal)
                     }
                 }
-                BillingAddressDetailView(viewModel: onboardingContainerViewModel,
-                                         addressNamespace: .payment,
-                                         addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
-                                         addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
-                                         city: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
-                                         state: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
-                                         zipCode: $onboardingContainerViewModel.createdBillingAddress.postalCode,
-                                         country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
+                BillingAddressDetailView(viewModel: billingVM)
                 ContinueButton(enabled: .constant(true)) {
-                    guard onboardingContainerViewModel.validateAllPaymentMethod(onlyAddress: onlyAddressVerification) else { return }
+                    let addressOK = billingVM.validate()
+                    var cardOK = true
+                    if !onlyAddressVerification {
+                        if let err = Validators.validateCard(onboardingContainerViewModel.cardData) {
+                            cardError = err
+                            cardOK = false
+                        } else {
+                            cardError = nil
+                        }
+                    }
+                    guard addressOK && cardOK else { return }
+                    onboardingContainerViewModel.createdBillingAddress = billingVM.address
                     Task {
                         if onlyAddressVerification {
                             await onboardingContainerViewModel.updatePaymentMethod()
@@ -73,5 +81,6 @@ struct AddPaymentMethodView: View {
 }
 
 #Preview {
-    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), onlyAddressVerification: false)
+    AddPaymentMethodView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
+                         onlyAddressVerification: false)
 }
