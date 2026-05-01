@@ -44,13 +44,18 @@ extension FrameObjects.Capabilities {
 public struct OnboardingContainerView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
-    
+
+    var onComplete: (() -> Void)?
+
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     @State private var startedOnboarding: Bool = false
     @State private var accountLoaded: Bool = false
-    
-    public init(accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = []) {
+
+    public init(accountId: String? = nil,
+                requiredCapabilities: [FrameObjects.Capabilities] = [],
+                onComplete: (() -> Void)? = nil) {
+        self.onComplete = onComplete
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId, requiredCapabilities: requiredCapabilities)
         
         if requiredCapabilities != [] {
@@ -116,6 +121,7 @@ public struct OnboardingContainerView: View {
         .onChange(of: continueToNextStep) { oldValue, newValue in
             guard continueToNextStep else { return }
             guard onboardingContainerViewModel.onboardingFlow.last != onboardingContainerViewModel.currentStep else {
+                onComplete?()
                 self.dismiss()
                 return
             } // Complete onboarding here.
