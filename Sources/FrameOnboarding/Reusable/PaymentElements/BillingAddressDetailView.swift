@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  BillingAddressDetailView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 1/9/26.
@@ -9,21 +9,33 @@ import SwiftUI
 import Frame
 
 public struct BillingAddressDetailView: View {
-    @Binding public var addressLineOne: String
-    @Binding public var addressLineTwo: String
-    @Binding public var city: String
-    @Binding public var state: String
-    @Binding public var zipCode: String
-    @Binding public var country: String
-    
-    @State public var countryText: String = ""
-    @State public var headerTitle: String = "Billing Address"
-    @State public var headerFont: Font = Font.subheadline
-    @State public var showHeaderText: Bool = true
-    
+    @ObservedObject var viewModel: BillingAddressViewModel
+
+    @State private var headerTitle: String
+    @State private var showHeaderText: Bool
+    @State private var headerFont: Font = Font.subheadline
+
     @State private var selectedCountry: AvailableCountry = .defaultCountry
+    @State private var countryText: String = ""
     @State private var showCountryPicker: Bool = false
-    
+
+    public init(viewModel: BillingAddressViewModel,
+                headerTitle: String = "Billing Address",
+                showHeaderText: Bool = true) {
+        self.viewModel = viewModel
+        self._headerTitle = State(initialValue: headerTitle)
+        self._showHeaderText = State(initialValue: showHeaderText)
+    }
+
+    private var allowsInternational: Bool { viewModel.mode == .international }
+
+    private var format: AddressFormat {
+        let code = allowsInternational
+            ? selectedCountry.alpha2Code
+            : "US"
+        return AddressFormat.format(forCountry: code)
+    }
+
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
@@ -35,49 +47,99 @@ public struct BillingAddressDetailView: View {
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(.white)
                 .stroke(.gray.opacity(0.3))
-                .frame(height: 250.0)
+                .frame(minHeight: allowsInternational ? 250.0 : 200.0)
                 .overlay {
                     VStack(spacing: 0) {
-                        ReusableFormTextField(prompt: "Address Line 1", text: $addressLineOne, showDivider: true)
-                        ReusableFormTextField(prompt: "Address Line 2", text: $addressLineTwo, showDivider: true)
+                        ValidatedTextField(prompt: "Address Line 1",
+                                           text: $viewModel.address.addressLine1.orEmpty,
+                                           error: viewModel.errorBinding(.line1),
+                                           inlineError: true)
+                        Divider()
+                        ValidatedTextField(prompt: "Address Line 2",
+                                           text: $viewModel.address.addressLine2.orEmpty,
+                                           error: .constant(nil),
+                                           inlineError: true)
+                        Divider()
                         HStack {
-                            ReusableFormTextField(prompt: "City", text: $city, showDivider: false)
-                            ReusableFormTextField(prompt: "State", text: $state, showDivider: false, characterLimit: 2)
+                            ValidatedTextField(prompt: "City",
+                                               text: $viewModel.address.city.orEmpty,
+                                               error: viewModel.errorBinding(.city),
+                                               inlineError: true)
+                            Divider()
+                            ValidatedTextField(prompt: format.stateLabel,
+                                               text: $viewModel.address.state.orEmpty,
+                                               error: viewModel.errorBinding(.state),
+                                               characterLimit: format.stateMaxLength,
+                                               inlineError: true)
                         }
                         .frame(height: 49.0)
                         Divider()
-                        ReusableFormTextField(prompt: "Zip Code", text: $zipCode, showDivider: true, keyboardType: .numberPad, characterLimit: 5)
-                        DropDownWithHeaderView(headerText: .constant(""), dropDownText: $countryText, showDropdownPicker: $showCountryPicker,
-                                               showHeaderText: false, showDropdownBorder: false)
+                        ValidatedTextField(prompt: format.postalLabel,
+                                           text: $viewModel.address.postalCode,
+                                           error: viewModel.errorBinding(.postal),
+                                           keyboardType: format.postalKeyboard,
+                                           characterLimit: allowsInternational ? nil : 5,
+                                           inlineError: true)
+                        if allowsInternational {
+                            DropDownWithHeaderView(headerText: .constant(""),
+                                                   dropDownText: $countryText,
+                                                   showDropdownPicker: $showCountryPicker,
+                                                   showHeaderText: false,
+                                                   showDropdownBorder: false)
+                        }
                     }
                 }
                 .padding(.horizontal)
         }
         .onAppear {
-            self.country = selectedCountry.alpha2Code
-            self.countryText = selectedCountry.displayName
+            if !allowsInternational {
+                viewModel.address.country = "US"
+                if let us = AvailableCountry.allCountries.first(where: { $0.alpha2Code == "US" }) {
+                    selectedCountry = us
+                }
+            } else if let savedCountry = viewModel.address.country, !savedCountry.isEmpty,
+                      let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == savedCountry }) {
+                selectedCountry = match
+            }
+            viewModel.address.country = selectedCountry.alpha2Code
+            countryText = selectedCountry.displayName
         }
-        .onChange(of: selectedCountry, { oldValue, newValue in
-            self.country = selectedCountry.alpha2Code
-            self.countryText = selectedCountry.displayName
-        })
+        .onChange(of: selectedCountry) { _, _ in
+            viewModel.address.country = selectedCountry.alpha2Code
+            countryText = selectedCountry.displayName
+            // If a postal error is already visible, refresh it for the new country's rules
+            // so the message switches from US ZIP to the new country's format guidance.
+            if allowsInternational, viewModel.errors[.postal] != nil {
+                viewModel.errors[.postal] = Validators.validatePostalCode(viewModel.address.postalCode,
+                                                                          countryCode: selectedCountry.alpha2Code)
+            }
+        }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(
                 selectedCountry: $selectedCountry,
                 isPresented: $showCountryPicker
             )
-            .presentationDetents([.fraction(0.3)])
+            .presentationDetents([.fraction(0.4)])
             .presentationDragIndicator(.visible)
         }
     }
 }
 
-#Preview {
+#Preview("US only") {
+    @Previewable @StateObject var vm = BillingAddressViewModel(mode: .usOnly)
     VStack {
-        BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
-                                 state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName))
-        BillingAddressDetailView(addressLineOne: .constant(""), addressLineTwo: .constant(""), city: .constant(""),
-                                 state: .constant(""), zipCode: .constant(""), country: .constant(AvailableCountry.defaultCountry.displayName),
-                                 showHeaderText: false)
+        BillingAddressDetailView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
+    }
+}
+
+#Preview("International") {
+    @Previewable @StateObject var vm = BillingAddressViewModel(
+        address: FrameObjects.BillingAddress(country: "GB", postalCode: ""),
+        mode: .international
+    )
+    VStack {
+        BillingAddressDetailView(viewModel: vm, headerTitle: "Current Address")
+        Button("Validate") { _ = vm.validate() }
     }
 }

@@ -1,5 +1,5 @@
 //
-//  SwiftUIView.swift
+//  CustomerInformationView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 1/9/26.
@@ -9,23 +9,21 @@ import SwiftUI
 import Frame
 
 public struct CustomerInformationView: View {
-    @Binding public var emailAddress: String
-    @Binding public var phoneNumber: String
-    @Binding public var firstName: String
-    @Binding public var lastName: String
-    @Binding public var dateOfBirth: String
-    @Binding public var ssn: String
-    
+    @ObservedObject var viewModel: CustomerInformationViewModel
+
     @State private var birthYear: String = ""
     @State private var birthMonth: String = ""
     @State private var birthDay: String = ""
-    
-    @State public var headerTitle: String = "Customer Information"
-    @State public var headerFont: Font = Font.subheadline
-    
-    @State private var selectedCountry: AvailableCountry = .defaultCountry
-    @State private var showCountryPicker: Bool = false
-    
+
+    @State private var headerTitle: String
+    @State private var headerFont: Font = Font.subheadline
+
+    public init(viewModel: CustomerInformationViewModel,
+                headerTitle: String = "Customer Information") {
+        self.viewModel = viewModel
+        self._headerTitle = State(initialValue: headerTitle)
+    }
+
     public var body: some View {
         VStack(alignment: .leading) {
             Text(headerTitle)
@@ -39,14 +37,28 @@ public struct CustomerInformationView: View {
                 .overlay {
                     VStack(spacing: 0) {
                         HStack {
-                            ReusableFormTextField(prompt: "First Name", text: $firstName, showDivider: false)
+                            ValidatedTextField(prompt: "First Name",
+                                               text: $viewModel.identity.firstName,
+                                               error: viewModel.errorBinding(.firstName),
+                                               inlineError: true)
                             Divider()
-                            ReusableFormTextField(prompt: "Last Name", text: $lastName, showDivider: false)
+                            ValidatedTextField(prompt: "Last Name",
+                                               text: $viewModel.identity.lastName,
+                                               error: viewModel.errorBinding(.lastName),
+                                               inlineError: true)
                         }
                         .frame(height: 49.0)
                         Divider()
-                        ReusableFormTextField(prompt: "Email Address", text: $emailAddress, showDivider: true)
-                        ReusableFormTextField(prompt: "Phone Number", text: $phoneNumber, showDivider: false, keyboardType: .numberPad, characterLimit: 10)
+                        ValidatedTextField(prompt: "Email Address",
+                                           text: $viewModel.identity.email,
+                                           error: viewModel.errorBinding(.email),
+                                           keyboardType: .emailAddress,
+                                           inlineError: true)
+                        Divider()
+                        PhoneNumberTextField(prompt: "Phone Number",
+                                             text: $viewModel.identity.phoneNumber,
+                                             error: viewModel.errorBinding(.phone),
+                                             regionCode: viewModel.phoneCountry.alpha2)
                     }
                 }
                 .padding(.horizontal)
@@ -54,57 +66,84 @@ public struct CustomerInformationView: View {
             socialSecurityView
         }
         .onAppear {
-            if !dateOfBirth.isEmpty, dateOfBirth.count == 10 {
-                let dateComponents = dateOfBirth.components(separatedBy: "-")
-                self.birthYear = dateComponents[0]
-                self.birthMonth = dateComponents[1]
-                self.birthDay = dateComponents[2]
-            }
+            seedBirthComponentsFromStoredValue()
         }
-        .onChange(of: birthYear, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
-        })
-        .onChange(of: birthMonth, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
-        })
-        .onChange(of: birthDay, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
-        })
-        .sheet(isPresented: $showCountryPicker) {
-            CountryPickerSheet(
-                selectedCountry: $selectedCountry,
-                isPresented: $showCountryPicker
-            )
-            .presentationDetents([.fraction(0.3)])
-            .presentationDragIndicator(.visible)
+        .onChange(of: birthYear) { _, _ in
+            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        }
+        .onChange(of: birthMonth) { _, _ in
+            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        }
+        .onChange(of: birthDay) { _, _ in
+            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        }
+        .onChange(of: viewModel.identity.dateOfBirth) { _, newValue in
+            // Re-seed from async hydration (e.g. checkExistingAccount populating identity after mount).
+            // Skip if the user has already started typing — otherwise zero-padding would rewrite their input mid-entry.
+            guard birthYear.isEmpty, birthMonth.isEmpty, birthDay.isEmpty else { return }
+            let parts = newValue.components(separatedBy: "-")
+            guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
+            birthYear = parts[0]
+            birthMonth = parts[1]
+            birthDay = parts[2]
         }
     }
-    
+
+    /// Splits a stored YYYY-M(M)-D(D) string back into the three editable components.
+    /// Tolerates unpadded month/day so legacy data (e.g. "1990-1-5") still hydrates the form.
+    private func seedBirthComponentsFromStoredValue() {
+        let parts = viewModel.identity.dateOfBirth.components(separatedBy: "-")
+        guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
+        birthYear = parts[0]
+        birthMonth = parts[1]
+        birthDay = parts[2]
+    }
+
     @ViewBuilder
     var birthdayView: some View {
-        Text("Birthday")
-            .bold()
-            .font(headerFont)
-            .padding([.horizontal, .top])
+        HStack {
+            Text("Birthday")
+                .bold()
+                .font(headerFont)
+            Spacer()
+            if let dobError = viewModel.firstDateOfBirthError {
+                Text(dobError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding([.horizontal, .top])
         RoundedRectangle(cornerRadius: 10.0)
             .fill(.white)
             .stroke(.gray.opacity(0.3))
             .frame(height: 50.0)
             .overlay {
-                VStack(spacing: 0) {
-                    HStack {
-                        ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                        Divider()
-                        ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                        Divider()
-                        ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
-                    }
-                    .frame(height: 49.0)
+                HStack {
+                    ValidatedTextField(prompt: "Month",
+                                       text: $birthMonth,
+                                       error: viewModel.errorBinding(.birthMonth),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 2,
+                                       compactError: true)
+                    Divider()
+                    ValidatedTextField(prompt: "Day",
+                                       text: $birthDay,
+                                       error: viewModel.errorBinding(.birthDay),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 2,
+                                       compactError: true)
+                    Divider()
+                    ValidatedTextField(prompt: "Year",
+                                       text: $birthYear,
+                                       error: viewModel.errorBinding(.birthYear),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 4,
+                                       compactError: true)
                 }
             }
             .padding(.horizontal)
     }
-    
+
     @ViewBuilder
     var socialSecurityView: some View {
         Text("Social Security Number")
@@ -116,21 +155,23 @@ public struct CustomerInformationView: View {
             .stroke(.gray.opacity(0.3))
             .frame(height: 50.0)
             .overlay {
-                VStack(spacing: 0) {
-                    HStack(spacing: 0) {
-                        RoundedRectangle(cornerRadius: 10.0)
-                            .fill(.gray.opacity(0.3))
-                            .stroke(.gray.opacity(0.3))
-                            .frame(width: 120.0, height: 50.0)
-                            .overlay {
-                                Text("Last 4 Digits")
-                                    .font(.footnote)
-                                    .bold()
-                                    .foregroundColor(.black)
-                            }
-                        ReusableFormTextField(prompt: "SSN", text: $ssn, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
-                    }
-                    
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 10.0)
+                        .fill(.gray.opacity(0.3))
+                        .stroke(.gray.opacity(0.3))
+                        .frame(width: 120.0, height: 50.0)
+                        .overlay {
+                            Text("Last 4 Digits")
+                                .font(.footnote)
+                                .bold()
+                                .foregroundColor(.black)
+                        }
+                    ValidatedTextField(prompt: "SSN",
+                                       text: $viewModel.identity.ssn,
+                                       error: viewModel.errorBinding(.ssn),
+                                       keyboardType: .numberPad,
+                                       characterLimit: 4,
+                                       inlineError: true)
                 }
             }
             .padding(.horizontal)
@@ -138,9 +179,9 @@ public struct CustomerInformationView: View {
 }
 
 #Preview {
-    VStack {
-        CustomerInformationView(emailAddress: .constant(""), phoneNumber: .constant(""), firstName: .constant(""),
-                                lastName: .constant(""), dateOfBirth: .constant(""), ssn: .constant(""))
-        Spacer()
+    @Previewable @StateObject var vm = CustomerInformationViewModel()
+    ScrollView {
+        CustomerInformationView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
     }
 }

@@ -20,6 +20,15 @@
       }
     },
     {
+      "identity" : "phonenumberkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/marmelroy/PhoneNumberKit.git",
+      "state" : {
+        "revision" : "840ca3a89ced1a190e20ac93666ff3cdb376c973",
+        "version" : "4.2.11"
+      }
+    },
+    {
       "identity" : "plaid-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/plaid/plaid-ios",

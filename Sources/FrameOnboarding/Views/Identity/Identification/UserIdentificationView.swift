@@ -34,19 +34,15 @@ struct UserIdentificationView: View {
     }
     
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
-    
+    @StateObject private var personalAddressVM: BillingAddressViewModel
+    @StateObject private var customerInfoVM: CustomerInformationViewModel
+
     @State private var identitySteps: UserIdentificationSteps = .phoneAuth
     @State private var selectedCountry: AvailableCountry = .defaultCountry
-    @State private var phoneNumber: String = ""
-    @State private var birthYear: String = ""
-    @State private var birthMonth: String = ""
-    @State private var birthDay: String = ""
     @State private var showCountryPicker: Bool = false
     @State private var selectedIdType: IdentificationTypes = .driversLicense
     @State private var showIDPicker: Bool = false
-    @State private var canVerifyPhoneNumber: Bool = false
-    @State private var canCustomerContinue: Bool = false
-    @State private var dateOfBirth: String = ""
+    @State private var showPhoneCountryPicker: Bool = false
     @State private var isSendingOTP: Bool = false
     
     @State private var returnToPhoneNumberEntry: Bool = false
@@ -54,8 +50,24 @@ struct UserIdentificationView: View {
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
-    
+
     let idTypes = IdentificationTypes.allCases
+
+    init(onboardingContainerViewModel: OnboardingContainerViewModel,
+         continueToNextStep: Binding<Bool>,
+         returnToPreviousStep: Binding<Bool>) {
+        self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
+        self._continueToNextStep = continueToNextStep
+        self._returnToPreviousStep = returnToPreviousStep
+        self._personalAddressVM = StateObject(wrappedValue: BillingAddressViewModel(
+            address: onboardingContainerViewModel.createdCustomerIdentity.address,
+            mode: .international
+        ))
+        self._customerInfoVM = StateObject(wrappedValue: CustomerInformationViewModel(
+            identity: onboardingContainerViewModel.createdCustomerIdentity,
+            phoneCountry: onboardingContainerViewModel.phoneCountry
+        ))
+    }
     
     var body: some View {
         VStack {
@@ -84,24 +96,14 @@ struct UserIdentificationView: View {
                 self.identitySteps = .information
             }
         })
-        .onChange(of: onboardingContainerViewModel.createdCustomerIdentity) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPersonalInformation()
+        .onChange(of: onboardingContainerViewModel.createdCustomerIdentity) { _, newValue in
+            // Propagate async-hydrated identity (e.g. from checkExistingAccount) into the element VMs.
+            customerInfoVM.identity = newValue
+            personalAddressVM.address = newValue.address
         }
-        .onChange(of: birthYear, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
-        })
-        .onChange(of: birthMonth, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
-        })
-        .onChange(of: birthDay, { oldValue, newValue in
-            self.dateOfBirth = "\(birthYear)-\(birthMonth)-\(birthDay)"
-        })
-        .onChange(of: phoneNumber, { oldValue, newValue in
-            self.checkIfReadyToVerifyPhoneNumber()
-        })
-        .onChange(of: dateOfBirth, { oldValue, newValue in
-            self.checkIfReadyToVerifyPhoneNumber()
-        })
+        .onChange(of: onboardingContainerViewModel.phoneCountry) { _, newValue in
+            customerInfoVM.phoneCountry = newValue
+        }
         .sheet(isPresented: $showIDPicker) {
             Picker(IdentificationSelection.id.rawValue, selection: $selectedIdType) {
                 ForEach(IdentificationTypes.allCases, id: \.self) { id in
@@ -117,6 +119,14 @@ struct UserIdentificationView: View {
                 isPresented: $showCountryPicker
             )
             .presentationDetents([.fraction(0.3)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showPhoneCountryPicker) {
+            PhoneCountryPickerSheet(
+                selected: $onboardingContainerViewModel.phoneCountry,
+                isPresented: $showPhoneCountryPicker
+            )
+            .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: Binding(
@@ -148,40 +158,91 @@ struct UserIdentificationView: View {
                 .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 20.0)
                 .padding(.bottom, 20.0)
-            Text("Phone Number")
-                .padding(.horizontal)
-                .fontWeight(.semibold)
-                .font(.system(size: 14.0))
+            HStack {
+                Text("Phone Number")
+                    .fontWeight(.semibold)
+                    .font(.system(size: 14.0))
+                Spacer()
+                if let phoneError = onboardingContainerViewModel.errorBinding(.authPhone).wrappedValue {
+                    Text(phoneError)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+            }
+            .padding(.horizontal)
             HStack(alignment: .top, spacing: 0) {
-                dropdownSelectionBox(titleName: "", selection: .countryCode, dropdownText: "+1")
-                    .frame(width: 100.0)
+                Button {
+                    self.showPhoneCountryPicker = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(onboardingContainerViewModel.phoneCountry.flag)
+                        Text(onboardingContainerViewModel.phoneCountry.dialCode)
+                            .fontWeight(.medium)
+                            .font(.system(size: 14.0))
+                            .foregroundColor(.primary)
+                        Image("down-chevron", bundle: FrameResources.module)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 56.0)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                }
+                .frame(width: 110.0)
+                .padding([.horizontal, .bottom])
+
                 RoundedRectangle(cornerRadius: 10.0)
                     .fill(.white)
                     .stroke(.gray.opacity(0.3))
                     .frame(maxHeight: 56.0)
                     .overlay {
-                        ReusableFormTextField(prompt: "Enter your phone number", text: $phoneNumber, showDivider: false, keyboardType: .numberPad, characterLimit: 10)
+                        PhoneNumberTextField(prompt: "Enter your phone number",
+                                             text: $onboardingContainerViewModel.authPhoneNumber,
+                                             error: onboardingContainerViewModel.errorBinding(.authPhone),
+                                             regionCode: onboardingContainerViewModel.phoneCountry.alpha2,
+                                             compactError: true)
                     }
             }
             .padding(.trailing)
             .padding(.leading, 5.0)
             if onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) {
-                Text("Date of Birth")
-                    .padding(.horizontal)
-                    .fontWeight(.semibold)
-                    .font(.system(size: 14.0))
+                HStack {
+                    Text("Date of Birth")
+                        .fontWeight(.semibold)
+                        .font(.system(size: 14.0))
+                    Spacer()
+                    if let dobError = firstDateOfBirthError() {
+                        Text(dobError)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                }
+                .padding(.horizontal)
                 RoundedRectangle(cornerRadius: 10.0)
                     .fill(.white)
                     .stroke(.gray.opacity(0.3))
                     .overlay {
-                        VStack(spacing: 0) {
-                            HStack {
-                                ReusableFormTextField(prompt: "Month", text: $birthMonth, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                                Divider()
-                                ReusableFormTextField(prompt: "Day", text: $birthDay, showDivider: false, keyboardType: .numberPad, characterLimit: 2)
-                                Divider()
-                                ReusableFormTextField(prompt: "Year", text: $birthYear, showDivider: false, keyboardType: .numberPad, characterLimit: 4)
-                            }
+                        HStack {
+                            ValidatedTextField(prompt: "Month",
+                                               text: $onboardingContainerViewModel.authBirthMonth,
+                                               error: onboardingContainerViewModel.errorBinding(.authBirthMonth),
+                                               keyboardType: .numberPad,
+                                               characterLimit: 2,
+                                               compactError: true)
+                            Divider()
+                            ValidatedTextField(prompt: "Day",
+                                               text: $onboardingContainerViewModel.authBirthDay,
+                                               error: onboardingContainerViewModel.errorBinding(.authBirthDay),
+                                               keyboardType: .numberPad,
+                                               characterLimit: 2,
+                                               compactError: true)
+                            Divider()
+                            ValidatedTextField(prompt: "Year",
+                                               text: $onboardingContainerViewModel.authBirthYear,
+                                               error: onboardingContainerViewModel.errorBinding(.authBirthYear),
+                                               keyboardType: .numberPad,
+                                               characterLimit: 4,
+                                               compactError: true)
                         }
                     }
                     .padding(.horizontal)
@@ -192,10 +253,17 @@ struct UserIdentificationView: View {
                 TermsOfServiceView(padded: false)
                     .padding(.horizontal)
             }
-            ContinueButton(enabled: .constant(canVerifyPhoneNumber && !isSendingOTP)) {
+            ContinueButton(enabled: .constant(!isSendingOTP)) {
+                guard onboardingContainerViewModel.validateAllPhoneAuth() else { return }
                 Task {
                     isSendingOTP = true
-                    await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+                    let dob = DateOfBirthFormatter.format(
+                        year: onboardingContainerViewModel.authBirthYear,
+                        month: onboardingContainerViewModel.authBirthMonth,
+                        day: onboardingContainerViewModel.authBirthDay
+                    )
+                    await onboardingContainerViewModel.sendOTPVerification(phoneNumber: onboardingContainerViewModel.authPhoneNumber,
+                                                                          dateOfBirth: dob)
                     isSendingOTP = false
                     if onboardingContainerViewModel.proveUserInfo != nil {
                         self.identitySteps = .information
@@ -207,47 +275,45 @@ struct UserIdentificationView: View {
             .padding(.bottom)
         }
     }
-    
+
     var customerInformationView: some View {
         VStack(alignment: .leading) {
             PageHeaderView(headerTitle: "Personal Information") {
                 self.identitySteps = .phoneAuth
             }
             ScrollView {
-                CustomerInformationView(emailAddress: $onboardingContainerViewModel.createdCustomerIdentity.email,
-                                        phoneNumber: $onboardingContainerViewModel.createdCustomerIdentity.phoneNumber,
-                                        firstName: $onboardingContainerViewModel.createdCustomerIdentity.firstName,
-                                        lastName: $onboardingContainerViewModel.createdCustomerIdentity.lastName,
-                                        dateOfBirth: $onboardingContainerViewModel.createdCustomerIdentity.dateOfBirth,
-                                        ssn: $onboardingContainerViewModel.createdCustomerIdentity.ssn)
-                BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdCustomerIdentity.address.addressLine1.orEmpty,
-                                         addressLineTwo: $onboardingContainerViewModel.createdCustomerIdentity.address.addressLine2.orEmpty,
-                                         city: $onboardingContainerViewModel.createdCustomerIdentity.address.city.orEmpty,
-                                         state: $onboardingContainerViewModel.createdCustomerIdentity.address.state.orEmpty,
-                                         zipCode: $onboardingContainerViewModel.createdCustomerIdentity.address.postalCode,
-                                         country: $onboardingContainerViewModel.createdCustomerIdentity.address.country.orEmpty,
+                CustomerInformationView(viewModel: customerInfoVM)
+                BillingAddressDetailView(viewModel: personalAddressVM,
                                          headerTitle: "Current Address")
                 KeyboardSpacing()
             }
             Spacer()
-            ContinueButton(enabled: $canCustomerContinue) {
+            ContinueButton(enabled: .constant(true)) {
+                let infoOK = customerInfoVM.validate()
+                let addressOK = personalAddressVM.validate()
+                guard infoOK, addressOK else { return }
+                onboardingContainerViewModel.createdCustomerIdentity = customerInfoVM.identity
+                onboardingContainerViewModel.createdCustomerIdentity.address = personalAddressVM.address
+                onboardingContainerViewModel.phoneCountry = customerInfoVM.phoneCountry
                 Task {
                     if onboardingContainerViewModel.accountId == nil {
                         await onboardingContainerViewModel.createIndividualAccount()
                     } else {
                         await onboardingContainerViewModel.updateExistingIndividualAccount()
                     }
-//                    await onboardingContainerViewModel.createCustomerIdentity()
                     self.continueToNextStep.toggle()
                 }
             }
             .padding(.bottom)
         }
-        .onAppear {
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPersonalInformation()
-        }
     }
     
+    private func firstDateOfBirthError() -> String? {
+        return onboardingContainerViewModel.errorBinding(.authBirthMonth).wrappedValue
+            ?? onboardingContainerViewModel.errorBinding(.authBirthDay).wrappedValue
+            ?? onboardingContainerViewModel.errorBinding(.authBirthYear).wrappedValue
+    }
+
     @ViewBuilder
     func dropdownSelectionBox(titleName: String, selection: IdentificationSelection, dropdownText: String) -> some View {
         VStack(alignment: .leading) {
@@ -284,14 +350,6 @@ struct UserIdentificationView: View {
                     return
                 }
             }
-        }
-    }
-    
-    func checkIfReadyToVerifyPhoneNumber() {
-        if onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) {
-            self.canVerifyPhoneNumber = birthDay.count == 2 && birthMonth.count == 2 && birthYear.count == 4 && phoneNumber.count == 10
-        } else {
-            self.canVerifyPhoneNumber = phoneNumber.count == 10
         }
     }
 }

@@ -1,19 +1,25 @@
 //
-//  SwiftUIView.swift
+//  BankAccountDetailView.swift
 //  Frame-iOS
 //
 //  Created by Frame Payments on 1/9/26.
 //
 
 import SwiftUI
+import Frame
 
 public struct BankAccountDetailView: View {
-    @Binding public var routingNumber: String
-    @Binding public var accountNumber: String
-    
-    @State public var headerFont: Font = Font.subheadline
-    @State public var showHeaderText: Bool = true
-    
+    @ObservedObject var viewModel: BankAccountViewModel
+
+    @State private var headerFont: Font = Font.subheadline
+    @State private var showHeaderText: Bool
+
+    public init(viewModel: BankAccountViewModel,
+                showHeaderText: Bool = true) {
+        self.viewModel = viewModel
+        self._showHeaderText = State(initialValue: showHeaderText)
+    }
+
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
@@ -28,8 +34,19 @@ public struct BankAccountDetailView: View {
                 .frame(height: 100.0)
                 .overlay {
                     VStack(spacing: 0) {
-                        ReusableFormTextField(prompt: "Routing Number", text: $routingNumber, showDivider: true)
-                        ReusableFormTextField(prompt: "Account Number", text: $accountNumber, showDivider: false, keyboardType: .numberPad)
+                        ValidatedTextField(prompt: "Routing Number",
+                                           text: $viewModel.account.routingNumber.orEmpty,
+                                           error: viewModel.errorBinding(.routing),
+                                           keyboardType: .numberPad,
+                                           characterLimit: 9,
+                                           inlineError: true)
+                        Divider()
+                        ValidatedTextField(prompt: "Account Number",
+                                           text: $viewModel.account.accountNumber.orEmpty,
+                                           error: viewModel.errorBinding(.account),
+                                           keyboardType: .numberPad,
+                                           characterLimit: 17,
+                                           inlineError: true)
                     }
                 }
                 .padding(.horizontal)
@@ -38,8 +55,9 @@ public struct BankAccountDetailView: View {
 }
 
 #Preview {
+    @Previewable @StateObject var vm = BankAccountViewModel()
     VStack {
-        BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""))
-        BankAccountDetailView(routingNumber: .constant(""), accountNumber: .constant(""), showHeaderText: false)
+        BankAccountDetailView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
     }
 }

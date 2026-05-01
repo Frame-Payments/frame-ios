@@ -12,15 +12,23 @@ import Frame
 struct AddPayoutMethodView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
+    @StateObject private var billingVM: BillingAddressViewModel
+    @StateObject private var bankVM: BankAccountViewModel
 
     @State private var selectedAccountType: FrameObjects.PaymentAccountType = .checking
     @State private var accountTypeString: String = FrameObjects.PaymentAccountType.checking.rawValue.capitalized
-    @State private var canCustomerContinue: Bool = false
     @State private var showAccountTypePicker: Bool = false
     @State private var showManualForm: Bool = false
 
     init(onboardingContainerViewModel: OnboardingContainerViewModel) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
+        self._billingVM = StateObject(wrappedValue: BillingAddressViewModel(
+            address: onboardingContainerViewModel.createdBillingAddress,
+            mode: .usOnly
+        ))
+        self._bankVM = StateObject(wrappedValue: BankAccountViewModel(
+            account: onboardingContainerViewModel.bankAccount
+        ))
     }
 
     var body: some View {
@@ -28,14 +36,8 @@ struct AddPayoutMethodView: View {
             addPayoutMethodView
             Spacer()
         }
-        .onChange(of: onboardingContainerViewModel.bankAccount) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPayoutMethod()
-        }
-        .onChange(of: onboardingContainerViewModel.createdBillingAddress) { oldValue, newValue in
-            self.canCustomerContinue = onboardingContainerViewModel.checkIfCustomerCanContinueWithPayoutMethod()
-        }
         .onChange(of: selectedAccountType, { oldValue, newValue in
-            self.onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
+            self.bankVM.account.accountType = selectedAccountType
             self.accountTypeString = selectedAccountType.rawValue.capitalized
         })
         .sheet(isPresented: $showAccountTypePicker) {
@@ -78,25 +80,24 @@ struct AddPayoutMethodView: View {
                 .padding(.bottom, 8)
 
                 if showManualForm {
-                    BankAccountDetailView(routingNumber: $onboardingContainerViewModel.bankAccount.routingNumber.orEmpty,
-                                          accountNumber: $onboardingContainerViewModel.bankAccount.accountNumber.orEmpty)
+                    BankAccountDetailView(viewModel: bankVM)
                     DropDownWithHeaderView(headerText: .constant("Account Type"),
                                            dropDownText: $accountTypeString,
                                            showDropdownPicker: $showAccountTypePicker)
-                    BillingAddressDetailView(addressLineOne: $onboardingContainerViewModel.createdBillingAddress.addressLine1.orEmpty,
-                                             addressLineTwo: $onboardingContainerViewModel.createdBillingAddress.addressLine2.orEmpty,
-                                             city: $onboardingContainerViewModel.createdBillingAddress.city.orEmpty,
-                                             state: $onboardingContainerViewModel.createdBillingAddress.state.orEmpty,
-                                             zipCode: $onboardingContainerViewModel.createdBillingAddress.postalCode,
-                                             country: $onboardingContainerViewModel.createdBillingAddress.country.orEmpty)
-                    KeyboardSpacing()
-                    ContinueButton(buttonText: "Add Bank Account", enabled: $canCustomerContinue) {
+                    BillingAddressDetailView(viewModel: billingVM)
+                    ContinueButton(buttonText: "Add Bank Account", enabled: .constant(true)) {
+                        bankVM.account.accountType = selectedAccountType
+                        let bankOK = bankVM.validate()
+                        let addressOK = billingVM.validate()
+                        guard bankOK, addressOK else { return }
+                        onboardingContainerViewModel.bankAccount = bankVM.account
+                        onboardingContainerViewModel.createdBillingAddress = billingVM.address
                         Task {
-                            onboardingContainerViewModel.bankAccount.accountType = selectedAccountType
                             await onboardingContainerViewModel.addNewPayoutMethod()
                             self.dismiss()
                         }
                     }
+                    KeyboardSpacing(spacingHeight: 200.0)
                 }
             }
         }

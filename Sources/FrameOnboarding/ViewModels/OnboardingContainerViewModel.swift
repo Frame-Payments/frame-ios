@@ -6,10 +6,31 @@
 //
 
 import Foundation
+import SwiftUI
 import Frame
 import EvervaultInputs
 import CoreLocation
 import LinkKit
+
+enum OnboardingField: Hashable {
+    case authPhone, authBirthMonth, authBirthDay, authBirthYear
+    case docFront, docBack, docSelfie
+
+    /// Which screen / surface this field belongs to. Drives error-dictionary partitioning so
+    /// validating one screen doesn't clobber errors on another.
+    var group: OnboardingFieldGroup {
+        switch self {
+        case .authPhone, .authBirthMonth, .authBirthDay, .authBirthYear:
+            return .phoneAuth
+        case .docFront, .docBack, .docSelfie:
+            return .docs
+        }
+    }
+}
+
+enum OnboardingFieldGroup {
+    case phoneAuth, docs
+}
 
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
@@ -17,7 +38,7 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var progressiveSteps: [OnboardingFlow] = []
     @Published var currentStep: OnboardingFlow = .personalInformation
     @Published var requiredCapabilities: [FrameObjects.Capabilities]
-    
+
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
@@ -31,14 +52,21 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var ipAddress: String?
     @Published var userCoordinates: CLLocationCoordinate2D?
     @Published var termsOfServiceToken: String?
-    
+
+    @Published var fieldErrors: [OnboardingField: String] = [:]
+    @Published var phoneCountry: PhoneCountrySelection = .default
+    @Published var authPhoneNumber: String = ""
+    @Published var authBirthMonth: String = ""
+    @Published var authBirthDay: String = ""
+    @Published var authBirthYear: String = ""
+
     @Published var proveUserInfo: ProveUserInfo?
     @Published var showProveOTPEntry: Bool = false
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
     @Published var isConnectingPlaidBank: Bool = false
     private var plaidHandler: Handler?
-    
+
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
     
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
@@ -115,7 +143,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                               lastName: createdCustomerIdentity.lastName),
                                                                            email: createdCustomerIdentity.email,
                                                                            phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
-                                                                                                                  countryCode: "+1"),
+                                                                                                                  countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssn: createdCustomerIdentity.ssn)
@@ -135,7 +163,7 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "", lastName: ""),
                                                                            email: "",
-                                                                           phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: "+1"),
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: phoneNumber, countryCode: phoneCountry.dialCode),
                                                                            address: nil, birthdate: dateOfBirth, ssn: nil)
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
@@ -162,7 +190,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                               lastName: createdCustomerIdentity.lastName),
                                                                            email: createdCustomerIdentity.email,
                                                                            phoneNumber: createdCustomerIdentity.phoneNumber,
-                                                                           phoneCountryCode: "+1",
+                                                                           phoneCountryCode: phoneCountry.dialCode,
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssnLast4: createdCustomerIdentity.ssn)
@@ -471,34 +499,52 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
-    func checkIfCustomerCanContinueWithPersonalInformation() -> Bool {
-        guard !createdCustomerIdentity.firstName.isEmpty, !createdCustomerIdentity.lastName.isEmpty, !createdCustomerIdentity.email.isEmpty,
-                !createdCustomerIdentity.phoneNumber.isEmpty, !createdCustomerIdentity.ssn.isEmpty, !createdCustomerIdentity.dateOfBirth.isEmpty else { return false }
-        guard createdCustomerIdentity.address.addressLine1 != nil, createdCustomerIdentity.address.city != nil, createdCustomerIdentity.address.state != nil, !createdCustomerIdentity.address.postalCode.isEmpty else { return false }
-        return true
+    func errorBinding(_ field: OnboardingField) -> Binding<String?> {
+        Binding(
+            get: { [weak self] in self?.fieldErrors[field] },
+            set: { [weak self] new in self?.fieldErrors[field] = new }
+        )
     }
-    
-    func checkIfCustomerCanContinueWithPaymentMethod(onlyAddress: Bool = false) -> Bool {
-        guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        if !onlyAddress {
-            guard cardData.isValid else { return false }
+
+    /// Replaces all errors for the given group with `errors`, leaving fields in other groups
+    /// untouched. Returns whether `errors` is empty.
+    @discardableResult
+    private func applyValidation(group: OnboardingFieldGroup, errors: [OnboardingField: String]) -> Bool {
+        var merged = fieldErrors.filter { $0.key.group != group }
+        merged.merge(errors) { _, new in new }
+        fieldErrors = merged
+        return errors.isEmpty
+    }
+
+    @discardableResult
+    func validateAllPhoneAuth() -> Bool {
+        var errors: [OnboardingField: String] = [:]
+
+        if let err = Validators.validatePhoneE164(authPhoneNumber, regionCode: phoneCountry.alpha2) {
+            errors[.authPhone] = err
         }
-        return true
+
+        if requiredCapabilities.contains(.kycPrefill) {
+            if let err = Validators.validateDateOfBirth(year: authBirthYear, month: authBirthMonth, day: authBirthDay) {
+                errors[.authBirthMonth] = err
+                errors[.authBirthDay] = err
+                errors[.authBirthYear] = err
+            }
+        }
+
+        return applyValidation(group: .phoneAuth, errors: errors)
     }
-    
-    func checkIfCustomerCanContinueWithPayoutMethod() -> Bool {
-        guard createdBillingAddress.addressLine1 != nil, createdBillingAddress.city != nil, createdBillingAddress.state != nil, !createdBillingAddress.postalCode.isEmpty else { return false }
-        guard bankAccount.accountNumber != nil, bankAccount.routingNumber != nil, bankAccount.accountType != nil else { return false }
-        return true
+
+    @discardableResult
+    func validateAllDocs() -> Bool {
+        var errors: [OnboardingField: String] = [:]
+        if !filesToUpload.contains(where: { $0.fieldName == .front }) { errors[.docFront] = "Front of ID is required" }
+        if !filesToUpload.contains(where: { $0.fieldName == .back }) { errors[.docBack] = "Back of ID is required" }
+        if !filesToUpload.contains(where: { $0.fieldName == .selfie }) { errors[.docSelfie] = "Selfie is required" }
+
+        return applyValidation(group: .docs, errors: errors)
     }
-    
-    func checkIfCustomerCanContinueWithDocs() -> Bool {
-        guard filesToUpload.contains(where: { $0.fieldName == .front }) else { return false }
-        guard filesToUpload.contains(where: { $0.fieldName == .back }) else { return false }
-        guard filesToUpload.contains(where: { $0.fieldName == .selfie }) else { return false }
-        return true
-    }
-    
+
     func clearAccountDetails() {
         self.cardData = PaymentCardData()
         self.bankAccount = FrameObjects.BankAccount()
