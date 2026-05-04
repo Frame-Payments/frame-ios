@@ -262,7 +262,8 @@ struct UserIdentificationView: View {
                         month: onboardingContainerViewModel.authBirthMonth,
                         day: onboardingContainerViewModel.authBirthDay
                     )
-                    await onboardingContainerViewModel.sendOTPVerification(phoneNumber: onboardingContainerViewModel.authPhoneNumber,
+                    let phoneNumber = onboardingContainerViewModel.phoneCountry.dialCode + onboardingContainerViewModel.authPhoneNumber.replacingOccurrences(of: " ", with: "")
+                    await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber,
                                                                           dateOfBirth: dob)
                     isSendingOTP = false
                     if onboardingContainerViewModel.proveUserInfo != nil {
