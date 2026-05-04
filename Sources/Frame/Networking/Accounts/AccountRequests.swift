@@ -16,25 +16,25 @@ public class AccountRequest {
         public let address: FrameObjects.BillingAddress?
         public let birthdate: String?
         public let ssn: String?
-        public let ssnLast4: String?
+        public let ssnLastFour: String?
         public let profileURL: String?
 
         public init(
-            name: FrameObjects.AccountNameInfo, email: String, phone: FrameObjects.AccountPhoneNumber, address: FrameObjects.BillingAddress?, birthdate: String?, ssn: String?, ssnLast4: String? = nil, profileURL: String? = nil) {
+            name: FrameObjects.AccountNameInfo, email: String, phone: FrameObjects.AccountPhoneNumber, address: FrameObjects.BillingAddress?, birthdate: String?, ssn: String?, ssnLastFour: String? = nil, profileURL: String? = nil) {
             self.name = name
             self.email = email
             self.phone = phone
             self.address = address
             self.birthdate = birthdate
             self.ssn = ssn
-            self.ssnLast4 = ssnLast4
+            self.ssnLastFour = ssnLastFour
             self.profileURL = profileURL
         }
 
         enum CodingKeys: String, CodingKey {
             case name, email, phone, address, ssn
             case birthdate
-            case ssnLast4 = "ssn_last4"
+            case ssnLastFour = "ssn_last_four"
             case profileURL = "profile_url"
         }
     }
@@ -135,42 +135,37 @@ public class AccountRequest {
     public struct UpdateIndividualAccount: Codable, Sendable, Equatable {
         public let name: FrameObjects.AccountNameInfo?
         public let email: String?
-        public let phoneNumber: String?
-        public let phoneCountryCode: String?
+        public let phone: FrameObjects.AccountPhoneNumber?
         public let address: FrameObjects.BillingAddress?
         public let birthdate: String? // YYYY-MM-DD
         public let ssn: String?
-        public let ssnLast4: String?
+        public let ssnLastFour: String?
         public let profileURL: String?
 
         public init(
             name: FrameObjects.AccountNameInfo? = nil,
             email: String? = nil,
-            phoneNumber: String? = nil,
-            phoneCountryCode: String? = nil,
+            phone: FrameObjects.AccountPhoneNumber? = nil,
             address: FrameObjects.BillingAddress? = nil,
             birthdate: String? = nil,
             ssn: String? = nil,
-            ssnLast4: String? = nil,
+            ssnLastFour: String? = nil,
             profileURL: String? = nil
         ) {
             self.name = name
             self.email = email
-            self.phoneNumber = phoneNumber
-            self.phoneCountryCode = phoneCountryCode
+            self.phone = phone
             self.address = address
             self.birthdate = birthdate
             self.ssn = ssn
-            self.ssnLast4 = ssnLast4
+            self.ssnLastFour = ssnLastFour
             self.profileURL = profileURL
         }
 
         enum CodingKeys: String, CodingKey {
-            case name, email, address, ssn
+            case name, email, address, ssn, phone
             case birthdate
-            case phoneNumber = "phone_number"
-            case phoneCountryCode = "phone_country_code"
-            case ssnLast4 = "ssn_last4"
+            case ssnLastFour = "ssn_last_four"
             case profileURL = "profile_url"
         }
     }

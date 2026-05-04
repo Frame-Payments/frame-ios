@@ -189,11 +189,11 @@ class OnboardingContainerViewModel: ObservableObject {
             let individualAccount = AccountRequest.UpdateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
                                                                                                               lastName: createdCustomerIdentity.lastName),
                                                                            email: createdCustomerIdentity.email,
-                                                                           phoneNumber: createdCustomerIdentity.phoneNumber,
-                                                                           phoneCountryCode: phoneCountry.dialCode,
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
+                                                                                                                  countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssnLast4: createdCustomerIdentity.ssn)
+                                                                           ssnLastFour: createdCustomerIdentity.ssn)
             let request = AccountRequest.UpdateAccountRequest(profile: AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount))
             try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
         } catch let error {
