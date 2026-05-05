@@ -1,8 +1,10 @@
 //
-//  SwiftUIView.swift
+//  ContinueButton.swift
 //  Frame-iOS
 //
-//  Created by Frame Payments on 12/11/25.
+//  Primary action button shared by both Frame (checkout) and FrameOnboarding.
+//  Drives the in-button loading spinner from `isLoading` and form-validity gating
+//  from `enabled`. Both default to permissive values so most callers can omit them.
 //
 
 import SwiftUI
@@ -20,7 +22,7 @@ public struct ContinueButton: View {
     public init(buttonColor: Color = FrameColors.mainButtonColor,
                 buttonText: String = "Continue",
                 buttonTextColor: Color = .white,
-                enabled: Binding<Bool>,
+                enabled: Binding<Bool> = .constant(true),
                 isLoading: Binding<Bool> = .constant(false),
                 buttonAction: @escaping () -> ()) {
         self._buttonColor = State(initialValue: buttonColor)
@@ -62,8 +64,8 @@ public struct ContinueButton: View {
 
 #Preview {
     Group {
-        ContinueButton(enabled: .constant(true), buttonAction: {})
+        ContinueButton(buttonAction: {})
         ContinueButton(enabled: .constant(false), buttonAction: {})
-        ContinueButton(enabled: .constant(true), isLoading: .constant(true), buttonAction: {})
+        ContinueButton(isLoading: .constant(true), buttonAction: {})
     }
 }

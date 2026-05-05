@@ -61,8 +61,7 @@ struct AddPaymentMethodView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
                 }
-                ContinueButton(enabled: .constant(true),
-                               isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+                ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                     let addressOK = billingVM.validate()
                     var cardOK = true
                     if !onlyAddressVerification {

@@ -24,7 +24,7 @@ struct VerificationSubmittedView: View {
                 .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
-            ContinueButton(buttonText: "Done", enabled: .constant(true)) {
+            ContinueButton(buttonText: "Done") {
                 self.continueToNextStep = true
             }
             .padding(.bottom)

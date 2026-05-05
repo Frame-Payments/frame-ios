@@ -274,33 +274,19 @@ public struct FrameCheckoutView: View {
     }
 
     var checkoutButton: some View {
-        let canCheckout = checkoutViewModel.hasUsablePaymentInput
-        let isLoading = checkoutViewModel.isPerformingAction
-        return Button {
+        ContinueButton(
+            buttonColor: .black,
+            buttonText: "Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))",
+            enabled: .constant(checkoutViewModel.hasUsablePaymentInput),
+            isLoading: .constant(checkoutViewModel.isPerformingAction)
+        ) {
             Task {
                 let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
                 if let chargeIntent {
                     self.checkoutCallback(chargeIntent)
                 }
             }
-        } label: {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(canCheckout ? .black : Color.gray.opacity(0.4))
-                .frame(height: 50.0)
-                .overlay {
-                    if isLoading {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.white)
-                    } else {
-                        Text("Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-                }
         }
-        .padding(.horizontal)
-        .disabled(isLoading || !canCheckout)
     }
 
     private func errorBinding(_ field: FrameCheckoutViewModel.CheckoutField) -> Binding<String?> {

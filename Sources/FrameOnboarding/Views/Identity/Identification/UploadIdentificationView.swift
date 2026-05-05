@@ -72,7 +72,7 @@ struct UploadIdentificationView: View {
                 .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
-            ContinueButton(enabled: .constant(true)) {
+            ContinueButton {
                 self.showUploadInputs.toggle()
             }
             .padding(.bottom)
@@ -96,7 +96,6 @@ struct UploadIdentificationView: View {
             }
             Spacer()
             ContinueButton(buttonText: "Submit",
-                           enabled: .constant(true),
                            isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 guard onboardingContainerViewModel.validateAllDocs() else { return }
                 self.uploadDocsThenContinue()

@@ -74,11 +74,11 @@ public struct GeolocationView: View {
                 .foregroundColor(FrameColors.secondaryTextColor)
             if geolocationState == .vpn {
                 Spacer()
-                ContinueButton(buttonText: "Continue Anyway", enabled: .constant(true)) {
+                ContinueButton(buttonText: "Continue Anyway") {
                     self.continueToNextStep = true
                 }
                 .padding(.bottom, -25.0)
-                ContinueButton(buttonColor: .white, buttonText: "Disable VPN", buttonTextColor: FrameColors.mainButtonColor, enabled: .constant(true)) {
+                ContinueButton(buttonColor: .white, buttonText: "Disable VPN", buttonTextColor: FrameColors.mainButtonColor) {
                     self.continueToNextStep = true
                 }
             }

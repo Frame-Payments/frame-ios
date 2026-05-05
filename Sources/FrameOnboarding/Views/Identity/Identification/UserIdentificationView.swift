@@ -252,8 +252,7 @@ struct UserIdentificationView: View {
                 TermsOfServiceView(padded: false)
                     .padding(.horizontal)
             }
-            ContinueButton(enabled: .constant(true),
-                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+            ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 guard onboardingContainerViewModel.validateAllPhoneAuth() else { return }
                 Task {
                     let dob = DateOfBirthFormatter.format(
@@ -287,8 +286,7 @@ struct UserIdentificationView: View {
                 KeyboardSpacing()
             }
             Spacer()
-            ContinueButton(enabled: .constant(true),
-                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+            ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 let infoOK = customerInfoVM.validate()
                 let addressOK = personalAddressVM.validate()
                 guard infoOK, addressOK else { return }
