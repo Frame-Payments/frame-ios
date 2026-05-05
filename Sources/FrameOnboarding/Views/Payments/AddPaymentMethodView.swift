@@ -98,7 +98,8 @@ struct AddPaymentMethodView: View {
                 mode: .addToOwner,
                 owner: .account(accountId),
                 merchantId: merchantId,
-                addCheckoutDivider: true
+                addCheckoutDivider: true,
+                buttonType: .continue,
             ) { result in
                 switch result {
                 case .success(.paymentMethod(let pm)):
