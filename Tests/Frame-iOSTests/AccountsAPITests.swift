@@ -82,8 +82,7 @@ final class AccountsAPITests: XCTestCase {
             individual: AccountRequest.UpdateIndividualAccount(
                 name: FrameObjects.AccountNameInfo(firstName: "John", middleName: nil, lastName: "Doe", suffix: nil),
                 email: "john@test.com",
-                phoneNumber: "1234567890",
-                phoneCountryCode: "1",
+                phone: FrameObjects.AccountPhoneNumber(number: "1234567890", countryCode: "1"),
                 address: nil,
                 birthdate: nil,
                 ssn: nil

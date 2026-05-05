@@ -92,7 +92,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showOnboardingSheet, content: {
 //            OnboardingContainerView(accountId: "ENTER_TEST_ACCOUNT_ID", requiredCapabilities: [], applePayMerchantId: "ENTER_MERCHANT_PAY_ID")
-            OnboardingContainerView(requiredCapabilities: [.kyc, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification], applePayMerchantId: applePayMerchantId)
+            OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardSend, .geoCompliance, .bankAccountReceive, .ageVerification], applePayMerchantId: applePayMerchantId)
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,
