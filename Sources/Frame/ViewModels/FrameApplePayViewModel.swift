@@ -51,26 +51,6 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         self.completion = completion
     }
 
-    /// Convenience init mapping the legacy charge-only signature to `mode = .charge`.
-    public convenience init(amount: Int,
-                            currency: String,
-                            owner: PaymentMethodOwner,
-                            merchantId: String,
-                            completion: ((Result<FrameObjects.ChargeIntent, Error>) -> Void)? = nil) {
-        self.init(mode: .charge(amount: amount, currency: currency),
-                  owner: owner,
-                  merchantId: merchantId,
-                  completion: completion.map { legacy in
-                      { result in
-                          switch result {
-                          case .success(.charge(let intent)): legacy(.success(intent))
-                          case .success(.paymentMethod): break // not produced in .charge mode
-                          case .failure(let error): legacy(.failure(error))
-                          }
-                      }
-                  })
-    }
-
     /// Returns true if the device can make Apple Pay payments with at least one of the supported networks.
     static func canMakePayments() -> Bool {
         PKPaymentAuthorizationController.canMakePayments(usingNetworks: supportedNetworks)

@@ -102,11 +102,11 @@ public struct FrameCheckoutView: View {
 
     @ViewBuilder
     var applePayButton: some View {
-        FrameApplePayButton(amount: paymentAmount,
+        FrameApplePayButton(mode: .charge(amount: paymentAmount, currency: "usd"),
                             owner: .customer(customerId ?? ""),
                             merchantId: merchantId,
                             addCheckoutDivider: true) { result in
-            if case .success(let chargeIntent) = result {
+            if case .success(.charge(let chargeIntent)) = result {
                 checkoutCallback(chargeIntent)
                 dismiss()
             }

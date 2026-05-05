@@ -43,37 +43,6 @@ public struct FrameApplePayButton: View {
         ))
     }
 
-    /// Back-compat initializer matching the original charge-only signature. Maps to
-    /// `.charge(amount:currency:)` and adapts the legacy `Result<ChargeIntent, Error>` callback.
-    public init(amount: Int,
-                currency: String = "usd",
-                owner: FrameApplePayViewModel.PaymentMethodOwner,
-                merchantId: String,
-                addCheckoutDivider: Bool = false,
-                buttonType: PKPaymentButtonType = .buy,
-                buttonStyle: PKPaymentButtonStyle = .black,
-                completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
-
-        self.addCheckoutDivider = addCheckoutDivider
-        self.buttonType = buttonType
-        self.buttonStyle = buttonStyle
-        self.completion = { result in
-            switch result {
-            case .success(.charge(let intent)): completion(.success(intent))
-            case .success(.paymentMethod): break
-            case .failure(let error): completion(.failure(error))
-            }
-        }
-
-        _viewModel = StateObject(wrappedValue: FrameApplePayViewModel(
-            amount: amount,
-            currency: currency,
-            owner: owner,
-            merchantId: merchantId,
-            completion: completion
-        ))
-    }
-
     // MARK: - Body
 
     public var body: some View {
@@ -108,7 +77,7 @@ public struct FrameApplePayButton: View {
 
 #Preview {
     FrameApplePayButton(
-        amount: 15000,
+        mode: .charge(amount: 15000, currency: "usd"),
         owner: .customer("cus_preview"),
         merchantId: "merchant.com.yourapp"
     ) { result in

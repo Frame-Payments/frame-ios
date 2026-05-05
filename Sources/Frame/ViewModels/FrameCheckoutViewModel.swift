@@ -56,11 +56,16 @@ class FrameCheckoutViewModel: ObservableObject {
     func payWithApplePay(completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
         guard !merchantId.isEmpty else { return }
         applePayViewModel = FrameApplePayViewModel(
-            amount: amount,
-            currency: "usd",
+            mode: .charge(amount: amount, currency: "usd"),
             owner: customerId.map { .customer($0) } ?? .customer(""),
             merchantId: merchantId,
-            completion: completion
+            completion: { result in
+                switch result {
+                case .success(.charge(let intent)): completion(.success(intent))
+                case .success(.paymentMethod): break // not produced in .charge mode
+                case .failure(let error): completion(.failure(error))
+                }
+            }
         )
         applePayViewModel?.presentApplePay()
     }
