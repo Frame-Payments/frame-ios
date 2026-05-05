@@ -12,7 +12,7 @@ import SwiftUI
 public struct ContinueButton: View {
     @State public var buttonColor: Color = FrameColors.mainButtonColor
     @State public var buttonText: String = "Continue"
-    @State public var buttonTextColor: Color = .white
+    @State public var buttonTextColor: Color = FrameColors.brandButtonTextColor
 
     @Binding public var enabled: Bool
     @Binding public var isLoading: Bool
@@ -21,7 +21,7 @@ public struct ContinueButton: View {
 
     public init(buttonColor: Color = FrameColors.mainButtonColor,
                 buttonText: String = "Continue",
-                buttonTextColor: Color = .white,
+                buttonTextColor: Color = FrameColors.brandButtonTextColor,
                 enabled: Binding<Bool> = .constant(true),
                 isLoading: Binding<Bool> = .constant(false),
                 buttonAction: @escaping () -> ()) {

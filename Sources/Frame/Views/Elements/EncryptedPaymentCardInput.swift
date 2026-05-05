@@ -13,8 +13,8 @@ public struct EncryptedPaymentCardInput: PaymentCardInputStyle {
     
     public func makeBody(configuration: Configuration) -> some View {
         RoundedRectangle(cornerRadius: 10.0)
-            .fill(.white)
-            .stroke(.gray.opacity(0.3))
+            .fill(FrameColors.surfaceColor)
+            .stroke(FrameColors.surfaceStrokeColor)
             .frame(height: 100.0)
             .overlay {
                 VStack(spacing: 0) {
@@ -40,4 +40,10 @@ public struct EncryptedPaymentCardInput: PaymentCardInputStyle {
     // Evervault Card Input
     PaymentCardInput(cardData: .constant(PaymentCardData()))
         .paymentCardInputStyle(EncryptedPaymentCardInput())
+}
+
+#Preview("Dark") {
+    PaymentCardInput(cardData: .constant(PaymentCardData()))
+        .paymentCardInputStyle(EncryptedPaymentCardInput())
+        .preferredColorScheme(.dark)
 }

@@ -43,6 +43,7 @@ extension FrameObjects.Capabilities {
 
 public struct OnboardingContainerView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
     var onComplete: (() -> Void)?
@@ -153,15 +154,16 @@ public struct OnboardingContainerView: View {
     
     var containerHeader: some View {
         Rectangle()
-            .fill(Color(hex: "#FCFBF8"))
+            .fill(FrameColors.onboardingHeaderBackground)
             .overlay {
                 VStack {
                     Spacer()
                     HStack {
                         ForEach(onboardingContainerViewModel.onboardingFlow) { step in
-                            Image(onboardingContainerViewModel.progressiveSteps.contains(step) ? "filled-onboarding-indicator" : "empty-onboarding-indicator", bundle: FrameResources.module)
-                                .resizable()
+                            Capsule()
+                                .fill(progressIndicatorColor(filled: onboardingContainerViewModel.progressiveSteps.contains(step)))
                                 .frame(height: 5.0)
+                                .frame(maxWidth: .infinity)
                         }
                     }
                     .padding(.bottom, 15.0)
@@ -170,6 +172,15 @@ public struct OnboardingContainerView: View {
                 }
             }
             .frame(height: 100.0)
+    }
+
+    private func progressIndicatorColor(filled: Bool) -> Color {
+        switch (colorScheme, filled) {
+        case (.dark, true):  return FrameColors.onboardingProgressFilledOnBrand
+        case (.dark, false): return FrameColors.onboardingProgressEmptyOnBrand
+        case (_, true):      return FrameColors.mainButtonColor
+        case (_, false):     return FrameColors.surfaceStrokeColor
+        }
     }
     
     var onboardingIntro: some View {

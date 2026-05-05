@@ -149,7 +149,7 @@ struct UploadIdentificationView: View {
         .contentShape(Rectangle())
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
         )
         .padding(.horizontal)
         .onTapGesture {
@@ -168,4 +168,9 @@ struct UploadIdentificationView: View {
 
 #Preview {
     UploadIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+}
+
+#Preview("Dark") {
+    UploadIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+        .preferredColorScheme(.dark)
 }

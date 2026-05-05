@@ -78,7 +78,7 @@ public struct GeolocationView: View {
                     self.continueToNextStep = true
                 }
                 .padding(.bottom, -25.0)
-                ContinueButton(buttonColor: .white, buttonText: "Disable VPN", buttonTextColor: FrameColors.mainButtonColor) {
+                ContinueButton(buttonColor: FrameColors.unfilledButtonColor, buttonText: "Disable VPN", buttonTextColor: FrameColors.mainButtonColor) {
                     self.continueToNextStep = true
                 }
             }
@@ -138,4 +138,10 @@ public struct GeolocationView: View {
 #Preview {
     GeolocationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
                     continueToNextStep: .constant(false))
+}
+
+#Preview("Dark") {
+    GeolocationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
+                    continueToNextStep: .constant(false))
+        .preferredColorScheme(.dark)
 }

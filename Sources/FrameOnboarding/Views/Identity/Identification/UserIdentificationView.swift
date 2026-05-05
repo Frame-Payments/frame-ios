@@ -184,15 +184,15 @@ struct UserIdentificationView: View {
                     .frame(maxWidth: .infinity, minHeight: 56.0)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                            .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
                     )
                 }
                 .frame(width: 110.0)
                 .padding([.horizontal, .bottom])
 
                 RoundedRectangle(cornerRadius: 10.0)
-                    .fill(.white)
-                    .stroke(.gray.opacity(0.3))
+                    .fill(FrameColors.surfaceColor)
+                    .stroke(FrameColors.surfaceStrokeColor)
                     .frame(maxHeight: 56.0)
                     .overlay {
                         PhoneNumberTextField(prompt: "Enter your phone number",
@@ -218,8 +218,8 @@ struct UserIdentificationView: View {
                 }
                 .padding(.horizontal)
                 RoundedRectangle(cornerRadius: 10.0)
-                    .fill(.white)
-                    .stroke(.gray.opacity(0.3))
+                    .fill(FrameColors.surfaceColor)
+                    .stroke(FrameColors.surfaceStrokeColor)
                     .overlay {
                         HStack {
                             ValidatedTextField(prompt: "Month",
@@ -335,7 +335,7 @@ struct UserIdentificationView: View {
             .contentShape(Rectangle())
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                    .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
             )
             .padding([.horizontal, .bottom])
             .onTapGesture {
@@ -354,6 +354,11 @@ struct UserIdentificationView: View {
 
 #Preview {
     UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill]), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+}
+
+#Preview("Dark") {
+    UserIdentificationView(onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill]), continueToNextStep: .constant(false), returnToPreviousStep: .constant(false))
+        .preferredColorScheme(.dark)
 }
 
 extension Color {

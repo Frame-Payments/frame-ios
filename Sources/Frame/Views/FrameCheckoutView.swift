@@ -126,8 +126,8 @@ public struct FrameCheckoutView: View {
 
     func paymentCard(option: FrameObjects.PaymentMethod) -> some View {
         RoundedRectangle(cornerRadius: 10.0)
-            .fill(.white)
-            .stroke(checkoutViewModel.selectedCustomerPaymentOption == option ? Color.black : Color.gray.opacity(0.3))
+            .fill(FrameColors.surfaceColor)
+            .stroke(checkoutViewModel.selectedCustomerPaymentOption == option ? FrameColors.primaryTextColor : FrameColors.surfaceStrokeColor)
             .frame(width: 110.0, height: 55.0)
             .overlay {
                 VStack(alignment: .leading, spacing: 0) {
@@ -157,7 +157,7 @@ public struct FrameCheckoutView: View {
         Text("Card Information")
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
-            .foregroundColor(.gray)
+            .foregroundColor(FrameColors.secondaryTextColor)
             .padding(.horizontal)
         // Evervault Card Input
         PaymentCardInput(cardData: $checkoutViewModel.cardData)
@@ -179,7 +179,7 @@ public struct FrameCheckoutView: View {
         Text("Customer Information")
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
-            .foregroundColor(.gray)
+            .foregroundColor(FrameColors.secondaryTextColor)
             .padding(.horizontal)
         VStack(spacing: 0) {
             ValidatedTextField(prompt: "Customer Name",
@@ -193,8 +193,8 @@ public struct FrameCheckoutView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(.white)
-                .stroke(.gray.opacity(0.3))
+                .fill(FrameColors.surfaceColor)
+                .stroke(FrameColors.surfaceStrokeColor)
         )
         .padding(.horizontal)
     }
@@ -204,7 +204,7 @@ public struct FrameCheckoutView: View {
         Text("Customer Address")
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.headline)
-            .foregroundColor(.gray)
+            .foregroundColor(FrameColors.secondaryTextColor)
             .padding(.horizontal)
         VStack(spacing: 0) {
             ValidatedTextField(prompt: "Address Line 1",
@@ -232,7 +232,7 @@ public struct FrameCheckoutView: View {
                     Text(checkoutViewModel.customerCountry.displayName)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .font(.headline)
-                        .foregroundColor(.black)
+                        .foregroundColor(FrameColors.primaryTextColor)
                         .padding(.horizontal)
                 }
 
@@ -254,8 +254,8 @@ public struct FrameCheckoutView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(.white)
-                .stroke(.gray.opacity(0.3))
+                .fill(FrameColors.surfaceColor)
+                .stroke(FrameColors.surfaceStrokeColor)
         )
         .padding(.horizontal)
     }
@@ -265,7 +265,7 @@ public struct FrameCheckoutView: View {
             Toggle(isOn: $saveCardForPayments) {
                 Text("Save this card for future payments")
                     .font(.headline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(FrameColors.secondaryTextColor)
             }
             .toggleStyle(iOSCheckboxToggleStyle())
             Spacer()
@@ -275,7 +275,7 @@ public struct FrameCheckoutView: View {
 
     var checkoutButton: some View {
         ContinueButton(
-            buttonColor: .black,
+            buttonColor: FrameColors.mainButtonColor,
             buttonText: "Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))",
             enabled: .constant(checkoutViewModel.hasUsablePaymentInput),
             isLoading: .constant(checkoutViewModel.isPerformingAction)
@@ -305,4 +305,9 @@ public struct FrameCheckoutView: View {
 
 #Preview {
     FrameCheckoutView(customerId: "", paymentAmount: 15000) { _ in }
+}
+
+#Preview("Dark") {
+    FrameCheckoutView(customerId: "", paymentAmount: 15000) { _ in }
+        .preferredColorScheme(.dark)
 }

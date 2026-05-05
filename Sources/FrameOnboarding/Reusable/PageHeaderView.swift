@@ -26,13 +26,18 @@ struct PageHeaderView: View {
             Spacer()
             Text(headerTitle)
                 .bold()
-                .foregroundColor(useCloseButton ? .white : .black)
+                .foregroundColor(useCloseButton ? .white : FrameColors.primaryTextColor)
             Spacer()
             Rectangle()
                 .fill(.clear)
                 .frame(width: 50.0, height: 50.0)
         }
     }
+}
+
+#Preview("Dark") {
+    PageHeaderView(headerTitle: "Example Title", buttonAction: {})
+        .preferredColorScheme(.dark)
 }
 
 #Preview {

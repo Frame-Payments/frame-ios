@@ -278,20 +278,25 @@ class OnboardingContainerViewModel: ObservableObject {
     }
     
     /// Called by otpProvider when Prove needs OTP. Suspends until user submits or cancels.
+    /// Releases `isPerformingAction` while the OTP sheet is up so the submit button isn't
+    /// stuck in loading state, then re-acquires it on submit/cancel.
     func requestProveOTP() async -> String? {
-        await withCheckedContinuation { continuation in
+        endAction()
+        let code = await withCheckedContinuation { continuation in
             self.proveOTPContinuation = continuation
             self.showProveOTPEntry = true
         }
+        _ = beginAction()
+        return code
     }
-    
+
     /// Called when user submits OTP from the Prove OTP sheet.
     func submitProveOTP(_ code: String) {
         proveOTPContinuation?.resume(returning: code)
         proveOTPContinuation = nil
         showProveOTPEntry = false
     }
-    
+
     /// Called when user cancels the Prove OTP sheet.
     func cancelProveOTP() {
         proveOTPContinuation?.resume(returning: nil)

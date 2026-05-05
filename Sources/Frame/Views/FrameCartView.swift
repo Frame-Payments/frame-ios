@@ -50,7 +50,7 @@ public struct FrameCartView: View {
     
     @State var continueToCheckout: Bool = false
     
-    public init(customer: FrameObjects.Customer?, cartItems: [any FrameCartItem], shippingAmountInCents: Int, backgroundColor: Color = .white, cartViewTitle: String = "Frame Payments", cartViewTitleFont: Font = .title, cartViewTitleForegroundColor: Color = .black, subtitle: String = "Cart", subtitleFont: Font = .headline, subtitleForegroundColor: Color = .black, cartItemFont: Font = .headline, cartItemForegroundColor: Color = .black, cartItemBackgroundColor: Color = .clear, cartItemBorderColor: Color = .gray, cartItemHeight: CGFloat = 65.0, auxiliaryTitleFont: Font = .headline, auxiliaryTitleForegroundColor: Color = .gray, totalFont: Font = .headline, totalForegroundColor: Color = .black, checkoutButtonTitle: String = "Checkout", checkoutButtonFont: Font = .headline, checkoutButtonBackgroundColor: Color = .black, checkoutButtonForegroundColor: Color = .white) {
+    public init(customer: FrameObjects.Customer?, cartItems: [any FrameCartItem], shippingAmountInCents: Int, backgroundColor: Color = Color(.systemBackground), cartViewTitle: String = "Frame Payments", cartViewTitleFont: Font = .title, cartViewTitleForegroundColor: Color = Color(.label), subtitle: String = "Cart", subtitleFont: Font = .headline, subtitleForegroundColor: Color = Color(.label), cartItemFont: Font = .headline, cartItemForegroundColor: Color = Color(.label), cartItemBackgroundColor: Color = .clear, cartItemBorderColor: Color = Color(.separator), cartItemHeight: CGFloat = 65.0, auxiliaryTitleFont: Font = .headline, auxiliaryTitleForegroundColor: Color = Color(.secondaryLabel), totalFont: Font = .headline, totalForegroundColor: Color = Color(.label), checkoutButtonTitle: String = "Checkout", checkoutButtonFont: Font = .headline, checkoutButtonBackgroundColor: Color = FrameColors.mainButtonColor, checkoutButtonForegroundColor: Color = FrameColors.brandButtonTextColor) {
         
         self.cartViewModel = FrameCartViewModel(cartItems: cartItems, shippingAmount: shippingAmountInCents)
         self.customer = customer
@@ -179,7 +179,7 @@ public struct FrameCartView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 10.0)
                 .fill(cartItemBackgroundColor)
-                .stroke(.gray.opacity(0.2), lineWidth: 1)
+                .stroke(cartItemBorderColor, lineWidth: 1)
         )
         .padding(.horizontal)
     }
@@ -207,4 +207,13 @@ public struct FrameCartView: View {
                                                   description: nil, object: nil, billingAddress: nil, metadata: nil),
                   cartItems: [],
                   shippingAmountInCents: 1000)
+}
+
+#Preview("Dark") {
+    FrameCartView(customer: FrameObjects.Customer(id: "1", created: nil, shippingAddress: nil,
+                                                  updated: nil, livemode: false, name: "", phone: nil, email: nil,
+                                                  description: nil, object: nil, billingAddress: nil, metadata: nil),
+                  cartItems: [],
+                  shippingAmountInCents: 1000)
+        .preferredColorScheme(.dark)
 }

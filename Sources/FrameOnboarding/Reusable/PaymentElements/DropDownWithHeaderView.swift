@@ -37,7 +37,7 @@ public struct DropDownWithHeaderView: View {
             .contentShape(Rectangle())
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray.opacity(0.2), lineWidth: showDropdownBorder ? 1 : 0)
+                    .stroke(FrameColors.surfaceStrokeColor, lineWidth: showDropdownBorder ? 1 : 0)
             )
             .padding([.horizontal])
             .onTapGesture {
@@ -65,4 +65,11 @@ public struct DropDownWithHeaderView: View {
                                showDropdownPicker: .constant(false),
                                showHeaderText: false, showDropdownBorder: false)
     }
+}
+
+#Preview("Dark") {
+    DropDownWithHeaderView(headerText: .constant("Example Title"),
+                           dropDownText: .constant("Example Text"),
+                           showDropdownPicker: .constant(false))
+        .preferredColorScheme(.dark)
 }

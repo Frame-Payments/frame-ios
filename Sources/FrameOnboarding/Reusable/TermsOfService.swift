@@ -56,11 +56,11 @@ public struct TermsOfServiceView: View {
                     .frame(maxWidth: .infinity, alignment: alignment)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color.white)
+                            .fill(FrameColors.surfaceColor)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.gray.opacity(0.15), lineWidth: 1)
+                            .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
                     )
             } else {
                 textView
@@ -83,4 +83,12 @@ public struct TermsOfServiceView: View {
         )
         .padding(.horizontal)
     }
+}
+
+#Preview("Dark") {
+    VStack(spacing: 16) {
+        TermsOfServiceView(padded: true).padding(.horizontal)
+        TermsOfServiceView(alignment: .leading, padded: false).padding(.horizontal)
+    }
+    .preferredColorScheme(.dark)
 }

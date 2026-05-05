@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Frame
 
 struct ViewfinderOverlay: View {
     let holeSize = CGSize(width: 330, height: 400)
@@ -30,11 +31,11 @@ struct ViewfinderOverlay: View {
                 // Optional: border around the oval
                 Ellipse()
                     .path(in: holeRect)
-                    .stroke(.white.opacity(0.95), lineWidth: strokeWidth)
+                    .stroke(FrameColors.cameraStrokeColor, lineWidth: strokeWidth)
                 
                 // Optional: corner markers (looks like a scanner)
                 CornerMarkers(rect: holeRect, cornerRadius: 200.0)
-                    .stroke(.white.opacity(0.95), lineWidth: strokeWidth)
+                    .stroke(FrameColors.cameraStrokeColor, lineWidth: strokeWidth)
             }
         }
         .allowsHitTesting(false)

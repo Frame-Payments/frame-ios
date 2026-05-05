@@ -109,7 +109,7 @@ struct SecurePMVerificationView: View {
                 } label: {
                     Text("Resend Code")
                         .bold()
-                        .foregroundColor(.black)
+                        .foregroundColor(FrameColors.primaryTextColor)
                 }
                 .disabled(codeResent)
             }
@@ -143,7 +143,7 @@ struct SecurePMVerificationView: View {
                 .frame(height: 70.0)
                 .overlay {
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
                 }
                 .padding(.horizontal, 3.0)
             }
@@ -209,4 +209,12 @@ struct SecurePMVerificationView: View {
                              onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
                              continueToNextStep: .constant(false),
                              returnToPreviousStep: .constant(false))
+}
+
+#Preview("Dark") {
+    SecurePMVerificationView(type: .phone,
+                             onboardingContainerViewModel: OnboardingContainerViewModel(accountId: "", requiredCapabilities: []),
+                             continueToNextStep: .constant(false),
+                             returnToPreviousStep: .constant(false))
+        .preferredColorScheme(.dark)
 }
