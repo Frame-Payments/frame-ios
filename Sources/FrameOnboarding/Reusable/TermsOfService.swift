@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Frame
 
 public struct TermsOfServiceView: View {
     // Public configurable URLs (default to placeholders if not provided)

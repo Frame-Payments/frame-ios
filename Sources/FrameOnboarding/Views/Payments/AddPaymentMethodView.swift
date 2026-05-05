@@ -14,6 +14,7 @@ struct AddPaymentMethodView: View {
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
     @StateObject private var billingVM: BillingAddressViewModel
     @State private var cardError: String?
+    @State private var walletButtonError: String?
 
     var onlyAddressVerification: Bool = false
 
@@ -42,6 +43,7 @@ struct AddPaymentMethodView: View {
             }
             ScrollView {
                 if !onlyAddressVerification {
+                    walletButton
                     PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
                     if let cardError {
                         Text(cardError)
@@ -52,7 +54,14 @@ struct AddPaymentMethodView: View {
                     }
                 }
                 BillingAddressDetailView(viewModel: billingVM)
-                ContinueButton(enabled: .constant(true)) {
+                walletButtonError.map {
+                    Text($0)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                }
+                ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                     let addressOK = billingVM.validate()
                     var cardOK = true
                     if !onlyAddressVerification {
@@ -76,6 +85,34 @@ struct AddPaymentMethodView: View {
                 }
                 KeyboardSpacing()
             }
+        }
+    }
+
+    @ViewBuilder
+    var walletButton: some View {
+        if let merchantId = onboardingContainerViewModel.applePayMerchantId,
+           !merchantId.isEmpty,
+           let accountId = onboardingContainerViewModel.accountId,
+           !accountId.isEmpty {
+            FrameApplePayButton(
+                mode: .addToOwner,
+                owner: .account(accountId),
+                merchantId: merchantId,
+                addCheckoutDivider: true,
+                buttonType: .continue,
+            ) { result in
+                switch result {
+                case .success(.paymentMethod(let pm)):
+                    onboardingContainerViewModel.appendNewlyAddedPaymentMethod(pm)
+                    self.dismiss()
+                case .success(.charge):
+                    // Not produced in `.addToOwner` mode.
+                    break
+                case .failure(let error):
+                    self.walletButtonError = (error as NSError).localizedDescription
+                }
+            }
+            .padding(.horizontal)
         }
     }
 }

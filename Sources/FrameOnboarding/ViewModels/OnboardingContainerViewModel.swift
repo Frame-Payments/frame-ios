@@ -64,8 +64,12 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var showProveOTPEntry: Bool = false
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
-    @Published var isConnectingPlaidBank: Bool = false
+    @Published var isPerformingAction: Bool = false
     private var plaidHandler: Handler?
+
+    /// Optional Apple Pay merchant identifier. When set, `AddPaymentMethodView` will surface an
+    /// Apple Pay button at the top of the screen for one-tap wallet attachment.
+    let applePayMerchantId: String?
 
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
     
@@ -75,9 +79,12 @@ class OnboardingContainerViewModel: ObservableObject {
     var accountId: String?
     let formatter = ISO8601DateFormatter()
     
-    init(accountId: String?, requiredCapabilities: [FrameObjects.Capabilities]) {
+    init(accountId: String?,
+         requiredCapabilities: [FrameObjects.Capabilities],
+         applePayMerchantId: String? = nil) {
         self.accountId = accountId
         self.requiredCapabilities = requiredCapabilities
+        self.applePayMerchantId = applePayMerchantId
     }
     
     // Load existing account object to show on account page.
@@ -138,6 +145,8 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Create new individual account if no ID was previously provided to start onboarding.
     func createIndividualAccount() async {
+        guard beginAction() else { return }
+        defer { endAction() }
         do {
             let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
                                                                                                               lastName: createdCustomerIdentity.lastName),
@@ -160,6 +169,7 @@ class OnboardingContainerViewModel: ObservableObject {
     }
     
     func createEmptyIndividualAccount(phoneNumber: String, dateOfBirth: String) async {
+        // Note: callers (e.g. sendOTPVerification) already hold the action guard. Don't double-guard.
         do {
             let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "", lastName: ""),
                                                                            email: "",
@@ -184,7 +194,9 @@ class OnboardingContainerViewModel: ObservableObject {
     // Update individual account if ID was provided at the start of onboarding.
     func updateExistingIndividualAccount() async {
         guard let accountId else { return }
-        
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let individualAccount = AccountRequest.UpdateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
                                                                                                               lastName: createdCustomerIdentity.lastName),
@@ -212,6 +224,9 @@ class OnboardingContainerViewModel: ObservableObject {
 
     // Start Phone Verification OTP Flow (Prove or Twilio)
     func sendOTPVerification(phoneNumber: String, dateOfBirth: String) async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
         if accountId == nil {
             await createEmptyIndividualAccount(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
         }
@@ -247,6 +262,8 @@ class OnboardingContainerViewModel: ObservableObject {
     func confirmTwilioOTP(code: String) async {
         guard let accountId = pendingTwilioVerificationAccountId,
               let verificationId = pendingTwilioVerificationId else { return }
+        guard beginAction() else { return }
+        defer { endAction() }
 
         do {
             let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
@@ -299,6 +316,9 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Add new payment method to customer object
     func addNewPaymentMethod() async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(cardNumber: cardData.card.number,
                                                                               expMonth: cardData.card.expMonth,
@@ -323,7 +343,9 @@ class OnboardingContainerViewModel: ObservableObject {
     // Update an existing payment method with a billing address
     func updatePaymentMethod() async {
         guard let paymentMethodId = selectedPayoutMethod?.id else { return }
-        
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let request = PaymentMethodRequest.UpdatePaymentMethodRequest(billing: createdBillingAddress)
             let (paymentMethod, _) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
@@ -341,6 +363,9 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Add new payout method to customer object
     func addNewPayoutMethod() async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let request = PaymentMethodRequest.CreateACHPaymentMethodRequest(accountType: bankAccount.accountType ?? .checking,
                                                                              accountNumber: bankAccount.accountNumber ?? "",
@@ -363,12 +388,13 @@ class OnboardingContainerViewModel: ObservableObject {
     
     // Fetch Plaid link token and open the Plaid Link UI
     func openPlaidLink(from viewController: UIViewController, onSuccess: @escaping () -> Void) async {
-        guard let accountId, !isConnectingPlaidBank else { return }
-        isConnectingPlaidBank = true
+        guard let accountId else { return }
+        guard beginAction() else { return }
+        // The action stays active until Plaid's onSuccess/onExit/error callback resolves the flow.
         do {
             let (response, _) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
             guard let token = response?.linkToken else {
-                isConnectingPlaidBank = false
+                endAction()
                 return
             }
             var config = LinkTokenConfiguration(token: token) { [weak self] success in
@@ -376,9 +402,11 @@ class OnboardingContainerViewModel: ObservableObject {
                     guard let self,
                           let account = success.metadata.accounts.first,
                           !account.id.isEmpty else {
-                        self?.isConnectingPlaidBank = false
+                        self?.endAction()
                         return
                     }
+                    // handlePlaidSuccess re-enters; clear the flag first so it can re-acquire.
+                    self.endAction()
                     await self.handlePlaidSuccess(
                         publicToken: success.publicToken,
                         plaidAccountId: account.id,
@@ -390,7 +418,7 @@ class OnboardingContainerViewModel: ObservableObject {
             }
             config.onExit = { [weak self] (exit: LinkExit) in
                 Task { @MainActor in
-                    self?.isConnectingPlaidBank = false
+                    self?.endAction()
                 }
                 if let error = exit.error {
                     print("Plaid Link exited with error: \(error.displayMessage ?? String(describing: error.errorCode))")
@@ -402,11 +430,11 @@ class OnboardingContainerViewModel: ObservableObject {
                 self.plaidHandler = handler
                 handler.open(presentUsing: .viewController(viewController))
             case .failure(let error):
-                isConnectingPlaidBank = false
+                endAction()
                 print("Plaid.create failed: \(error.localizedDescription)")
             }
         } catch let error {
-            isConnectingPlaidBank = false
+            endAction()
             print(error)
         }
     }
@@ -414,8 +442,8 @@ class OnboardingContainerViewModel: ObservableObject {
     // Handle successful Plaid bank connection
     func handlePlaidSuccess(publicToken: String, plaidAccountId: String, institutionName: String?, subtype: String?) async {
         guard let accountId else { return }
-        isConnectingPlaidBank = true
-        defer { isConnectingPlaidBank = false }
+        guard beginAction() else { return }
+        defer { endAction() }
         do {
             let request = PaymentMethodRequest.ConnectPlaidBankAccountRequest(
                 account: accountId,
@@ -438,21 +466,26 @@ class OnboardingContainerViewModel: ObservableObject {
     // Start 3DS process with select payment method
     func start3DSecureProcess() async {
         guard let paymentMethodId = selectedPaymentMethod?.id else { return }
+        guard beginAction() else { return }
+        defer { endAction() }
+
         let request = ThreeDSecureRequests.CreateThreeDSecureVerification(paymentMethodId: paymentMethodId)
-        
+
         do {
             let (verification, verificationError, _) = try await ThreeDSecureVerificationsAPI.create3DSecureVerification(request: request)
             if let verification {
                 paymentMethodVerification = verification
             } else if let verificationError, let verificationId = verificationError.error.existingIntentId {
-                await retrieve3DSChallenge(verificationId: verificationId)
+                await retrieveExistingThreeDSecureVerification(verificationId: verificationId)
             }
         } catch let error {
             print(error)
         }
     }
-    
-    func retrieve3DSChallenge(verificationId: String) async {
+
+    /// Direct retrieval used both when re-entering an in-flight 3DS verification (without the
+    /// outer action guard) and as the body of `retrieve3DSChallenge` (with the guard).
+    private func retrieveExistingThreeDSecureVerification(verificationId: String) async {
         do {
             let (verification, _) = try await ThreeDSecureVerificationsAPI.retrieve3DSecureVerification(verificationId: verificationId)
             if let verification {
@@ -462,9 +495,18 @@ class OnboardingContainerViewModel: ObservableObject {
             print(error)
         }
     }
-    
+
+    func retrieve3DSChallenge(verificationId: String) async {
+        guard beginAction() else { return }
+        defer { endAction() }
+        await retrieveExistingThreeDSecureVerification(verificationId: verificationId)
+    }
+
     // Resend 3DS code to customer
     func resend3DSChallenge() async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let (verification, _) = try await ThreeDSecureVerificationsAPI.resend3DSecureVerification(verificationId: paymentMethodVerification?.id ?? "")
             if let verification {
@@ -474,8 +516,11 @@ class OnboardingContainerViewModel: ObservableObject {
             print(error)
         }
     }
-    
+
     func createCustomerIdentity() async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let (identity, _) = try await CustomerIdentityAPI.createCustomerIdentity(request: createdCustomerIdentity)
             if let identity {
@@ -485,10 +530,13 @@ class OnboardingContainerViewModel: ObservableObject {
             print(error)
         }
     }
-    
+
     // Upload ID and selfie documents
     func uploadIdentificationDocuments() async {
         guard filesToUpload.count == 3, let customerIdentityId = customerIdentity?.id else { return }
+        guard beginAction() else { return }
+        defer { endAction() }
+
         do {
             let (identity, _) = try await CustomerIdentityAPI.uploadIdentityDocuments(customerIdentityId: customerIdentityId, identityImages: filesToUpload)
             if let identity {
@@ -549,5 +597,26 @@ class OnboardingContainerViewModel: ObservableObject {
         self.cardData = PaymentCardData()
         self.bankAccount = FrameObjects.BankAccount()
         self.createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
+    }
+
+    /// Append a wallet-created payment method (Apple Pay) to the in-memory list and select it.
+    /// Used by `AddPaymentMethodView` after a successful `FrameApplePayButton` `.addToOwner` flow.
+    func appendNewlyAddedPaymentMethod(_ paymentMethod: FrameObjects.PaymentMethod) {
+        self.selectedPaymentMethod = paymentMethod
+        self.paymentMethods.append(paymentMethod)
+    }
+
+    /// Re-entrancy guard for user-initiated network actions. Returns false when an action is
+    /// already in flight; otherwise flips `isPerformingAction` to true so the caller can begin.
+    /// Callers must pair every successful `beginAction()` call with `endAction()` (use defer).
+    @discardableResult
+    private func beginAction() -> Bool {
+        guard !isPerformingAction else { return false }
+        isPerformingAction = true
+        return true
+    }
+
+    private func endAction() {
+        isPerformingAction = false
     }
 }

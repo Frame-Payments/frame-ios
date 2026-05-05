@@ -70,7 +70,8 @@ struct SelectPaymentMethodView: View {
         VStack(alignment: .leading) {
             listPaymentMethodsView
             Spacer()
-            ContinueButton(enabled: $canCustomerContinue) {
+            ContinueButton(enabled: $canCustomerContinue,
+                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 Task {
                     // Check if address is present on the selected card.
                     if onboardingContainerViewModel.requiredCapabilities.contains(.addressVerification), onboardingContainerViewModel.selectedPayoutMethod?.billing?.addressLine1 == nil {

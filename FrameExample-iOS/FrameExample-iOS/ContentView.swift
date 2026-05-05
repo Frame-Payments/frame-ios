@@ -45,14 +45,15 @@ struct ContentView: View {
                 cartButton
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
-                    amount: 35000,
-                    currency: "usd",
+                    mode: .charge(amount: 35000, currency: "usd"),
                     owner: .customer("ENTER_TEST_CUSTOMER_ID"),
                     merchantId: applePayMerchantId
                 ) { result in
                     switch result {
-                    case .success(let chargeIntent):
+                    case .success(.charge(let chargeIntent)):
                         applePayResult = "Payment succeeded! ChargeIntent: \(chargeIntent.id)"
+                    case .success(.paymentMethod):
+                        break
                     case .failure(let error):
                         applePayResult = "Payment failed: \(error.localizedDescription)"
                     }
@@ -90,9 +91,8 @@ struct ContentView: View {
             Text(applePayResult ?? "")
         }
         .sheet(isPresented: $showOnboardingSheet, content: {
-//            An existing account Id can be added here to onboarding an existing user.
-//            OnboardingContainerView(accountId: "ENTER_TEST_ACCOUNT_ID", requiredCapabilities: [])
-            OnboardingContainerView(requiredCapabilities: [.kyc, .kycPrefill, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification])
+//            OnboardingContainerView(accountId: "ENTER_TEST_ACCOUNT_ID", requiredCapabilities: [], applePayMerchantId: "ENTER_MERCHANT_PAY_ID")
+            OnboardingContainerView(requiredCapabilities: [.kyc, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification], applePayMerchantId: applePayMerchantId)
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(customer: nil,

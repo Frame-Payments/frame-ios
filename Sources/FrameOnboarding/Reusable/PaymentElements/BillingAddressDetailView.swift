@@ -81,6 +81,7 @@ public struct BillingAddressDetailView: View {
                                            characterLimit: allowsInternational ? nil : 5,
                                            inlineError: true)
                         if allowsInternational {
+                            Divider()
                             DropDownWithHeaderView(headerText: .constant(""),
                                                    dropDownText: $countryText,
                                                    showDropdownPicker: $showCountryPicker,

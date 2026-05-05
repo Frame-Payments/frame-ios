@@ -28,6 +28,7 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var cardData = PaymentCardData()
 
     @Published var fieldErrors: [CheckoutField: String] = [:]
+    @Published var isPerformingAction: Bool = false
 
     var customerId: String?
     var amount: Int
@@ -55,11 +56,16 @@ class FrameCheckoutViewModel: ObservableObject {
     func payWithApplePay(completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
         guard !merchantId.isEmpty else { return }
         applePayViewModel = FrameApplePayViewModel(
-            amount: amount,
-            currency: "usd",
+            mode: .charge(amount: amount, currency: "usd"),
             owner: customerId.map { .customer($0) } ?? .customer(""),
             merchantId: merchantId,
-            completion: completion
+            completion: { result in
+                switch result {
+                case .success(.charge(let intent)): completion(.success(intent))
+                case .success(.paymentMethod): break // not produced in .charge mode
+                case .failure(let error): completion(.failure(error))
+                }
+            }
         )
         applePayViewModel?.presentApplePay()
     }
@@ -137,6 +143,10 @@ class FrameCheckoutViewModel: ObservableObject {
 
     func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.ChargeIntent? {
         guard amount != 0 else { return nil }
+        guard !isPerformingAction else { return nil }
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+
         var paymentMethodId: String?
 
         let usingSavedCard = selectedCustomerPaymentOption != nil

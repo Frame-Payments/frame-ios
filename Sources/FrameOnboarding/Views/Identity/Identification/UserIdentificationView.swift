@@ -43,8 +43,7 @@ struct UserIdentificationView: View {
     @State private var selectedIdType: IdentificationTypes = .driversLicense
     @State private var showIDPicker: Bool = false
     @State private var showPhoneCountryPicker: Bool = false
-    @State private var isSendingOTP: Bool = false
-    
+
     @State private var returnToPhoneNumberEntry: Bool = false
     @State private var continueToCustomerInfoStep: Bool = false
     
@@ -253,10 +252,9 @@ struct UserIdentificationView: View {
                 TermsOfServiceView(padded: false)
                     .padding(.horizontal)
             }
-            ContinueButton(enabled: .constant(!isSendingOTP)) {
+            ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 guard onboardingContainerViewModel.validateAllPhoneAuth() else { return }
                 Task {
-                    isSendingOTP = true
                     let dob = DateOfBirthFormatter.format(
                         year: onboardingContainerViewModel.authBirthYear,
                         month: onboardingContainerViewModel.authBirthMonth,
@@ -265,7 +263,6 @@ struct UserIdentificationView: View {
                     let phoneNumber = onboardingContainerViewModel.phoneCountry.dialCode + onboardingContainerViewModel.authPhoneNumber.replacingOccurrences(of: " ", with: "")
                     await onboardingContainerViewModel.sendOTPVerification(phoneNumber: phoneNumber,
                                                                           dateOfBirth: dob)
-                    isSendingOTP = false
                     if onboardingContainerViewModel.proveUserInfo != nil {
                         self.identitySteps = .information
                     } else if onboardingContainerViewModel.pendingTwilioVerificationId != nil {
@@ -289,7 +286,7 @@ struct UserIdentificationView: View {
                 KeyboardSpacing()
             }
             Spacer()
-            ContinueButton(enabled: .constant(true)) {
+            ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 let infoOK = customerInfoVM.validate()
                 let addressOK = personalAddressVM.validate()
                 guard infoOK, addressOK else { return }

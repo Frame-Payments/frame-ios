@@ -34,7 +34,6 @@ struct UploadIdentificationView: View {
     @State private var showCamera = false
     @State private var cameraImage: UIImage?
     @State private var currentSelectedDoc: FileUpload.FieldName = .front
-    @State private var enabledContinueButton = true
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
@@ -73,7 +72,7 @@ struct UploadIdentificationView: View {
                 .foregroundColor(FrameColors.secondaryTextColor)
                 .padding(.horizontal, 24.0)
             Spacer()
-            ContinueButton(enabled: .constant(true)) {
+            ContinueButton {
                 self.showUploadInputs.toggle()
             }
             .padding(.bottom)
@@ -96,9 +95,9 @@ struct UploadIdentificationView: View {
                 listSelfieOptionsView
             }
             Spacer()
-            ContinueButton(buttonText: "Submit", enabled: $enabledContinueButton) {
+            ContinueButton(buttonText: "Submit",
+                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 guard onboardingContainerViewModel.validateAllDocs() else { return }
-                self.enabledContinueButton = false
                 self.uploadDocsThenContinue()
             }
             .padding(.bottom)
