@@ -123,7 +123,7 @@ extension FrameObjects {
         public let phone: FrameObjects.AccountPhoneNumber?
         public let phoneNumber: String?
         public let phoneCountryCode: String?
-        public let address: FrameObjects.AccountBillingAddress?
+        public let address: FrameObjects.BillingAddress?
         public let birthdate: String?
         
         public enum CodingKeys: String, CodingKey {
