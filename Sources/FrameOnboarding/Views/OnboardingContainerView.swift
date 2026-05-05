@@ -54,9 +54,12 @@ public struct OnboardingContainerView: View {
 
     public init(accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
+                applePayMerchantId: String? = nil,
                 onComplete: (() -> Void)? = nil) {
         self.onComplete = onComplete
-        self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId, requiredCapabilities: requiredCapabilities)
+        self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId,
+                                                                         requiredCapabilities: requiredCapabilities,
+                                                                         applePayMerchantId: applePayMerchantId)
         
         if requiredCapabilities != [] {
             // Map capabilites to onboarding flow steps

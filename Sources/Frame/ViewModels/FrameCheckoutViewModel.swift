@@ -28,6 +28,7 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var cardData = PaymentCardData()
 
     @Published var fieldErrors: [CheckoutField: String] = [:]
+    @Published var isPerformingAction: Bool = false
 
     var customerId: String?
     var amount: Int
@@ -137,6 +138,10 @@ class FrameCheckoutViewModel: ObservableObject {
 
     func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.ChargeIntent? {
         guard amount != 0 else { return nil }
+        guard !isPerformingAction else { return nil }
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+
         var paymentMethodId: String?
 
         let usingSavedCard = selectedCustomerPaymentOption != nil

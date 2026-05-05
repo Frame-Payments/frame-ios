@@ -16,27 +16,59 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         case account(String)
     }
 
+    /// Drives whether the Apple Pay sheet completes by creating a charge intent (`.charge`)
+    /// or only attaches the wallet card to the customer/account (`.addToOwner`).
+    public enum FrameApplePayMode {
+        case charge(amount: Int, currency: String)
+        case addToOwner
+    }
+
+    /// Result delivered to the host app's completion handler. `.charge` carries a confirmed
+    /// `ChargeIntent`; `.paymentMethod` carries a persisted wallet PaymentMethod for use in
+    /// AddPaymentMethod flows.
+    public enum FrameApplePayResult {
+        case charge(FrameObjects.ChargeIntent)
+        case paymentMethod(FrameObjects.PaymentMethod)
+    }
+
     // MARK: - Published state
 
     @Published var isProcessing: Bool = false
 
-    let amount: Int
-    let currency: String
+    let mode: FrameApplePayMode
     let owner: PaymentMethodOwner
     let merchantId: String
 
-    var completion: ((Result<FrameObjects.ChargeIntent, Error>) -> Void)?
+    var completion: ((Result<FrameApplePayResult, Error>) -> Void)?
 
-    public init(amount: Int,
-         currency: String,
-         owner: PaymentMethodOwner,
-         merchantId: String,
-         completion: ((Result<FrameObjects.ChargeIntent, Error>) -> Void)? = nil) {
-        self.amount = amount
-        self.currency = currency
+    public init(mode: FrameApplePayMode,
+                owner: PaymentMethodOwner,
+                merchantId: String,
+                completion: ((Result<FrameApplePayResult, Error>) -> Void)? = nil) {
+        self.mode = mode
         self.owner = owner
         self.merchantId = merchantId
         self.completion = completion
+    }
+
+    /// Convenience init mapping the legacy charge-only signature to `mode = .charge`.
+    public convenience init(amount: Int,
+                            currency: String,
+                            owner: PaymentMethodOwner,
+                            merchantId: String,
+                            completion: ((Result<FrameObjects.ChargeIntent, Error>) -> Void)? = nil) {
+        self.init(mode: .charge(amount: amount, currency: currency),
+                  owner: owner,
+                  merchantId: merchantId,
+                  completion: completion.map { legacy in
+                      { result in
+                          switch result {
+                          case .success(.charge(let intent)): legacy(.success(intent))
+                          case .success(.paymentMethod): break // not produced in .charge mode
+                          case .failure(let error): legacy(.failure(error))
+                          }
+                      }
+                  })
     }
 
     /// Returns true if the device can make Apple Pay payments with at least one of the supported networks.
@@ -70,14 +102,29 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         request.supportedNetworks = Self.supportedNetworks
         request.merchantCapabilities = .threeDSecure
         request.countryCode = "US"
-        request.currencyCode = currency.uppercased()
         request.requiredBillingContactFields = [.postalAddress, .name, .emailAddress]
-        request.paymentSummaryItems = [
-            PKPaymentSummaryItem(
-                label: "Total",
-                amount: NSDecimalNumber(value: Double(amount) / 100.0)
-            )
-        ]
+
+        switch mode {
+        case .charge(let amount, let currency):
+            request.currencyCode = currency.uppercased()
+            request.paymentSummaryItems = [
+                PKPaymentSummaryItem(
+                    label: "Total",
+                    amount: NSDecimalNumber(value: Double(amount) / 100.0)
+                )
+            ]
+        case .addToOwner:
+            // Wallet-only mode: present a $0 pending summary item so Apple's sheet still
+            // satisfies the UX requirement of a labeled total without charging the user.
+            request.currencyCode = "USD"
+            request.paymentSummaryItems = [
+                PKPaymentSummaryItem(
+                    label: "Card Verification",
+                    amount: .zero,
+                    type: .pending
+                )
+            ]
+        }
         return request
     }
 }
@@ -109,41 +156,49 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     accountId: accountId
                 )
             }
-            guard let paymentMethodId = paymentMethod?.id else {
+            guard let paymentMethod else {
                 completion?(.failure(methodError ?? NetworkingError.unknownError))
                 return PKPaymentAuthorizationResult(status: .failure, errors: nil)
             }
+            let paymentMethodId = paymentMethod.id
 
-            // 2. Create and confirm a ChargeIntent with the payment method
-            let request: ChargeIntentsRequests.CreateChargeIntentRequest
-            switch owner {
-            case .customer(let customerId):
-                request = ChargeIntentsRequests.CreateChargeIntentRequest(
-                    amount: amount,
-                    currency: currency,
-                    customer: customerId,
-                    paymentMethod: paymentMethodId,
-                    confirm: true,
-                    authorizationMode: .automatic
-                )
-            case .account(let accountId):
-                request = ChargeIntentsRequests.CreateChargeIntentRequest(
-                    amount: amount,
-                    currency: currency,
-                    account: accountId,
-                    paymentMethod: paymentMethodId,
-                    confirm: true,
-                    authorizationMode: .automatic
-                )
-            }
-            let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
-
-            if let chargeIntent {
-                completion?(.success(chargeIntent))
+            switch mode {
+            case .addToOwner:
+                completion?(.success(.paymentMethod(paymentMethod)))
                 return PKPaymentAuthorizationResult(status: .success, errors: nil)
-            } else {
-                completion?(.failure(chargeError ?? NetworkingError.unknownError))
-                return PKPaymentAuthorizationResult(status: .failure, errors: nil)
+
+            case .charge(let amount, let currency):
+                // 2. Create and confirm a ChargeIntent with the payment method
+                let request: ChargeIntentsRequests.CreateChargeIntentRequest
+                switch owner {
+                case .customer(let customerId):
+                    request = ChargeIntentsRequests.CreateChargeIntentRequest(
+                        amount: amount,
+                        currency: currency,
+                        customer: customerId,
+                        paymentMethod: paymentMethodId,
+                        confirm: true,
+                        authorizationMode: .automatic
+                    )
+                case .account(let accountId):
+                    request = ChargeIntentsRequests.CreateChargeIntentRequest(
+                        amount: amount,
+                        currency: currency,
+                        account: accountId,
+                        paymentMethod: paymentMethodId,
+                        confirm: true,
+                        authorizationMode: .automatic
+                    )
+                }
+                let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
+
+                if let chargeIntent {
+                    completion?(.success(.charge(chargeIntent)))
+                    return PKPaymentAuthorizationResult(status: .success, errors: nil)
+                } else {
+                    completion?(.failure(chargeError ?? NetworkingError.unknownError))
+                    return PKPaymentAuthorizationResult(status: .failure, errors: nil)
+                }
             }
         } catch {
             completion?(.failure(error))

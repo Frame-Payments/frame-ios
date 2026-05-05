@@ -81,7 +81,8 @@ struct SecurePMVerificationView: View {
                 .foregroundColor(type == .proveOtp ? FrameColors.secondaryTextColor : .primary)
                 .padding(.horizontal)
             codeContainerStack
-            ContinueButton(enabled: $codeInput) {
+            ContinueButton(enabled: $codeInput,
+                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 Task {
                     switch type {
                     case .threeDS:

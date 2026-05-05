@@ -58,16 +58,13 @@ struct AddPayoutMethodView: View {
         }
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                ContinueButton(buttonText: "Connect Bank Account", enabled: .constant(!onboardingContainerViewModel.isConnectingPlaidBank)) {
+                ContinueButton(buttonText: "Connect Bank Account",
+                               enabled: .constant(true),
+                               isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                     Task {
                         await onboardingContainerViewModel.openPlaidLink(from: topViewController()) {
                             self.dismiss()
                         }
-                    }
-                }
-                .overlay {
-                    if onboardingContainerViewModel.isConnectingPlaidBank {
-                        ProgressView()
                     }
                 }
 
@@ -85,7 +82,9 @@ struct AddPayoutMethodView: View {
                                            dropDownText: $accountTypeString,
                                            showDropdownPicker: $showAccountTypePicker)
                     BillingAddressDetailView(viewModel: billingVM)
-                    ContinueButton(buttonText: "Add Bank Account", enabled: .constant(true)) {
+                    ContinueButton(buttonText: "Add Bank Account",
+                                   enabled: .constant(true),
+                                   isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                         bankVM.account.accountType = selectedAccountType
                         let bankOK = bankVM.validate()
                         let addressOK = billingVM.validate()

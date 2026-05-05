@@ -12,8 +12,6 @@ public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var checkoutViewModel: FrameCheckoutViewModel
 
-    @State private var rotationAngle = 0.0
-    @State var showLoadingState: Bool = false
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
     @State private var isShowingPicker = false
@@ -22,8 +20,6 @@ public struct FrameCheckoutView: View {
     let paymentAmount: Int
     let merchantId: String
     let addressMode: FrameAddressMode
-
-    var colors: [Color] = [Color.white, Color.white.opacity(0.3)]
 
     var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
 
@@ -279,28 +275,23 @@ public struct FrameCheckoutView: View {
 
     var checkoutButton: some View {
         let canCheckout = checkoutViewModel.hasUsablePaymentInput
+        let isLoading = checkoutViewModel.isPerformingAction
         return Button {
             Task {
-                self.showLoadingState = true
                 let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
-
                 if let chargeIntent {
                     self.checkoutCallback(chargeIntent)
                 }
-                self.showLoadingState = false
             }
         } label: {
             RoundedRectangle(cornerRadius: 10)
                 .fill(canCheckout ? .black : Color.gray.opacity(0.4))
                 .frame(height: 50.0)
                 .overlay {
-                    if showLoadingState {
-                        HStack(spacing: 10.0) {
-                            loadingSpinner
-                            Text("Processing...")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                        }
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.white)
                     } else {
                         Text("Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))")
                             .font(.headline)
@@ -309,37 +300,7 @@ public struct FrameCheckoutView: View {
                 }
         }
         .padding(.horizontal)
-        .disabled(showLoadingState || !canCheckout)
-    }
-
-    var loadingSpinner: some View {
-        ZStack(alignment: .center) {
-            Circle()
-               .stroke(
-                   AngularGradient(
-                       gradient: Gradient(colors: colors),
-                       center: .center,
-                       startAngle: .degrees(0),
-                       endAngle: .degrees(360)
-                   ),
-                   style: StrokeStyle(lineWidth: 6, lineCap: .round)
-               )
-               .frame(width: 25, height: 25)
-
-            Circle()
-                .frame(width: 7, height: 7)
-                .foregroundColor(Color.white)
-                .offset(x: 25/2)
-        }
-        .rotationEffect(.degrees(rotationAngle))
-        .onAppear {
-            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                rotationAngle = 360.0
-            }
-        }
-        .onDisappear{
-            rotationAngle = 0.0
-        }
+        .disabled(isLoading || !canCheckout)
     }
 
     private func errorBinding(_ field: FrameCheckoutViewModel.CheckoutField) -> Binding<String?> {
