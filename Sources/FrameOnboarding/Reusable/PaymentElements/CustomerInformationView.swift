@@ -31,8 +31,8 @@ public struct CustomerInformationView: View {
                 .font(headerFont)
                 .padding([.horizontal, .top])
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(.white)
-                .stroke(.gray.opacity(0.3))
+                .fill(FrameColors.surfaceColor)
+                .stroke(FrameColors.surfaceStrokeColor)
                 .frame(height: 150.0)
                 .overlay {
                     VStack(spacing: 0) {
@@ -114,8 +114,8 @@ public struct CustomerInformationView: View {
         }
         .padding([.horizontal, .top])
         RoundedRectangle(cornerRadius: 10.0)
-            .fill(.white)
-            .stroke(.gray.opacity(0.3))
+            .fill(FrameColors.surfaceColor)
+            .stroke(FrameColors.surfaceStrokeColor)
             .frame(height: 50.0)
             .overlay {
                 HStack {
@@ -151,20 +151,20 @@ public struct CustomerInformationView: View {
             .font(headerFont)
             .padding([.horizontal, .top])
         RoundedRectangle(cornerRadius: 10.0)
-            .fill(.white)
-            .stroke(.gray.opacity(0.3))
+            .fill(FrameColors.surfaceColor)
+            .stroke(FrameColors.surfaceStrokeColor)
             .frame(height: 50.0)
             .overlay {
                 HStack(spacing: 0) {
                     RoundedRectangle(cornerRadius: 10.0)
-                        .fill(.gray.opacity(0.3))
-                        .stroke(.gray.opacity(0.3))
+                        .fill(FrameColors.surfaceStrokeColor)
+                        .stroke(FrameColors.surfaceStrokeColor)
                         .frame(width: 120.0, height: 50.0)
                         .overlay {
                             Text("Last 4 Digits")
                                 .font(.footnote)
                                 .bold()
-                                .foregroundColor(.black)
+                                .foregroundColor(FrameColors.primaryTextColor)
                         }
                     ValidatedTextField(prompt: "SSN",
                                        text: $viewModel.identity.ssn,
@@ -184,4 +184,13 @@ public struct CustomerInformationView: View {
         CustomerInformationView(viewModel: vm)
         Button("Validate") { _ = vm.validate() }
     }
+}
+
+#Preview("Dark") {
+    @Previewable @StateObject var vm = CustomerInformationViewModel()
+    ScrollView {
+        CustomerInformationView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
+    }
+    .preferredColorScheme(.dark)
 }

@@ -15,4 +15,16 @@ public struct FrameColors {
     public static let unfilledButtonColor = Color("UnfilledButtonColor", bundle: FrameResources.module)
     public static let unfilledButtonStrokeColor = Color("UnfilledButtonStrokeColor", bundle: FrameResources.module)
     public static let unfilledButtonTextColor = Color("UnfilledButtonTextColor", bundle: FrameResources.module)
+
+    // Semantic surface tokens — light/dark adaptive via asset catalog
+    public static let surfaceColor = Color("SurfaceColor", bundle: FrameResources.module)
+    public static let surfaceStrokeColor = Color("SurfaceStrokeColor", bundle: FrameResources.module)
+    public static let primaryTextColor = Color("PrimaryTextColor", bundle: FrameResources.module)
+
+    // Camera tokens — intentionally non-adaptive (camera UX convention).
+    public static let cameraOverlayColor = Color.black.opacity(0.8)
+    public static let cameraStrokeColor = Color.white.opacity(0.95)
+
+    // White-on-brand button text — intentionally non-adaptive.
+    public static let brandButtonTextColor = Color.white
 }

@@ -29,8 +29,8 @@ public struct BankAccountDetailView: View {
                     .padding([.horizontal, .top])
             }
             RoundedRectangle(cornerRadius: 10.0)
-                .fill(.white)
-                .stroke(.gray.opacity(0.3))
+                .fill(FrameColors.surfaceColor)
+                .stroke(FrameColors.surfaceStrokeColor)
                 .frame(height: 100.0)
                 .overlay {
                     VStack(spacing: 0) {
@@ -60,4 +60,13 @@ public struct BankAccountDetailView: View {
         BankAccountDetailView(viewModel: vm)
         Button("Validate") { _ = vm.validate() }
     }
+}
+
+#Preview("Dark") {
+    @Previewable @StateObject var vm = BankAccountViewModel()
+    VStack {
+        BankAccountDetailView(viewModel: vm)
+        Button("Validate") { _ = vm.validate() }
+    }
+    .preferredColorScheme(.dark)
 }

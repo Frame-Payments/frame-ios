@@ -65,10 +65,10 @@ public struct FrameApplePayButton: View {
 
     var paymentDivider: some View {
         HStack(spacing: 10.0) {
-            Rectangle().fill(.gray.opacity(0.3))
+            Rectangle().fill(FrameColors.surfaceStrokeColor)
                 .frame(height: 1)
             Text("Or")
-            Rectangle().fill(.gray.opacity(0.3))
+            Rectangle().fill(FrameColors.surfaceStrokeColor)
                 .frame(height: 1)
         }
         .padding()
@@ -84,4 +84,16 @@ public struct FrameApplePayButton: View {
         print(result)
     }
     .padding()
+}
+
+#Preview("Dark") {
+    FrameApplePayButton(
+        mode: .charge(amount: 15000, currency: "usd"),
+        owner: .customer("cus_preview"),
+        merchantId: "merchant.com.yourapp"
+    ) { result in
+        print(result)
+    }
+    .padding()
+    .preferredColorScheme(.dark)
 }
