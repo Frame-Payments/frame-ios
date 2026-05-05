@@ -165,8 +165,8 @@ struct SecurePMVerificationView: View {
             .onChange(of: input.wrappedValue) { oldValue, newValue in
                 if newValue.count == codeCount {
                     self.enteredCode = newValue
-                    
-                    let splitValue = newValue.components(separatedBy: "")
+
+                    let splitValue = newValue.map { String($0) }
                     self.codeInputOne = splitValue[0]
                     self.codeInputTwo = splitValue[1]
                     self.codeInputThree = splitValue[2]
@@ -175,6 +175,7 @@ struct SecurePMVerificationView: View {
                         self.codeInputFive = splitValue[4]
                         self.codeInputSix = splitValue[5]
                     }
+                    focusedField = nil
                 } else {
                     input.wrappedValue = String(newValue.suffix(1))
                     if index != codeCount - 1 {
