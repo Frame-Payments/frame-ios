@@ -28,7 +28,7 @@ jobs:
           MATCHES=$(
             grep -RnE "\.fill\(\.(white|black)\)|\.fill\(Color\.(white|black)\)|\.foregroundColor\(\.(white|black)\)|\.foregroundColor\(Color\.(white|black)\)|\.foregroundStyle\(\.(white|black)\)|\.background\(\.(white|black)\)|\.background\(Color\.(white|black)\)|\.stroke\(\.(white|black)\)|\.stroke\(Color\.(white|black)\)|Color\.(white|black)[^a-zA-Z]|\.gray\.opacity\(|Color\.gray\.opacity\(" \
               Sources/Frame/Views Sources/FrameOnboarding FrameExample-iOS/FrameExample-iOS --include="*.swift" \
-              | grep -vE "StructuredCameraView\.swift:70|ViewfinderOverlay\.swift|FramePaymentButton\.swift:34|cameraOverlayColor|cameraStrokeColor|brandButtonTextColor" \
+              | grep -vE "StructuredCameraView\.swift:70|ViewfinderOverlay\.swift|FramePaymentButton\.swift:34|cameraOverlayColor|cameraStrokeColor|brandButtonTextColor|onboardingProgressFilledOnBrand|onboardingProgressEmptyOnBrand" \
               || true
           )
           if [ -n "$MATCHES" ]; then

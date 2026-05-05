@@ -27,7 +27,7 @@ public struct FrameApplePayButton: View {
                 merchantId: String,
                 addCheckoutDivider: Bool = false,
                 buttonType: PKPaymentButtonType = .buy,
-                buttonStyle: PKPaymentButtonStyle = .black,
+                buttonStyle: PKPaymentButtonStyle = .automatic,
                 completion: @escaping (Result<FrameApplePayViewModel.FrameApplePayResult, Error>) -> Void) {
 
         self.addCheckoutDivider = addCheckoutDivider
