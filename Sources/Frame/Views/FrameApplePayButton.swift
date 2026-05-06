@@ -16,6 +16,7 @@ public struct FrameApplePayButton: View {
     let buttonStyle: PKPaymentButtonStyle
     let completion: (Result<FrameApplePayViewModel.FrameApplePayResult, Error>) -> Void
 
+    @Environment(\.frameTheme) private var theme
     @StateObject private var viewModel: FrameApplePayViewModel
     @ObservedObject private var attestationManager = DeviceAttestationManager.shared
 
@@ -65,10 +66,10 @@ public struct FrameApplePayButton: View {
 
     var paymentDivider: some View {
         HStack(spacing: 10.0) {
-            Rectangle().fill(FrameColors.surfaceStrokeColor)
+            Rectangle().fill(theme.colors.surfaceStroke)
                 .frame(height: 1)
             Text("Or")
-            Rectangle().fill(FrameColors.surfaceStrokeColor)
+            Rectangle().fill(theme.colors.surfaceStroke)
                 .frame(height: 1)
         }
         .padding()

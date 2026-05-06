@@ -17,6 +17,7 @@ The Frame iOS SDK gives you everything you need to build a polished payment expe
 - [Features](#features)
 - [API Reference](#api-reference)
 - [UI Components](#ui-components)
+- [Theming](#theming)
 - [Apple Pay](#apple-pay)
 - [Frame Onboarding](#frame-onboarding)
 - [Examples](#examples)
@@ -234,6 +235,106 @@ EncryptedPaymentCardInput { encryptedCard in
     // encryptedCard is ready to send to your server
 }
 ```
+
+---
+
+## Theming
+
+Every Frame UI component reads its colors, fonts, and corner radii from a single `FrameTheme` value injected via SwiftUI environment. Apply a theme once at your app boundary and it propagates through cart, checkout, onboarding, and every reusable component.
+
+### Quick start
+
+```swift
+import SwiftUI
+import Frame
+
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .frameTheme(FrameTheme(
+                    colors: .init(primaryButton: .purple, error: .orange),
+                    fonts: .init(title: .custom("Inter-Bold", size: 24)),
+                    radii: .init(medium: 16)
+                ))
+        }
+    }
+}
+```
+
+Anything you don't specify falls back to the SDK's default — the asset-catalog-backed palette that already adapts to dark mode.
+
+For terse one-off tweaks, use `with(_:)`:
+
+```swift
+.frameTheme(.default.with {
+    $0.colors.primaryButton = .purple
+    $0.colors.error = .orange
+})
+```
+
+### Tokens
+
+`FrameTheme.Colors`:
+
+| Token | Default |
+|---|---|
+| `primaryButton` / `primaryButtonText` | Brand navy / white |
+| `secondaryButton` / `secondaryButtonText` | Neutral / brand navy (used by `ContinueButton(style: .secondary)`) |
+| `disabledButton` / `disabledButtonStroke` / `disabledButtonText` | Light gray family |
+| `surface` / `surfaceStroke` | Form-container background and border |
+| `textPrimary` / `textSecondary` | Body text and helper copy |
+| `error` | `.red` |
+| `onboardingHeaderBackground`, `onboardingProgressFilledOnBrand`, `onboardingProgressEmptyOnBrand` | Onboarding chrome |
+
+`FrameTheme.Fonts`:
+
+| Token | Default |
+|---|---|
+| `title` | `.title` |
+| `heading` | `.system(size: 18, weight: .semibold)` (onboarding screen headers) |
+| `headline` | `.headline` (section labels, button text) |
+| `body` / `bodySmall` | `.body` / `.system(size: 14)` |
+| `label` | `.subheadline` (form headers, dropdown labels) |
+| `caption` | `.caption` (errors, hints) |
+| `button` | `.headline` (primary action label) |
+
+`FrameTheme.Radii`: `small` (8), `medium` (10), `large` (16).
+
+### Custom fonts
+
+`Font` accepts anything you'd pass elsewhere in SwiftUI — including `.custom("MyFont", size:)`. Register the font in your app's `Info.plist` under `UIAppFonts` and pass it through:
+
+```swift
+.frameTheme(FrameTheme(fonts: .init(
+    title: .custom("Inter-Bold", size: 28),
+    headline: .custom("Inter-SemiBold", size: 17),
+    button: .custom("Inter-SemiBold", size: 17)
+)))
+```
+
+### Dark mode
+
+The default theme reads from a light/dark-adaptive asset catalog, so dark mode works out of the box. If you supply explicit colors and want them to adapt, wrap them in a trait-aware `Color`:
+
+```swift
+let adaptiveBrand = Color(uiColor: .init { trait in
+    trait.userInterfaceStyle == .dark ? .systemPurple : .purple
+})
+.frameTheme(FrameTheme(colors: .init(primaryButton: adaptiveBrand)))
+```
+
+### Reading the default palette
+
+Need the SDK's stock colors or fonts in your own UI (outside Frame components)? Read them off `FrameTheme.default`:
+
+```swift
+.background(FrameTheme.default.colors.primaryButton)
+.foregroundColor(FrameTheme.default.colors.primaryButtonText)
+```
+
+For live theming inside your own SwiftUI views, read `@Environment(\.frameTheme)` so consumer overrides flow through.
 
 ---
 

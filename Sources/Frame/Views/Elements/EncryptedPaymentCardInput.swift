@@ -10,29 +10,38 @@ import EvervaultInputs
 
 public struct EncryptedPaymentCardInput: PaymentCardInputStyle {
     public init() {}
-    
+
     public func makeBody(configuration: Configuration) -> some View {
-        RoundedRectangle(cornerRadius: 10.0)
-            .fill(FrameColors.surfaceColor)
-            .stroke(FrameColors.surfaceStrokeColor)
-            .frame(height: 100.0)
-            .overlay {
-                VStack(spacing: 0) {
-                    configuration.cardNumberField
+        ThemedBody(configuration: configuration)
+    }
+
+    private struct ThemedBody: View {
+        @Environment(\.frameTheme) private var theme
+        let configuration: Configuration
+
+        var body: some View {
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .fill(theme.colors.surface)
+                .stroke(theme.colors.surfaceStroke)
+                .frame(height: 100.0)
+                .overlay {
+                    VStack(spacing: 0) {
+                        configuration.cardNumberField
+                            .frame(height: 45.0)
+                            .padding(.horizontal)
+                        Divider()
+                        HStack {
+                            configuration.expiryField
+                            Divider()
+                            configuration.cvcField
+                        }
                         .frame(height: 45.0)
                         .padding(.horizontal)
-                    Divider()
-                    HStack {
-                        configuration.expiryField
-                        Divider()
-                        configuration.cvcField
                     }
-                    .frame(height: 45.0)
-                    .padding(.horizontal)
+                    .frame(height: 91.0)
                 }
-                .frame(height: 91.0)
-            }
-            .padding(.horizontal)
+                .padding(.horizontal)
+        }
     }
 }
 

@@ -20,6 +20,7 @@ enum CodeVerificationType {
 
 struct SecurePMVerificationView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.frameTheme) private var theme
     @FocusState private var focusedField: Int?
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
@@ -78,8 +79,8 @@ struct SecurePMVerificationView: View {
             }
             Text(bodyText)
                 .fontWeight(type == .proveOtp ? .regular : .light)
-                .font(.system(size: 14.0))
-                .foregroundColor(type == .proveOtp ? FrameColors.secondaryTextColor : .primary)
+                .font(theme.fonts.bodySmall)
+                .foregroundColor(type == .proveOtp ? theme.colors.textSecondary : .primary)
                 .padding(.horizontal)
             codeContainerStack
             ContinueButton(enabled: $codeInput,
@@ -109,7 +110,7 @@ struct SecurePMVerificationView: View {
                 } label: {
                     Text("Resend Code")
                         .bold()
-                        .foregroundColor(FrameColors.primaryTextColor)
+                        .foregroundColor(theme.colors.textPrimary)
                 }
                 .disabled(codeResent)
             }
@@ -142,8 +143,8 @@ struct SecurePMVerificationView: View {
                 }
                 .frame(height: 70.0)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: theme.radii.medium)
+                        .stroke(theme.colors.surfaceStroke, lineWidth: 1)
                 }
                 .padding(.horizontal, 3.0)
             }
@@ -159,7 +160,7 @@ struct SecurePMVerificationView: View {
             .textContentType(.oneTimeCode)
             .keyboardType(.numberPad)
             .multilineTextAlignment(.center)
-            .font(.system(size: 20.0))
+            .font(theme.fonts.title)
             .fontWeight(.semibold)
             .focused($focusedField, equals: index)
             .onChange(of: input.wrappedValue) { oldValue, newValue in

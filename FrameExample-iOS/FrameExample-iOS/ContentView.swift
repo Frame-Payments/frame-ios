@@ -18,7 +18,8 @@ struct ExampleCartItem: FrameCartItem {
 
 struct ContentView: View {
     @ObservedObject var viewModel: ContentViewModel = ContentViewModel()
-    
+    @Environment(\.frameTheme) var theme
+
     @State var showCheckoutView: Bool = false
     @State var showCustomersView: Bool = false
     @State var showPaymentMethodsView: Bool = false
@@ -272,12 +273,12 @@ struct ContentView: View {
         } label: {
             Text("Show Onboarding Flow")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding()
     }
@@ -288,12 +289,12 @@ struct ContentView: View {
         } label: {
             Text("Show Checkout")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding()
     }
@@ -304,12 +305,12 @@ struct ContentView: View {
         } label: {
             Text("View All Customers")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
@@ -320,12 +321,12 @@ struct ContentView: View {
         } label: {
             Text("View All Payment Methods")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
@@ -336,12 +337,12 @@ struct ContentView: View {
         } label: {
             Text("View All Subscriptions")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
@@ -352,12 +353,12 @@ struct ContentView: View {
         } label: {
             Text("View All Charge Intents")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
@@ -368,12 +369,12 @@ struct ContentView: View {
         } label: {
             Text("View All Refunds")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
@@ -384,12 +385,12 @@ struct ContentView: View {
         } label: {
             Text("View All Subscription Phases")
                 .font(.headline)
-                .foregroundColor(FrameColors.brandButtonTextColor)
+                .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(height: 45.0)
         .frame(maxWidth: .infinity)
-        .background(FrameColors.mainButtonColor)
+        .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }

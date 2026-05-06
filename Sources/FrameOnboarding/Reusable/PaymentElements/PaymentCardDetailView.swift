@@ -10,17 +10,22 @@ import EvervaultInputs
 import Frame
 
 public struct PaymentCardDetailView: View {
+    @Environment(\.frameTheme) private var theme
+
     @Binding public var cardData: PaymentCardData
-    
-    @State public var headerFont: Font = Font.subheadline
-    @State public var showHeaderText: Bool = true
-    
+    public var showHeaderText: Bool = true
+
+    public init(cardData: Binding<PaymentCardData>, showHeaderText: Bool = true) {
+        self._cardData = cardData
+        self.showHeaderText = showHeaderText
+    }
+
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
                 Text("Card Details")
                     .bold()
-                    .font(headerFont)
+                    .font(theme.fonts.label)
                     .padding([.horizontal])
             }
             PaymentCardInput(cardData: $cardData)

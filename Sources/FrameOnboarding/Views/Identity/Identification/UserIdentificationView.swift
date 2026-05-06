@@ -25,14 +25,15 @@ struct UserIdentificationView: View {
         case country
         case countryCode
     }
-    
+
     enum UserIdentificationSteps: String, CaseIterable {
         case phoneAuth
         case verifyPhone
         case information
 //        case inputs - Country input currently not in use.
     }
-    
+
+    @Environment(\.frameTheme) private var theme
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     @StateObject private var personalAddressVM: BillingAddressViewModel
     @StateObject private var customerInfoVM: CustomerInformationViewModel
@@ -153,19 +154,19 @@ struct UserIdentificationView: View {
                 }
             }
             Text("We’ll send you a code — it helps us keep your account secure.")
-                .font(.system(size: 14.0))
-                .foregroundColor(FrameColors.secondaryTextColor)
+                .font(theme.fonts.bodySmall)
+                .foregroundColor(theme.colors.textSecondary)
                 .padding(.horizontal, 20.0)
                 .padding(.bottom, 20.0)
             HStack {
                 Text("Phone Number")
                     .fontWeight(.semibold)
-                    .font(.system(size: 14.0))
+                    .font(theme.fonts.bodySmall)
                 Spacer()
                 if let phoneError = onboardingContainerViewModel.errorBinding(.authPhone).wrappedValue {
                     Text(phoneError)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
                 }
             }
             .padding(.horizontal)
@@ -177,22 +178,22 @@ struct UserIdentificationView: View {
                         Text(onboardingContainerViewModel.phoneCountry.flag)
                         Text(onboardingContainerViewModel.phoneCountry.dialCode)
                             .fontWeight(.medium)
-                            .font(.system(size: 14.0))
+                            .font(theme.fonts.bodySmall)
                             .foregroundColor(.primary)
                         Image("down-chevron", bundle: FrameResources.module)
                     }
                     .frame(maxWidth: .infinity, minHeight: 56.0)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .stroke(theme.colors.surfaceStroke, lineWidth: 1)
                     )
                 }
                 .frame(width: 110.0)
                 .padding([.horizontal, .bottom])
 
-                RoundedRectangle(cornerRadius: 10.0)
-                    .fill(FrameColors.surfaceColor)
-                    .stroke(FrameColors.surfaceStrokeColor)
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .fill(theme.colors.surface)
+                    .stroke(theme.colors.surfaceStroke)
                     .frame(maxHeight: 56.0)
                     .overlay {
                         PhoneNumberTextField(prompt: "Enter your phone number",
@@ -208,18 +209,18 @@ struct UserIdentificationView: View {
                 HStack {
                     Text("Date of Birth")
                         .fontWeight(.semibold)
-                        .font(.system(size: 14.0))
+                        .font(theme.fonts.bodySmall)
                     Spacer()
                     if let dobError = firstDateOfBirthError() {
                         Text(dobError)
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(theme.fonts.caption)
+                            .foregroundColor(theme.colors.error)
                     }
                 }
                 .padding(.horizontal)
-                RoundedRectangle(cornerRadius: 10.0)
-                    .fill(FrameColors.surfaceColor)
-                    .stroke(FrameColors.surfaceStrokeColor)
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .fill(theme.colors.surface)
+                    .stroke(theme.colors.surfaceStroke)
                     .overlay {
                         HStack {
                             ValidatedTextField(prompt: "Month",
@@ -319,12 +320,12 @@ struct UserIdentificationView: View {
                 Text(titleName)
                     .padding([.horizontal])
                     .fontWeight(.semibold)
-                    .font(.system(size: 13.0))
+                    .font(theme.fonts.caption)
             }
             HStack {
                 Text(dropdownText)
                     .fontWeight(.medium)
-                    .font(.system(size: 14.0))
+                    .font(theme.fonts.bodySmall)
                     .frame(minWidth: 18.0)
                     .padding(.leading)
                 Spacer()
@@ -334,8 +335,8 @@ struct UserIdentificationView: View {
             .frame(maxWidth: .infinity, minHeight: 56.0)
             .contentShape(Rectangle())
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .stroke(theme.colors.surfaceStroke, lineWidth: 1)
             )
             .padding([.horizontal, .bottom])
             .onTapGesture {

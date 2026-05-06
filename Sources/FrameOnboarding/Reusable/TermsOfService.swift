@@ -9,35 +9,36 @@ import SwiftUI
 import Frame
 
 public struct TermsOfServiceView: View {
+    @Environment(\.frameTheme) private var theme
+
     // Public configurable URLs (default to placeholders if not provided)
     @State private var privacyPolicyURL: URL = URL(string: "https://framepayments.com/privacy")!
     @State private var termsOfServiceURL: URL = URL(string: "https://framepayments.com/terms")!
 
-    // Style configuration
-    public var font: Font = .system(size: 13)
-    public var textColor: Color = .secondary
-    public var linkColor: Color = FrameColors.mainButtonColor
     public var alignment: Alignment = .center
     public var padded: Bool = false
 
     private var composed: AttributedString {
+        let linkFont = theme.fonts.caption.bold()
+        let linkColor = UIColor(theme.colors.primaryButton)
+
         var result = AttributedString("By clicking continue, you agree to the terms of Frame's ")
         // Append Privacy Policy link
         var privacy = AttributedString("Privacy Policy")
         privacy.link = privacyPolicyURL
-        privacy.font = .system(size: 13.0, weight: .bold)
-        privacy.foregroundColor = UIColor(linkColor)
+        privacy.font = linkFont
+        privacy.foregroundColor = linkColor
         result.append(privacy)
-        
+
         // Append connector text
-        var andText = AttributedString(" and ")
+        let andText = AttributedString(" and ")
         result.append(andText)
-        
+
         // Append Terms of Service link
         var terms = AttributedString("Terms of Service")
         terms.link = termsOfServiceURL
-        terms.font = .system(size: 13.0, weight: .bold)
-        terms.foregroundColor = UIColor(linkColor)
+        terms.font = linkFont
+        terms.foregroundColor = linkColor
         result.append(terms)
         result.append(AttributedString("."))
         return result
@@ -45,8 +46,8 @@ public struct TermsOfServiceView: View {
 
     public var body: some View {
         let textView = Text(composed)
-            .font(font)
-            .foregroundStyle(textColor)
+            .font(theme.fonts.caption)
+            .foregroundStyle(theme.colors.textSecondary)
             .multilineTextAlignment(alignment == .leading ? .leading : alignment == .trailing ? .trailing : .center)
 
         Group {
@@ -55,12 +56,12 @@ public struct TermsOfServiceView: View {
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: alignment)
                     .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(FrameColors.surfaceColor)
+                        RoundedRectangle(cornerRadius: theme.radii.medium, style: .continuous)
+                            .fill(theme.colors.surface)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: theme.radii.medium, style: .continuous)
+                            .stroke(theme.colors.surfaceStroke, lineWidth: 1)
                     )
             } else {
                 textView

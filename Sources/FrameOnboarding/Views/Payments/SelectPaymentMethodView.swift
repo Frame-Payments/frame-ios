@@ -15,8 +15,9 @@ struct SelectPaymentMethodView: View {
         case verifyPayment
     }
     
+    @Environment(\.frameTheme) private var theme
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
-    
+
     @State private var canCustomerContinue: Bool = false
     @State private var currentPaymentStep: ConfirmPaymentMethodSteps = .selectPayment
     @State private var showAddPaymentMethod: Bool = false
@@ -101,7 +102,7 @@ struct SelectPaymentMethodView: View {
             }
             Text("Choose a saved payment method or add a new one to continue")
                 .fontWeight(.light)
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
                 .padding(.horizontal)
             ScrollView {
                 if !onboardingContainerViewModel.paymentMethods.isEmpty {
@@ -120,13 +121,13 @@ struct SelectPaymentMethodView: View {
         HStack {
             Text(name)
                 .bold()
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
                 .padding(.horizontal)
                 .padding(.vertical, 8.0)
             Spacer()
         }
     }
-    
+
     var addPaymentMethodRow: some View {
         HStack {
             Image("emptycard", bundle: FrameResources.module)
@@ -136,7 +137,7 @@ struct SelectPaymentMethodView: View {
                 .padding(.horizontal)
             Text("Debit/Credit Card")
                 .bold()
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
             Spacer()
             Image("right-chevron", bundle: FrameResources.module)
                 .padding()
@@ -144,15 +145,15 @@ struct SelectPaymentMethodView: View {
         .frame(maxWidth: .infinity, minHeight: 64.0)
         .contentShape(Rectangle())
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
         )
         .padding(.horizontal)
         .onTapGesture {
             self.showAddPaymentMethod = true
         }
     }
-    
+
     func paymentMethodView(paymentMethod: FrameObjects.PaymentMethod) -> some View {
         HStack {
             Image(paymentMethod.card?.brand ?? "", bundle: FrameResources.module)
@@ -163,10 +164,10 @@ struct SelectPaymentMethodView: View {
             VStack(alignment: .leading) {
                 Text("•••• \(paymentMethod.card?.lastFourDigits ?? "")")
                     .bold()
-                    .font(.system(size: 14.0))
+                    .font(theme.fonts.bodySmall)
                     .padding(.bottom, 1.0)
                 Text("Exp. \(paymentMethod.card?.expirationMonth ?? "")/\(paymentMethod.card?.expirationYear ?? "")")
-                    .font(.system(size: 12.0))
+                    .font(theme.fonts.caption)
             }
             Spacer()
             Image(onboardingContainerViewModel.selectedPaymentMethod == paymentMethod ? "filled-selection" : "empty-selection", bundle: FrameResources.module)
@@ -175,8 +176,8 @@ struct SelectPaymentMethodView: View {
         .frame(maxWidth: .infinity, minHeight: 64.0)
         .contentShape(Rectangle())
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
         )
         .padding(.horizontal)
         .onTapGesture {

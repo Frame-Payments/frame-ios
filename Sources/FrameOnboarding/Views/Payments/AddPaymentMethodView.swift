@@ -11,6 +11,7 @@ import Frame
 
 struct AddPaymentMethodView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.frameTheme) private var theme
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
     @StateObject private var billingVM: BillingAddressViewModel
     @State private var cardError: String?
@@ -47,8 +48,8 @@ struct AddPaymentMethodView: View {
                     PaymentCardDetailView(cardData: $onboardingContainerViewModel.cardData)
                     if let cardError {
                         Text(cardError)
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(theme.fonts.caption)
+                            .foregroundColor(theme.colors.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                     }
@@ -56,8 +57,8 @@ struct AddPaymentMethodView: View {
                 BillingAddressDetailView(viewModel: billingVM)
                 walletButtonError.map {
                     Text($0)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
                 }

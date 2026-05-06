@@ -6,10 +6,12 @@
 import SwiftUI
 
 public struct ValidatedTextField: View {
+    @Environment(\.frameTheme) private var theme
+
     private let prompt: String
     @Binding var text: String
     @Binding var error: String?
-    
+
     private var keyboardType: UIKeyboardType
     private var characterLimit: Int?
     private var compactError: Bool
@@ -39,6 +41,7 @@ public struct ValidatedTextField: View {
             if inlineError {
                 HStack(spacing: errorSpacing) {
                     TextField("", text: $text, prompt: Text(prompt))
+                        .font(theme.fonts.body)
                         .keyboardType(keyboardType)
                         .frame(height: 49.0)
                         .padding(.horizontal)
@@ -50,13 +53,14 @@ public struct ValidatedTextField: View {
                         }
                     if let error, !compactError {
                         Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(theme.fonts.caption)
+                            .foregroundColor(theme.colors.error)
                         Spacer()
                     }
                 }
             } else {
                 TextField("", text: $text, prompt: Text(prompt))
+                    .font(theme.fonts.body)
                     .keyboardType(keyboardType)
                     .frame(height: 49.0)
                     .padding(.horizontal)
@@ -68,8 +72,8 @@ public struct ValidatedTextField: View {
                     }
                 if let error, !compactError {
                     Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
                         .padding(.horizontal)
                         .padding(.bottom, errorSpacing)
                 }

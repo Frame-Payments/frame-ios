@@ -9,11 +9,11 @@ import SwiftUI
 import Frame
 
 public struct BillingAddressDetailView: View {
+    @Environment(\.frameTheme) private var theme
     @ObservedObject var viewModel: BillingAddressViewModel
 
     @State private var headerTitle: String
     @State private var showHeaderText: Bool
-    @State private var headerFont: Font = Font.subheadline
 
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var countryText: String = ""
@@ -41,12 +41,12 @@ public struct BillingAddressDetailView: View {
             if showHeaderText {
                 Text(headerTitle)
                     .bold()
-                    .font(headerFont)
+                    .font(theme.fonts.label)
                     .padding([.horizontal, .top])
             }
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(FrameColors.surfaceColor)
-                .stroke(FrameColors.surfaceStrokeColor)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .fill(theme.colors.surface)
+                .stroke(theme.colors.surfaceStroke)
                 .frame(minHeight: allowsInternational ? 250.0 : 200.0)
                 .overlay {
                     VStack(spacing: 0) {

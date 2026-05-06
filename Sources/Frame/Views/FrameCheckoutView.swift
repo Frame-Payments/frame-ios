@@ -10,6 +10,7 @@ import EvervaultInputs
 
 public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.frameTheme) private var theme
     @StateObject var checkoutViewModel: FrameCheckoutViewModel
 
     @State var useBlackButtons: Bool = true
@@ -81,7 +82,7 @@ public struct FrameCheckoutView: View {
     var topHeaderBar: some View {
         HStack {
             Text("Checkout")
-                .font(.headline)
+                .font(theme.fonts.headline)
                 .padding(.horizontal)
             Spacer()
             Button {
@@ -125,9 +126,9 @@ public struct FrameCheckoutView: View {
     }
 
     func paymentCard(option: FrameObjects.PaymentMethod) -> some View {
-        RoundedRectangle(cornerRadius: 10.0)
-            .fill(FrameColors.surfaceColor)
-            .stroke(checkoutViewModel.selectedCustomerPaymentOption == option ? FrameColors.primaryTextColor : FrameColors.surfaceStrokeColor)
+        RoundedRectangle(cornerRadius: theme.radii.medium)
+            .fill(theme.colors.surface)
+            .stroke(checkoutViewModel.selectedCustomerPaymentOption == option ? theme.colors.textPrimary : theme.colors.surfaceStroke)
             .frame(width: 110.0, height: 55.0)
             .overlay {
                 VStack(alignment: .leading, spacing: 0) {
@@ -141,7 +142,7 @@ public struct FrameCheckoutView: View {
                         Spacer()
                     }
                     Text("\(option.card?.brand ?? "") \(option.card?.lastFourDigits ?? "")")
-                        .font(.subheadline)
+                        .font(theme.fonts.label)
                         .fontWeight(.semibold)
                 }
                 .frame(height: 50.0)
@@ -156,8 +157,8 @@ public struct FrameCheckoutView: View {
     var cardInformation: some View {
         Text("Card Information")
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.headline)
-            .foregroundColor(FrameColors.secondaryTextColor)
+            .font(theme.fonts.headline)
+            .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
         // Evervault Card Input
         PaymentCardInput(cardData: $checkoutViewModel.cardData)
@@ -167,8 +168,8 @@ public struct FrameCheckoutView: View {
             }
         if let cardError = checkoutViewModel.fieldErrors[.card] {
             Text(cardError)
-                .font(.caption)
-                .foregroundColor(.red)
+                .font(theme.fonts.caption)
+                .foregroundColor(theme.colors.error)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
         }
@@ -178,8 +179,8 @@ public struct FrameCheckoutView: View {
     var customerInformation: some View {
         Text("Customer Information")
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.headline)
-            .foregroundColor(FrameColors.secondaryTextColor)
+            .font(theme.fonts.headline)
+            .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
         VStack(spacing: 0) {
             ValidatedTextField(prompt: "Customer Name",
@@ -192,9 +193,9 @@ public struct FrameCheckoutView: View {
                                keyboardType: .emailAddress)
         }
         .background(
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(FrameColors.surfaceColor)
-                .stroke(FrameColors.surfaceStrokeColor)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .fill(theme.colors.surface)
+                .stroke(theme.colors.surfaceStroke)
         )
         .padding(.horizontal)
     }
@@ -203,8 +204,8 @@ public struct FrameCheckoutView: View {
     var regionInformation: some View {
         Text("Customer Address")
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.headline)
-            .foregroundColor(FrameColors.secondaryTextColor)
+            .font(theme.fonts.headline)
+            .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
         VStack(spacing: 0) {
             ValidatedTextField(prompt: "Address Line 1",
@@ -231,8 +232,8 @@ public struct FrameCheckoutView: View {
                 } label: {
                     Text(checkoutViewModel.customerCountry.displayName)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .font(.headline)
-                        .foregroundColor(FrameColors.primaryTextColor)
+                        .font(theme.fonts.headline)
+                        .foregroundColor(theme.colors.textPrimary)
                         .padding(.horizontal)
                 }
 
@@ -253,9 +254,9 @@ public struct FrameCheckoutView: View {
                                characterLimit: 5)
         }
         .background(
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(FrameColors.surfaceColor)
-                .stroke(FrameColors.surfaceStrokeColor)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .fill(theme.colors.surface)
+                .stroke(theme.colors.surfaceStroke)
         )
         .padding(.horizontal)
     }
@@ -264,8 +265,8 @@ public struct FrameCheckoutView: View {
         HStack(spacing: 0) {
             Toggle(isOn: $saveCardForPayments) {
                 Text("Save this card for future payments")
-                    .font(.headline)
-                    .foregroundColor(FrameColors.secondaryTextColor)
+                    .font(theme.fonts.headline)
+                    .foregroundColor(theme.colors.textSecondary)
             }
             .toggleStyle(iOSCheckboxToggleStyle())
             Spacer()
@@ -275,7 +276,6 @@ public struct FrameCheckoutView: View {
 
     var checkoutButton: some View {
         ContinueButton(
-            buttonColor: FrameColors.mainButtonColor,
             buttonText: "Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))",
             enabled: .constant(checkoutViewModel.hasUsablePaymentInput),
             isLoading: .constant(checkoutViewModel.isPerformingAction)

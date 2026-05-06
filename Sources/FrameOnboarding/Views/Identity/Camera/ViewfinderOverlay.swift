@@ -31,11 +31,11 @@ struct ViewfinderOverlay: View {
                 // Optional: border around the oval
                 Ellipse()
                     .path(in: holeRect)
-                    .stroke(FrameColors.cameraStrokeColor, lineWidth: strokeWidth)
+                    .stroke(CameraColors.stroke, lineWidth: strokeWidth)
                 
                 // Optional: corner markers (looks like a scanner)
                 CornerMarkers(rect: holeRect, cornerRadius: 200.0)
-                    .stroke(FrameColors.cameraStrokeColor, lineWidth: strokeWidth)
+                    .stroke(CameraColors.stroke, lineWidth: strokeWidth)
             }
         }
         .allowsHitTesting(false)

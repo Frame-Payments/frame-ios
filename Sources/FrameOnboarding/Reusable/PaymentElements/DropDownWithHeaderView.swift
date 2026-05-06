@@ -9,25 +9,27 @@ import SwiftUI
 import Frame
 
 public struct DropDownWithHeaderView: View {
+    @Environment(\.frameTheme) private var theme
+
     @Binding public var headerText: String
     @Binding public var dropDownText: String
     @Binding public var showDropdownPicker: Bool
-    
+
     @State public var showHeaderText: Bool = true
     @State public var showDropdownBorder: Bool = true
-    
+
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {
                 Text(headerText)
                     .bold()
-                    .font(.subheadline)
+                    .font(theme.fonts.label)
                     .padding([.horizontal, .top])
             }
             HStack {
                 Text(dropDownText)
                     .fontWeight(.medium)
-                    .font(.system(size: 15.0))
+                    .font(theme.fonts.label)
                     .padding(showDropdownBorder ? .all : .vertical)
                 Spacer()
                 Image("down-chevron", bundle: FrameResources.module)
@@ -36,8 +38,8 @@ public struct DropDownWithHeaderView: View {
             .frame(maxWidth: .infinity, minHeight: 42.0)
             .contentShape(Rectangle())
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(FrameColors.surfaceStrokeColor, lineWidth: showDropdownBorder ? 1 : 0)
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .stroke(theme.colors.surfaceStroke, lineWidth: showDropdownBorder ? 1 : 0)
             )
             .padding([.horizontal])
             .onTapGesture {
