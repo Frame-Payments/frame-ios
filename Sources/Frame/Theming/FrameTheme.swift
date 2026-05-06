@@ -22,6 +22,14 @@ public struct FrameTheme: Equatable {
 
     public static let `default` = FrameTheme()
 
+    /// Returns a copy of `self` with the supplied transform applied.
+    /// Use for terse one-off tweaks: `FrameTheme.default.with { $0.colors.primaryButton = .purple }`.
+    public func with(_ transform: (inout FrameTheme) -> Void) -> FrameTheme {
+        var copy = self
+        transform(&copy)
+        return copy
+    }
+
     public struct Colors: Equatable {
         public var primaryButton: Color
         public var primaryButtonText: Color
@@ -42,7 +50,7 @@ public struct FrameTheme: Equatable {
         public init(
             primaryButton: Color = Color("MainButtonColor", bundle: FrameResources.module),
             primaryButtonText: Color = .white,
-            secondaryButton: Color = Color("UnfilledButtonColor", bundle: FrameResources.module),
+            secondaryButton: Color = Color(.systemBackground),
             secondaryButtonText: Color = Color("MainButtonColor", bundle: FrameResources.module),
             disabledButton: Color = Color("UnfilledButtonColor", bundle: FrameResources.module),
             disabledButtonStroke: Color = Color("UnfilledButtonStrokeColor", bundle: FrameResources.module),

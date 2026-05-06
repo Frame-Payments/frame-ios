@@ -265,6 +265,15 @@ struct MyApp: App {
 
 Anything you don't specify falls back to the SDK's default — the asset-catalog-backed palette that already adapts to dark mode.
 
+For terse one-off tweaks, use `with(_:)`:
+
+```swift
+.frameTheme(.default.with {
+    $0.colors.primaryButton = .purple
+    $0.colors.error = .orange
+})
+```
+
 ### Tokens
 
 `FrameTheme.Colors`:
@@ -316,9 +325,16 @@ let adaptiveBrand = Color(uiColor: .init { trait in
 .frameTheme(FrameTheme(colors: .init(primaryButton: adaptiveBrand)))
 ```
 
-### `FrameColors`
+### Reading the default palette
 
-`FrameColors` (e.g. `FrameColors.mainButtonColor`) is still public and now returns the **default** theme's values. Use it when you want the SDK's stock palette in your own UI; for live theming inside your views, read `@Environment(\.frameTheme)` instead.
+Need the SDK's stock colors or fonts in your own UI (outside Frame components)? Read them off `FrameTheme.default`:
+
+```swift
+.background(FrameTheme.default.colors.primaryButton)
+.foregroundColor(FrameTheme.default.colors.primaryButtonText)
+```
+
+For live theming inside your own SwiftUI views, read `@Environment(\.frameTheme)` so consumer overrides flow through.
 
 ---
 

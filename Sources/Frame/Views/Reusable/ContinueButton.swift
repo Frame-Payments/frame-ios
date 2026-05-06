@@ -7,7 +7,7 @@
 //  from `enabled`. Both default to permissive values so most callers can omit them.
 //
 //  Colors and corner radius come from the injected FrameTheme. Pick `.secondary`
-//  for inverse-styled buttons (e.g. neutral background, brand-colored text).
+//  for an outlined, brand-colored button (e.g. inverse of the primary).
 //
 
 import SwiftUI
@@ -20,8 +20,8 @@ public struct ContinueButton: View {
 
     @Environment(\.frameTheme) private var theme
 
-    @State public var buttonText: String = "Continue"
-    @State public var style: Style = .primary
+    public let buttonText: String
+    public let style: Style
 
     @Binding public var enabled: Bool
     @Binding public var isLoading: Bool
@@ -33,8 +33,8 @@ public struct ContinueButton: View {
                 enabled: Binding<Bool> = .constant(true),
                 isLoading: Binding<Bool> = .constant(false),
                 buttonAction: @escaping () -> ()) {
-        self._buttonText = State(initialValue: buttonText)
-        self._style = State(initialValue: style)
+        self.buttonText = buttonText
+        self.style = style
         self._enabled = enabled
         self._isLoading = isLoading
         self.buttonAction = buttonAction
@@ -65,6 +65,9 @@ public struct ContinueButton: View {
                     if !enabled && !isLoading {
                         RoundedRectangle(cornerRadius: theme.radii.medium)
                             .stroke(theme.colors.disabledButtonStroke, lineWidth: 1.0)
+                    } else if enabled && style == .secondary {
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .stroke(theme.colors.secondaryButtonText, lineWidth: 1.0)
                     }
                     if isLoading {
                         ProgressView()
