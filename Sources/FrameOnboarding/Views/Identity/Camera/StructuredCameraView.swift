@@ -35,7 +35,7 @@ struct StructuredCameraView: View {
                        p.addRect(CGRect(origin: .zero, size: geo.size))
                        p.addEllipse(in: holeRect)
                    }
-                   .fill(FrameColors.cameraOverlayColor, style: FillStyle(eoFill: true))
+                   .fill(CameraColors.overlay, style: FillStyle(eoFill: true))
                    .compositingGroup()
 
                    Ellipse()
@@ -58,7 +58,7 @@ struct StructuredCameraView: View {
                 }.ignoresSafeArea()
             } else {
                 VStack(spacing: 0) {
-                    Rectangle().fill(FrameColors.cameraOverlayColor)
+                    Rectangle().fill(CameraColors.overlay)
                         .frame(height: 180.0)
                         .overlay {
                             VStack {
@@ -74,15 +74,15 @@ struct StructuredCameraView: View {
                             .padding(.bottom, 30.0)
                         }
                     HStack(spacing: 0) {
-                        Rectangle().fill(FrameColors.cameraOverlayColor)
+                        Rectangle().fill(CameraColors.overlay)
                             .frame(width: 20.0)
                         Rectangle().fill(.clear)
                             .border(Color.green, width: 3.0)
-                        Rectangle().fill(FrameColors.cameraOverlayColor)
+                        Rectangle().fill(CameraColors.overlay)
                             .frame(width: 20.0)
                     }
                     .frame(height: 220.0)
-                    Rectangle().fill(FrameColors.cameraOverlayColor)
+                    Rectangle().fill(CameraColors.overlay)
                         .frame(maxHeight: .infinity)
                         .overlay {
                             VStack {
