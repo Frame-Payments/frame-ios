@@ -10,11 +10,19 @@ import Frame
 
 struct StructuredCameraView: View {
     @Environment(\.dismiss) var dismiss
-    
+    @Environment(\.frameTheme) private var theme
+
     @StateObject private var cameraService = CameraService()
     @Binding var cameraImage: UIImage?
     @State var photoType: FileUpload.FieldName
-    
+
+    /// The camera sits on a fixed-black overlay regardless of system appearance,
+    /// so we scope a theme override that forces text/icon foregrounds to white.
+    /// Inherits all other tokens from the consumer-injected theme.
+    private var cameraTheme: FrameTheme {
+        theme.with { $0.colors.textPrimary = .white }
+    }
+
     var body: some View {
         ZStack {
             if cameraService.captureSession != nil {
@@ -111,6 +119,7 @@ struct StructuredCameraView: View {
             }
         })
         .ignoresSafeArea()
+        .frameTheme(cameraTheme)
     }
 }
 
