@@ -75,8 +75,8 @@ struct StructuredCameraView: View {
                                     self.dismiss()
                                 }
                                 Text("Place the back of your ID in the frame and snap a photo. Make sure your ID is clear and legible.")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 14.0))
+                                    .foregroundColor(cameraTheme.colors.textPrimary)
+                                    .font(cameraTheme.fonts.bodySmall)
                                     .padding(.horizontal, 10.0)
                             }
                             .padding(.bottom, 30.0)

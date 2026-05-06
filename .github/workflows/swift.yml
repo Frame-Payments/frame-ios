@@ -17,18 +17,18 @@ jobs:
       - name: Dark-mode lint (block hardcoded color literals)
         run: |
           set -e
-          # Allow-list (intentional non-adapting cases routed through tokens
-          # in FrameColors so the lint can match by name, not line number):
-          #   cameraOverlayColor / cameraStrokeColor — camera UX convention
-          #   brandButtonTextColor — white text on brand-fill button
-          # Plus three site-specific exceptions:
-          #   StructuredCameraView.swift line 70 — white text on intentionally-dark camera mask
+          # Allow-list (intentional non-adapting cases):
+          #   CameraColors.swift — camera UX convention (always black mask, white stroke)
           #   ViewfinderOverlay.swift — parameter-driven black overlay (camera UX)
+          #   onboardingProgressFilledOnBrand / onboardingProgressEmptyOnBrand —
+          #     white-on-brand progress dots (defined in FrameTheme)
+          #   primaryButtonText — white text on brand-fill button (default token value)
+          # Plus one site-specific exception:
           #   FramePaymentButton.swift line 34 — Apple/Google Pay HIG brand toggle
           MATCHES=$(
             grep -RnE "\.fill\(\.(white|black)\)|\.fill\(Color\.(white|black)\)|\.foregroundColor\(\.(white|black)\)|\.foregroundColor\(Color\.(white|black)\)|\.foregroundStyle\(\.(white|black)\)|\.background\(\.(white|black)\)|\.background\(Color\.(white|black)\)|\.stroke\(\.(white|black)\)|\.stroke\(Color\.(white|black)\)|Color\.(white|black)[^a-zA-Z]|\.gray\.opacity\(|Color\.gray\.opacity\(" \
               Sources/Frame/Views Sources/FrameOnboarding FrameExample-iOS/FrameExample-iOS --include="*.swift" \
-              | grep -vE "StructuredCameraView\.swift:70|ViewfinderOverlay\.swift|FramePaymentButton\.swift:34|cameraOverlayColor|cameraStrokeColor|brandButtonTextColor|onboardingProgressFilledOnBrand|onboardingProgressEmptyOnBrand" \
+              | grep -vE "CameraColors\.swift|ViewfinderOverlay\.swift|FramePaymentButton\.swift:34|primaryButtonText|onboardingProgressFilledOnBrand|onboardingProgressEmptyOnBrand" \
               || true
           )
           if [ -n "$MATCHES" ]; then
