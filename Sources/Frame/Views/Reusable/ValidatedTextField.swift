@@ -41,6 +41,7 @@ public struct ValidatedTextField: View {
             if inlineError {
                 HStack(spacing: errorSpacing) {
                     TextField("", text: $text, prompt: Text(prompt))
+                        .font(theme.fonts.body)
                         .keyboardType(keyboardType)
                         .frame(height: 49.0)
                         .padding(.horizontal)
@@ -59,6 +60,7 @@ public struct ValidatedTextField: View {
                 }
             } else {
                 TextField("", text: $text, prompt: Text(prompt))
+                    .font(theme.fonts.body)
                     .keyboardType(keyboardType)
                     .frame(height: 49.0)
                     .padding(.horizontal)

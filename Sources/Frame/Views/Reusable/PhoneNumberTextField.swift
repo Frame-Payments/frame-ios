@@ -30,6 +30,7 @@ public struct PhoneNumberTextField: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: compactError ? 0 : 4) {
             TextField("", text: $text, prompt: Text(prompt))
+                .font(theme.fonts.body)
                 .keyboardType(.phonePad)
                 .textContentType(.telephoneNumber)
                 .frame(height: 49.0)
