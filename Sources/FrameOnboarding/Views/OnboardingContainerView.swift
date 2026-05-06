@@ -44,6 +44,7 @@ extension FrameObjects.Capabilities {
 public struct OnboardingContainerView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.frameTheme) private var theme
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
     var onComplete: (() -> Void)?
@@ -154,7 +155,7 @@ public struct OnboardingContainerView: View {
     
     var containerHeader: some View {
         Rectangle()
-            .fill(FrameColors.onboardingHeaderBackground)
+            .fill(theme.colors.onboardingHeaderBackground)
             .overlay {
                 VStack {
                     Spacer()
@@ -176,24 +177,24 @@ public struct OnboardingContainerView: View {
 
     private func progressIndicatorColor(filled: Bool) -> Color {
         switch (colorScheme, filled) {
-        case (.dark, true):  return FrameColors.onboardingProgressFilledOnBrand
-        case (.dark, false): return FrameColors.onboardingProgressEmptyOnBrand
-        case (_, true):      return FrameColors.mainButtonColor
-        case (_, false):     return FrameColors.surfaceStrokeColor
+        case (.dark, true):  return theme.colors.onboardingProgressFilledOnBrand
+        case (.dark, false): return theme.colors.onboardingProgressEmptyOnBrand
+        case (_, true):      return theme.colors.primaryButton
+        case (_, false):     return theme.colors.surfaceStroke
         }
     }
-    
+
     var onboardingIntro: some View {
         VStack(spacing: 15.0) {
             Spacer()
             Image("shield-icon", bundle: FrameResources.module)
             Text("Verify Your Identity")
-                .font(.system(size: 18.0))
+                .font(theme.fonts.heading)
                 .fontWeight(.semibold)
             Text("We’re required by law to verify your identity. This takes about 2 minutes and you’ll need a Government ID and a selfie.")
                 .multilineTextAlignment(.center)
-                .font(.system(size: 14.0))
-                .foregroundColor(FrameColors.secondaryTextColor)
+                .font(theme.fonts.bodySmall)
+                .foregroundColor(theme.colors.textSecondary)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: $accountLoaded) {

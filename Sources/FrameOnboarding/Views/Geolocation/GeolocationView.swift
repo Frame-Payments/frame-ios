@@ -39,6 +39,7 @@ public struct GeolocationView: View {
         }
     }
     
+    @Environment(\.frameTheme) private var theme
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     @Binding var continueToNextStep: Bool
     @State var geolocationState: GeolocationState = .checking
@@ -68,17 +69,17 @@ public struct GeolocationView: View {
             }
             Image(geolocationState.stateImage, bundle: FrameResources.module)
             Text(geolocationState.stateTitle)
-                .font(.headline)
+                .font(theme.fonts.headline)
             Text("This will only take a moment..")
-                .font(.caption)
-                .foregroundColor(FrameColors.secondaryTextColor)
+                .font(theme.fonts.caption)
+                .foregroundColor(theme.colors.textSecondary)
             if geolocationState == .vpn {
                 Spacer()
                 ContinueButton(buttonText: "Continue Anyway") {
                     self.continueToNextStep = true
                 }
                 .padding(.bottom, -25.0)
-                ContinueButton(buttonColor: FrameColors.unfilledButtonColor, buttonText: "Disable VPN", buttonTextColor: FrameColors.mainButtonColor) {
+                ContinueButton(buttonText: "Disable VPN", style: .secondary) {
                     self.continueToNextStep = true
                 }
             }

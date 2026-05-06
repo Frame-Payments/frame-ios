@@ -6,10 +6,12 @@
 import SwiftUI
 
 public struct ValidatedTextField: View {
+    @Environment(\.frameTheme) private var theme
+
     private let prompt: String
     @Binding var text: String
     @Binding var error: String?
-    
+
     private var keyboardType: UIKeyboardType
     private var characterLimit: Int?
     private var compactError: Bool
@@ -50,8 +52,8 @@ public struct ValidatedTextField: View {
                         }
                     if let error, !compactError {
                         Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
+                            .font(theme.fonts.caption)
+                            .foregroundColor(theme.colors.error)
                         Spacer()
                     }
                 }
@@ -68,8 +70,8 @@ public struct ValidatedTextField: View {
                     }
                 if let error, !compactError {
                     Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
                         .padding(.horizontal)
                         .padding(.bottom, errorSpacing)
                 }

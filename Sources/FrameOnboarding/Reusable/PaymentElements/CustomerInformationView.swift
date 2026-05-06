@@ -9,6 +9,7 @@ import SwiftUI
 import Frame
 
 public struct CustomerInformationView: View {
+    @Environment(\.frameTheme) private var theme
     @ObservedObject var viewModel: CustomerInformationViewModel
 
     @State private var birthYear: String = ""
@@ -16,7 +17,6 @@ public struct CustomerInformationView: View {
     @State private var birthDay: String = ""
 
     @State private var headerTitle: String
-    @State private var headerFont: Font = Font.subheadline
 
     public init(viewModel: CustomerInformationViewModel,
                 headerTitle: String = "Customer Information") {
@@ -28,11 +28,11 @@ public struct CustomerInformationView: View {
         VStack(alignment: .leading) {
             Text(headerTitle)
                 .bold()
-                .font(headerFont)
+                .font(theme.fonts.label)
                 .padding([.horizontal, .top])
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(FrameColors.surfaceColor)
-                .stroke(FrameColors.surfaceStrokeColor)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .fill(theme.colors.surface)
+                .stroke(theme.colors.surfaceStroke)
                 .frame(height: 150.0)
                 .overlay {
                     VStack(spacing: 0) {
@@ -104,18 +104,18 @@ public struct CustomerInformationView: View {
         HStack {
             Text("Birthday")
                 .bold()
-                .font(headerFont)
+                .font(theme.fonts.label)
             Spacer()
             if let dobError = viewModel.firstDateOfBirthError {
                 Text(dobError)
-                    .font(.caption)
-                    .foregroundColor(.red)
+                    .font(theme.fonts.caption)
+                    .foregroundColor(theme.colors.error)
             }
         }
         .padding([.horizontal, .top])
-        RoundedRectangle(cornerRadius: 10.0)
-            .fill(FrameColors.surfaceColor)
-            .stroke(FrameColors.surfaceStrokeColor)
+        RoundedRectangle(cornerRadius: theme.radii.medium)
+            .fill(theme.colors.surface)
+            .stroke(theme.colors.surfaceStroke)
             .frame(height: 50.0)
             .overlay {
                 HStack {
@@ -148,23 +148,23 @@ public struct CustomerInformationView: View {
     var socialSecurityView: some View {
         Text("Social Security Number")
             .bold()
-            .font(headerFont)
+            .font(theme.fonts.label)
             .padding([.horizontal, .top])
-        RoundedRectangle(cornerRadius: 10.0)
-            .fill(FrameColors.surfaceColor)
-            .stroke(FrameColors.surfaceStrokeColor)
+        RoundedRectangle(cornerRadius: theme.radii.medium)
+            .fill(theme.colors.surface)
+            .stroke(theme.colors.surfaceStroke)
             .frame(height: 50.0)
             .overlay {
                 HStack(spacing: 0) {
-                    RoundedRectangle(cornerRadius: 10.0)
-                        .fill(FrameColors.surfaceStrokeColor)
-                        .stroke(FrameColors.surfaceStrokeColor)
+                    RoundedRectangle(cornerRadius: theme.radii.medium)
+                        .fill(theme.colors.surfaceStroke)
+                        .stroke(theme.colors.surfaceStroke)
                         .frame(width: 120.0, height: 50.0)
                         .overlay {
                             Text("Last 4 Digits")
                                 .font(.footnote)
                                 .bold()
-                                .foregroundColor(FrameColors.primaryTextColor)
+                                .foregroundColor(theme.colors.textPrimary)
                         }
                     ValidatedTextField(prompt: "SSN",
                                        text: $viewModel.identity.ssn,

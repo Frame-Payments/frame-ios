@@ -7,6 +7,8 @@ import SwiftUI
 import PhoneNumberKit
 
 public struct PhoneNumberTextField: View {
+    @Environment(\.frameTheme) private var theme
+
     let prompt: String
     @Binding var text: String
     @Binding var error: String?
@@ -41,8 +43,8 @@ public struct PhoneNumberTextField: View {
                 }
             if let error, !compactError {
                 Text(error)
-                    .font(.caption)
-                    .foregroundColor(.red)
+                    .font(theme.fonts.caption)
+                    .foregroundColor(theme.colors.error)
                     .padding(.horizontal)
                     .padding(.bottom, 4)
             }

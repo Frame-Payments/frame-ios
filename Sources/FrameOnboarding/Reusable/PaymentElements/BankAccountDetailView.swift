@@ -9,9 +9,9 @@ import SwiftUI
 import Frame
 
 public struct BankAccountDetailView: View {
+    @Environment(\.frameTheme) private var theme
     @ObservedObject var viewModel: BankAccountViewModel
 
-    @State private var headerFont: Font = Font.subheadline
     @State private var showHeaderText: Bool
 
     public init(viewModel: BankAccountViewModel,
@@ -25,12 +25,12 @@ public struct BankAccountDetailView: View {
             if showHeaderText {
                 Text("Bank Account Details")
                     .bold()
-                    .font(headerFont)
+                    .font(theme.fonts.label)
                     .padding([.horizontal, .top])
             }
-            RoundedRectangle(cornerRadius: 10.0)
-                .fill(FrameColors.surfaceColor)
-                .stroke(FrameColors.surfaceStrokeColor)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .fill(theme.colors.surface)
+                .stroke(theme.colors.surfaceStroke)
                 .frame(height: 100.0)
                 .overlay {
                     VStack(spacing: 0) {

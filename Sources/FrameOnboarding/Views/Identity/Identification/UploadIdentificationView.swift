@@ -27,6 +27,7 @@ enum UploadDocSide: String {
 }
 
 struct UploadIdentificationView: View {
+    @Environment(\.frameTheme) private var theme
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
     
     @State private var showUploadInputs = false
@@ -64,12 +65,12 @@ struct UploadIdentificationView: View {
             Spacer()
             Image("upload-icon", bundle: FrameResources.module)
             Text("Upload a photo of your ID")
-                .font(.system(size: 18.0))
+                .font(theme.fonts.heading)
                 .fontWeight(.semibold)
             Text("We’ll ask you to take photos of both the front and back to confirm your information.")
                 .multilineTextAlignment(.center)
-                .font(.system(size: 14.0))
-                .foregroundColor(FrameColors.secondaryTextColor)
+                .font(theme.fonts.bodySmall)
+                .foregroundColor(theme.colors.textSecondary)
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton {
@@ -86,8 +87,8 @@ struct UploadIdentificationView: View {
             }
             Text("Take photos of the front and back of your government ID.")
                 .multilineTextAlignment(.center)
-                .font(.system(size: 14.0))
-                .foregroundColor(FrameColors.secondaryTextColor)
+                .font(theme.fonts.bodySmall)
+                .foregroundColor(theme.colors.textSecondary)
                 .padding(.horizontal, 15.0)
                 .padding(.bottom, 8.0)
             ScrollView {
@@ -123,13 +124,13 @@ struct UploadIdentificationView: View {
         HStack {
             Text(name)
                 .bold()
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
                 .padding(.horizontal)
                 .padding(.vertical, 8.0)
             Spacer()
         }
     }
-    
+
     func identificationMethodView(docSide: UploadDocSide) -> some View {
         HStack {
             Image(onboardingContainerViewModel.filesToUpload.contains(where: { $0.fieldName == docSide.fieldName }) ? "filled-identification-card" : "identification-card", bundle: FrameResources.module)
@@ -139,7 +140,7 @@ struct UploadIdentificationView: View {
                 .padding(.horizontal)
             Text(docSide.rawValue)
                 .bold()
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
                 .padding(.bottom, 1.0)
             Spacer()
             Image("right-chevron", bundle: FrameResources.module)
@@ -148,8 +149,8 @@ struct UploadIdentificationView: View {
         .frame(maxWidth: .infinity, minHeight: 64.0)
         .contentShape(Rectangle())
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
         )
         .padding(.horizontal)
         .onTapGesture {

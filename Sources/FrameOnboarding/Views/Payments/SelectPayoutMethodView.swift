@@ -10,8 +10,9 @@ import EvervaultInputs
 import Frame
 
 struct SelectPayoutMethodView: View {
+    @Environment(\.frameTheme) private var theme
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
-    
+
     @State private var canCustomerContinue: Bool = false
     @State private var showAddPayoutMethod: Bool = false
     
@@ -51,7 +52,7 @@ struct SelectPayoutMethodView: View {
             }
             Text("Choose a saved payout method or add a new one to continue")
                 .fontWeight(.light)
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
                 .padding(.horizontal)
             ScrollView {
                 if !onboardingContainerViewModel.payoutMethods.isEmpty {
@@ -70,13 +71,13 @@ struct SelectPayoutMethodView: View {
         HStack {
             Text(name)
                 .bold()
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
                 .padding(.horizontal)
                 .padding(.vertical, 8.0)
             Spacer()
         }
     }
-    
+
     var addPayoutMethodRow: some View {
         HStack {
             Image("emptycard", bundle: FrameResources.module)
@@ -86,7 +87,7 @@ struct SelectPayoutMethodView: View {
                 .padding(.horizontal)
             Text("Bank Account (ACH)")
                 .bold()
-                .font(.system(size: 14.0))
+                .font(theme.fonts.bodySmall)
             Spacer()
             Image("right-chevron", bundle: FrameResources.module)
                 .padding()
@@ -94,15 +95,15 @@ struct SelectPayoutMethodView: View {
         .frame(maxWidth: .infinity, minHeight: 64.0)
         .contentShape(Rectangle())
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
         )
         .padding(.horizontal)
         .onTapGesture {
             self.showAddPayoutMethod = true
         }
     }
-    
+
     func payoutMethodView(payoutMethod: FrameObjects.PaymentMethod) -> some View {
         HStack {
             Image("bank-icon", bundle: FrameResources.module)
@@ -113,10 +114,10 @@ struct SelectPayoutMethodView: View {
             VStack(alignment: .leading) {
                 Text("•••• \(payoutMethod.ach?.lastFour ?? "")")
                     .bold()
-                    .font(.system(size: 14.0))
+                    .font(theme.fonts.bodySmall)
                     .padding(.bottom, 1.0)
                 Text((payoutMethod.ach?.accountType?.rawValue.capitalized ?? "") + " Account")
-                    .font(.system(size: 12.0))
+                    .font(theme.fonts.caption)
             }
             Spacer()
             Image(onboardingContainerViewModel.selectedPayoutMethod == payoutMethod ? "filled-selection" : "empty-selection", bundle: FrameResources.module)
@@ -125,8 +126,8 @@ struct SelectPayoutMethodView: View {
         .frame(maxWidth: .infinity, minHeight: 64.0)
         .contentShape(Rectangle())
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(FrameColors.surfaceStrokeColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
         )
         .padding(.horizontal)
         .onTapGesture {
