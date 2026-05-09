@@ -17,7 +17,7 @@ extension FrameObjects {
         case pending, active, restricted, disabled
     }
     
-    public struct AccountTermsOfService: Codable {
+    public struct AccountTermsOfService: Codable, Equatable {
         public var token: String?
         public var ipAddress: String?
         public var acceptedAt: String?
@@ -191,6 +191,7 @@ extension FrameObjects {
         public let accountStatus: AccountStatus
         public let externalId: String?
         public let metadata: [String: String]?
+        public var termsOfService: AccountTermsOfService?
         public let profile: AccountProfile?
         public let capabilities: [Capability]?
         public let steps: [AccountStep]?
@@ -205,6 +206,7 @@ extension FrameObjects {
             accountStatus: AccountStatus,
             externalId: String? = nil,
             metadata: [String: String]? = nil,
+            termsOfService: AccountTermsOfService? = nil,
             profile: AccountProfile? = nil,
             capabilities: [Capability]? = nil,
             steps: [AccountStep]? = nil,
@@ -218,6 +220,7 @@ extension FrameObjects {
             self.accountStatus = accountStatus
             self.externalId = externalId
             self.metadata = metadata
+            self.termsOfService = termsOfService
             self.profile = profile
             self.capabilities = capabilities
             self.steps = steps
@@ -231,6 +234,7 @@ extension FrameObjects {
             case accountType = "type"
             case accountStatus = "status"
             case externalId = "external_id"
+            case termsOfService = "terms_of_service"
         }
     }
     

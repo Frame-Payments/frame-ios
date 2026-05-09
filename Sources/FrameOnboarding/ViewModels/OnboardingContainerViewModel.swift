@@ -77,6 +77,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                    ssn: "", address: FrameObjects.BillingAddress(postalCode: ""))
     
     var accountId: String?
+    var existingAccountHasTOS: Bool = false
     let formatter = ISO8601DateFormatter()
     
     init(accountId: String?,
@@ -103,6 +104,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                  phoneNumber: profile.phone?.number ?? profile.phoneNumber ?? "",
                                                                                                  ssn: profile.ssnLastFour ?? "",
                                                                                                  address: profileAddress)
+            self.existingAccountHasTOS = account?.termsOfService?.acceptedAt != nil
             
             guard updateCapabilies else { return }
             if let capabilities = account?.capabilities {
@@ -206,7 +208,9 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssnLastFour: createdCustomerIdentity.ssn)
-            let request = AccountRequest.UpdateAccountRequest(profile: AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount))
+            let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
+            let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
+            let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
             try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
         } catch let error {
             print(error)

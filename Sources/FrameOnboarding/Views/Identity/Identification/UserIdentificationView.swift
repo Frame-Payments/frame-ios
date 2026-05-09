@@ -146,8 +146,7 @@ struct UserIdentificationView: View {
                 self.returnToPreviousStep.toggle()
             }
             .onAppear {
-                if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) &&
-                    onboardingContainerViewModel.termsOfServiceToken == nil {
+                if onboardingContainerViewModel.termsOfServiceToken == nil {
                     Task {
                         await onboardingContainerViewModel.generateTermsOfServiceToken()
                     }

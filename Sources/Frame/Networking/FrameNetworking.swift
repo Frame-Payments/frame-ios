@@ -30,20 +30,31 @@ public class FrameNetworking: ObservableObject {
 
     var isEvervaultConfigured: Bool = false
 
-    public func initializeWithAPIKey(_ key: String, publishableKey: String, debugMode: Bool = false) {
+    // SDK-wide theme. Read by FrameThemeKey.defaultValue
+    @MainActor
+    public private(set) var globalTheme: FrameTheme = .default
+
+    public func initializeWithAPIKey(_ key: String, publishableKey: String, theme: FrameTheme = .default, debugMode: Bool = false) {
         self.apiSecretKey = key
         self.apiPublishableKey = publishableKey
         self.debugMode = debugMode
-        
+
         // Initializes Sift, Sonar Session, and Device Attestation when the SDK is initialized.
         Task {
             await SiftManager.initializeSift()
             await SessionManager.initializeSession()
             _ = try? await DeviceAttestationManager.shared.attestDevice()
         }
-        
+
         if !isEvervaultConfigured {
             self.configureEvervault()
+        }
+        
+        // Set global theme
+        Task {
+            await MainActor.run {
+                globalTheme = theme
+            }
         }
     }
 
