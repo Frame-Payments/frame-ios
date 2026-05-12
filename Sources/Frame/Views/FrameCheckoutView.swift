@@ -17,27 +17,28 @@ public struct FrameCheckoutView: View {
     @State var saveCardForPayments: Bool = false
     @State private var isShowingPicker = false
 
-    let customerId: String?
+    let accountId: String?
     let paymentAmount: Int
     let merchantId: String
     let addressMode: FrameAddressMode
 
-    var checkoutCallback: (FrameObjects.ChargeIntent) -> ()
+    var checkoutCallback: (_ success: Bool, _ transferId: String?) -> ()
 
-    public init(customerId: String?,
+    public init(accountId: String?,
                 paymentAmount: Int,
-                merchantId: String = "",
+                merchantId: String? = nil,
                 addressMode: FrameAddressMode = .required,
-                checkoutCallback: @escaping (FrameObjects.ChargeIntent) -> ()) {
-        self.customerId = customerId
+                checkoutCallback: @escaping (_ success: Bool, _ transferId: String?) -> ()) {
+        self.accountId = accountId
         self.paymentAmount = paymentAmount
-        self.merchantId = merchantId
+        self.merchantId = merchantId ?? "merchant.com.app"
         self.addressMode = addressMode
         self.checkoutCallback = checkoutCallback
+        
         _checkoutViewModel = StateObject(wrappedValue: FrameCheckoutViewModel(
-            customerId: customerId,
+            accountId: accountId,
             amount: paymentAmount,
-            merchantId: merchantId,
+            merchantId: merchantId ?? "merchant.com.app",
             addressMode: addressMode
         ))
     }
@@ -50,7 +51,7 @@ public struct FrameCheckoutView: View {
                 if !merchantId.isEmpty {
                     applePayButton
                 }
-                if checkoutViewModel.customerPaymentOptions != nil {
+                if checkoutViewModel.accountPaymentOptions != nil {
                     existingPaymentCardScroll
                         .padding([.leading, .bottom])
                 }
@@ -62,12 +63,19 @@ public struct FrameCheckoutView: View {
                     regionInformation
                 }
                 saveCardToggle
+                if let checkoutError = checkoutViewModel.checkoutError {
+                    Text(checkoutError)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                }
                 checkoutButton
                 Spacer()
             }
         }
         .task {
-            await checkoutViewModel.loadCustomerPaymentMethods()
+            await checkoutViewModel.loadAccountDetails()
         }
         .sheet(isPresented: $isShowingPicker) {
             CountryPickerSheet(
@@ -104,11 +112,14 @@ public struct FrameCheckoutView: View {
     @ViewBuilder
     var applePayButton: some View {
         FrameApplePayButton(mode: .charge(amount: paymentAmount, currency: "usd"),
-                            owner: .customer(customerId ?? ""),
+                            owner: .account(accountId ?? ""),
                             merchantId: merchantId,
                             addCheckoutDivider: true) { result in
-            if case .success(.charge(let chargeIntent)) = result {
-                checkoutCallback(chargeIntent)
+            if case .success(.charge(let transferId)) = result {
+                checkoutCallback(true, transferId)
+                dismiss()
+            } else if case .failure(let failure) = result {
+                checkoutCallback(false, nil)
                 dismiss()
             }
         }
@@ -118,7 +129,7 @@ public struct FrameCheckoutView: View {
     var existingPaymentCardScroll: some View {
         ScrollView(.horizontal) {
             HStack {
-                ForEach(checkoutViewModel.customerPaymentOptions ?? []) { option in
+                ForEach(checkoutViewModel.accountPaymentOptions ?? []) { option in
                     paymentCard(option: option)
                 }
             }
@@ -128,7 +139,7 @@ public struct FrameCheckoutView: View {
     func paymentCard(option: FrameObjects.PaymentMethod) -> some View {
         RoundedRectangle(cornerRadius: theme.radii.medium)
             .fill(theme.colors.surface)
-            .stroke(checkoutViewModel.selectedCustomerPaymentOption == option ? theme.colors.textPrimary : theme.colors.surfaceStroke)
+            .stroke(checkoutViewModel.selectedAccountPaymentOption == option ? theme.colors.textPrimary : theme.colors.surfaceStroke)
             .frame(width: 110.0, height: 55.0)
             .overlay {
                 VStack(alignment: .leading, spacing: 0) {
@@ -149,7 +160,7 @@ public struct FrameCheckoutView: View {
                 .padding(.horizontal)
             }
             .onTapGesture {
-                checkoutViewModel.selectedCustomerPaymentOption = option
+                checkoutViewModel.selectedAccountPaymentOption = option
             }
     }
 
@@ -281,11 +292,27 @@ public struct FrameCheckoutView: View {
             isLoading: .constant(checkoutViewModel.isPerformingAction)
         ) {
             Task {
-                let chargeIntent = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
-                if let chargeIntent {
-                    self.checkoutCallback(chargeIntent)
+                checkoutViewModel.checkoutError = nil
+                do {
+                    let transfer = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
+                    if let transfer {
+                        self.checkoutCallback(true, transfer.id)
+                    }
+                } catch {
+                    checkoutViewModel.checkoutError = (error as? NetworkingError).map(describe) ?? error.localizedDescription
                 }
             }
+        }
+    }
+
+    private func describe(_ error: NetworkingError) -> String {
+        switch error {
+        case .noData: return "Server returned no data."
+        case .invalidURL: return "Invalid request URL."
+        case .decodingFailed: return "Could not parse server response."
+        case .serverError(let statusCode, let description):
+            return description.isEmpty ? "Server error (HTTP \(statusCode))." : description
+        case .unknownError: return "Something went wrong. Please try again."
         }
     }
 
@@ -304,10 +331,10 @@ public struct FrameCheckoutView: View {
 }
 
 #Preview {
-    FrameCheckoutView(customerId: "", paymentAmount: 15000) { _ in }
+    FrameCheckoutView(accountId: "", paymentAmount: 15000) { _,_  in }
 }
 
 #Preview("Dark") {
-    FrameCheckoutView(customerId: "", paymentAmount: 15000) { _ in }
+    FrameCheckoutView(accountId: "", paymentAmount: 15000) { _,_  in }
         .preferredColorScheme(.dark)
 }

@@ -79,7 +79,7 @@ public struct FrameApplePayButton: View {
 #Preview {
     FrameApplePayButton(
         mode: .charge(amount: 15000, currency: "usd"),
-        owner: .customer("cus_preview"),
+        owner: .account("acc_preview"),
         merchantId: "merchant.com.yourapp"
     ) { result in
         print(result)
@@ -90,7 +90,7 @@ public struct FrameApplePayButton: View {
 #Preview("Dark") {
     FrameApplePayButton(
         mode: .charge(amount: 15000, currency: "usd"),
-        owner: .customer("cus_preview"),
+        owner: .account("acc_preview"),
         merchantId: "merchant.com.yourapp"
     ) { result in
         print(result)

@@ -30,6 +30,8 @@ struct ContentView: View {
     @State var showOnboardingSheet: Bool = false
     @State var applePayResult: String? = nil
 
+    // Replace with an accountID from your dashboard.
+    var accountId: String = "ENTER_AN_ACCOUNT_ID"
     // Replace with your Apple Pay merchant ID registered in your entitlements
     let applePayMerchantId: String = "merchant.com.yourapp"
     
@@ -47,12 +49,12 @@ struct ContentView: View {
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
                     mode: .charge(amount: 35000, currency: "usd"),
-                    owner: .customer("ENTER_TEST_CUSTOMER_ID"),
+                    owner: .account(accountId),
                     merchantId: applePayMerchantId
                 ) { result in
                     switch result {
-                    case .success(.charge(let chargeIntent)):
-                        applePayResult = "Payment succeeded! ChargeIntent: \(chargeIntent.id)"
+                    case .success(.charge(let chargeId)):
+                        applePayResult = "Payment succeeded! Charge or Transfer Id: \(chargeId)"
                     case .success(.paymentMethod):
                         break
                     case .failure(let error):
@@ -96,7 +98,8 @@ struct ContentView: View {
             OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardSend, .geoCompliance, .bankAccountReceive, .ageVerification], applePayMerchantId: applePayMerchantId)
         })
         .sheet(isPresented: $showCheckoutView) {
-            FrameCartView(customer: nil,
+            FrameCartView(accountId: accountId,
+                          merchantId: applePayMerchantId,
                           cartItems: [ExampleCartItem(id: "1",
                                                       imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
                                                       title: "Vintage Track Jacket",

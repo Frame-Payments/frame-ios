@@ -25,7 +25,7 @@ final class TransfersAPITests: XCTestCase {
                                                  netAmount: 10000,
                                                  billingAgreement: "ba_1",
                                                  livemode: true,
-                                                 created: 0)
+                                                 created: 1700000000)
 
     func testCreateTransfer() async {
         FrameNetworking.shared.asyncURLSession = session
@@ -96,4 +96,31 @@ final class TransfersAPITests: XCTestCase {
             XCTFail("Error should not be thrown")
         }
     }
+
+    /// A 400-class response should propagate as `.serverError` instead of being
+    /// silently dropped — guards against the silent-failure pattern flagged in review.
+    func testCreateTransferReturnsServerError() async {
+        let badSession = MockURLAsyncSession(
+            data: "{\"error\":\"invalid_request\"}".data(using: .utf8),
+            response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/transfers")!,
+                                      statusCode: 400,
+                                      httpVersion: nil,
+                                      headerFields: nil),
+            error: nil)
+        FrameNetworking.shared.asyncURLSession = badSession
+
+        let request = TransferRequests.CreateTransferRequest(amount: 10000, accountId: "acc_123")
+        do {
+            let (transfer, error) = try await TransfersAPI.createTransfer(request: request)
+            XCTAssertNil(transfer)
+            if case .serverError(let statusCode, _) = error {
+                XCTAssertEqual(statusCode, 400)
+            } else {
+                XCTFail("Expected NetworkingError.serverError, got \(String(describing: error))")
+            }
+        } catch {
+            XCTFail("Error should not be thrown: \(error)")
+        }
+    }
+
 }
