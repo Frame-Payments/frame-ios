@@ -15,6 +15,10 @@ class FrameCheckoutViewModel: ObservableObject {
     }
 
     @Published var accountPaymentOptions: [FrameObjects.PaymentMethod]?
+    /// True once `loadAccountPaymentMethods` has returned. The view defers rendering the
+    /// new-card section until this flips, so returning users don't see the Card/Billing
+    /// block flash visible before the auto-selection of their first saved method.
+    @Published var didLoadAccountPaymentMethods: Bool = false
     @Published var customerName: String = ""
     @Published var customerEmail: String = ""
     @Published var customerAddressLine1: String = ""
@@ -57,9 +61,28 @@ class FrameCheckoutViewModel: ObservableObject {
     }
     
     func loadAccountPaymentMethods() async {
-        guard let accountId else { return }
+        guard let accountId else {
+            self.didLoadAccountPaymentMethods = true
+            return
+        }
         let response = try? await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId).0
         self.accountPaymentOptions = response?.data
+
+        if selectedAccountPaymentOption == nil,
+           cardData.card.number.isEmpty,
+           let first = response?.data?.first {
+            self.selectedAccountPaymentOption = first
+        }
+        self.didLoadAccountPaymentMethods = true
+    }
+
+    /// Clear field errors that only apply to the new-card flow. Called when the user
+    /// selects a saved payment method so stale validation messages don't linger
+    /// behind the collapsed Card/Billing sections.
+    func clearNewCardFieldErrors() {
+        for key: CheckoutField in [.card, .addressLine1, .city, .state, .zip, .country] {
+            fieldErrors[key] = nil
+        }
     }
 
     func payWithApplePay(completion: @escaping (Result<String, Error>) -> Void) {
@@ -129,7 +152,7 @@ class FrameCheckoutViewModel: ObservableObject {
                 errors[.card] = err
             }
         }
-        if shouldValidateAddress {
+        if shouldValidateAddress && !forSavedCard {
             if let err = Validators.validateNonEmpty(customerAddressLine1, fieldName: "Address line 1") {
                 errors[.addressLine1] = err
             }

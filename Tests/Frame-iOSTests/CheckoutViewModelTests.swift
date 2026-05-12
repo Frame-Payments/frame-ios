@@ -258,13 +258,112 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertTrue(vm.hasUsablePaymentInput)
     }
 
-    @MainActor func testSavedCardSelected_stillValidatesAddressInRequired() {
+    @MainActor func testSavedCardSelected_skipsAddressValidationEvenInRequired() {
         let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
         vm.customerName = "Tester McTest"
         vm.customerEmail = "tester@example.com"
-        // Address blank — should still error in required mode even on saved-card path.
-        XCTAssertFalse(vm.validateAll(forSavedCard: true))
+        // Saved-card path skips address validation regardless of addressMode, because
+        // the saved PM already carries a billing address server-side and the UI hides
+        // those fields.
+        XCTAssertTrue(vm.validateAll(forSavedCard: true))
+        XCTAssertNil(vm.fieldErrors[.addressLine1])
+        XCTAssertNil(vm.fieldErrors[.zip])
+    }
+
+    @MainActor func testSavedCardSelected_skipsAddressValidationInOptionalWithPartialInput() {
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .optional)
+        vm.customerName = "Tester McTest"
+        vm.customerEmail = "tester@example.com"
+        // Partial address input would normally trip all-or-nothing optional validation —
+        // but the saved-card path skips it entirely.
+        vm.customerCity = "Burbank"
+        XCTAssertTrue(vm.validateAll(forSavedCard: true))
+        XCTAssertNil(vm.fieldErrors[.addressLine1])
+        XCTAssertNil(vm.fieldErrors[.zip])
+    }
+
+    @MainActor func testSwitchingBackToNewCard_reRequiresAddressInRequired() {
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
+        vm.customerName = "Tester McTest"
+        vm.customerEmail = "tester@example.com"
+        // Saved path: passes with no address.
+        XCTAssertTrue(vm.validateAll(forSavedCard: true))
+        // Back to new-card mode: address required.
+        XCTAssertFalse(vm.validateAll(forSavedCard: false))
         XCTAssertNotNil(vm.fieldErrors[.addressLine1])
         XCTAssertNotNil(vm.fieldErrors[.zip])
+    }
+
+    @MainActor func testLoadAccountPaymentMethods_autoSelectsFirstWhenNonEmpty() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        let pm2 = FrameObjects.PaymentMethod(id: "pm_2", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1, pm2])
+        session.data = try? JSONEncoder().encode(response)
+
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
+        await vm.loadAccountPaymentMethods()
+        XCTAssertEqual(vm.selectedAccountPaymentOption?.id, "pm_1")
+    }
+
+    @MainActor func testLoadAccountPaymentMethods_doesNotAutoSelectWhenEmpty() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [])
+        session.data = try? JSONEncoder().encode(response)
+
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
+        await vm.loadAccountPaymentMethods()
+        XCTAssertNil(vm.selectedAccountPaymentOption)
+    }
+
+    @MainActor func testLoadAccountPaymentMethods_respectsExistingSelection() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1])
+        session.data = try? JSONEncoder().encode(response)
+
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
+        let preselected = FrameObjects.PaymentMethod(id: "user_choice", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        vm.selectedAccountPaymentOption = preselected
+        await vm.loadAccountPaymentMethods()
+        XCTAssertEqual(vm.selectedAccountPaymentOption?.id, "user_choice")
+    }
+
+    @MainActor func testLoadAccountPaymentMethods_doesNotAutoSelectWhenUserHasStartedTypingCard() async {
+        FrameNetworking.shared.asyncURLSession = session
+        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1])
+        session.data = try? JSONEncoder().encode(response)
+
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
+        var typed = PaymentCardData()
+        typed.card.number = "4242"
+        vm.cardData = typed
+        await vm.loadAccountPaymentMethods()
+        // Late-arriving response must not yank input out from under a user mid-type.
+        XCTAssertNil(vm.selectedAccountPaymentOption)
+    }
+
+    @MainActor func testClearNewCardFieldErrors_clearsOnlyNewCardKeys() {
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
+        vm.fieldErrors = [
+            .name: "name err",
+            .email: "email err",
+            .card: "card err",
+            .addressLine1: "addr err",
+            .city: "city err",
+            .state: "state err",
+            .zip: "zip err",
+            .country: "country err"
+        ]
+        vm.clearNewCardFieldErrors()
+        XCTAssertEqual(vm.fieldErrors[.name], "name err")
+        XCTAssertEqual(vm.fieldErrors[.email], "email err")
+        XCTAssertNil(vm.fieldErrors[.card])
+        XCTAssertNil(vm.fieldErrors[.addressLine1])
+        XCTAssertNil(vm.fieldErrors[.city])
+        XCTAssertNil(vm.fieldErrors[.state])
+        XCTAssertNil(vm.fieldErrors[.zip])
+        XCTAssertNil(vm.fieldErrors[.country])
     }
 }

@@ -34,7 +34,7 @@ public struct FrameCheckoutView: View {
         self.merchantId = merchantId ?? "merchant.com.app"
         self.addressMode = addressMode
         self.checkoutCallback = checkoutCallback
-        
+
         _checkoutViewModel = StateObject(wrappedValue: FrameCheckoutViewModel(
             accountId: accountId,
             amount: paymentAmount,
@@ -51,18 +51,20 @@ public struct FrameCheckoutView: View {
                 if !merchantId.isEmpty {
                     applePayButton
                 }
-                if checkoutViewModel.accountPaymentOptions != nil {
-                    existingPaymentCardScroll
-                        .padding([.leading, .bottom])
-                }
+                paymentMethodList
+                    .padding(.top)
+                    .padding(.bottom)
                 customerInformation
                     .padding(.bottom)
-                cardInformation
-                    .padding(.bottom)
-                if addressMode != .hidden {
-                    regionInformation
+                if checkoutViewModel.didLoadAccountPaymentMethods,
+                   checkoutViewModel.selectedAccountPaymentOption == nil {
+                    cardInformation
+                        .padding(.bottom)
+                    if addressMode != .hidden {
+                        regionInformation
+                    }
+                    saveCardToggle
                 }
-                saveCardToggle
                 if let checkoutError = checkoutViewModel.checkoutError {
                     Text(checkoutError)
                         .font(theme.fonts.caption)
@@ -126,42 +128,81 @@ public struct FrameCheckoutView: View {
         .padding(.horizontal)
     }
 
-    var existingPaymentCardScroll: some View {
-        ScrollView(.horizontal) {
-            HStack {
-                ForEach(checkoutViewModel.accountPaymentOptions ?? []) { option in
-                    paymentCard(option: option)
-                }
+    @ViewBuilder
+    var paymentMethodList: some View {
+        VStack(spacing: 8) {
+            ForEach(checkoutViewModel.accountPaymentOptions ?? []) { option in
+                savedPaymentRow(option: option)
             }
+            enterNewPaymentRow
+        }
+        .padding(.horizontal)
+    }
+
+    func savedPaymentRow(option: FrameObjects.PaymentMethod) -> some View {
+        let isSelected = checkoutViewModel.selectedAccountPaymentOption == option
+        let isACH = option.type == .ach
+        let iconName = isACH ? "bank-icon" : (option.card?.brand ?? "emptycard")
+        let primaryText = isACH
+            ? "•••• \(option.ach?.lastFour ?? "")"
+            : "•••• \(option.card?.lastFourDigits ?? "")"
+        let secondaryText = isACH
+            ? "\((option.ach?.accountType?.rawValue ?? "").capitalized) Account"
+            : "Exp. \(option.card?.expirationMonth ?? "")/\(option.card?.expirationYear ?? "")"
+        return HStack {
+            Image(iconName, bundle: Bundle.module)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 48.0, height: 32.0)
+                .padding(.horizontal)
+            VStack(alignment: .leading) {
+                Text(primaryText)
+                    .bold()
+                    .font(theme.fonts.bodySmall)
+                    .padding(.bottom, 1.0)
+                Text(secondaryText)
+                    .font(theme.fonts.caption)
+            }
+            Spacer()
+            Image(isSelected ? "filled-selection" : "empty-selection", bundle: Bundle.module)
+                .padding()
+        }
+        .frame(maxWidth: .infinity, minHeight: 64.0)
+        .contentShape(Rectangle())
+        .overlay(
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(isSelected ? theme.colors.textPrimary : theme.colors.surfaceStroke, lineWidth: 1)
+        )
+        .onTapGesture {
+            checkoutViewModel.selectedAccountPaymentOption = option
+            checkoutViewModel.clearNewCardFieldErrors()
         }
     }
 
-    func paymentCard(option: FrameObjects.PaymentMethod) -> some View {
-        RoundedRectangle(cornerRadius: theme.radii.medium)
-            .fill(theme.colors.surface)
-            .stroke(checkoutViewModel.selectedAccountPaymentOption == option ? theme.colors.textPrimary : theme.colors.surfaceStroke)
-            .frame(width: 110.0, height: 55.0)
-            .overlay {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                        if let image = UIImage(named: "CreditCardIcon", in: Bundle.module, with: nil) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 20, height: 20)
-                        }
-                        Spacer()
-                    }
-                    Text("\(option.card?.brand ?? "") \(option.card?.lastFourDigits ?? "")")
-                        .font(theme.fonts.label)
-                        .fontWeight(.semibold)
-                }
-                .frame(height: 50.0)
+    var enterNewPaymentRow: some View {
+        let isSelected = checkoutViewModel.selectedAccountPaymentOption == nil
+        return HStack {
+            Image("emptycard", bundle: Bundle.module)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 48.0, height: 32.0)
                 .padding(.horizontal)
-            }
-            .onTapGesture {
-                checkoutViewModel.selectedAccountPaymentOption = option
-            }
+            Text("Enter New Payment Method")
+                .bold()
+                .font(theme.fonts.bodySmall)
+            Spacer()
+            Image(isSelected ? "filled-selection" : "empty-selection", bundle: Bundle.module)
+                .padding()
+        }
+        .frame(maxWidth: .infinity, minHeight: 64.0)
+        .contentShape(Rectangle())
+        .overlay(
+            RoundedRectangle(cornerRadius: theme.radii.medium)
+                .stroke(isSelected ? theme.colors.textPrimary : theme.colors.surfaceStroke, lineWidth: 1)
+        )
+        .onTapGesture {
+            checkoutViewModel.selectedAccountPaymentOption = nil
+        }
     }
 
     @ViewBuilder
@@ -299,13 +340,15 @@ public struct FrameCheckoutView: View {
                         self.checkoutCallback(true, transfer.id)
                     }
                 } catch {
-                    checkoutViewModel.checkoutError = (error as? NetworkingError).map(describe) ?? error.localizedDescription
-                    // Only .serverError is retryable in-sheet (e.g. card declined). Anything
-                    // else (decode failure after the server may have created the transfer,
-                    // CancellationError, unknown error) is terminal — hand off to the host so
-                    // the sheet dismisses rather than stranding the user on a dead spinner.
-                    if case .serverError = (error as? NetworkingError) {
-                        // stay in-sheet for user retry
+                    // Only .serverError is retryable in-sheet (e.g. card declined). The server's
+                    // `description` is the raw JSON envelope string — extract the user-facing
+                    // `error_details.message` locally rather than displaying the whole blob.
+                    // Anything else (decode failure after the server may have created the transfer,
+                    // CancellationError, unknown error) is terminal — hand off to the host
+                    // silently so the sheet dismisses rather than stranding the user on a dead
+                    // spinner or showing diagnostic text we don't want in front of payers.
+                    if case .serverError(_, let description) = (error as? NetworkingError) {
+                        checkoutViewModel.checkoutError = extractCheckoutErrorMessage(description)
                     } else {
                         self.checkoutCallback(false, nil)
                     }
@@ -314,15 +357,23 @@ public struct FrameCheckoutView: View {
         }
     }
 
-    private func describe(_ error: NetworkingError) -> String {
-        switch error {
-        case .noData: return "Server returned no data."
-        case .invalidURL: return "Invalid request URL."
-        case .decodingFailed: return "Could not parse server response."
-        case .serverError(let statusCode, let description):
-            return description.isEmpty ? "Server error (HTTP \(statusCode))." : description
-        case .unknownError: return "Something went wrong. Please try again."
+    /// Extract a user-facing message from the raw error-envelope JSON the server sends back.
+    /// Shape: `{"status":N,"error":"...","code":"...","error_details":{"message":"...","data":...}}`.
+    /// Preference: `error_details.message` → `error` → the raw string as-is.
+    private func extractCheckoutErrorMessage(_ raw: String) -> String {
+        guard let data = raw.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return raw
         }
+        if let details = json["error_details"] as? [String: Any],
+           let message = details["message"] as? String,
+           !message.isEmpty {
+            return message
+        }
+        if let error = json["error"] as? String, !error.isEmpty {
+            return error
+        }
+        return raw
     }
 
     private func errorBinding(_ field: FrameCheckoutViewModel.CheckoutField) -> Binding<String?> {
