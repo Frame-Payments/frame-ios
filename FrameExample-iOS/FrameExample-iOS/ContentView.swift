@@ -31,7 +31,7 @@ struct ContentView: View {
     @State var applePayResult: String? = nil
 
     // Replace with an accountID from your dashboard.
-    var accountId: String = "ENTER_AN_ACCOUNT_ID
+    var accountId: String = "ENTER_AN_ACCOUNT_ID"
     // Replace with your Apple Pay merchant ID registered in your entitlements
     let applePayMerchantId: String = "merchant.com.yourapp"
     
