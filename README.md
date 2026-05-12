@@ -140,7 +140,8 @@ All API classes are stateless — call them directly without creating an instanc
 | `CustomersAPI` | Create, retrieve, update, delete, and search customers |
 | `CustomerIdentityAPI` | Customer identity verification |
 | `PaymentMethodsAPI` | Add and manage payment methods |
-| `ChargeIntentsAPI` | Create and manage charge intents |
+| `ChargeIntentsAPI` | Create and manage charge intents (legacy customer-scoped charges) |
+| `TransfersAPI` | Create and manage transfers (account-scoped charge or payout flows) |
 | `ApplePayAPI` | Apple Pay token processing |
 | `SubscriptionsAPI` | Subscription lifecycle management |
 | `SubscriptionPhasesAPI` | Subscription phase management |
@@ -178,6 +179,8 @@ do {
 
 ### Example: Creating a Charge Intent
 
+`ChargeIntent` is the legacy customer-scoped charge resource. For account-scoped checkouts, use `TransfersAPI` (next example).
+
 ```swift
 let chargeIntent = CreateChargeIntentRequest(
     amount: 4999,
@@ -188,28 +191,45 @@ let chargeIntent = CreateChargeIntentRequest(
 let intent = try await ChargeIntentsAPI.createChargeIntent(chargeIntent)
 ```
 
+### Example: Creating a Transfer
+
+`TransfersAPI` is the account-scoped equivalent. A Transfer with `sourcePaymentMethodId` charges a payment method into an account (charge flow); a Transfer with `destinationPaymentMethodId` pays out from the account to a payment method (payout flow). See the [Transfers docs](https://docs.framepayments.com/frameos/transfers) for the full request/response schema.
+
+```swift
+let request = TransferRequests.CreateTransferRequest(
+    amount: 4999,
+    accountId: "acc_123",
+    currency: "usd",
+    sourcePaymentMethodId: "pm_456"   // charge flow
+)
+
+let (transfer, error) = try await TransfersAPI.createTransfer(request: request)
+```
+
 ---
 
 ## UI Components
 
 ### FrameCheckoutView
 
-A full, pre-built checkout view. Provide a payment amount, an optional customer ID, and a checkout callback:
+A full, pre-built checkout view. Provide a payment amount, an optional account ID, and a checkout callback. The callback fires with `success = true` and the created `Transfer` id when the user completes payment, or `success = false` with `nil` if Apple Pay fails. Provide a `merchantId` to enable Apple Pay at the top of the sheet.
 
 ```swift
 import Frame_iOS
 
 FrameCheckoutView(
-    customerId: customer.id,
-    paymentAmount: 4999
-) { chargeIntent in
-    // Handle completed charge intent
+    accountId: "acc_123",
+    paymentAmount: 4999,
+    merchantId: "merchant.com.yourapp"   // optional — shows Apple Pay when set
+) { success, transferId in
+    guard success, let transferId else { return }
+    print("Transfer created: \(transferId)")
 }
 ```
 
 ### FrameCartView
 
-A customizable cart and checkout component. Conform your item model to `FrameCartItem` and pass it in:
+A customizable cart and checkout component. Conform your item model to `FrameCartItem` and pass it in alongside an `accountId`. Pass a `merchantId` to enable Apple Pay during the nested checkout step, and a `checkoutCallback` to receive the resulting Transfer id.
 
 ```swift
 struct CartItem: FrameCartItem {
@@ -220,10 +240,14 @@ struct CartItem: FrameCartItem {
 }
 
 FrameCartView(
-    customer: customer,
+    accountId: "acc_123",
+    merchantId: "merchant.com.yourapp",   // optional — shows Apple Pay inside checkout
     cartItems: cartItems,
     shippingAmountInCents: 599
-)
+) { success, transferId in
+    guard success, let transferId else { return }
+    print("Transfer created: \(transferId)")
+}
 ```
 
 ### EncryptedPaymentCardInput
@@ -340,7 +364,7 @@ For live theming inside your own SwiftUI views, read `@Environment(\.frameTheme)
 
 ## Apple Pay
 
-`FrameApplePayButton` is a drop-in SwiftUI view that presents a native Apple Pay sheet, submits the encrypted payment token to Frame, and returns a `ChargeIntent` via a callback — all without requiring any additional configuration beyond a merchant ID.
+`FrameApplePayButton` is a drop-in SwiftUI view that presents a native Apple Pay sheet, submits the encrypted payment token to Frame, and returns the resulting charge id (a `ChargeIntent` id for `.customer` owners, a `Transfer` id for `.account` owners) via a callback — all without requiring any additional configuration beyond a merchant ID.
 
 ### Xcode Setup (required)
 
@@ -372,33 +396,40 @@ After adding the capability, Xcode automatically adds an entitlements file (e.g.
 
 Drop `FrameApplePayButton` anywhere in your SwiftUI view hierarchy. It automatically renders nothing on devices that do not support Apple Pay (no need to guard it yourself).
 
+The button takes a `mode` (`.charge(amount:currency:)` to charge the user, or `.addToOwner` to attach the wallet card without charging) and a `PaymentMethodOwner` (`.customer(...)` for the legacy ChargeIntent flow, `.account(...)` for the Transfer flow). The completion result carries the created resource's id — the caller decides what it represents based on the owner passed in.
+
 ```swift
 import Frame_iOS
 
 FrameApplePayButton(
-    amount: 4999,                              // amount in cents ($49.99)
-    currency: "usd",
-    owner: .customer("cus_123"),               // .customer or .account
+    mode: .charge(amount: 4999, currency: "usd"),
+    owner: .account("acc_123"),
     merchantId: "merchant.com.yourcompany.appname"
 ) { result in
     switch result {
-    case .success(let chargeIntent):
-        print("Payment succeeded: \(chargeIntent.id)")
+    case .success(.charge(let id)):
+        // `.customer` owner → ChargeIntent id
+        // `.account`  owner → Transfer id
+        print("Payment succeeded: \(id)")
+    case .success(.paymentMethod):
+        break // not produced in .charge mode
     case .failure(let error):
         print("Payment failed: \(error.localizedDescription)")
     }
 }
 ```
 
-Use `.account` instead of `.customer` if your integration is account-based:
+Pass `.customer(...)` instead of `.account(...)` if your integration is customer-based:
 
 ```swift
 FrameApplePayButton(
-    amount: 4999,
-    owner: .account("acc_456"),
+    mode: .charge(amount: 4999, currency: "usd"),
+    owner: .customer("cus_456"),
     merchantId: "merchant.com.yourcompany.appname"
 ) { result in ... }
 ```
+
+Pass `mode: .addToOwner` to attach the wallet card as a PaymentMethod without charging — useful for onboarding flows. The completion delivers `.success(.paymentMethod(FrameObjects.PaymentMethod))`.
 
 ### Button Customization
 
@@ -406,11 +437,11 @@ The button type and style can be configured to match your UI:
 
 ```swift
 FrameApplePayButton(
-    amount: 4999,
-    owner: .customer("cus_123"),
+    mode: .charge(amount: 4999, currency: "usd"),
+    owner: .account("acc_123"),
     merchantId: "merchant.com.yourcompany.appname",
     buttonType: .pay,        // .buy (default), .pay, .checkout, .plain, etc.
-    buttonStyle: .white      // .black (default), .white, .whiteOutline
+    buttonStyle: .white      // .automatic (default), .black, .white, .whiteOutline
 ) { result in ... }
 ```
 
@@ -418,19 +449,20 @@ See [`PKPaymentButtonType`](https://developer.apple.com/documentation/passkit/pk
 
 ### Using Apple Pay inside FrameCheckoutView
 
-Pass a `merchantId` to `FrameCheckoutView` to show an Apple Pay button at the top of the checkout sheet:
+Pass a `merchantId` to `FrameCheckoutView` to show an Apple Pay button at the top of the checkout sheet. The bundled checkout is account-scoped, so the resulting id is always a Transfer id.
 
 ```swift
 FrameCheckoutView(
-    customerId: customer.id,
+    accountId: "acc_123",
     paymentAmount: 4999,
     merchantId: "merchant.com.yourcompany.appname"
-) { chargeIntent in
-    // Handle completed charge intent
+) { success, transferId in
+    guard success, let transferId else { return }
+    print("Transfer created: \(transferId)")
 }
 ```
 
-If `merchantId` is omitted or empty, the Apple Pay button is hidden and only the card entry form is shown.
+If `merchantId` is omitted, the Apple Pay button is hidden and only the card entry form is shown.
 
 ### Testing
 

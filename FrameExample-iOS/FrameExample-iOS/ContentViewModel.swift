@@ -22,8 +22,13 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         // Note: To use this SDK, you must add your sandbox publishable and secret keys here.
         FrameNetworking.shared.initializeWithAPIKey("ENTER_SECRET_KEY_HERE",
                                                     publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
+//                                                    theme: FrameTheme(
+//                                                        colors: .init(primaryButton: .purple, error: .orange),
+//                                                        fonts: .init(title: .custom("Avenir-Black", size: 28)),
+//                                                        radii: .init(medium: 16)
+//                                                    ),
                                                     debugMode: true)
-        
+
         Task {
             await self.getCustomers()
             await self.getPaymentMethods()

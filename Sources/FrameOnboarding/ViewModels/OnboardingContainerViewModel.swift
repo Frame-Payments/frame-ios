@@ -97,8 +97,8 @@ class OnboardingContainerViewModel: ObservableObject {
             let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
                                                              state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
                                                              addressLine1: profile.address?.addressLine1, addressLine2: profile.address?.addressLine2)
-            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? profile.firstName ?? "",
-                                                                                                 lastName: profile.name?.lastName ?? profile.lastName ?? "",
+            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? "",
+                                                                                                 lastName: profile.name?.lastName ?? "",
                                                                                                  dateOfBirth: profile.birthdate ?? "",
                                                                                                  email: profile.email ?? "",
                                                                                                  phoneNumber: profile.phone?.number ?? profile.phoneNumber ?? "",

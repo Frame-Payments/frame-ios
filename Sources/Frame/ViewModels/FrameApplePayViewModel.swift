@@ -16,18 +16,23 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         case account(String)
     }
 
-    /// Drives whether the Apple Pay sheet completes by creating a charge intent (`.charge`)
+    /// Drives whether the Apple Pay sheet completes by creating a charge (`.charge`)
     /// or only attaches the wallet card to the customer/account (`.addToOwner`).
     public enum FrameApplePayMode {
         case charge(amount: Int, currency: String)
         case addToOwner
     }
 
-    /// Result delivered to the host app's completion handler. `.charge` carries a confirmed
-    /// `ChargeIntent`; `.paymentMethod` carries a persisted wallet PaymentMethod for use in
-    /// AddPaymentMethod flows.
+    /// Result delivered to the host app's completion handler.
+    ///
+    /// `.charge` carries the id of the resulting resource:
+    /// - `.customer(...)` owner produces a `ChargeIntent` id
+    /// - `.account(...)` owner produces a `Transfer` id
+    /// Callers infer the resource type from the owner they passed in.
+    ///
+    /// `.paymentMethod` carries a persisted wallet PaymentMethod for use in AddPaymentMethod flows.
     public enum FrameApplePayResult {
-        case charge(FrameObjects.ChargeIntent)
+        case charge(id: String)
         case paymentMethod(FrameObjects.PaymentMethod)
     }
 
@@ -148,11 +153,13 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                 return PKPaymentAuthorizationResult(status: .success, errors: nil)
 
             case .charge(let amount, let currency):
-                // 2. Create and confirm a ChargeIntent with the payment method
-                let request: ChargeIntentsRequests.CreateChargeIntentRequest
+                // 2. Create the charge. Customer owners use the legacy ChargeIntent flow;
+                // account owners use the account-scoped Transfer flow. Both deliver an id
+                // back to the caller, who knows which resource type to expect based on
+                // the owner they passed in.
                 switch owner {
                 case .customer(let customerId):
-                    request = ChargeIntentsRequests.CreateChargeIntentRequest(
+                    let request = ChargeIntentsRequests.CreateChargeIntentRequest(
                         amount: amount,
                         currency: currency,
                         customer: customerId,
@@ -160,24 +167,32 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                         confirm: true,
                         authorizationMode: .automatic
                     )
-                case .account(let accountId):
-                    request = ChargeIntentsRequests.CreateChargeIntentRequest(
-                        amount: amount,
-                        currency: currency,
-                        account: accountId,
-                        paymentMethod: paymentMethodId,
-                        confirm: true,
-                        authorizationMode: .automatic
-                    )
-                }
-                let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
+                    let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
 
-                if let chargeIntent {
-                    completion?(.success(.charge(chargeIntent)))
-                    return PKPaymentAuthorizationResult(status: .success, errors: nil)
-                } else {
-                    completion?(.failure(chargeError ?? NetworkingError.unknownError))
-                    return PKPaymentAuthorizationResult(status: .failure, errors: nil)
+                    if let chargeIntent {
+                        completion?(.success(.charge(id: chargeIntent.id)))
+                        return PKPaymentAuthorizationResult(status: .success, errors: nil)
+                    } else {
+                        completion?(.failure(chargeError ?? NetworkingError.unknownError))
+                        return PKPaymentAuthorizationResult(status: .failure, errors: nil)
+                    }
+
+                case .account(let accountId):
+                    let request = TransferRequests.CreateTransferRequest(
+                        amount: amount,
+                        accountId: accountId,
+                        currency: currency,
+                        sourcePaymentMethodId: paymentMethodId
+                    )
+                    let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
+
+                    if let transfer {
+                        completion?(.success(.charge(id: transfer.id)))
+                        return PKPaymentAuthorizationResult(status: .success, errors: nil)
+                    } else {
+                        completion?(.failure(transferError ?? NetworkingError.unknownError))
+                        return PKPaymentAuthorizationResult(status: .failure, errors: nil)
+                    }
                 }
             }
         } catch {

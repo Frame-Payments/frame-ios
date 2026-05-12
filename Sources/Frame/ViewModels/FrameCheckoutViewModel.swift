@@ -14,7 +14,7 @@ class FrameCheckoutViewModel: ObservableObject {
         case name, email, addressLine1, city, state, zip, country, card
     }
 
-    @Published var customerPaymentOptions: [FrameObjects.PaymentMethod]?
+    @Published var accountPaymentOptions: [FrameObjects.PaymentMethod]?
     @Published var customerName: String = ""
     @Published var customerEmail: String = ""
     @Published var customerAddressLine1: String = ""
@@ -24,44 +24,54 @@ class FrameCheckoutViewModel: ObservableObject {
     @Published var customerCountry: AvailableCountry = AvailableCountry.defaultCountry
     @Published var customerZipCode: String = ""
 
-    @Published var selectedCustomerPaymentOption: FrameObjects.PaymentMethod?
+    @Published var selectedAccountPaymentOption: FrameObjects.PaymentMethod?
     @Published var cardData = PaymentCardData()
 
     @Published var fieldErrors: [CheckoutField: String] = [:]
     @Published var isPerformingAction: Bool = false
+    @Published var checkoutError: String?
 
-    var customerId: String?
+    var accountId: String?
     var amount: Int
     var merchantId: String
     let addressMode: FrameAddressMode
 
     private var applePayViewModel: FrameApplePayViewModel?
 
-    init(customerId: String?, amount: Int, merchantId: String = "", addressMode: FrameAddressMode = .required) {
-        self.customerId = customerId
+    init(accountId: String?, amount: Int, merchantId: String = "", addressMode: FrameAddressMode = .required) {
+        self.accountId = accountId
         self.amount = amount
         self.merchantId = merchantId
         self.addressMode = addressMode
     }
 
-    func loadCustomerPaymentMethods(forTesting: Bool = false) async {
-        guard let customerId else { return }
-
-        let customer = try? await CustomersAPI.getCustomerWith(customerId: customerId, forTesting: forTesting).0
-        self.customerPaymentOptions = customer?.paymentMethods
-        self.customerName = customer?.name ?? ""
-        self.customerEmail = customer?.email ?? ""
+    func loadAccountDetails() async {
+        guard let accountId else { return }
+        if let response = try? await AccountsAPI.getAccountWith(accountId: accountId).0, let account = response.profile?.individual {
+            let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
+            self.customerName = name
+            self.customerEmail = account.email ?? ""
+        }
+        
+        await loadAccountPaymentMethods()
+    }
+    
+    func loadAccountPaymentMethods() async {
+        guard let accountId else { return }
+        let response = try? await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId).0
+        self.accountPaymentOptions = response?.data
     }
 
-    func payWithApplePay(completion: @escaping (Result<FrameObjects.ChargeIntent, Error>) -> Void) {
+    func payWithApplePay(completion: @escaping (Result<String, Error>) -> Void) {
         guard !merchantId.isEmpty else { return }
+        guard let accountId, !accountId.isEmpty else { return }
         applePayViewModel = FrameApplePayViewModel(
             mode: .charge(amount: amount, currency: "usd"),
-            owner: customerId.map { .customer($0) } ?? .customer(""),
+            owner: .account(accountId),
             merchantId: merchantId,
             completion: { result in
                 switch result {
-                case .success(.charge(let intent)): completion(.success(intent))
+                case .success(.charge(let id)): completion(.success(id))
                 case .success(.paymentMethod): break // not produced in .charge mode
                 case .failure(let error): completion(.failure(error))
                 }
@@ -78,7 +88,7 @@ class FrameCheckoutViewModel: ObservableObject {
     }
 
     var hasUsablePaymentInput: Bool {
-        if selectedCustomerPaymentOption != nil { return true }
+        if selectedAccountPaymentOption != nil { return true }
         return !cardData.card.number.isEmpty && cardData.isPotentiallyValid
     }
 
@@ -141,46 +151,44 @@ class FrameCheckoutViewModel: ObservableObject {
         return errors.isEmpty
     }
 
-    func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.ChargeIntent? {
+    func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.Transfer? {
         guard amount != 0 else { return nil }
+        guard let accountId, !accountId.isEmpty else { return nil }
         guard !isPerformingAction else { return nil }
         isPerformingAction = true
         defer { isPerformingAction = false }
 
         var paymentMethodId: String?
 
-        let usingSavedCard = selectedCustomerPaymentOption != nil
+        let usingSavedCard = selectedAccountPaymentOption != nil
         guard validateAll(forSavedCard: usingSavedCard) else { return nil }
 
         if !usingSavedCard {
-            let customerInfo = try? await createPaymentMethod(customerId: customerId)
-            paymentMethodId = customerInfo?.paymentId
-            customerId = customerInfo?.customerId
+            // Propagate the underlying networking error rather than swallowing into nil —
+            // the caller's `throws` contract is the right place for the UI to render this.
+            paymentMethodId = try await createPaymentMethod(accountId: accountId)
         } else {
-            paymentMethodId = selectedCustomerPaymentOption?.id
+            paymentMethodId = selectedAccountPaymentOption?.id
         }
-        guard paymentMethodId != nil else { return nil }
+        guard let paymentMethodId else { return nil }
 
-        //TODO: Allow developers to pass description here of charge.
-        let request = ChargeIntentsRequests.CreateChargeIntentRequest(amount: amount,
-                                                                      currency: "usd",
-                                                                      customer: customerId,
-                                                                      description: "",
-                                                                      paymentMethod: paymentMethodId,
-                                                                      confirm: true,
-                                                                      receiptEmail: customerEmail,
-                                                                      authorizationMode: .automatic,
-                                                                      customerData: nil,
-                                                                      paymentMethodData: nil)
+        let request = TransferRequests.CreateTransferRequest(
+            amount: amount,
+            accountId: accountId,
+            currency: "usd",
+            sourcePaymentMethodId: paymentMethodId,
+            destinationPaymentMethodId: nil,
+            description: nil,
+            metadata: nil)
 
-        // Create Charge Intent, return this on completion.
-        let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
-        if let chargeError { throw chargeError }
-        return chargeIntent
+        let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
+        if let transferError { throw transferError }
+        return transfer
     }
 
-    func createPaymentMethod(customerId: String? = nil) async throws -> (paymentId: String?, customerId: String?)  {
-        guard validateAll(forSavedCard: false) else { return (nil, nil) }
+    func createPaymentMethod(accountId: String) async throws -> String? {
+        guard validateAll(forSavedCard: false) else { return nil }
+        guard !accountId.isEmpty else { return nil }
 
         let billingAddress: FrameObjects.BillingAddress? = shouldValidateAddress
             ? FrameObjects.BillingAddress(city: customerCity,
@@ -191,28 +199,15 @@ class FrameCheckoutViewModel: ObservableObject {
                                           addressLine2: customerAddressLine2)
             : nil
 
-        var currentCustomerId: String = ""
-        if customerId == nil {
-            //1. Create the new user to assign the payment method to.
-            let customerRequest = CustomerRequest.CreateCustomerRequest(billingAddress: billingAddress, name: customerName, email: customerEmail)
-            let customer = try? await CustomersAPI.createCustomer(request: customerRequest, forTesting: true).0
-            currentCustomerId = customer?.id ?? ""
-            guard currentCustomerId != "" else { return (nil, nil) }
-        } else if let customerId {
-            currentCustomerId = customerId
-        }
-
-        //2. Create the payment method
         let request = PaymentMethodRequest.CreateCardPaymentMethodRequest(cardNumber: cardData.card.number,
                                                                           expMonth: cardData.card.expMonth,
                                                                           expYear: cardData.card.expYear,
                                                                           cvc: cardData.card.cvc,
-                                                                          customer: currentCustomerId,
-                                                                          account: nil,
+                                                                          customer: nil,
+                                                                          account: accountId,
                                                                           billing: billingAddress)
         let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
-        guard let paymentMethodId = paymentMethod?.id else { return (nil, currentCustomerId) }
-        return (paymentMethodId, currentCustomerId)
+        return paymentMethod?.id
     }
 }
 

@@ -12,7 +12,6 @@ public struct FrameCartView: View {
     @Environment(\.frameTheme) private var theme
     @ObservedObject var cartViewModel: FrameCartViewModel
 
-    @State var customer: FrameObjects.Customer?
     @State var cartItems: [any FrameCartItem]
 
     @State var cartViewTitle: String
@@ -22,22 +21,31 @@ public struct FrameCartView: View {
 
     @State var continueToCheckout: Bool = false
 
+    private let checkoutCallback: ((_ success: Bool, _ transferId: String?) -> Void)?
+    
+    var accountId: String?
+    var merchantId: String
+
     public init(
-        customer: FrameObjects.Customer?,
+        accountId: String?,
+        merchantId: String? = nil,
         cartItems: [any FrameCartItem],
         shippingAmountInCents: Int,
         cartViewTitle: String = "Frame Payments",
         subtitle: String = "Cart",
         cartItemHeight: CGFloat = 65.0,
-        checkoutButtonTitle: String = "Checkout"
+        checkoutButtonTitle: String = "Checkout",
+        checkoutCallback: ((_ success: Bool, _ transferId: String?) -> Void)? = nil
     ) {
         self.cartViewModel = FrameCartViewModel(cartItems: cartItems, shippingAmount: shippingAmountInCents)
-        self.customer = customer
+        self.accountId = accountId
+        self.merchantId = merchantId ?? "merchant.com.app"
         self.cartItems = cartItems
         self.cartViewTitle = cartViewTitle
         self.subtitle = subtitle
         self.cartItemHeight = cartItemHeight
         self.checkoutButtonTitle = checkoutButtonTitle
+        self.checkoutCallback = checkoutCallback
     }
 
     public var body: some View {
@@ -48,7 +56,8 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView(customerId: customer?.id, paymentAmount: cartViewModel.finalTotal, merchantId: "test.merchant.id") { chargeIntent in
+                FrameCheckoutView(accountId: accountId, paymentAmount: cartViewModel.finalTotal, merchantId: merchantId) { success, transferId in
+                    self.checkoutCallback?(success, transferId)
                     self.dismiss()
                 }
                 .toolbar(.hidden)
@@ -164,17 +173,13 @@ public struct FrameCartView: View {
 }
 
 #Preview {
-    FrameCartView(customer: FrameObjects.Customer(id: "1", created: nil, shippingAddress: nil,
-                                                  updated: nil, livemode: false, name: "", phone: nil, email: nil,
-                                                  description: nil, object: nil, billingAddress: nil, metadata: nil),
+    FrameCartView(accountId: "acc_1",
                   cartItems: [],
                   shippingAmountInCents: 1000)
 }
 
 #Preview("Dark") {
-    FrameCartView(customer: FrameObjects.Customer(id: "1", created: nil, shippingAddress: nil,
-                                                  updated: nil, livemode: false, name: "", phone: nil, email: nil,
-                                                  description: nil, object: nil, billingAddress: nil, metadata: nil),
+    FrameCartView(accountId: "acc_1",
                   cartItems: [],
                   shippingAmountInCents: 1000)
         .preferredColorScheme(.dark)

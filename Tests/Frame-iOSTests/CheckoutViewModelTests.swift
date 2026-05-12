@@ -15,28 +15,27 @@ final class CheckoutViewModelTests: XCTestCase {
                                                                            httpVersion: nil,
                                                                            headerFields: nil), error: nil)
 
-    @MainActor func testLoadCustomerPaymentMethods() async {
+    @MainActor func testLoadAccountPaymentMethods() async {
         FrameNetworking.shared.asyncURLSession = session
 
-        // Test with invalid customer ID
-        let viewModel = FrameCheckoutViewModel(customerId: "", amount: 100)
-        await viewModel.loadCustomerPaymentMethods()
-        XCTAssertNil(viewModel.customerPaymentOptions)
+        // Nil accountId — no fetch, options stay nil.
+        let viewModel = FrameCheckoutViewModel(accountId: nil, amount: 100)
+        await viewModel.loadAccountPaymentMethods()
+        XCTAssertNil(viewModel.accountPaymentOptions)
 
-        // Test with valid customer ID with no payment methods
-        let viewModelTwo = FrameCheckoutViewModel(customerId: "1", amount: 100)
-        await viewModelTwo.loadCustomerPaymentMethods()
-        XCTAssertNil(viewModelTwo.customerPaymentOptions)
+        // Empty response body — options remain nil after a failed decode.
+        let viewModelTwo = FrameCheckoutViewModel(accountId: "1", amount: 100)
+        await viewModelTwo.loadAccountPaymentMethods()
+        XCTAssertNil(viewModelTwo.accountPaymentOptions)
 
-        // Test with valid customer ID with payment method
+        // Valid account with one attached payment method.
         let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let customer = FrameObjects.Customer(id: "1", livemode: false, name: "Tester", paymentMethods: [paymentMethod])
-
-        session.data = try? JSONEncoder().encode(customer)
-        let viewModelThree = FrameCheckoutViewModel(customerId: "1", amount: 100)
-        await viewModelThree.loadCustomerPaymentMethods()
-        XCTAssertNotNil(viewModelThree.customerPaymentOptions)
-        XCTAssertEqual(viewModelThree.customerPaymentOptions?.first?.id, "1")
+        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod])
+        session.data = try? JSONEncoder().encode(response)
+        let viewModelThree = FrameCheckoutViewModel(accountId: "1", amount: 100)
+        await viewModelThree.loadAccountPaymentMethods()
+        XCTAssertNotNil(viewModelThree.accountPaymentOptions)
+        XCTAssertEqual(viewModelThree.accountPaymentOptions?.first?.id, "1")
     }
 
     // MARK: Helpers
@@ -75,45 +74,41 @@ final class CheckoutViewModelTests: XCTestCase {
                                                    currency: "USD",
                                                    lastFourDigits: paymentCardData.card.lastFour)
 
-        // Test with no customer country or customer Zip Code
+        // Empty accountId — bails out.
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: true, card: paymentCard, status: .active))
-        let viewModel = FrameCheckoutViewModel(customerId: "", amount: 100)
+        let viewModel = FrameCheckoutViewModel(accountId: "", amount: 100)
         viewModel.customerName = "Tester McTest"
         viewModel.customerEmail = "tester@example.com"
         viewModel.customerZipCode = ""
-        let firstMethod = try? await viewModel.createPaymentMethod()
-        XCTAssertNil(firstMethod?.paymentId)
-        XCTAssertNil(firstMethod?.customerId)
+        let firstMethod = try? await viewModel.createPaymentMethod(accountId: "")
+        XCTAssertNil(firstMethod)
 
         viewModel.customerCountry = AvailableCountry.defaultCountry
         viewModel.customerZipCode = "75115"
         viewModel.cardData = PaymentCardData()
 
-        // Test with invalid/null card data
+        // No card data — validation fails.
         session.data = nil
-        let secondMethod = try? await viewModel.createPaymentMethod()
-        XCTAssertNil(secondMethod?.paymentId)
-        XCTAssertNil(secondMethod?.customerId)
+        let secondMethod = try? await viewModel.createPaymentMethod(accountId: "acc_1")
+        XCTAssertNil(secondMethod)
 
         viewModel.cardData = paymentCardData
         viewModel.customerZipCode = ""
 
-        // Test invalid zipCode and valid card data
+        // Invalid zip — validation fails even with valid card.
         session.data = try? JSONEncoder().encode(FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: true, card: paymentCard, status: .active))
-        let thirdMethod = try? await viewModel.createPaymentMethod()
-        XCTAssertNil(thirdMethod?.paymentId)
-        XCTAssertNil(thirdMethod?.customerId)
+        let thirdMethod = try? await viewModel.createPaymentMethod(accountId: "acc_1")
+        XCTAssertNil(thirdMethod)
 
         fillValidAddress(viewModel)
 
         let billingAddress = FrameObjects.BillingAddress(country: viewModel.customerCountry.displayName, postalCode: viewModel.customerZipCode)
         let method = FrameObjects.PaymentMethod(id: "1", billing: billingAddress, type: .card, object: "", created: 0, updated: 0, livemode: true, card: paymentCard, status: .active)
 
-        // Test with valid zipCode and valid card data
+        // Valid inputs — returns the new payment method's id.
         session.data = try? JSONEncoder().encode(method)
-        let fourthMethod = try? await viewModel.createPaymentMethod(customerId: "111")
-        XCTAssertNotNil(fourthMethod)
-        XCTAssertEqual(fourthMethod?.customerId, "111")
+        let fourthMethod = try? await viewModel.createPaymentMethod(accountId: "acc_1")
+        XCTAssertEqual(fourthMethod, "1")
     }
 
     // MARK: Validators (pure)
@@ -154,7 +149,7 @@ final class CheckoutViewModelTests: XCTestCase {
     // MARK: validateAll branching by addressMode
 
     @MainActor func testRequired_blankAddress_populatesErrors() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .required)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
         fillValidCustomerInfo(vm)
         XCTAssertFalse(vm.validateAll(forSavedCard: false))
         XCTAssertNotNil(vm.fieldErrors[.addressLine1])
@@ -164,7 +159,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testOptional_allBlank_isValid() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .optional)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .optional)
         fillValidCustomerInfo(vm)
         XCTAssertTrue(vm.validateAll(forSavedCard: false))
         XCTAssertNil(vm.fieldErrors[.addressLine1])
@@ -172,7 +167,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testOptional_partialAddress_failsValidation() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .optional)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .optional)
         fillValidCustomerInfo(vm)
         vm.customerCity = "Burbank" // partial fill triggers all-or-nothing
         XCTAssertFalse(vm.validateAll(forSavedCard: false))
@@ -182,7 +177,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testHidden_neverValidatesAddress() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         fillValidCustomerInfo(vm)
         // Even with garbage in address fields, hidden mode skips validation entirely.
         vm.customerCity = "x"
@@ -192,7 +187,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testInvalidEmail_failsValidation() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         vm.customerName = "Tester McTest"
         vm.customerEmail = "not-an-email"
         vm.cardData = validCardData()
@@ -201,7 +196,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testInvalidZip_failsInRequired() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .required)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
         fillValidCustomerInfo(vm)
         fillValidAddress(vm)
         vm.customerZipCode = "1234"
@@ -210,25 +205,25 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testClearError() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         vm.fieldErrors[.email] = "bad"
         vm.clearError(.email)
         XCTAssertNil(vm.fieldErrors[.email])
     }
 
     @MainActor func testSavedCardSelected_skipsCardValidation() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         vm.customerName = "Tester McTest"
         vm.customerEmail = "tester@example.com"
         // No cardData filled — saved-card path should still pass.
         let saved = FrameObjects.PaymentMethod(id: "saved", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        vm.selectedCustomerPaymentOption = saved
+        vm.selectedAccountPaymentOption = saved
         XCTAssertTrue(vm.validateAll(forSavedCard: true))
         XCTAssertNil(vm.fieldErrors[.card])
     }
 
     @MainActor func testSavedCardSelected_stillValidatesNameAndEmail() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         // Missing name/email
         XCTAssertFalse(vm.validateAll(forSavedCard: true))
         XCTAssertNotNil(vm.fieldErrors[.name])
@@ -236,7 +231,7 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testSingleName_failsValidation() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         vm.customerName = "OnlyOne"
         vm.customerEmail = "tester@example.com"
         vm.cardData = validCardData()
@@ -245,26 +240,26 @@ final class CheckoutViewModelTests: XCTestCase {
     }
 
     @MainActor func testHasUsablePaymentInput_defaultFalse() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         // Default cardData has empty number and no saved card selected.
         XCTAssertFalse(vm.hasUsablePaymentInput)
     }
 
     @MainActor func testHasUsablePaymentInput_savedCardEnables() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         let saved = FrameObjects.PaymentMethod(id: "saved", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        vm.selectedCustomerPaymentOption = saved
+        vm.selectedAccountPaymentOption = saved
         XCTAssertTrue(vm.hasUsablePaymentInput)
     }
 
     @MainActor func testHasUsablePaymentInput_validCardEnables() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .hidden)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .hidden)
         vm.cardData = validCardData()
         XCTAssertTrue(vm.hasUsablePaymentInput)
     }
 
     @MainActor func testSavedCardSelected_stillValidatesAddressInRequired() {
-        let vm = FrameCheckoutViewModel(customerId: "", amount: 100, addressMode: .required)
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
         vm.customerName = "Tester McTest"
         vm.customerEmail = "tester@example.com"
         // Address blank — should still error in required mode even on saved-card path.
