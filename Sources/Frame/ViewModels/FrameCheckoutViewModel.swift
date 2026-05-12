@@ -48,7 +48,7 @@ class FrameCheckoutViewModel: ObservableObject {
     func loadAccountDetails() async {
         guard let accountId else { return }
         if let response = try? await AccountsAPI.getAccountWith(accountId: accountId).0, let account = response.profile?.individual {
-            let name = (account.firstName ?? "") + " " + (account.lastName ?? "")
+            let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
             self.customerName = name
             self.customerEmail = account.email ?? ""
         }

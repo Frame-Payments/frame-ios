@@ -31,7 +31,7 @@ struct ContentView: View {
     @State var applePayResult: String? = nil
 
     // Replace with an accountID from your dashboard.
-    var accountId: String = "ENTER_AN_ACCOUNT_ID"
+    var accountId: String = "83f5c9f7-7dfe-4962-8ccd-92a0fbc1909e"
     // Replace with your Apple Pay merchant ID registered in your entitlements
     let applePayMerchantId: String = "merchant.com.yourapp"
     
@@ -46,6 +46,7 @@ struct ContentView: View {
                 .padding()
             ScrollView {
                 cartButton
+                onboardingButton
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
                     mode: .charge(amount: 35000, currency: "usd"),
@@ -63,7 +64,6 @@ struct ContentView: View {
                 }
                 .padding(.horizontal)
                 Divider()
-                onboardingButton
                 allCustomersButton
                     .disabled(viewModel.customers.isEmpty)
                     .opacity(viewModel.customers.isEmpty ? 0.3 : 1)
@@ -290,7 +290,7 @@ struct ContentView: View {
         Button {
             self.showCheckoutView = true
         } label: {
-            Text("Show Checkout")
+            Text("Show Cart/Checkout")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -299,7 +299,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity)
         .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
-        .padding()
+        .padding([.horizontal, .bottom])
     }
     
     var allCustomersButton: some View {

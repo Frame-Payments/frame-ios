@@ -213,7 +213,7 @@ public struct FrameCheckoutView: View {
 
     @ViewBuilder
     var regionInformation: some View {
-        Text("Customer Address")
+        Text("Billing Address")
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(theme.fonts.headline)
             .foregroundColor(theme.colors.textSecondary)
