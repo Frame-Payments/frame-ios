@@ -15,7 +15,7 @@ extension FrameObjects {
     public struct Transfer: Codable, Sendable, Identifiable, Equatable {
         public let id: String
         public let object: String?
-        public let status: TransferStatus
+        public let status: TransferStatus?
         public let amount: Int
         public let currency: String?
         public let platformFee: Int?
@@ -36,7 +36,7 @@ extension FrameObjects {
 
         public init(id: String,
                     object: String? = nil,
-                    status: TransferStatus,
+                    status: TransferStatus? = nil,
                     amount: Int,
                     currency: String? = nil,
                     platformFee: Int? = nil,
