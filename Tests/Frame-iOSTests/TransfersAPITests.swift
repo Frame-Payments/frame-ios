@@ -123,4 +123,39 @@ final class TransfersAPITests: XCTestCase {
         }
     }
 
+    /// Regression: backend sends `"status":"succeeded"` on real Transfer responses.
+    /// Decoding from a raw JSON literal — not an encoder round-trip — so unknown enum
+    /// values can't be filtered out by the SDK's own encoder before they hit decode.
+    func testTransferStatusDecodesSucceededFromBackendPayload() throws {
+        let json = """
+        {"id":"tr_1","object":"transfer","status":"succeeded","amount":15000,"currency":"USD"}
+        """.data(using: .utf8)!
+        let transfer = try JSONDecoder().decode(FrameObjects.Transfer.self, from: json)
+        XCTAssertEqual(transfer.status, .succeeded)
+        XCTAssertEqual(transfer.id, "tr_1")
+    }
+
+    /// A 2xx response with a body that fails to decode as Transfer should surface
+    /// `.decodingFailed`, not `(nil, nil)` — the prior `try?` swallowed this and
+    /// stranded the checkout sheet with no signal.
+    func testCreateTransferReturnsDecodingFailedOnMalformedBody() async {
+        let malformedSession = MockURLAsyncSession(
+            data: "{\"id\":123}".data(using: .utf8), // id should be a String
+            response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/transfers")!,
+                                      statusCode: 200,
+                                      httpVersion: nil,
+                                      headerFields: nil),
+            error: nil)
+        FrameNetworking.shared.asyncURLSession = malformedSession
+
+        let request = TransferRequests.CreateTransferRequest(amount: 10000, accountId: "acc_123")
+        do {
+            let (transfer, error) = try await TransfersAPI.createTransfer(request: request)
+            XCTAssertNil(transfer)
+            XCTAssertEqual(error, .decodingFailed)
+        } catch {
+            XCTFail("Error should not be thrown: \(error)")
+        }
+    }
+
 }

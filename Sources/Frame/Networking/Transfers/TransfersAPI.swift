@@ -30,10 +30,18 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {
-            return (decodedResponse, error)
-        } else {
-            return (nil, error)
+        // Don't try to decode an error response as a Transfer — performDataTask
+        // already mapped non-2xx to .serverError(statusCode:, errorDescription:);
+        // attempting decode would overwrite that with .decodingFailed.
+        if let error { return (nil, error) }
+        guard let data else { return (nil, nil) }
+        // Success path: surface decode failures as .decodingFailed instead of
+        // (nil, nil), which would strand the caller with no signal.
+        do {
+            let decodedResponse = try FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data)
+            return (decodedResponse, nil)
+        } catch {
+            return (nil, .decodingFailed)
         }
     }
 

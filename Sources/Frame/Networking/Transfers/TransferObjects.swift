@@ -9,7 +9,7 @@ import Foundation
 
 extension FrameObjects {
     public enum TransferStatus: String, Codable, Sendable {
-        case pending, completed, failed, reversed, canceled, blocked
+        case pending, succeeded, completed, failed, reversed, canceled, blocked
     }
 
     public struct Transfer: Codable, Sendable, Identifiable, Equatable {

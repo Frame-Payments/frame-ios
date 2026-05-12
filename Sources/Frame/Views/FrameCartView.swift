@@ -23,11 +23,11 @@ public struct FrameCartView: View {
 
     private let checkoutCallback: ((_ success: Bool, _ transferId: String?) -> Void)?
     
-    var accountId: String?
+    var accountId: String
     var merchantId: String
 
     public init(
-        accountId: String?,
+        accountId: String,
         merchantId: String? = nil,
         cartItems: [any FrameCartItem],
         shippingAmountInCents: Int,

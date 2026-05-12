@@ -17,14 +17,14 @@ public struct FrameCheckoutView: View {
     @State var saveCardForPayments: Bool = false
     @State private var isShowingPicker = false
 
-    let accountId: String?
+    let accountId: String
     let paymentAmount: Int
     let merchantId: String
     let addressMode: FrameAddressMode
 
     var checkoutCallback: (_ success: Bool, _ transferId: String?) -> ()
 
-    public init(accountId: String?,
+    public init(accountId: String,
                 paymentAmount: Int,
                 merchantId: String? = nil,
                 addressMode: FrameAddressMode = .required,
@@ -112,7 +112,7 @@ public struct FrameCheckoutView: View {
     @ViewBuilder
     var applePayButton: some View {
         FrameApplePayButton(mode: .charge(amount: paymentAmount, currency: "usd"),
-                            owner: .account(accountId ?? ""),
+                            owner: .account(accountId),
                             merchantId: merchantId,
                             addCheckoutDivider: true) { result in
             if case .success(.charge(let transferId)) = result {
@@ -300,6 +300,15 @@ public struct FrameCheckoutView: View {
                     }
                 } catch {
                     checkoutViewModel.checkoutError = (error as? NetworkingError).map(describe) ?? error.localizedDescription
+                    // Only .serverError is retryable in-sheet (e.g. card declined). Anything
+                    // else (decode failure after the server may have created the transfer,
+                    // CancellationError, unknown error) is terminal — hand off to the host so
+                    // the sheet dismisses rather than stranding the user on a dead spinner.
+                    if case .serverError = (error as? NetworkingError) {
+                        // stay in-sheet for user retry
+                    } else {
+                        self.checkoutCallback(false, nil)
+                    }
                 }
             }
         }
