@@ -141,9 +141,10 @@ public struct FrameCheckoutView: View {
                 // retry Apple Pay or fall through to card entry. Closing the modal here would
                 // strand the user mid-flow for what's often a transient transport error or a
                 // missing-config case the host can correct without restarting checkout.
-                let message = (error as? NetworkingError)?.isTransport == true
-                    ? "Network error. Please try again."
-                    : "Apple Pay could not complete. Please try again or use a card."
+                // Prefer the server's `error_details.message` for server errors; fall back to a
+                // generic message for transport errors and any other Error subtype.
+                let message = (error as? NetworkingError)?.toastMessage()
+                    ?? "Apple Pay could not complete. Please try again or use a card."
                 FrameToastCenter.shared.show(message)
             }
         }
@@ -369,7 +370,10 @@ public struct FrameCheckoutView: View {
                     // toast overlay inside the view model and propagate here as a terminal
                     // `.failed(...)` — dismiss the sheet so the host promise resolves.
                     if case .serverError(_, let description) = (error as? NetworkingError) {
-                        checkoutViewModel.checkoutError = extractCheckoutErrorMessage(description)
+                        // Reuse the toastMessage parser with `description` as the raw-fallback
+                        // so behaviour for unparseable bodies (show the raw text) is preserved.
+                        checkoutViewModel.checkoutError =
+                            (error as? NetworkingError)?.toastMessage(fallback: description) ?? description
                     } else {
                         didFinish = true
                         onResult(.failed(error))
@@ -378,25 +382,6 @@ public struct FrameCheckoutView: View {
                 }
             }
         }
-    }
-
-    /// Extract a user-facing message from the raw error-envelope JSON the server sends back.
-    /// Shape: `{"status":N,"error":"...","code":"...","error_details":{"message":"...","data":...}}`.
-    /// Preference: `error_details.message` → `error` → the raw string as-is.
-    private func extractCheckoutErrorMessage(_ raw: String) -> String {
-        guard let data = raw.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return raw
-        }
-        if let details = json["error_details"] as? [String: Any],
-           let message = details["message"] as? String,
-           !message.isEmpty {
-            return message
-        }
-        if let error = json["error"] as? String, !error.isEmpty {
-            return error
-        }
-        return raw
     }
 
     private func errorBinding(_ field: FrameCheckoutViewModel.CheckoutField) -> Binding<String?> {

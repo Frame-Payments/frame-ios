@@ -87,7 +87,7 @@ class OnboardingContainerViewModel: ObservableObject {
         guard let accountId else { return }
         do {
             let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
-            reportIfTransport(error)
+            reportError(error)
             guard let profile = account?.profile?.individual else { return }
             let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
                                                              state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
@@ -157,7 +157,7 @@ class OnboardingContainerViewModel: ObservableObject {
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
             let (account, error) = try await AccountsAPI.createAccount(request: request)
-            reportIfTransport(error)
+            reportError(error)
 
             guard let account else { return }
             self.accountId = account.id
@@ -177,7 +177,7 @@ class OnboardingContainerViewModel: ObservableObject {
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
             let (account, error) = try await AccountsAPI.createAccount(request: request)
-            reportIfTransport(error)
+            reportError(error)
 
             guard let account else { return }
             self.accountId = account.id
@@ -235,7 +235,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let (response, error) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
-            reportIfTransport(error)
+            reportError(error)
             guard let response else { return }
 
             if let proveAuthToken = response.proveAuthToken {
@@ -269,7 +269,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
-            reportIfTransport(networkingError)
+            reportError(networkingError)
             if let networkingError { throw networkingError }
             self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
             self.pendingTwilioVerificationId = nil
@@ -313,7 +313,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let (paymentMethodResponse, error) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(accountId: accountId)
-            reportIfTransport(error)
+            reportError(error)
             if let methods = paymentMethodResponse?.data {
                 self.paymentMethods = methods.filter({ $0.card != nil })
                 self.payoutMethods = methods.filter({ $0.ach != nil })
@@ -337,7 +337,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                               account: accountId,
                                                                               billing: createdBillingAddress)
             let (paymentMethod, error) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
-            reportIfTransport(error)
+            reportError(error)
 
             if let paymentMethod {
                 self.selectedPaymentMethod = paymentMethod
@@ -359,7 +359,7 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let request = PaymentMethodRequest.UpdatePaymentMethodRequest(billing: createdBillingAddress)
             let (paymentMethod, error) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
-            reportIfTransport(error)
+            reportError(error)
 
             if let paymentMethod {
                 self.selectedPaymentMethod = paymentMethod
@@ -385,7 +385,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                              account: accountId,
                                                                              billing: createdBillingAddress)
             let (payoutMethod, error) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
-            reportIfTransport(error)
+            reportError(error)
 
             if let payoutMethod {
                 self.selectedPayoutMethod = payoutMethod
@@ -405,7 +405,7 @@ class OnboardingContainerViewModel: ObservableObject {
         // The action stays active until Plaid's onSuccess/onExit/error callback resolves the flow.
         do {
             let (response, error) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
-            reportIfTransport(error)
+            reportError(error)
             guard let token = response?.linkToken else {
                 endAction()
                 return
@@ -466,7 +466,7 @@ class OnboardingContainerViewModel: ObservableObject {
                 subtype: subtype
             )
             let (payoutMethod, error) = try await PaymentMethodsAPI.connectPlaidBankAccount(request: request)
-            reportIfTransport(error)
+            reportError(error)
             if let payoutMethod {
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
@@ -537,7 +537,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let (identity, error) = try await CustomerIdentityAPI.createCustomerIdentity(request: createdCustomerIdentity)
-            reportIfTransport(error)
+            reportError(error)
             if let identity {
                 self.customerIdentity = identity
             }
@@ -554,7 +554,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let (identity, error) = try await CustomerIdentityAPI.uploadIdentityDocuments(customerIdentityId: customerIdentityId, identityImages: filesToUpload)
-            reportIfTransport(error)
+            reportError(error)
             if let identity {
                 self.customerIdentity = identity
             }
@@ -636,11 +636,11 @@ class OnboardingContainerViewModel: ObservableObject {
         isPerformingAction = false
     }
 
-    /// Surface a transport-class networking failure as a toast. No-op for server validation
-    /// errors — those have shape-specific UI elsewhere in the flow.
-    func reportIfTransport(_ error: NetworkingError?) {
-        if let error, error.isTransport {
-            FrameToastCenter.shared.show("Network error. Please try again.")
-        }
+    /// Surface a networking failure as a toast. For server errors, the parsed
+    /// `error_details.message` from the Frame envelope is shown when present. Onboarding API
+    /// calls don't have a per-field inline error UI, so every failure routes through the toast.
+    func reportError(_ error: NetworkingError?) {
+        guard let error else { return }
+        FrameToastCenter.shared.show(error.toastMessage())
     }
 }

@@ -80,6 +80,37 @@ extension NetworkingError {
         case .noData, .serverError: return false
         }
     }
+
+    /// User-facing message for the transport/transient toast surface. For `.serverError`, parses
+    /// the standard Frame envelope (`{"error_details":{"message":"…"},"error":"…"}`) and prefers
+    /// `error_details.message`. For transport-class errors or unparseable bodies, returns [fallback].
+    /// Server validation errors that have a dedicated inline UI (e.g. card decline at the pay
+    /// button) should continue to use that surface; this helper is for the catch-all toast.
+    public func toastMessage(fallback: String = "Something went wrong. Please try again.") -> String {
+        if case .serverError(_, let description) = self {
+            return Self.extractEnvelopeMessage(description) ?? fallback
+        }
+        return fallback
+    }
+
+    /// Pull `error_details.message` (preferred) or `error` from the Frame error envelope JSON.
+    /// Returns nil when the body isn't valid JSON or neither field is present.
+    private static func extractEnvelopeMessage(_ raw: String) -> String? {
+        guard !raw.isEmpty,
+              let data = raw.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        if let details = json["error_details"] as? [String: Any],
+           let message = details["message"] as? String,
+           !message.isEmpty {
+            return message
+        }
+        if let error = json["error"] as? String, !error.isEmpty {
+            return error
+        }
+        return nil
+    }
 }
 
 public struct FrameMetadata: Codable {

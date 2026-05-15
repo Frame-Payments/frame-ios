@@ -49,8 +49,8 @@ class FrameCheckoutViewModel: ObservableObject {
         guard let accountId else { return }
         do {
             let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
-            if let error, error.isTransport {
-                FrameToastCenter.shared.show("Network error. Please try again.")
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
             }
             if let account = response?.profile?.individual {
                 let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
@@ -58,7 +58,7 @@ class FrameCheckoutViewModel: ObservableObject {
                 self.customerEmail = account.email ?? ""
             }
         } catch {
-            FrameToastCenter.shared.show("Network error. Please try again.")
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Something went wrong. Please try again.")
         }
 
         await loadAccountPaymentMethods()
@@ -71,8 +71,8 @@ class FrameCheckoutViewModel: ObservableObject {
         }
         do {
             let (response, error) = try await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId)
-            if let error, error.isTransport {
-                FrameToastCenter.shared.show("Network error. Please try again.")
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
             }
             self.accountPaymentOptions = response?.data
             if selectedAccountPaymentOption == nil,
@@ -81,7 +81,7 @@ class FrameCheckoutViewModel: ObservableObject {
                 self.selectedAccountPaymentOption = first
             }
         } catch {
-            FrameToastCenter.shared.show("Network error. Please try again.")
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Something went wrong. Please try again.")
         }
         self.didLoadAccountPaymentMethods = true
     }
@@ -195,8 +195,11 @@ class FrameCheckoutViewModel: ObservableObject {
 
         let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
         if let transferError {
+            // Transport errors toast (no inline UI for these); server errors propagate to the
+            // pay button's catch in FrameCheckoutView where they surface as inline card-decline
+            // text so the user can correct input without losing context.
             if transferError.isTransport {
-                FrameToastCenter.shared.show("Network error. Please try again.")
+                FrameToastCenter.shared.show(transferError.toastMessage())
             }
             throw transferError
         }
