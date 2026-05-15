@@ -37,41 +37,51 @@ class FrameCheckoutViewModel: ObservableObject {
 
     var accountId: String?
     var amount: Int
-    var merchantId: String
     let addressMode: FrameAddressMode
 
-    private var applePayViewModel: FrameApplePayViewModel?
-
-    init(accountId: String?, amount: Int, merchantId: String = "", addressMode: FrameAddressMode = .required) {
+    init(accountId: String?, amount: Int, addressMode: FrameAddressMode = .required) {
         self.accountId = accountId
         self.amount = amount
-        self.merchantId = merchantId
         self.addressMode = addressMode
     }
 
     func loadAccountDetails() async {
         guard let accountId else { return }
-        if let response = try? await AccountsAPI.getAccountWith(accountId: accountId).0, let account = response.profile?.individual {
-            let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
-            self.customerName = name
-            self.customerEmail = account.email ?? ""
+        do {
+            let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            if let error, error.isTransport {
+                FrameToastCenter.shared.show("Network error. Please try again.")
+            }
+            if let account = response?.profile?.individual {
+                let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
+                self.customerName = name
+                self.customerEmail = account.email ?? ""
+            }
+        } catch {
+            FrameToastCenter.shared.show("Network error. Please try again.")
         }
-        
+
         await loadAccountPaymentMethods()
     }
-    
+
     func loadAccountPaymentMethods() async {
         guard let accountId else {
             self.didLoadAccountPaymentMethods = true
             return
         }
-        let response = try? await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId).0
-        self.accountPaymentOptions = response?.data
-
-        if selectedAccountPaymentOption == nil,
-           cardData.card.number.isEmpty,
-           let first = response?.data?.first {
-            self.selectedAccountPaymentOption = first
+        do {
+            let (response, error) = try await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId)
+            if let error, error.isTransport {
+                FrameToastCenter.shared.show("Network error. Please try again.")
+            }
+            self.accountPaymentOptions = response?.data
+            if selectedAccountPaymentOption == nil,
+               cardData.card.number.isEmpty,
+               let first = response?.data?.first {
+                self.selectedAccountPaymentOption = first
+            }
+        } catch {
+            FrameToastCenter.shared.show("Network error. Please try again.")
         }
         self.didLoadAccountPaymentMethods = true
     }
@@ -84,27 +94,6 @@ class FrameCheckoutViewModel: ObservableObject {
             fieldErrors[key] = nil
         }
     }
-
-    func payWithApplePay(completion: @escaping (Result<String, Error>) -> Void) {
-        guard !merchantId.isEmpty else { return }
-        guard let accountId, !accountId.isEmpty else { return }
-        applePayViewModel = FrameApplePayViewModel(
-            mode: .charge(amount: amount, currency: "usd"),
-            owner: .account(accountId),
-            merchantId: merchantId,
-            completion: { result in
-                switch result {
-                case .success(.charge(let id)): completion(.success(id))
-                case .success(.paymentMethod): break // not produced in .charge mode
-                case .failure(let error): completion(.failure(error))
-                }
-            }
-        )
-        applePayViewModel?.presentApplePay()
-    }
-
-    //TODO: Integrate Google Pay
-    func payWithGooglePay() { }
 
     func clearError(_ field: CheckoutField) {
         fieldErrors[field] = nil
@@ -205,7 +194,12 @@ class FrameCheckoutViewModel: ObservableObject {
             metadata: nil)
 
         let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
-        if let transferError { throw transferError }
+        if let transferError {
+            if transferError.isTransport {
+                FrameToastCenter.shared.show("Network error. Please try again.")
+            }
+            throw transferError
+        }
         return transfer
     }
 

@@ -47,22 +47,21 @@ public struct OnboardingContainerView: View {
     @Environment(\.frameTheme) private var theme
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
-    var onComplete: (() -> Void)?
+    var onResult: (FrameResult) -> Void
 
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
     @State private var startedOnboarding: Bool = false
     @State private var accountLoaded: Bool = false
+    @State private var didFinish: Bool = false
 
     public init(accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
-                applePayMerchantId: String? = nil,
-                onComplete: (() -> Void)? = nil) {
-        self.onComplete = onComplete
+                onResult: @escaping (FrameResult) -> Void = { _ in }) {
+        self.onResult = onResult
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId,
-                                                                         requiredCapabilities: requiredCapabilities,
-                                                                         applePayMerchantId: applePayMerchantId)
-        
+                                                                         requiredCapabilities: requiredCapabilities)
+
         if requiredCapabilities != [] {
             // Map capabilites to onboarding flow steps
             let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
@@ -126,7 +125,13 @@ public struct OnboardingContainerView: View {
         .onChange(of: continueToNextStep) { oldValue, newValue in
             guard continueToNextStep else { return }
             guard onboardingContainerViewModel.onboardingFlow.last != onboardingContainerViewModel.currentStep else {
-                onComplete?()
+                // Mark finished BEFORE dismiss so the cancel guard in .onDisappear doesn't fire.
+                // The selected PaymentMethod id (if any) is what callers care about — Apple Pay
+                // / card / ACH all converge here. Emit empty string for the "completed without
+                // a method selection" path (rare; covers flows where onboarding only verifies
+                // identity rather than collecting a payment method).
+                didFinish = true
+                onResult(.completed(id: onboardingContainerViewModel.selectedPaymentMethod?.id ?? ""))
                 self.dismiss()
                 return
             } // Complete onboarding here.
@@ -150,6 +155,13 @@ public struct OnboardingContainerView: View {
         .onChange(of: onboardingContainerViewModel.currentStep) {
             let index: Int = (onboardingContainerViewModel.onboardingFlow.firstIndex(of: onboardingContainerViewModel.currentStep) ?? 0) + 1
             onboardingContainerViewModel.progressiveSteps = Array(onboardingContainerViewModel.onboardingFlow[0..<index])
+        }
+        .frameToastOverlay()
+        .onDisappear {
+            if !didFinish {
+                didFinish = true
+                onResult(.cancelled)
+            }
         }
     }
     

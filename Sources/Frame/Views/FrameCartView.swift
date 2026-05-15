@@ -20,32 +20,30 @@ public struct FrameCartView: View {
     @State var checkoutButtonTitle: String
 
     @State var continueToCheckout: Bool = false
+    @State private var didFinish = false
 
-    private let checkoutCallback: ((_ success: Bool, _ transferId: String?) -> Void)?
-    
+    private let onResult: ((FrameResult) -> Void)?
+
     var accountId: String
-    var merchantId: String
 
     public init(
         accountId: String,
-        merchantId: String? = nil,
         cartItems: [any FrameCartItem],
         shippingAmountInCents: Int,
         cartViewTitle: String = "Frame Payments",
         subtitle: String = "Cart",
         cartItemHeight: CGFloat = 65.0,
         checkoutButtonTitle: String = "Checkout",
-        checkoutCallback: ((_ success: Bool, _ transferId: String?) -> Void)? = nil
+        onResult: ((FrameResult) -> Void)? = nil
     ) {
         self.cartViewModel = FrameCartViewModel(cartItems: cartItems, shippingAmount: shippingAmountInCents)
         self.accountId = accountId
-        self.merchantId = merchantId ?? "merchant.com.app"
         self.cartItems = cartItems
         self.cartViewTitle = cartViewTitle
         self.subtitle = subtitle
         self.cartItemHeight = cartItemHeight
         self.checkoutButtonTitle = checkoutButtonTitle
-        self.checkoutCallback = checkoutCallback
+        self.onResult = onResult
     }
 
     public var body: some View {
@@ -56,11 +54,32 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView(accountId: accountId, paymentAmount: cartViewModel.finalTotal, merchantId: merchantId) { success, transferId in
-                    self.checkoutCallback?(success, transferId)
-                    self.dismiss()
+                FrameCheckoutView(accountId: accountId, paymentAmount: cartViewModel.finalTotal) { result in
+                    // Map the inner checkout's result into the cart's result. Treat the inner
+                    // `.cancelled` (user backs out of checkout) as a return to the cart rather
+                    // than terminating the cart flow — the cart sheet stays open and emits its
+                    // own `.cancelled` only when the cart itself is dismissed.
+                    switch result {
+                    case .completed(let transferId):
+                        didFinish = true
+                        onResult?(.completed(id: transferId))
+                        dismiss()
+                    case .failed(let error):
+                        didFinish = true
+                        onResult?(.failed(error))
+                        dismiss()
+                    case .cancelled:
+                        continueToCheckout = false
+                    }
                 }
                 .toolbar(.hidden)
+            }
+        }
+        .frameToastOverlay()
+        .onDisappear {
+            if !didFinish {
+                didFinish = true
+                onResult?(.cancelled)
             }
         }
     }

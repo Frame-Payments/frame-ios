@@ -16,31 +16,34 @@ public struct FrameCheckoutView: View {
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
     @State private var isShowingPicker = false
+    @State private var didFinish = false
 
     let accountId: String
     let paymentAmount: Int
-    let merchantId: String
     let addressMode: FrameAddressMode
 
-    var checkoutCallback: (_ success: Bool, _ transferId: String?) -> ()
+    var onResult: (FrameResult) -> Void
 
     public init(accountId: String,
                 paymentAmount: Int,
-                merchantId: String? = nil,
                 addressMode: FrameAddressMode = .required,
-                checkoutCallback: @escaping (_ success: Bool, _ transferId: String?) -> ()) {
+                onResult: @escaping (FrameResult) -> Void) {
         self.accountId = accountId
         self.paymentAmount = paymentAmount
-        self.merchantId = merchantId ?? "merchant.com.app"
         self.addressMode = addressMode
-        self.checkoutCallback = checkoutCallback
+        self.onResult = onResult
 
         _checkoutViewModel = StateObject(wrappedValue: FrameCheckoutViewModel(
             accountId: accountId,
             amount: paymentAmount,
-            merchantId: merchantId ?? "merchant.com.app",
             addressMode: addressMode
         ))
+    }
+
+    /// True when the host has configured an Apple Pay merchant identifier at SDK init time.
+    /// Drives whether the Apple Pay row is rendered at the top of the sheet.
+    private var applePayConfigured: Bool {
+        !(FrameNetworking.shared.applePayMerchantId ?? "").isEmpty
     }
 
     public var body: some View {
@@ -48,7 +51,7 @@ public struct FrameCheckoutView: View {
             topHeaderBar
             Divider()
             ScrollView {
-                if !merchantId.isEmpty {
+                if applePayConfigured {
                     applePayButton
                 }
                 paymentMethodList
@@ -87,6 +90,16 @@ public struct FrameCheckoutView: View {
             .presentationDetents([.fraction(0.3)])
             .presentationDragIndicator(.visible)
         }
+        .frameToastOverlay()
+        .onDisappear {
+            // The sheet's swipe-down / close-button dismissal lands here without going through
+            // the pay button. Emit `.cancelled` so the host's promise resolves instead of
+            // hanging waiting for a completion that won't come.
+            if !didFinish {
+                didFinish = true
+                onResult(.cancelled)
+            }
+        }
     }
 
     var topHeaderBar: some View {
@@ -115,14 +128,23 @@ public struct FrameCheckoutView: View {
     var applePayButton: some View {
         FrameApplePayButton(mode: .charge(amount: paymentAmount, currency: "usd"),
                             owner: .account(accountId),
-                            merchantId: merchantId,
                             addCheckoutDivider: true) { result in
-            if case .success(.charge(let transferId)) = result {
-                checkoutCallback(true, transferId)
+            switch result {
+            case .success(.charge(let transferId)):
+                didFinish = true
+                onResult(.completed(id: transferId))
                 dismiss()
-            } else if case .failure(let failure) = result {
-                checkoutCallback(false, nil)
-                dismiss()
+            case .success(.paymentMethod):
+                break // not produced in `.charge` mode
+            case .failure(let error):
+                // Surface the failure as a toast and keep the checkout open so the user can
+                // retry Apple Pay or fall through to card entry. Closing the modal here would
+                // strand the user mid-flow for what's often a transient transport error or a
+                // missing-config case the host can correct without restarting checkout.
+                let message = (error as? NetworkingError)?.isTransport == true
+                    ? "Network error. Please try again."
+                    : "Apple Pay could not complete. Please try again or use a card."
+                FrameToastCenter.shared.show(message)
             }
         }
         .padding(.horizontal)
@@ -337,20 +359,21 @@ public struct FrameCheckoutView: View {
                 do {
                     let transfer = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
                     if let transfer {
-                        self.checkoutCallback(true, transfer.id)
+                        didFinish = true
+                        onResult(.completed(id: transfer.id))
+                        dismiss()
                     }
                 } catch {
-                    // Only .serverError is retryable in-sheet (e.g. card declined). The server's
-                    // `description` is the raw JSON envelope string — extract the user-facing
-                    // `error_details.message` locally rather than displaying the whole blob.
-                    // Anything else (decode failure after the server may have created the transfer,
-                    // CancellationError, unknown error) is terminal — hand off to the host
-                    // silently so the sheet dismisses rather than stranding the user on a dead
-                    // spinner or showing diagnostic text we don't want in front of payers.
+                    // Server validation errors (e.g. card declined) stay inline so the user can
+                    // correct input without losing context. Transport errors are surfaced via the
+                    // toast overlay inside the view model and propagate here as a terminal
+                    // `.failed(...)` — dismiss the sheet so the host promise resolves.
                     if case .serverError(_, let description) = (error as? NetworkingError) {
                         checkoutViewModel.checkoutError = extractCheckoutErrorMessage(description)
                     } else {
-                        self.checkoutCallback(false, nil)
+                        didFinish = true
+                        onResult(.failed(error))
+                        dismiss()
                     }
                 }
             }
@@ -391,10 +414,10 @@ public struct FrameCheckoutView: View {
 }
 
 #Preview {
-    FrameCheckoutView(accountId: "", paymentAmount: 15000) { _,_  in }
+    FrameCheckoutView(accountId: "", paymentAmount: 15000) { _ in }
 }
 
 #Preview("Dark") {
-    FrameCheckoutView(accountId: "", paymentAmount: 15000) { _,_  in }
+    FrameCheckoutView(accountId: "", paymentAmount: 15000) { _ in }
         .preferredColorScheme(.dark)
 }

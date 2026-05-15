@@ -91,14 +91,13 @@ struct AddPaymentMethodView: View {
 
     @ViewBuilder
     var walletButton: some View {
-        if let merchantId = onboardingContainerViewModel.applePayMerchantId,
-           !merchantId.isEmpty,
-           let accountId = onboardingContainerViewModel.accountId,
+        // FrameApplePayButton renders nothing when the merchant ID isn't configured at SDK init,
+        // so a simple presence-of-accountId guard is enough at this layer.
+        if let accountId = onboardingContainerViewModel.accountId,
            !accountId.isEmpty {
             FrameApplePayButton(
                 mode: .addToOwner,
                 owner: .account(accountId),
-                merchantId: merchantId,
                 addCheckoutDivider: true,
                 buttonType: .continue,
             ) { result in

@@ -22,10 +22,10 @@ public struct FrameApplePayButton: View {
 
     /// Mode-aware initializer. Use `.charge(amount:currency:)` to run the existing checkout flow,
     /// or `.addToOwner` to surface the wallet sheet for one-tap PaymentMethod creation
-    /// (no charge intent created).
+    /// (no charge intent created). The Apple Pay merchant identifier is read from
+    /// `FrameNetworking.shared.applePayMerchantId` — pass it once at SDK init.
     public init(mode: FrameApplePayViewModel.FrameApplePayMode,
                 owner: FrameApplePayViewModel.PaymentMethodOwner,
-                merchantId: String,
                 addCheckoutDivider: Bool = false,
                 buttonType: PKPaymentButtonType = .buy,
                 buttonStyle: PKPaymentButtonStyle = .automatic,
@@ -39,7 +39,6 @@ public struct FrameApplePayButton: View {
         _viewModel = StateObject(wrappedValue: FrameApplePayViewModel(
             mode: mode,
             owner: owner,
-            merchantId: merchantId,
             completion: completion
         ))
     }
@@ -47,7 +46,8 @@ public struct FrameApplePayButton: View {
     // MARK: - Body
 
     public var body: some View {
-        if FrameApplePayViewModel.canMakePayments() && attestationManager.isDeviceAttested {
+        let merchantConfigured = !(FrameNetworking.shared.applePayMerchantId ?? "").isEmpty
+        if merchantConfigured && FrameApplePayViewModel.canMakePayments() && attestationManager.isDeviceAttested {
             PKPaymentButtonWrapper(
                 buttonType: buttonType,
                 buttonStyle: buttonStyle
@@ -61,7 +61,8 @@ public struct FrameApplePayButton: View {
                 paymentDivider
             }
         }
-        // Renders nothing if Apple Pay is unavailable on this device
+        // Renders nothing if Apple Pay is unavailable on this device or the merchant ID
+        // wasn't configured at init.
     }
 
     var paymentDivider: some View {
@@ -79,8 +80,7 @@ public struct FrameApplePayButton: View {
 #Preview {
     FrameApplePayButton(
         mode: .charge(amount: 15000, currency: "usd"),
-        owner: .account("acc_preview"),
-        merchantId: "merchant.com.yourapp"
+        owner: .account("acc_preview")
     ) { result in
         print(result)
     }
@@ -90,8 +90,7 @@ public struct FrameApplePayButton: View {
 #Preview("Dark") {
     FrameApplePayButton(
         mode: .charge(amount: 15000, currency: "usd"),
-        owner: .account("acc_preview"),
-        merchantId: "merchant.com.yourapp"
+        owner: .account("acc_preview")
     ) { result in
         print(result)
     }

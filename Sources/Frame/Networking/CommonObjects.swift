@@ -71,6 +71,17 @@ public enum NetworkingError: Error, Equatable {
     case unknownError
 }
 
+extension NetworkingError {
+    /// True for connectivity-class failures the user can retry. False for server-validation
+    /// errors that should stay in the form so the user can correct the input.
+    public var isTransport: Bool {
+        switch self {
+        case .invalidURL, .decodingFailed, .unknownError: return true
+        case .noData, .serverError: return false
+        }
+    }
+}
+
 public struct FrameMetadata: Codable {
     public let page: Int
     public let url: String
