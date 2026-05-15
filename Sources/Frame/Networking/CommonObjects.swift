@@ -81,20 +81,26 @@ extension NetworkingError {
         }
     }
 
-    /// User-facing message for the transport/transient toast surface. For `.serverError`, parses
-    /// the standard Frame envelope (`{"error_details":{"message":"…"},"error":"…"}`) and prefers
-    /// `error_details.message`. For transport-class errors or unparseable bodies, returns [fallback].
-    /// Server validation errors that have a dedicated inline UI (e.g. card decline at the pay
-    /// button) should continue to use that surface; this helper is for the catch-all toast.
+    /// User-facing message for the toast surface, prefixed with "Error: " for clarity. For
+    /// `.serverError`, parses the standard Frame envelope (`{"error_details":{"message":"…"},"error":"…"}`)
+    /// and prefers `error_details.message`. For transport-class errors or unparseable bodies,
+    /// returns [fallback] prefixed the same way.
     public func toastMessage(fallback: String = "Something went wrong. Please try again.") -> String {
+        let body: String
         if case .serverError(_, let description) = self {
-            return Self.extractEnvelopeMessage(description) ?? fallback
+            body = Self.extractEnvelopeMessage(description) ?? fallback
+        } else {
+            body = fallback
         }
-        return fallback
+        return "Error: \(body)"
     }
 
-    /// Pull `error_details.message` (preferred) or `error` from the Frame error envelope JSON.
-    /// Returns nil when the body isn't valid JSON or neither field is present.
+    /// Pull a user-facing message from the Frame error envelope JSON. The server's `error_details`
+    /// field is polymorphic — sometimes an object with a `message` key, sometimes a plain string
+    /// (e.g. `"Card submitted is not a test card"` for 422 validation failures). Both shapes are
+    /// handled; `error_details` is preferred over the generic `error` key (which tends to be the
+    /// HTTP status name like `"Unprocessable Entity"`). Returns nil when the body isn't valid
+    /// JSON or no usable field is present.
     private static func extractEnvelopeMessage(_ raw: String) -> String? {
         guard !raw.isEmpty,
               let data = raw.data(using: .utf8),
@@ -105,6 +111,9 @@ extension NetworkingError {
            let message = details["message"] as? String,
            !message.isEmpty {
             return message
+        }
+        if let detailsString = json["error_details"] as? String, !detailsString.isEmpty {
+            return detailsString
         }
         if let error = json["error"] as? String, !error.isEmpty {
             return error

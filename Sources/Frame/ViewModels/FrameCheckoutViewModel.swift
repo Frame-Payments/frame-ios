@@ -33,7 +33,6 @@ class FrameCheckoutViewModel: ObservableObject {
 
     @Published var fieldErrors: [CheckoutField: String] = [:]
     @Published var isPerformingAction: Bool = false
-    @Published var checkoutError: String?
 
     var accountId: String?
     var amount: Int
@@ -58,7 +57,7 @@ class FrameCheckoutViewModel: ObservableObject {
                 self.customerEmail = account.email ?? ""
             }
         } catch {
-            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Something went wrong. Please try again.")
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
         }
 
         await loadAccountPaymentMethods()
@@ -81,7 +80,7 @@ class FrameCheckoutViewModel: ObservableObject {
                 self.selectedAccountPaymentOption = first
             }
         } catch {
-            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Something went wrong. Please try again.")
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
         }
         self.didLoadAccountPaymentMethods = true
     }
@@ -194,15 +193,7 @@ class FrameCheckoutViewModel: ObservableObject {
             metadata: nil)
 
         let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
-        if let transferError {
-            // Transport errors toast (no inline UI for these); server errors propagate to the
-            // pay button's catch in FrameCheckoutView where they surface as inline card-decline
-            // text so the user can correct input without losing context.
-            if transferError.isTransport {
-                FrameToastCenter.shared.show(transferError.toastMessage())
-            }
-            throw transferError
-        }
+        if let transferError { throw transferError }
         return transfer
     }
 
@@ -226,7 +217,8 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                           customer: nil,
                                                                           account: accountId,
                                                                           billing: billingAddress)
-        let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+        let (paymentMethod, networkingError) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+        if let networkingError { throw networkingError }
         return paymentMethod?.id
     }
 }

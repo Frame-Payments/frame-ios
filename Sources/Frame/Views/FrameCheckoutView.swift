@@ -68,13 +68,6 @@ public struct FrameCheckoutView: View {
                     }
                     saveCardToggle
                 }
-                if let checkoutError = checkoutViewModel.checkoutError {
-                    Text(checkoutError)
-                        .font(theme.fonts.caption)
-                        .foregroundColor(theme.colors.error)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                }
                 checkoutButton
                 Spacer()
             }
@@ -144,7 +137,7 @@ public struct FrameCheckoutView: View {
                 // Prefer the server's `error_details.message` for server errors; fall back to a
                 // generic message for transport errors and any other Error subtype.
                 let message = (error as? NetworkingError)?.toastMessage()
-                    ?? "Apple Pay could not complete. Please try again or use a card."
+                    ?? "Error: Apple Pay could not complete. Please try again or use a card."
                 FrameToastCenter.shared.show(message)
             }
         }
@@ -356,7 +349,6 @@ public struct FrameCheckoutView: View {
             isLoading: .constant(checkoutViewModel.isPerformingAction)
         ) {
             Task {
-                checkoutViewModel.checkoutError = nil
                 do {
                     let transfer = try await checkoutViewModel.checkoutWithSelectedPaymentMethod(saveMethod: saveCardForPayments)
                     if let transfer {
@@ -365,20 +357,12 @@ public struct FrameCheckoutView: View {
                         dismiss()
                     }
                 } catch {
-                    // Server validation errors (e.g. card declined) stay inline so the user can
-                    // correct input without losing context. Transport errors are surfaced via the
-                    // toast overlay inside the view model and propagate here as a terminal
-                    // `.failed(...)` — dismiss the sheet so the host promise resolves.
-                    if case .serverError(_, let description) = (error as? NetworkingError) {
-                        // Reuse the toastMessage parser with `description` as the raw-fallback
-                        // so behaviour for unparseable bodies (show the raw text) is preserved.
-                        checkoutViewModel.checkoutError =
-                            (error as? NetworkingError)?.toastMessage(fallback: description) ?? description
-                    } else {
-                        didFinish = true
-                        onResult(.failed(error))
-                        dismiss()
-                    }
+                    // Every error — server validation (card declined, "Card submitted is not a
+                    // test card", insufficient funds), transport, decode — surfaces as a toast.
+                    // Modal stays open so the user can fix the input and retry.
+                    let message = (error as? NetworkingError)?.toastMessage()
+                        ?? "Error: Something went wrong. Please try again."
+                    FrameToastCenter.shared.show(message)
                 }
             }
         }
