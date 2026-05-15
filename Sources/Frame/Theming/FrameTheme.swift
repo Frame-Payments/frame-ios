@@ -43,6 +43,8 @@ public struct FrameTheme: Equatable {
         public var textPrimary: Color
         public var textSecondary: Color
         public var error: Color
+        public var toastBackground: Color
+        public var toastText: Color
         public var onboardingHeaderBackground: Color
         public var onboardingProgressFilledOnBrand: Color
         public var onboardingProgressEmptyOnBrand: Color
@@ -60,6 +62,8 @@ public struct FrameTheme: Equatable {
             textPrimary: Color = Color("PrimaryTextColor", bundle: FrameResources.module),
             textSecondary: Color = Color("TextColorSecondary", bundle: FrameResources.module),
             error: Color = .red,
+            toastBackground: Color = .red,
+            toastText: Color = .white,
             onboardingHeaderBackground: Color = Color("OnboardingHeaderBackground", bundle: FrameResources.module),
             onboardingProgressFilledOnBrand: Color = .white,
             onboardingProgressEmptyOnBrand: Color = .white.opacity(0.25)
@@ -76,6 +80,8 @@ public struct FrameTheme: Equatable {
             self.textPrimary = textPrimary
             self.textSecondary = textSecondary
             self.error = error
+            self.toastBackground = toastBackground
+            self.toastText = toastText
             self.onboardingHeaderBackground = onboardingHeaderBackground
             self.onboardingProgressFilledOnBrand = onboardingProgressFilledOnBrand
             self.onboardingProgressEmptyOnBrand = onboardingProgressEmptyOnBrand

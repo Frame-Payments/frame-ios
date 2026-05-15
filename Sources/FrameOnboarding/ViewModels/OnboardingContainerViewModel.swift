@@ -67,32 +67,27 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var isPerformingAction: Bool = false
     private var plaidHandler: Handler?
 
-    /// Optional Apple Pay merchant identifier. When set, `AddPaymentMethodView` will surface an
-    /// Apple Pay button at the top of the screen for one-tap wallet attachment.
-    let applePayMerchantId: String?
-
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
-    
+
     @Published var createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
                                                                                                    ssn: "", address: FrameObjects.BillingAddress(postalCode: ""))
-    
+
     var accountId: String?
     var existingAccountHasTOS: Bool = false
     let formatter = ISO8601DateFormatter()
-    
+
     init(accountId: String?,
-         requiredCapabilities: [FrameObjects.Capabilities],
-         applePayMerchantId: String? = nil) {
+         requiredCapabilities: [FrameObjects.Capabilities]) {
         self.accountId = accountId
         self.requiredCapabilities = requiredCapabilities
-        self.applePayMerchantId = applePayMerchantId
     }
     
     // Load existing account object to show on account page.
     func checkExistingAccount(updateCapabilies: Bool = false) async {
         guard let accountId else { return }
         do {
-            let (account, _) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            reportError(error)
             guard let profile = account?.profile?.individual else { return }
             let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
                                                              state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
@@ -161,15 +156,16 @@ class OnboardingContainerViewModel: ObservableObject {
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
-            let (account, _) = try await AccountsAPI.createAccount(request: request)
-            
+            let (account, error) = try await AccountsAPI.createAccount(request: request)
+            reportError(error)
+
             guard let account else { return }
             self.accountId = account.id
         } catch let error {
             print(error)
         }
     }
-    
+
     func createEmptyIndividualAccount(phoneNumber: String, dateOfBirth: String) async {
         // Note: callers (e.g. sendOTPVerification) already hold the action guard. Don't double-guard.
         do {
@@ -180,8 +176,9 @@ class OnboardingContainerViewModel: ObservableObject {
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
-            let (account, _) = try await AccountsAPI.createAccount(request: request)
-            
+            let (account, error) = try await AccountsAPI.createAccount(request: request)
+            reportError(error)
+
             guard let account else { return }
             self.accountId = account.id
             return
@@ -237,7 +234,8 @@ class OnboardingContainerViewModel: ObservableObject {
         guard let accountId else { return }
 
         do {
-            let (response, _) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+            let (response, error) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+            reportError(error)
             guard let response else { return }
 
             if let proveAuthToken = response.proveAuthToken {
@@ -271,6 +269,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
+            reportError(networkingError)
             if let networkingError { throw networkingError }
             self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
             self.pendingTwilioVerificationId = nil
@@ -311,9 +310,10 @@ class OnboardingContainerViewModel: ObservableObject {
     // Load existing Payment Methods for customer
     func loadExistingPaymentMethods() async {
         guard let accountId else { return }
-        
+
         do {
-            let (paymentMethodResponse, _) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(accountId: accountId)
+            let (paymentMethodResponse, error) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(accountId: accountId)
+            reportError(error)
             if let methods = paymentMethodResponse?.data {
                 self.paymentMethods = methods.filter({ $0.card != nil })
                 self.payoutMethods = methods.filter({ $0.ach != nil })
@@ -336,19 +336,20 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                               customer: nil,
                                                                               account: accountId,
                                                                               billing: createdBillingAddress)
-            let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
-            
+            let (paymentMethod, error) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+            reportError(error)
+
             if let paymentMethod {
                 self.selectedPaymentMethod = paymentMethod
                 self.paymentMethods.append(paymentMethod)
-                
+
                 self.clearAccountDetails()
             }
         } catch let error {
             print(error)
         }
     }
-    
+
     // Update an existing payment method with a billing address
     func updatePaymentMethod() async {
         guard let paymentMethodId = selectedPayoutMethod?.id else { return }
@@ -357,8 +358,9 @@ class OnboardingContainerViewModel: ObservableObject {
 
         do {
             let request = PaymentMethodRequest.UpdatePaymentMethodRequest(billing: createdBillingAddress)
-            let (paymentMethod, _) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
-            
+            let (paymentMethod, error) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
+            reportError(error)
+
             if let paymentMethod {
                 self.selectedPaymentMethod = paymentMethod
                 self.paymentMethods.append(paymentMethod)
@@ -382,8 +384,9 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                              customer: nil,
                                                                              account: accountId,
                                                                              billing: createdBillingAddress)
-            let (payoutMethod, _) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
-            
+            let (payoutMethod, error) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
+            reportError(error)
+
             if let payoutMethod {
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
@@ -401,7 +404,8 @@ class OnboardingContainerViewModel: ObservableObject {
         guard beginAction() else { return }
         // The action stays active until Plaid's onSuccess/onExit/error callback resolves the flow.
         do {
-            let (response, _) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
+            let (response, error) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
+            reportError(error)
             guard let token = response?.linkToken else {
                 endAction()
                 return
@@ -461,7 +465,8 @@ class OnboardingContainerViewModel: ObservableObject {
                 institutionName: institutionName,
                 subtype: subtype
             )
-            let (payoutMethod, _) = try await PaymentMethodsAPI.connectPlaidBankAccount(request: request)
+            let (payoutMethod, error) = try await PaymentMethodsAPI.connectPlaidBankAccount(request: request)
+            reportError(error)
             if let payoutMethod {
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
@@ -531,7 +536,8 @@ class OnboardingContainerViewModel: ObservableObject {
         defer { endAction() }
 
         do {
-            let (identity, _) = try await CustomerIdentityAPI.createCustomerIdentity(request: createdCustomerIdentity)
+            let (identity, error) = try await CustomerIdentityAPI.createCustomerIdentity(request: createdCustomerIdentity)
+            reportError(error)
             if let identity {
                 self.customerIdentity = identity
             }
@@ -547,7 +553,8 @@ class OnboardingContainerViewModel: ObservableObject {
         defer { endAction() }
 
         do {
-            let (identity, _) = try await CustomerIdentityAPI.uploadIdentityDocuments(customerIdentityId: customerIdentityId, identityImages: filesToUpload)
+            let (identity, error) = try await CustomerIdentityAPI.uploadIdentityDocuments(customerIdentityId: customerIdentityId, identityImages: filesToUpload)
+            reportError(error)
             if let identity {
                 self.customerIdentity = identity
             }
@@ -627,5 +634,13 @@ class OnboardingContainerViewModel: ObservableObject {
 
     private func endAction() {
         isPerformingAction = false
+    }
+
+    /// Surface a networking failure as a toast. For server errors, the parsed
+    /// `error_details.message` from the Frame envelope is shown when present. Onboarding API
+    /// calls don't have a per-field inline error UI, so every failure routes through the toast.
+    func reportError(_ error: NetworkingError?) {
+        guard let error else { return }
+        FrameToastCenter.shared.show(error.toastMessage())
     }
 }

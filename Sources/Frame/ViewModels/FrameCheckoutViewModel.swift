@@ -33,45 +33,54 @@ class FrameCheckoutViewModel: ObservableObject {
 
     @Published var fieldErrors: [CheckoutField: String] = [:]
     @Published var isPerformingAction: Bool = false
-    @Published var checkoutError: String?
 
     var accountId: String?
     var amount: Int
-    var merchantId: String
     let addressMode: FrameAddressMode
 
-    private var applePayViewModel: FrameApplePayViewModel?
-
-    init(accountId: String?, amount: Int, merchantId: String = "", addressMode: FrameAddressMode = .required) {
+    init(accountId: String?, amount: Int, addressMode: FrameAddressMode = .required) {
         self.accountId = accountId
         self.amount = amount
-        self.merchantId = merchantId
         self.addressMode = addressMode
     }
 
     func loadAccountDetails() async {
         guard let accountId else { return }
-        if let response = try? await AccountsAPI.getAccountWith(accountId: accountId).0, let account = response.profile?.individual {
-            let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
-            self.customerName = name
-            self.customerEmail = account.email ?? ""
+        do {
+            let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
+            }
+            if let account = response?.profile?.individual {
+                let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
+                self.customerName = name
+                self.customerEmail = account.email ?? ""
+            }
+        } catch {
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
         }
-        
+
         await loadAccountPaymentMethods()
     }
-    
+
     func loadAccountPaymentMethods() async {
         guard let accountId else {
             self.didLoadAccountPaymentMethods = true
             return
         }
-        let response = try? await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId).0
-        self.accountPaymentOptions = response?.data
-
-        if selectedAccountPaymentOption == nil,
-           cardData.card.number.isEmpty,
-           let first = response?.data?.first {
-            self.selectedAccountPaymentOption = first
+        do {
+            let (response, error) = try await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId)
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
+            }
+            self.accountPaymentOptions = response?.data
+            if selectedAccountPaymentOption == nil,
+               cardData.card.number.isEmpty,
+               let first = response?.data?.first {
+                self.selectedAccountPaymentOption = first
+            }
+        } catch {
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
         }
         self.didLoadAccountPaymentMethods = true
     }
@@ -84,27 +93,6 @@ class FrameCheckoutViewModel: ObservableObject {
             fieldErrors[key] = nil
         }
     }
-
-    func payWithApplePay(completion: @escaping (Result<String, Error>) -> Void) {
-        guard !merchantId.isEmpty else { return }
-        guard let accountId, !accountId.isEmpty else { return }
-        applePayViewModel = FrameApplePayViewModel(
-            mode: .charge(amount: amount, currency: "usd"),
-            owner: .account(accountId),
-            merchantId: merchantId,
-            completion: { result in
-                switch result {
-                case .success(.charge(let id)): completion(.success(id))
-                case .success(.paymentMethod): break // not produced in .charge mode
-                case .failure(let error): completion(.failure(error))
-                }
-            }
-        )
-        applePayViewModel?.presentApplePay()
-    }
-
-    //TODO: Integrate Google Pay
-    func payWithGooglePay() { }
 
     func clearError(_ field: CheckoutField) {
         fieldErrors[field] = nil
@@ -229,7 +217,8 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                           customer: nil,
                                                                           account: accountId,
                                                                           billing: billingAddress)
-        let (paymentMethod, _) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+        let (paymentMethod, networkingError) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
+        if let networkingError { throw networkingError }
         return paymentMethod?.id
     }
 }
