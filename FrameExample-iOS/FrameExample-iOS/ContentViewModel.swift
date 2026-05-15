@@ -18,6 +18,9 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     @Published var chargeIntents: [FrameObjects.ChargeIntent] = []
     @Published var refunds: [FrameObjects.Refund] = []
     
+    // Replace with your Apple Pay merchant ID registered in your entitlements
+    let applePayMerchantId: String = "merchant.com.yourapp"
+    
     init() {
         // Note: To use this SDK, you must add your sandbox publishable and secret keys here.
         FrameNetworking.shared.initializeWithAPIKey("ENTER_SECRET_KEY_HERE",
@@ -27,6 +30,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
 //                                                        fonts: .init(title: .custom("Avenir-Black", size: 28)),
 //                                                        radii: .init(medium: 16)
 //                                                    ),
+                                                    applePayMerchantId: applePayMerchantId,
                                                     debugMode: true)
 
         Task {
