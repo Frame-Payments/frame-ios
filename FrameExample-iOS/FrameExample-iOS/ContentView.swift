@@ -32,8 +32,6 @@ struct ContentView: View {
 
     // Replace with an accountID from your dashboard.
     var accountId: String = "ENTER_AN_ACCOUNT_ID"
-    // Replace with your Apple Pay merchant ID registered in your entitlements
-    let applePayMerchantId: String = "merchant.com.yourapp"
     
     var body: some View {
         VStack {
@@ -50,8 +48,7 @@ struct ContentView: View {
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
                     mode: .charge(amount: 35000, currency: "usd"),
-                    owner: .account(accountId),
-                    merchantId: applePayMerchantId
+                    owner: .account(accountId)
                 ) { result in
                     switch result {
                     case .success(.charge(let chargeId)):
@@ -85,6 +82,7 @@ struct ContentView: View {
             }
         }
         .padding()
+        .frameToastOverlay()
         .alert("Apple Pay Result", isPresented: Binding(
             get: { applePayResult != nil },
             set: { if !$0 { applePayResult = nil } }
@@ -95,11 +93,10 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showOnboardingSheet, content: {
 //            OnboardingContainerView(accountId: "ENTER_TEST_ACCOUNT_ID", requiredCapabilities: [], applePayMerchantId: "ENTER_MERCHANT_PAY_ID")
-            OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardSend, .geoCompliance, .bankAccountReceive, .ageVerification], applePayMerchantId: applePayMerchantId)
+            OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardSend, .geoCompliance, .bankAccountReceive, .ageVerification])
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(accountId: accountId,
-                          merchantId: applePayMerchantId,
                           cartItems: [ExampleCartItem(id: "1",
                                                       imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
                                                       title: "Vintage Track Jacket",
@@ -109,7 +106,17 @@ struct ContentView: View {
                                                       title: "Zip Up Hoodie",
                                                       amountInCents: 25000)],
                           shippingAmountInCents: 4000,
-                          cartViewTitle: "Messina Clothing")
+                          cartViewTitle: "Messina Clothing",
+                          onResult: { result in
+                switch result {
+                    case .completed(let id):
+                        FrameToastCenter.shared.show("Completed: \(id)")
+                    case .cancelled:
+                        FrameToastCenter.shared.show("Cancelled flow")
+                    case .failed(let error):
+                    FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                }
+            })
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showCustomersView) {

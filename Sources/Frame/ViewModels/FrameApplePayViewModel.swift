@@ -42,17 +42,14 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
 
     let mode: FrameApplePayMode
     let owner: PaymentMethodOwner
-    let merchantId: String
 
     var completion: ((Result<FrameApplePayResult, Error>) -> Void)?
 
     public init(mode: FrameApplePayMode,
                 owner: PaymentMethodOwner,
-                merchantId: String,
                 completion: ((Result<FrameApplePayResult, Error>) -> Void)? = nil) {
         self.mode = mode
         self.owner = owner
-        self.merchantId = merchantId
         self.completion = completion
     }
 
@@ -83,7 +80,7 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
 
     private func buildPaymentRequest() -> PKPaymentRequest {
         let request = PKPaymentRequest()
-        request.merchantIdentifier = merchantId
+        request.merchantIdentifier = FrameNetworking.shared.applePayMerchantId ?? ""
         request.supportedNetworks = Self.supportedNetworks
         request.merchantCapabilities = .threeDSecure
         request.countryCode = "US"

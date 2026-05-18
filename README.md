@@ -83,7 +83,12 @@ import Frame_iOS
 @main
 struct MyApp: App {
     init() {
-        FrameNetworking.shared.initializeWithAPIKey("sk_your_secret_key_here", debugMode: false)
+        FrameNetworking.shared.initializeWithAPIKey(
+            "sk_your_secret_key_here",
+            publishableKey: "pk_your_publishable_key_here",
+            applePayMerchantId: "merchant.com.yourcompany.appname", // optional, see Apple Pay section
+            debugMode: false
+        )
     }
 
     var body: some Scene {
@@ -95,6 +100,8 @@ struct MyApp: App {
 ```
 
 > **Note:** Your API key is available in the **Developer** section of the [Frame dashboard](https://framepayments.com). Always use the **secret key** with this SDK and never expose it in client-side code that is publicly readable.
+
+> **Apple Pay merchant ID:** Pass it once to `initializeWithAPIKey` and every Frame surface — `FrameApplePayButton`, `FrameCheckoutView`, `FrameCartView`, `OnboardingContainerView` — picks it up automatically. Skip it if you don't intend to surface Apple Pay; the button hides itself when not configured.
 
 ### 2. Make Your First API Call
 
@@ -364,24 +371,24 @@ For live theming inside your own SwiftUI views, read `@Environment(\.frameTheme)
 
 ## Apple Pay
 
-`FrameApplePayButton` is a drop-in SwiftUI view that presents a native Apple Pay sheet, submits the encrypted payment token to Frame, and returns the resulting charge id (a `ChargeIntent` id for `.customer` owners, a `Transfer` id for `.account` owners) via a callback — all without requiring any additional configuration beyond a merchant ID.
+`FrameApplePayButton` is a drop-in SwiftUI view that presents a native Apple Pay sheet, submits the encrypted payment token to Frame, and returns the resulting charge id (a `ChargeIntent` id for `.customer` owners, a `Transfer` id for `.account` owners) via a callback.
 
-### Xcode Setup (required)
+Apple Pay setup is a three-part process: get a merchant ID from Apple, configure your Xcode project, pass the merchant ID to the SDK at init. Once those are done, **let us know** (see [Enabling Apple Pay on your account](#enabling-apple-pay-on-your-account)) and we'll flip the feature on for your business.
 
-Apple Pay requires two things in your Xcode project before the button will function:
+### 1. Create a merchant identifier with Apple
 
-#### 1. Add the Apple Pay Capability
+If you haven't already:
 
-1. Open your project in Xcode and select your **app target** (not the framework or package).
-2. Go to **Signing & Capabilities**.
-3. Click **+ Capability** and add **Apple Pay**.
-4. Under the Apple Pay capability, click **+** and enter your merchant identifier (e.g. `merchant.com.yourcompany.appname`).
+1. Sign in to [developer.apple.com → Certificates, Identifiers & Profiles → Identifiers → Merchant IDs](https://developer.apple.com/account/resources/identifiers/list/merchant).
+2. Click **+**, choose **Merchant IDs**, and create one in reverse-DNS form (e.g. `merchant.com.yourcompany.appname`).
 
-> If you haven't created a merchant ID yet, go to [developer.apple.com → Certificates, Identifiers & Profiles → Identifiers → Merchant IDs](https://developer.apple.com/account/resources/identifiers/list/merchant) and create one first.
+### 2. Add the Apple Pay capability in Xcode
 
-#### 2. Verify Your Entitlements File
+1. Open your project in Xcode and select your **app target** (not the SDK package).
+2. Go to **Signing & Capabilities** → **+ Capability** → **Apple Pay**.
+3. Under the Apple Pay capability, click **+** and select the merchant identifier you created in step 1.
 
-After adding the capability, Xcode automatically adds an entitlements file (e.g. `YourApp.entitlements`) to your project. Confirm it contains your merchant ID:
+Xcode adds an entitlements file to your target. Confirm it contains your merchant ID:
 
 ```xml
 <key>com.apple.developer.in-app-payments</key>
@@ -392,9 +399,25 @@ After adding the capability, Xcode automatically adds an entitlements file (e.g.
 
 > The SDK itself does **not** require this entitlement — only your host app does.
 
+### 3. Pass the merchant ID to the SDK at init
+
+`FrameNetworking` is the single source of truth for the Apple Pay merchant ID. Pass it once when you initialize the SDK and every Frame component — `FrameApplePayButton`, `FrameCheckoutView`, `FrameCartView`, `OnboardingContainerView` — will use it automatically.
+
+```swift
+FrameNetworking.shared.initializeWithAPIKey(
+    "sk_your_secret_key_here",
+    publishableKey: "pk_your_publishable_key_here",
+    applePayMerchantId: "merchant.com.yourcompany.appname"
+)
+```
+
+### Enabling Apple Pay on your account
+
+Once steps 1–3 are complete, contact Frame at [support@framepayments.com](mailto:support@framepayments.com) (or via your [Frame dashboard](https://framepayments.com)) and we'll enable Apple Pay on your account. Apple Pay charges won't succeed until this is done on our side.
+
 ### Usage
 
-Drop `FrameApplePayButton` anywhere in your SwiftUI view hierarchy. It automatically renders nothing on devices that do not support Apple Pay (no need to guard it yourself).
+Drop `FrameApplePayButton` anywhere in your SwiftUI view hierarchy. It renders nothing on devices that do not support Apple Pay or when the merchant ID isn't configured at init — no need to guard it yourself.
 
 The button takes a `mode` (`.charge(amount:currency:)` to charge the user, or `.addToOwner` to attach the wallet card without charging) and a `PaymentMethodOwner` (`.customer(...)` for the legacy ChargeIntent flow, `.account(...)` for the Transfer flow). The completion result carries the created resource's id — the caller decides what it represents based on the owner passed in.
 
@@ -403,8 +426,7 @@ import Frame_iOS
 
 FrameApplePayButton(
     mode: .charge(amount: 4999, currency: "usd"),
-    owner: .account("acc_123"),
-    merchantId: "merchant.com.yourcompany.appname"
+    owner: .account("acc_123")
 ) { result in
     switch result {
     case .success(.charge(let id)):
@@ -424,8 +446,7 @@ Pass `.customer(...)` instead of `.account(...)` if your integration is customer
 ```swift
 FrameApplePayButton(
     mode: .charge(amount: 4999, currency: "usd"),
-    owner: .customer("cus_456"),
-    merchantId: "merchant.com.yourcompany.appname"
+    owner: .customer("cus_456")
 ) { result in ... }
 ```
 
@@ -439,7 +460,6 @@ The button type and style can be configured to match your UI:
 FrameApplePayButton(
     mode: .charge(amount: 4999, currency: "usd"),
     owner: .account("acc_123"),
-    merchantId: "merchant.com.yourcompany.appname",
     buttonType: .pay,        // .buy (default), .pay, .checkout, .plain, etc.
     buttonStyle: .white      // .automatic (default), .black, .white, .whiteOutline
 ) { result in ... }
@@ -449,36 +469,52 @@ See [`PKPaymentButtonType`](https://developer.apple.com/documentation/passkit/pk
 
 ### Using Apple Pay inside FrameCheckoutView
 
-Pass a `merchantId` to `FrameCheckoutView` to show an Apple Pay button at the top of the checkout sheet. The bundled checkout is account-scoped, so the resulting id is always a Transfer id.
+When a merchant ID is configured at SDK init, `FrameCheckoutView` automatically shows an Apple Pay button at the top of the checkout sheet. The bundled checkout is account-scoped, so the resulting id is always a Transfer id.
 
 ```swift
 FrameCheckoutView(
     accountId: "acc_123",
-    paymentAmount: 4999,
-    merchantId: "merchant.com.yourcompany.appname"
-) { success, transferId in
-    guard success, let transferId else { return }
-    print("Transfer created: \(transferId)")
+    paymentAmount: 4999
+) { result in
+    switch result {
+    case .completed(let transferId):
+        print("Transfer created: \(transferId)")
+    case .cancelled:
+        print("User dismissed checkout")
+    case .failed(let error):
+        print("Checkout failed: \(error.localizedDescription)")
+    }
 }
 ```
 
-If `merchantId` is omitted, the Apple Pay button is hidden and only the card entry form is shown.
+`FrameCheckoutView`, `FrameCartView`, and `OnboardingContainerView` all deliver outcomes through the same `FrameResult` enum (`completed(id:)` / `cancelled` / `failed(Error)`). For checkout and cart, the `id` is a Transfer id. For onboarding, it's the selected PaymentMethod id (or empty string if the flow completed without one).
+
+```swift
+// Same shape across all three modals.
+public enum FrameResult {
+    case completed(id: String)
+    case cancelled
+    case failed(Error)
+}
+```
+
+If no `applePayMerchantId` was configured at init, the Apple Pay row is hidden and only the card entry form is shown.
 
 ### Testing
 
 Apple Pay **requires a physical device** — it cannot be tested on the Simulator. To test in the Frame sandbox:
 
 1. Use a device with a card added to Apple Wallet.
-2. Initialize the SDK with your sandbox key (`sk_sandbox_...`).
+2. Initialize the SDK with your sandbox key (`sk_sandbox_...`) and your merchant ID.
 3. The Frame backend returns synthetic card details in sandbox mode — no real charge is made.
 
 ### Troubleshooting
 
 | Symptom | Likely cause |
 |---|---|
-| Button does not appear | Device has no cards in Wallet, or Apple Pay capability is missing from the app target |
-| "Missing entitlement" error at runtime | The merchant ID in your entitlements file doesn't match the one passed to `FrameApplePayButton` |
-| Payment sheet appears but authorization fails | SDK not initialized with `FrameNetworking.shared.initializeWithAPIKey(...)` before presenting the button |
+| Button does not appear | Device has no cards in Wallet, the Apple Pay capability is missing from the app target, or `applePayMerchantId` wasn't passed to `initializeWithAPIKey` |
+| "Missing entitlement" error at runtime | The merchant ID in your entitlements file doesn't match the one passed to `initializeWithAPIKey` |
+| Payment sheet appears but authorization fails | SDK not initialized, or Apple Pay hasn't been enabled on your Frame account — contact [support@framepayments.com](mailto:support@framepayments.com) |
 
 ---
 

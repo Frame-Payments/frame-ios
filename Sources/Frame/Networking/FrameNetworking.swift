@@ -34,9 +34,17 @@ public class FrameNetworking: ObservableObject {
     @MainActor
     public private(set) var globalTheme: FrameTheme = .default
 
-    public func initializeWithAPIKey(_ key: String, publishableKey: String, theme: FrameTheme = .default, debugMode: Bool = false) {
+    /// Apple Pay merchant identifier, captured at SDK init and read by every Apple Pay surface.
+    public private(set) var applePayMerchantId: String?
+
+    public func initializeWithAPIKey(_ key: String,
+                                     publishableKey: String,
+                                     applePayMerchantId: String? = nil,
+                                     theme: FrameTheme = .default,
+                                     debugMode: Bool = false) {
         self.apiSecretKey = key
         self.apiPublishableKey = publishableKey
+        self.applePayMerchantId = applePayMerchantId
         self.debugMode = debugMode
 
         // Initializes Sift, Sonar Session, and Device Attestation when the SDK is initialized.
