@@ -54,9 +54,11 @@ public struct FrameCheckoutView: View {
                 if applePayConfigured {
                     applePayButton
                 }
-                paymentMethodList
-                    .padding(.top)
-                    .padding(.bottom)
+                if !(checkoutViewModel.accountPaymentOptions ?? []).isEmpty {
+                    paymentMethodList
+                        .padding(.top)
+                        .padding(.bottom)
+                }
                 customerInformation
                     .padding(.bottom)
                 if checkoutViewModel.didLoadAccountPaymentMethods,
