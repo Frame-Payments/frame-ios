@@ -55,9 +55,21 @@ public protocol URLSessionProtocol {
 }
 
 public enum FrameResources {
+    #if SWIFT_PACKAGE
     public static var module: Bundle {
         return Bundle.module
     }
+    #else
+    private final class BundleAnchor {}
+    public static let module: Bundle = {
+        let anchor = Bundle(for: BundleAnchor.self)
+        if let url = anchor.url(forResource: "Frame", withExtension: "bundle"),
+           let bundle = Bundle(url: url) {
+            return bundle
+        }
+        return anchor
+    }()
+    #endif
 }
 
 // Extend URLSession to conform to the protocol

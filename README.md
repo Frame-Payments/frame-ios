@@ -69,6 +69,46 @@ targets: [
 4. Select the version rule and click **Add Package**.
 5. Choose `Frame-iOS` (and optionally `Frame-Onboarding`) from the package products list.
 
+### CocoaPods
+
+Add the core SDK to your `Podfile`:
+
+```ruby
+platform :ios, '17.0'
+
+target 'YourApp' do
+  use_frameworks!
+  pod 'Frame-iOS'
+end
+```
+
+Then run `pod install`.
+
+#### Adding Frame-Onboarding via CocoaPods
+
+`Frame-Onboarding` depends on Prove's `ProveAuth` SDK, which is distributed through a private CocoaPods Artifactory spec repo rather than the public CocoaPods trunk. Consumers must install the [`cocoapods-art`](https://github.com/jfrog/cocoapods-art) plugin and register Prove's source before `pod install`:
+
+```bash
+gem install cocoapods-art
+pod repo-art add prove.jfrog.io https://prove.jfrog.io/artifactory/api/pods/libs-public-cocoapods
+```
+
+Then in your `Podfile`:
+
+```ruby
+plugin 'cocoapods-art', :sources => ['prove.jfrog.io']
+
+platform :ios, '17.0'
+
+target 'YourApp' do
+  use_frameworks!
+  pod 'Frame-iOS'
+  pod 'Frame-Onboarding'
+end
+```
+
+> **Note on Plaid:** `Frame-Onboarding` depends on the `Plaid` pod, which Plaid has [deprecated on CocoaPods](https://cocoapods.org/pods/Plaid). The pod will continue to resolve, but Plaid will not publish new versions there after December 2026. For long-term parity with upstream Plaid releases, SPM remains the recommended integration path.
+
 ---
 
 ## Getting Started

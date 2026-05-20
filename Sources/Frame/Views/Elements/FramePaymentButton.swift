@@ -34,7 +34,7 @@ public struct FramePaymentButton: View {
                 .fill(blackButton ? .black : .white)
                 .overlay {
                     if let image = UIImage(named: paymentOption.imageName(blackButton: blackButton),
-                                           in: Bundle.module, with: nil) {
+                                           in: FrameResources.module, with: nil) {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFit()

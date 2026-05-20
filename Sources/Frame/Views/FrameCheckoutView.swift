@@ -54,9 +54,11 @@ public struct FrameCheckoutView: View {
                 if applePayConfigured {
                     applePayButton
                 }
-                paymentMethodList
-                    .padding(.top)
-                    .padding(.bottom)
+                if !(checkoutViewModel.accountPaymentOptions ?? []).isEmpty {
+                    paymentMethodList
+                        .padding(.top)
+                        .padding(.bottom)
+                }
                 customerInformation
                     .padding(.bottom)
                 if checkoutViewModel.didLoadAccountPaymentMethods,
@@ -105,7 +107,7 @@ public struct FrameCheckoutView: View {
                 self.dismiss()
             } label: {
                 if let image = UIImage(named: "BlackCircleCloseButton",
-                                       in: Bundle.module, with: nil) {
+                                       in: FrameResources.module, with: nil) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()
@@ -148,57 +150,23 @@ public struct FrameCheckoutView: View {
     var paymentMethodList: some View {
         VStack(spacing: 8) {
             ForEach(checkoutViewModel.accountPaymentOptions ?? []) { option in
-                savedPaymentRow(option: option)
+                FramePaymentMethodRow(
+                    paymentMethod: option,
+                    isSelected: checkoutViewModel.selectedAccountPaymentOption == option
+                ) {
+                    checkoutViewModel.selectedAccountPaymentOption = option
+                    checkoutViewModel.clearNewCardFieldErrors()
+                }
             }
             enterNewPaymentRow
         }
         .padding(.horizontal)
     }
 
-    func savedPaymentRow(option: FrameObjects.PaymentMethod) -> some View {
-        let isSelected = checkoutViewModel.selectedAccountPaymentOption == option
-        let isACH = option.type == .ach
-        let iconName = isACH ? "bank-icon" : (option.card?.brand ?? "emptycard")
-        let primaryText = isACH
-            ? "•••• \(option.ach?.lastFour ?? "")"
-            : "•••• \(option.card?.lastFourDigits ?? "")"
-        let secondaryText = isACH
-            ? "\((option.ach?.accountType?.rawValue ?? "").capitalized) Account"
-            : "Exp. \(option.card?.expirationMonth ?? "")/\(option.card?.expirationYear ?? "")"
-        return HStack {
-            Image(iconName, bundle: Bundle.module)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 48.0, height: 32.0)
-                .padding(.horizontal)
-            VStack(alignment: .leading) {
-                Text(primaryText)
-                    .bold()
-                    .font(theme.fonts.bodySmall)
-                    .padding(.bottom, 1.0)
-                Text(secondaryText)
-                    .font(theme.fonts.caption)
-            }
-            Spacer()
-            Image(isSelected ? "filled-selection" : "empty-selection", bundle: Bundle.module)
-                .padding()
-        }
-        .frame(maxWidth: .infinity, minHeight: 64.0)
-        .contentShape(Rectangle())
-        .overlay(
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .stroke(isSelected ? theme.colors.textPrimary : theme.colors.surfaceStroke, lineWidth: 1)
-        )
-        .onTapGesture {
-            checkoutViewModel.selectedAccountPaymentOption = option
-            checkoutViewModel.clearNewCardFieldErrors()
-        }
-    }
-
     var enterNewPaymentRow: some View {
         let isSelected = checkoutViewModel.selectedAccountPaymentOption == nil
         return HStack {
-            Image("emptycard", bundle: Bundle.module)
+            Image("emptycard", bundle: FrameResources.module)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 48.0, height: 32.0)
@@ -207,7 +175,7 @@ public struct FrameCheckoutView: View {
                 .bold()
                 .font(theme.fonts.bodySmall)
             Spacer()
-            Image(isSelected ? "filled-selection" : "empty-selection", bundle: Bundle.module)
+            Image(isSelected ? "filled-selection" : "empty-selection", bundle: FrameResources.module)
                 .padding()
         }
         .frame(maxWidth: .infinity, minHeight: 64.0)
@@ -305,7 +273,7 @@ public struct FrameCheckoutView: View {
                         .padding(.horizontal)
                 }
 
-                if let image = UIImage(named: "BlackDownArrow", in: Bundle.module, with: nil) {
+                if let image = UIImage(named: "BlackDownArrow", in: FrameResources.module, with: nil) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()

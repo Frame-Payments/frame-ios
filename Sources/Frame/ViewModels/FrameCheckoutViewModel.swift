@@ -45,7 +45,10 @@ class FrameCheckoutViewModel: ObservableObject {
     }
 
     func loadAccountDetails() async {
-        guard let accountId else { return }
+        guard let accountId, !accountId.isEmpty else {
+            self.didLoadAccountPaymentMethods = true
+            return
+        }
         do {
             let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
             if let error {
@@ -64,7 +67,7 @@ class FrameCheckoutViewModel: ObservableObject {
     }
 
     func loadAccountPaymentMethods() async {
-        guard let accountId else {
+        guard let accountId, !accountId.isEmpty else {
             self.didLoadAccountPaymentMethods = true
             return
         }
