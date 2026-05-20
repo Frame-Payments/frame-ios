@@ -14,9 +14,9 @@ class CurrencyFormatter {
     
     func convertCentsToCurrencyString(_ cents: Int) -> String {
         formatter.numberStyle = .currency
-        formatter.minimumFractionDigits = 0
+        formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
-        let total = cents / 100
+        let total = Double(cents) / 100.0
         return formatter.string(from: total as NSNumber) ?? ""
     }
 }

@@ -1,0 +1,42 @@
+name: Podspec Lint
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.podspec'
+      - '.github/workflows/podspec-lint.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.podspec'
+      - '.github/workflows/podspec-lint.yml'
+
+jobs:
+  lint:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Update CocoaPods spec repo
+        run: pod repo update --silent
+
+      - name: Lint Frame-iOS.podspec
+        run: |
+          pod lib lint Frame-iOS.podspec \
+            --allow-warnings \
+            --skip-import-validation \
+            --verbose
+
+      # Frame-Onboarding cannot be linted on the public trunk: ProveAuth lives
+      # in Prove's private Artifactory spec repo, which requires the
+      # cocoapods-art plugin and credentials. We only validate the podspec
+      # itself parses cleanly; full resolution is verified out-of-band when
+      # cutting a release.
+      - name: Validate Frame-Onboarding.podspec syntax
+        run: pod ipc spec Frame-Onboarding.podspec > /dev/null

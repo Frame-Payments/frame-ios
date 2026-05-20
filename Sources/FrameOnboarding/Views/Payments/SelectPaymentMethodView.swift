@@ -108,7 +108,13 @@ struct SelectPaymentMethodView: View {
                 if !onboardingContainerViewModel.paymentMethods.isEmpty {
                     headerScrollTitles(name: "Saved Payment Methods")
                     ForEach(onboardingContainerViewModel.paymentMethods) { paymentMethod in
-                        paymentMethodView(paymentMethod: paymentMethod)
+                        FramePaymentMethodRow(
+                            paymentMethod: paymentMethod,
+                            isSelected: onboardingContainerViewModel.selectedPaymentMethod == paymentMethod
+                        ) {
+                            onboardingContainerViewModel.selectedPaymentMethod = paymentMethod
+                        }
+                        .padding(.horizontal)
                     }
                 }
                 headerScrollTitles(name: "Add Payment Method")
@@ -154,36 +160,6 @@ struct SelectPaymentMethodView: View {
         }
     }
 
-    func paymentMethodView(paymentMethod: FrameObjects.PaymentMethod) -> some View {
-        HStack {
-            Image(paymentMethod.card?.brand ?? "", bundle: FrameResources.module)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 48.0, height: 32.0)
-                .padding(.horizontal)
-            VStack(alignment: .leading) {
-                Text("•••• \(paymentMethod.card?.lastFourDigits ?? "")")
-                    .bold()
-                    .font(theme.fonts.bodySmall)
-                    .padding(.bottom, 1.0)
-                Text("Exp. \(paymentMethod.card?.expirationMonth ?? "")/\(paymentMethod.card?.expirationYear ?? "")")
-                    .font(theme.fonts.caption)
-            }
-            Spacer()
-            Image(onboardingContainerViewModel.selectedPaymentMethod == paymentMethod ? "filled-selection" : "empty-selection", bundle: FrameResources.module)
-                .padding()
-        }
-        .frame(maxWidth: .infinity, minHeight: 64.0)
-        .contentShape(Rectangle())
-        .overlay(
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
-        )
-        .padding(.horizontal)
-        .onTapGesture {
-            onboardingContainerViewModel.selectedPaymentMethod = paymentMethod
-        }
-    }
 }
 
 #Preview {
