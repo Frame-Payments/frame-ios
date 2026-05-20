@@ -21,8 +21,8 @@ Pod::Spec.new do |s|
     'Frame' => ['Sources/Frame/Resources/**/*']
   }
 
-  s.dependency 'Frame-EvervaultCore', '~> 2.1.0-frame.2'
-  s.dependency 'Frame-EvervaultInputs', '~> 2.1.0-frame.2'
+  s.dependency 'Frame-EvervaultCore', '~> 2.1.0-frame.3'
+  s.dependency 'Frame-EvervaultInputs', '~> 2.1.0-frame.3'
   s.dependency 'Sift', '~> 2.2'
   s.dependency 'FingerprintPro', '~> 2.15'
   s.dependency 'PhoneNumberKit', '~> 4.2'
