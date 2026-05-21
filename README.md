@@ -71,41 +71,40 @@ targets: [
 
 ### CocoaPods
 
-Add the core SDK to your `Podfile`:
+SPM is the recommended integration path. CocoaPods is supported for projects that still need it.
 
-```ruby
-platform :ios, '17.0'
+`Frame-Onboarding` depends on Prove's `ProveAuth` SDK, which is distributed through a private CocoaPods Artifactory spec repo. Because of that constraint, both Frame pods are distributed by git tag rather than published to the public CocoaPods trunk — this keeps `Frame-iOS` and `Frame-Onboarding` pinned to the same release and avoids the two getting out of sync.
 
-target 'YourApp' do
-  use_frameworks!
-  pod 'Frame-iOS'
-end
-```
+#### One-time setup
 
-Then run `pod install`.
-
-#### Adding Frame-Onboarding via CocoaPods
-
-`Frame-Onboarding` depends on Prove's `ProveAuth` SDK, which is distributed through a private CocoaPods Artifactory spec repo rather than the public CocoaPods trunk. Consumers must install the [`cocoapods-art`](https://github.com/jfrog/cocoapods-art) plugin and register Prove's source before `pod install`:
+If you'll be using `Frame-Onboarding`, install the [`cocoapods-art`](https://github.com/jfrog/cocoapods-art) plugin and register Prove's source:
 
 ```bash
 gem install cocoapods-art
 pod repo-art add prove.jfrog.io https://prove.jfrog.io/artifactory/api/pods/libs-public-cocoapods
 ```
 
-Then in your `Podfile`:
+Skip this step if you only need `Frame-iOS`.
+
+#### Podfile
 
 ```ruby
-plugin 'cocoapods-art', :sources => ['prove.jfrog.io']
-
 platform :ios, '17.0'
+
+# Only needed if you're including Frame-Onboarding
+plugin 'cocoapods-art', :sources => ['prove.jfrog.io']
 
 target 'YourApp' do
   use_frameworks!
-  pod 'Frame-iOS'
-  pod 'Frame-Onboarding'
+
+  pod 'Frame-iOS',        :git => 'https://github.com/Frame-Payments/frame-ios.git', :tag => '3.0.0'
+  pod 'Frame-Onboarding', :git => 'https://github.com/Frame-Payments/frame-ios.git', :tag => '3.0.0'
 end
 ```
+
+> **Replace `3.0.0` with the latest release tag** from the [GitHub releases page](https://github.com/Frame-Payments/frame-ios/releases). Both `:tag =>` values must match — `Frame-Onboarding` declares an exact version dependency on `Frame-iOS`, so pinning them to the same tag keeps the two pods in lockstep.
+
+To upgrade later, change both `:tag =>` values to the new release tag and run `pod install`.
 
 > **Note on Plaid:** `Frame-Onboarding` depends on the `Plaid` pod, which Plaid has [deprecated on CocoaPods](https://cocoapods.org/pods/Plaid). The pod will continue to resolve, but Plaid will not publish new versions there after December 2026. For long-term parity with upstream Plaid releases, SPM remains the recommended integration path.
 
