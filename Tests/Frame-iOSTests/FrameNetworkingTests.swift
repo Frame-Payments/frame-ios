@@ -210,3 +210,44 @@ final class FrameNetworkingTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 }
+
+// MARK: - NetworkingError.isAssertionRejection tests
+
+final class NetworkingErrorAssertionRejectionTests: XCTestCase {
+
+    private func make422(_ body: String) -> NetworkingError {
+        .serverError(statusCode: 422, errorDescription: body)
+    }
+
+    func testAssertionSignatureFailure() {
+        let error = make422(#"{"status":422,"error":"Unprocessable Entity","code":"validation_errors","error_details":"Assertion signature verification failed"}"#)
+        XCTAssertTrue(error.isAssertionRejection)
+    }
+
+    func testDeviceNotAttested() {
+        let error = make422(#"{"status":422,"error":"Unprocessable Entity","code":"validation_errors","error_details":"Device not attested"}"#)
+        XCTAssertTrue(error.isAssertionRejection)
+    }
+
+    func testInvalidAssertionObject() {
+        let error = make422(#"{"status":422,"error":"Unprocessable Entity","code":"validation_errors","error_details":"Invalid assertion object"}"#)
+        XCTAssertTrue(error.isAssertionRejection)
+    }
+
+    func testUnrelatedValidationError() {
+        let error = make422(#"{"status":422,"error":"Unprocessable Entity","code":"validation_errors","error_details":"Card submitted is not a test card"}"#)
+        XCTAssertFalse(error.isAssertionRejection)
+    }
+
+    func testNon422ServerError() {
+        let error = NetworkingError.serverError(statusCode: 500, errorDescription: #"{"error_details":"Assertion signature verification failed"}"#)
+        XCTAssertFalse(error.isAssertionRejection)
+    }
+
+    func testNonServerErrors() {
+        XCTAssertFalse(NetworkingError.unknownError.isAssertionRejection)
+        XCTAssertFalse(NetworkingError.noData.isAssertionRejection)
+        XCTAssertFalse(NetworkingError.decodingFailed.isAssertionRejection)
+        XCTAssertFalse(NetworkingError.invalidURL.isAssertionRejection)
+    }
+}

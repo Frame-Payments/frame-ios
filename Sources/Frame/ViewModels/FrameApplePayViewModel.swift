@@ -139,6 +139,9 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                 )
             }
             guard let paymentMethod else {
+                if methodError?.isAssertionRejection == true {
+                    DeviceAttestationManager.shared.resetAttestation()
+                }
                 completion?(.failure(methodError ?? NetworkingError.unknownError))
                 return PKPaymentAuthorizationResult(status: .failure, errors: nil)
             }
