@@ -47,7 +47,7 @@ public class DeviceAttestationManager: ObservableObject {
     }
 
     private init() {
-        isDeviceAttested = readKeychainItem(keychainKey) != nil
+        isDeviceAttested = readKeyIdFromKeychain() != nil
     }
 
     /// Performs the full device attestation flow:

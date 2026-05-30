@@ -84,6 +84,16 @@ public enum NetworkingError: Error, Equatable {
 }
 
 extension NetworkingError {
+    /// True when the server rejected a device assertion (422 with an assertion-related message).
+    /// Signals that the stored attestation key is stale and should be reset before retrying.
+    public var isAssertionRejection: Bool {
+        guard case .serverError(let statusCode, let description) = self, statusCode == 422 else {
+            return false
+        }
+        let message = (NetworkingError.extractEnvelopeMessage(description) ?? description).lowercased()
+        return message.contains("assertion") || message.contains("device not attested") || message.contains("attestation")
+    }
+
     /// True for connectivity-class failures the user can retry. False for server-validation
     /// errors that should stay in the form so the user can correct the input.
     public var isTransport: Bool {
@@ -113,7 +123,7 @@ extension NetworkingError {
     /// handled; `error_details` is preferred over the generic `error` key (which tends to be the
     /// HTTP status name like `"Unprocessable Entity"`). Returns nil when the body isn't valid
     /// JSON or no usable field is present.
-    private static func extractEnvelopeMessage(_ raw: String) -> String? {
+    static func extractEnvelopeMessage(_ raw: String) -> String? {
         guard !raw.isEmpty,
               let data = raw.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {

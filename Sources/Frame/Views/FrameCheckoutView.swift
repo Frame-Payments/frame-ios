@@ -138,8 +138,14 @@ public struct FrameCheckoutView: View {
                 // missing-config case the host can correct without restarting checkout.
                 // Prefer the server's `error_details.message` for server errors; fall back to a
                 // generic message for transport errors and any other Error subtype.
-                let message = (error as? NetworkingError)?.toastMessage()
-                    ?? "Error: Apple Pay could not complete. Please try again or use a card."
+                let message: String
+                if let networkingError = error as? NetworkingError {
+                    message = networkingError.toastMessage()
+                } else if error is DeviceAttestationError {
+                    message = "Error: Apple Pay is not available, there was a device attestation error. Please use a card instead."
+                } else {
+                    message = "Error: Apple Pay could not complete. Please try again or use a card."
+                }
                 FrameToastCenter.shared.show(message)
             }
         }
