@@ -593,6 +593,27 @@ OnboardingContainerView(
 
 If `accountId` is `nil`, a new Frame account is created at the start of the flow. Once the user completes all steps, the view dismisses automatically.
 
+### Configuring Screen Visibility
+
+Two boolean parameters let you control which bookend screens are shown:
+
+| Parameter | Default | Description |
+|---|---|---|
+| `showIntroScreen` | `true` | Show the "Verify Your Identity" welcome screen before the first step. Set to `false` to skip it and open directly on the first capability step. |
+| `showCompletionScreen` | `true` | Show the "Verification Submitted" confirmation screen after the last step. Set to `false` to complete the flow immediately and dismiss without the final screen. |
+
+```swift
+// Skip both bookend screens — jump straight into the flow and complete silently
+OnboardingContainerView(
+    accountId: existingAccountId,
+    requiredCapabilities: [.kycPrefill, .bankAccountVerification],
+    showIntroScreen: false,
+    showCompletionScreen: false
+) { result in
+    // fires as soon as the last step is done
+}
+```
+
 ### Capabilities
 
 Each capability maps to one or more onboarding steps. Duplicate steps are automatically deduplicated and sorted into the correct order.

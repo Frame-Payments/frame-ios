@@ -48,6 +48,8 @@ public struct OnboardingContainerView: View {
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
     var onResult: (FrameResult) -> Void
+    var showIntroScreen: Bool
+    var showCompletionScreen: Bool
 
     @State private var continueToNextStep: Bool = false
     @State private var returnToPreviousStep: Bool = false
@@ -57,8 +59,12 @@ public struct OnboardingContainerView: View {
 
     public init(accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
+                showIntroScreen: Bool = true,
+                showCompletionScreen: Bool = true,
                 onResult: @escaping (FrameResult) -> Void = { _ in }) {
         self.onResult = onResult
+        self.showIntroScreen = showIntroScreen
+        self.showCompletionScreen = showCompletionScreen
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId,
                                                                          requiredCapabilities: requiredCapabilities)
 
@@ -66,14 +72,18 @@ public struct OnboardingContainerView: View {
             // Map capabilites to onboarding flow steps
             let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
             var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
-            onboardingArray.append(.verificationSubmitted)
-            
+            if showCompletionScreen {
+                onboardingArray.append(.verificationSubmitted)
+            }
+
             onboardingContainerViewModel.progressiveSteps = [onboardingArray.first ?? .personalInformation]
             onboardingContainerViewModel.onboardingFlow = onboardingArray
             onboardingContainerViewModel.currentStep = onboardingArray.first ?? .personalInformation
         } else {
             onboardingContainerViewModel.progressiveSteps = [.personalInformation]
-            onboardingContainerViewModel.onboardingFlow = [.personalInformation, .verificationSubmitted]
+            onboardingContainerViewModel.onboardingFlow = showCompletionScreen
+                ? [.personalInformation, .verificationSubmitted]
+                : [.personalInformation]
             onboardingContainerViewModel.currentStep = .personalInformation
         }
     }
@@ -113,6 +123,9 @@ public struct OnboardingContainerView: View {
         .ignoresSafeArea()
         .keyboardDoneToolbar()
         .onAppear {
+            if !showIntroScreen {
+                self.startedOnboarding = true
+            }
             if onboardingContainerViewModel.accountId != nil {
                 Task {
                     await onboardingContainerViewModel.checkExistingAccount(updateCapabilies: true)
