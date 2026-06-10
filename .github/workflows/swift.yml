@@ -19,7 +19,7 @@ jobs:
           brew install swiftlint
           # Warnings on existing undocumented symbols; new public symbols without docs
           # cause warnings here and will be tightened to errors after FRA-3958 backfill.
-          swiftlint lint --strict 2>&1 | tee /tmp/swiftlint.log || true
+          swiftlint lint 2>&1 | tee /tmp/swiftlint.log || true
           # Fail CI only on errors (not warnings) until backfill lands.
           if grep -q ": error:" /tmp/swiftlint.log; then
             echo "❌ SwiftLint errors found."
