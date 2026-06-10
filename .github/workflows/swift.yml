@@ -14,6 +14,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: SwiftLint (missing_docs)
+        run: |
+          brew install swiftlint
+          # Warnings on existing undocumented symbols; new public symbols without docs
+          # cause warnings here and will be tightened to errors after FRA-3958 backfill.
+          swiftlint lint 2>&1 | tee /tmp/swiftlint.log || true
+          # Fail CI only on errors (not warnings) until backfill lands.
+          if grep -q ": error:" /tmp/swiftlint.log; then
+            echo "❌ SwiftLint errors found."
+            grep ": error:" /tmp/swiftlint.log
+            exit 1
+          fi
+          echo "✅ SwiftLint passed (warnings allowed until FRA-3958 backfill)."
+
       - name: Dark-mode lint (block hardcoded color literals)
         run: |
           set -e

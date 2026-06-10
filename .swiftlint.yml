@@ -1,0 +1,14 @@
+included:
+  - Sources
+
+# Only enforce missing_docs; disable all default rules.
+only_rules:
+  - missing_docs
+
+# Warn on existing undocumented public symbols.
+# Tighten to error once the DocC backfill (FRA-3958) lands.
+missing_docs:
+  warning:
+    - open
+    - public
+  error: []
