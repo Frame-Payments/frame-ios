@@ -1,0 +1,13 @@
+included:
+  - Sources
+
+opt_in_rules:
+  - missing_docs
+
+# missing_docs: warn on existing undocumented public symbols.
+# Tighten to error once the DocC backfill (FRA-3958) lands.
+missing_docs:
+  warning:
+    - open
+    - public
+  error: []
