@@ -1,0 +1,88 @@
+name: DocC — Build & Publish
+
+on:
+  push:
+    tags:
+      - '[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-publish:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Configure Prove Swift Package Registry
+        run: |
+          swift package-registry set --global "https://prove.jfrog.io/artifactory/api/swift/libs-public-swift"
+          echo "" | swift package-registry login "https://prove.jfrog.io/artifactory/api/swift/libs-public-swift"
+
+      - name: Build DocC archive — Frame
+        run: |
+          xcodebuild docbuild \
+            -scheme Frame-iOS \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath /tmp/docbuild \
+            OTHER_DOCC_FLAGS="--transform-for-static-hosting --hosting-base-path frame-ios/Frame" \
+            | xcpretty || true
+          # xcpretty may not be installed; fall back gracefully
+
+      - name: Build DocC archive — FrameOnboarding
+        run: |
+          xcodebuild docbuild \
+            -scheme Frame-iOS \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath /tmp/docbuild \
+            OTHER_DOCC_FLAGS="--transform-for-static-hosting --hosting-base-path frame-ios/FrameOnboarding" \
+            | xcpretty || true
+
+      - name: Assemble static site
+        run: |
+          mkdir -p /tmp/docs/Frame /tmp/docs/FrameOnboarding
+
+          FRAME_ARCHIVE=$(find /tmp/docbuild -name "Frame.doccarchive" | head -1)
+          ONBOARDING_ARCHIVE=$(find /tmp/docbuild -name "FrameOnboarding.doccarchive" | head -1)
+
+          if [ -n "$FRAME_ARCHIVE" ]; then
+            $(xcrun --find docc) process-archive transform-for-static-hosting \
+              "$FRAME_ARCHIVE" \
+              --output-path /tmp/docs/Frame \
+              --hosting-base-path frame-ios/Frame
+          fi
+
+          if [ -n "$ONBOARDING_ARCHIVE" ]; then
+            $(xcrun --find docc) process-archive transform-for-static-hosting \
+              "$ONBOARDING_ARCHIVE" \
+              --output-path /tmp/docs/FrameOnboarding \
+              --hosting-base-path frame-ios/FrameOnboarding
+          fi
+
+          # Root index redirects to Frame docs
+          cat > /tmp/docs/index.html <<'HTML'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta http-equiv="refresh" content="0; url=Frame/documentation/frame/" />
+            </head>
+            <body>
+              <a href="Frame/documentation/frame/">Frame iOS SDK Docs</a>
+            </body>
+          </html>
+          HTML
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: /tmp/docs
+          destination_dir: .
+          keep_files: false
