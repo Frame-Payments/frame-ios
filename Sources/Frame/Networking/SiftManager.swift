@@ -8,17 +8,30 @@
 import Foundation
 import Sift
 
+/// Manages Sift Science fraud-detection integration for the Frame SDK.
+///
+/// `SiftManager` handles initialising the Sift SDK with credentials fetched from the
+/// Frame configuration API, recording user-lifecycle events (e.g. login), and
+/// collecting device signals that Sift uses to assess transaction risk.
 public class SiftManager {
+    /// Represents the type of a payment transaction reported to Sift.
     enum SiftTransactionType: String {
+        /// A sale (authorise + capture in a single step).
         case sale = "$sale"
+        /// An authorisation-only transaction.
         case authorize = "$authorize"
+        /// A capture against a previously authorised transaction.
         case capture = "$capture"
+        /// A refund against a previously settled transaction.
         case refund = "$refund"
     }
-    
+
+    /// Fetches Sift credentials from the Frame configuration API and initialises
+    /// the shared `Sift` instance, falling back to keychain-cached credentials
+    /// when the network request is unavailable.
     class func initializeSift() async {
         guard let sift = Sift.sharedInstance() else { return }
-        
+
         do {
             if let configResponse = try await ConfigurationAPI.getSiftConfiguration() {
                 sift.accountId = configResponse.accountId
@@ -32,22 +45,38 @@ public class SiftManager {
             print(error.localizedDescription)
         }
     }
-    
+
+    /// Records a Sift `$login` event for the given customer.
+    ///
+    /// Call this as soon as customer identity is known (e.g. after sign-in).
+    /// The method is a no-op if a user ID has already been associated with the
+    /// current Sift session.
+    ///
+    /// - Parameters:
+    ///   - customerId: The unique identifier of the authenticated customer.
+    ///   - email: The email address of the authenticated customer.
     //Set the login event the first chance you get customer details.
     class func collectLoginEvent(customerId: String, email: String) {
         guard let sift = Sift.sharedInstance(), sift.userId == nil else { return }
         sift.userId = customerId
-        
+
         let event = SiftEvent()
         event.type = "$login"
         event.fields = ["$ip": getIPAddress() ?? "", "$user_email": email]
-        
+
         // Added event to queue and collect data
         sift.append(event)
         sift.collect()
         sift.upload()
     }
-    
+
+    /// Returns the current device IP address by inspecting active network interfaces.
+    ///
+    /// Checks Wi-Fi (`en0`–`en4`) and cellular (`pdp_ip0`–`pdp_ip3`) interfaces for
+    /// an IPv4 or IPv6 address and returns the last matching address found.
+    ///
+    /// - Returns: A human-readable IP address string, or `nil` if no suitable
+    ///   interface is available.
     public class func getIPAddress() -> String? {
         var address : String?
 

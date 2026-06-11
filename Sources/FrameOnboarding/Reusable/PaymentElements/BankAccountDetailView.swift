@@ -8,18 +8,27 @@
 import SwiftUI
 import Frame
 
+/// A SwiftUI view that renders routing-number and account-number input fields for bank account collection.
+///
+/// Embed this view inside an onboarding or payment flow to let the user enter their bank account
+/// details. Validation state is managed externally by a ``BankAccountViewModel``.
 public struct BankAccountDetailView: View {
     @Environment(\.frameTheme) private var theme
     @ObservedObject var viewModel: BankAccountViewModel
 
     @State private var showHeaderText: Bool
 
+    /// Creates a bank account detail view.
+    /// - Parameters:
+    ///   - viewModel: The view model that holds and validates the bank account input.
+    ///   - showHeaderText: When `true` (the default), a "Bank Account Details" heading is rendered above the input fields.
     public init(viewModel: BankAccountViewModel,
                 showHeaderText: Bool = true) {
         self.viewModel = viewModel
         self._showHeaderText = State(initialValue: showHeaderText)
     }
 
+    /// The content and layout of the view.
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {

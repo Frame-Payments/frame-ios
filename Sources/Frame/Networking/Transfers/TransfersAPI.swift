@@ -22,9 +22,14 @@ protocol TransfersProtocol {
     static func getTransfers(perPage: Int?, page: Int?, completionHandler: @escaping @Sendable (TransferResponses.ListTransfersResponse?, NetworkingError?) -> Void)
 }
 
-// Transfers API
+/// Manages transfer resources in the Frame Payments SDK, providing methods to create and retrieve transfers.
 public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     //async/await
+
+    /// Creates a new transfer using the provided request body.
+    ///
+    /// - Parameter request: The transfer creation parameters including amount, account, and optional payment method details.
+    /// - Returns: A tuple containing the created ``FrameObjects/Transfer`` on success, or a ``NetworkingError`` on failure.
     public static func createTransfer(request: TransferRequests.CreateTransferRequest) async throws -> (FrameObjects.Transfer?, NetworkingError?) {
         let endpoint = TransferEndpoints.createTransfer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -45,6 +50,10 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         }
     }
 
+    /// Retrieves a single transfer by its unique identifier.
+    ///
+    /// - Parameter transferId: The unique identifier of the transfer to fetch.
+    /// - Returns: A tuple containing the matching ``FrameObjects/Transfer`` on success, or a ``NetworkingError`` on failure.
     public static func getTransferWith(transferId: String) async throws -> (FrameObjects.Transfer?, NetworkingError?) {
         guard !transferId.isEmpty else { return (nil, nil) }
         let endpoint = TransferEndpoints.getTransferWith(transferId: transferId)
@@ -57,6 +66,12 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         }
     }
 
+    /// Retrieves a paginated list of transfers.
+    ///
+    /// - Parameters:
+    ///   - perPage: The number of transfers to return per page. Pass `nil` to use the API default.
+    ///   - page: The page number to retrieve. Pass `nil` to retrieve the first page.
+    /// - Returns: A tuple containing a ``TransferResponses/ListTransfersResponse`` on success, or a ``NetworkingError`` on failure.
     public static func getTransfers(perPage: Int? = nil, page: Int? = nil) async throws -> (TransferResponses.ListTransfersResponse?, NetworkingError?) {
         let endpoint = TransferEndpoints.getTransfers(perPage: perPage, page: page)
 
@@ -69,6 +84,12 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     }
 
     // completionHandlers
+
+    /// Completion-handler variant of ``createTransfer(request:)``.
+    ///
+    /// - Parameters:
+    ///   - request: The transfer creation parameters including amount, account, and optional payment method details.
+    ///   - completionHandler: Called with the created ``FrameObjects/Transfer`` on success, or a ``NetworkingError`` on failure.
     public static func createTransfer(request: TransferRequests.CreateTransferRequest, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.createTransfer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -82,6 +103,11 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of ``getTransferWith(transferId:)``.
+    ///
+    /// - Parameters:
+    ///   - transferId: The unique identifier of the transfer to fetch.
+    ///   - completionHandler: Called with the matching ``FrameObjects/Transfer`` on success, or a ``NetworkingError`` on failure.
     public static func getTransferWith(transferId: String, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.getTransferWith(transferId: transferId)
 
@@ -94,6 +120,12 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of ``getTransfers(perPage:page:)``.
+    ///
+    /// - Parameters:
+    ///   - perPage: The number of transfers to return per page. Pass `nil` to use the API default.
+    ///   - page: The page number to retrieve. Pass `nil` to retrieve the first page.
+    ///   - completionHandler: Called with a ``TransferResponses/ListTransfersResponse`` on success, or a ``NetworkingError`` on failure.
     public static func getTransfers(perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (TransferResponses.ListTransfersResponse?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.getTransfers(perPage: perPage, page: page)
 

@@ -2,16 +2,24 @@ import Foundation
 
 // MARK: - SessionManager
 
+/// Manages the lifecycle of a Sonar fraud-detection session, including creation, updating, and local persistence.
+///
+/// `SessionManager` coordinates with `FingerprintManager` to obtain a device visitor ID and then
+/// creates or refreshes a Sonar session via the Frame networking layer. The resulting session ID is
+/// persisted in `UserDefaults` so that subsequent launches can resume an existing session instead of
+/// creating a new one.
 public final class SessionManager {
     private let visitorId: String
     private let storage: SessionStorage = UserDefaultsSessionStorage()
 
-    /// - Parameters:
-    ///   - visitorId: fingerprint visitor id
+    /// Creates a `SessionManager` bound to the given Fingerprint visitor identifier.
+    ///
+    /// - Parameter visitorId: The Fingerprint visitor ID used to associate this session with a device.
     public init(visitorId: String) {
         self.visitorId = visitorId
     }
 
+    /// Creates a new Sonar session if none is stored, or updates the existing session.
     public func initialize() async {
         if storage.get() == nil {
             await createSession()
@@ -78,6 +86,9 @@ public final class SessionManager {
         storage.clear()
     }
     
+    /// Convenience method that fetches the Fingerprint visitor ID and initialises a `SessionManager` in one step.
+    ///
+    /// Call this from your app's startup path to ensure a valid Sonar session exists before processing payments.
     public static func initializeSession() async {
         do {
             guard let visitorId = try await FingerprintManager.getVisitorId() else { return }

@@ -8,6 +8,12 @@
 import SwiftUI
 import EvervaultInputs
 
+/// A full-screen checkout sheet that collects payment and customer details and initiates a charge.
+///
+/// Present this view modally to let a customer pay a fixed amount to a Frame account.
+/// It renders an Apple Pay button when a merchant identifier is configured, lists any saved
+/// payment methods on the account, and falls back to card-entry and billing-address fields
+/// for new card payments. Call `onResult` to receive the final ``FrameResult``.
 public struct FrameCheckoutView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.frameTheme) private var theme
@@ -18,12 +24,23 @@ public struct FrameCheckoutView: View {
     @State private var isShowingPicker = false
     @State private var didFinish = false
 
+    /// The Frame account identifier that will receive the charge.
     let accountId: String
+    /// The amount to charge, expressed in the currency's smallest unit (e.g. cents for USD).
     let paymentAmount: Int
+    /// Controls whether billing-address fields are shown, required, or hidden.
     let addressMode: FrameAddressMode
 
+    /// Closure invoked exactly once with the outcome of the checkout flow.
     var onResult: (FrameResult) -> Void
 
+    /// Creates a checkout view for the given account and amount.
+    ///
+    /// - Parameters:
+    ///   - accountId: The Frame account identifier that will receive the charge.
+    ///   - paymentAmount: The amount to charge in the currency's smallest unit (e.g. cents for USD).
+    ///   - addressMode: Controls billing-address field visibility. Defaults to `.required`.
+    ///   - onResult: Closure called exactly once with a ``FrameResult`` when the flow finishes or is cancelled.
     public init(accountId: String,
                 paymentAmount: Int,
                 addressMode: FrameAddressMode = .required,
@@ -46,6 +63,7 @@ public struct FrameCheckoutView: View {
         !(FrameNetworking.shared.applePayMerchantId ?? "").isEmpty
     }
 
+    /// The root view hierarchy for the checkout sheet.
     public var body: some View {
         VStack(alignment: .leading) {
             topHeaderBar
@@ -97,6 +115,7 @@ public struct FrameCheckoutView: View {
         }
     }
 
+    /// Navigation bar containing the "Checkout" title and a close button.
     var topHeaderBar: some View {
         HStack {
             Text("Checkout")
@@ -119,6 +138,7 @@ public struct FrameCheckoutView: View {
         .padding(.top)
     }
 
+    /// Apple Pay button that immediately initiates a charge when tapped.
     @ViewBuilder
     var applePayButton: some View {
         FrameApplePayButton(mode: .charge(amount: paymentAmount, currency: "usd"),
@@ -152,6 +172,7 @@ public struct FrameCheckoutView: View {
         .padding(.horizontal)
     }
 
+    /// Scrollable list of saved payment methods on the account, plus an "Enter New Payment Method" row.
     @ViewBuilder
     var paymentMethodList: some View {
         VStack(spacing: 8) {
@@ -169,6 +190,7 @@ public struct FrameCheckoutView: View {
         .padding(.horizontal)
     }
 
+    /// Tappable row that deselects any saved payment method and reveals the card-entry fields.
     var enterNewPaymentRow: some View {
         let isSelected = checkoutViewModel.selectedAccountPaymentOption == nil
         return HStack {
@@ -195,6 +217,7 @@ public struct FrameCheckoutView: View {
         }
     }
 
+    /// Evervault-encrypted card number, expiry, and CVC input fields with inline validation errors.
     @ViewBuilder
     var cardInformation: some View {
         Text("Card Information")
@@ -217,6 +240,7 @@ public struct FrameCheckoutView: View {
         }
     }
 
+    /// Name and email text fields for identifying the customer.
     @ViewBuilder
     var customerInformation: some View {
         Text("Customer Information")
@@ -242,6 +266,7 @@ public struct FrameCheckoutView: View {
         .padding(.horizontal)
     }
 
+    /// Street address, city, state, country picker, and zip code fields for billing address collection.
     @ViewBuilder
     var regionInformation: some View {
         Text("Billing Address")
@@ -303,6 +328,7 @@ public struct FrameCheckoutView: View {
         .padding(.horizontal)
     }
 
+    /// Toggle that lets the customer opt in to storing the entered card for future payments.
     var saveCardToggle: some View {
         HStack(spacing: 0) {
             Toggle(isOn: $saveCardForPayments) {
@@ -316,6 +342,7 @@ public struct FrameCheckoutView: View {
         .padding()
     }
 
+    /// Primary action button that submits payment with the currently selected method.
     var checkoutButton: some View {
         ContinueButton(
             buttonText: "Pay \(CurrencyFormatter.shared.convertCentsToCurrencyString(paymentAmount))",
@@ -342,6 +369,10 @@ public struct FrameCheckoutView: View {
         }
     }
 
+    /// Returns a two-way binding that reads and writes the validation error string for the given checkout field.
+    ///
+    /// - Parameter field: The ``FrameCheckoutViewModel/CheckoutField`` whose error message should be bound.
+    /// - Returns: A `Binding<String?>` that proxies `checkoutViewModel.fieldErrors[field]`.
     private func errorBinding(_ field: FrameCheckoutViewModel.CheckoutField) -> Binding<String?> {
         Binding(
             get: { checkoutViewModel.fieldErrors[field] },

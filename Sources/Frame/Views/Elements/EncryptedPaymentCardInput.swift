@@ -8,9 +8,17 @@
 import SwiftUI
 import EvervaultInputs
 
+/// A `PaymentCardInputStyle` that renders a themed, encrypted payment card input
+/// composed of a card number field above a side-by-side expiry and CVC field,
+/// styled according to the active ``FrameTheme``.
 public struct EncryptedPaymentCardInput: PaymentCardInputStyle {
+    /// Creates an ``EncryptedPaymentCardInput`` style instance.
     public init() {}
 
+    /// Builds the styled body view for the given payment card input configuration.
+    ///
+    /// - Parameter configuration: The configuration provided by the `PaymentCardInput` environment.
+    /// - Returns: A themed view containing the card number, expiry, and CVC fields.
     public func makeBody(configuration: Configuration) -> some View {
         ThemedBody(configuration: configuration)
     }

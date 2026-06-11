@@ -21,6 +21,12 @@ private struct FrameThemeKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
+    /// The active ``FrameTheme`` for the current SwiftUI subtree.
+    ///
+    /// Frame UI components read this value automatically. Set it via
+    /// ``View/frameTheme(_:)`` to scope a custom theme to a subtree, or
+    /// configure an SDK-wide default through
+    /// `FrameNetworking.shared.configureTheme(_:)`.
     var frameTheme: FrameTheme {
         get { self[FrameThemeKey.self] }
         set { self[FrameThemeKey.self] = newValue }
@@ -28,6 +34,10 @@ public extension EnvironmentValues {
 }
 
 public extension View {
+    /// Applies a ``FrameTheme`` to this view and all Frame UI components in its subtree.
+    ///
+    /// - Parameter theme: The theme to inject into the SwiftUI environment.
+    /// - Returns: A view whose ``EnvironmentValues/frameTheme`` is set to `theme`.
     func frameTheme(_ theme: FrameTheme) -> some View {
         environment(\.frameTheme, theme)
     }

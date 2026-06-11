@@ -7,16 +7,26 @@
 
 import SwiftUI
 
+/// A SwiftUI view that displays a shopping cart with line items, subtotal, shipping, and a
+/// checkout button, then navigates to ``FrameCheckoutView`` to complete the payment.
 public struct FrameCartView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.frameTheme) private var theme
     @ObservedObject var cartViewModel: FrameCartViewModel
 
+    /// The list of cart items currently displayed in the view.
     @State var cartItems: [any FrameCartItem]
 
+    /// The navigation-bar title rendered at the top of the cart sheet.
     @State var cartViewTitle: String
+
+    /// A secondary heading shown above the list of cart items.
     @State var subtitle: String
+
+    /// The fixed height applied to each cart-item row.
     @State var cartItemHeight: CGFloat
+
+    /// The label displayed on the primary checkout action button.
     @State var checkoutButtonTitle: String
 
     @State var continueToCheckout: Bool = false
@@ -24,8 +34,21 @@ public struct FrameCartView: View {
 
     private let onResult: ((FrameResult) -> Void)?
 
+    /// The Frame account identifier used to scope the checkout session.
     var accountId: String
 
+    /// Creates a ``FrameCartView`` pre-populated with the provided cart items and shipping cost.
+    ///
+    /// - Parameters:
+    ///   - accountId: The Frame account identifier used to initiate the checkout session.
+    ///   - cartItems: An array of items conforming to ``FrameCartItem`` to display in the cart.
+    ///   - shippingAmountInCents: The shipping cost in the smallest currency unit (e.g. cents).
+    ///   - cartViewTitle: The title shown in the navigation bar. Defaults to `"Frame Payments"`.
+    ///   - subtitle: A secondary heading rendered above the item list. Defaults to `"Cart"`.
+    ///   - cartItemHeight: The fixed height for each item row. Defaults to `65.0`.
+    ///   - checkoutButtonTitle: The label on the checkout button. Defaults to `"Checkout"`.
+    ///   - onResult: An optional closure called when the cart flow finishes, providing a
+    ///     ``FrameResult`` that indicates completion, failure, or cancellation.
     public init(
         accountId: String,
         cartItems: [any FrameCartItem],
@@ -46,6 +69,7 @@ public struct FrameCartView: View {
         self.onResult = onResult
     }
 
+    /// The root view hierarchy for the cart screen.
     public var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 0) {
@@ -84,6 +108,7 @@ public struct FrameCartView: View {
         }
     }
 
+    /// A view that renders the styled cart title and a divider beneath it.
     @ViewBuilder
     var cartTitle: some View {
         Text(cartViewTitle)
@@ -93,6 +118,7 @@ public struct FrameCartView: View {
         Divider()
     }
 
+    /// A scrollable view containing the subtitle, item rows, and the subtotal/shipping/total summary.
     @ViewBuilder
     var mainCartView: some View {
         ScrollView {
@@ -143,6 +169,10 @@ public struct FrameCartView: View {
         }
     }
 
+    /// Builds a single row view for the given cart item, showing its image, title, and price.
+    ///
+    /// - Parameter item: The cart item to render.
+    /// - Returns: A styled `HStack` row representing the item.
     func cartItemView(_ item: any FrameCartItem) -> some View {
         HStack {
             AsyncImage(url: URL(string: item.imageURL)) { image in
@@ -174,6 +204,7 @@ public struct FrameCartView: View {
         .padding(.horizontal)
     }
 
+    /// A full-width button that advances the navigation stack to ``FrameCheckoutView``.
     var checkoutButton: some View {
         Button {
             self.continueToCheckout = true

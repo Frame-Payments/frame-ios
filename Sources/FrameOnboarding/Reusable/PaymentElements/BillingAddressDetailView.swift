@@ -8,6 +8,11 @@
 import SwiftUI
 import Frame
 
+/// A SwiftUI view that renders a validated billing-address form for use in onboarding payment flows.
+///
+/// The view adapts its field layout and labels to the selected country when operating in
+/// international mode, and restricts entry to US-only addresses when in US-only mode.
+/// Validation errors are surfaced inline beneath each field via the bound ``BillingAddressViewModel``.
 public struct BillingAddressDetailView: View {
     @Environment(\.frameTheme) private var theme
     @ObservedObject var viewModel: BillingAddressViewModel
@@ -19,6 +24,12 @@ public struct BillingAddressDetailView: View {
     @State private var countryText: String = ""
     @State private var showCountryPicker: Bool = false
 
+    /// Creates a billing-address detail view.
+    ///
+    /// - Parameters:
+    ///   - viewModel: The view model that owns the address data and validation state.
+    ///   - headerTitle: The section heading displayed above the address fields. Defaults to `"Billing Address"`.
+    ///   - showHeaderText: When `false`, the section heading is hidden. Defaults to `true`.
     public init(viewModel: BillingAddressViewModel,
                 headerTitle: String = "Billing Address",
                 showHeaderText: Bool = true) {
@@ -36,6 +47,7 @@ public struct BillingAddressDetailView: View {
         return AddressFormat.format(forCountry: code)
     }
 
+    /// The root view hierarchy for the billing-address form.
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {

@@ -7,13 +7,28 @@ import Foundation
 import EvervaultInputs
 import PhoneNumberKit
 
+/// A namespace of pure validation functions used throughout the Frame SDK.
+///
+/// Each method accepts a raw string value (and optional context parameters) and returns
+/// either `nil` when the value is valid or a human-readable error message when it is not.
 public enum Validators {
+
+    /// Validates that a string contains at least one non-whitespace character.
+    ///
+    /// - Parameters:
+    ///   - value: The string to validate.
+    ///   - fieldName: The display name of the field, used in the error message.
+    /// - Returns: An error message if the value is empty, or `nil` if it is non-empty.
     public static func validateNonEmpty(_ value: String, fieldName: String) -> String? {
         value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "\(fieldName) is required"
             : nil
     }
 
+    /// Validates that a string represents a full name containing at least a first and last name.
+    ///
+    /// - Parameter value: The full name string to validate.
+    /// - Returns: An error message if the name is empty or contains fewer than two words, or `nil` if valid.
     public static func validateFullName(_ value: String) -> String? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return "Full name is required" }
@@ -21,6 +36,10 @@ public enum Validators {
         return parts.count >= 2 ? nil : "Enter first and last name"
     }
 
+    /// Validates that a string is a properly formatted email address.
+    ///
+    /// - Parameter value: The email address string to validate.
+    /// - Returns: An error message if the value is empty or does not match a basic email pattern, or `nil` if valid.
     public static func validateEmail(_ value: String) -> String? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return "Email is required" }
@@ -30,16 +49,30 @@ public enum Validators {
             : nil
     }
 
+    /// Validates that a string is a 5-digit US ZIP code.
+    ///
+    /// - Parameter value: The ZIP code string to validate.
+    /// - Returns: An error message if the value is empty or not exactly 5 digits, or `nil` if valid.
     public static func validateZipUS(_ value: String) -> String? {
         if value.isEmpty { return "Zip code is required" }
         let isValid = value.count == 5 && value.allSatisfy { $0.isNumber }
         return isValid ? nil : "Enter a 5-digit zip code"
     }
 
+    /// Validates that a `PaymentCardData` object represents a potentially valid card.
+    ///
+    /// - Parameter data: The payment card data to validate.
+    /// - Returns: An error message if the card data is not potentially valid, or `nil` if valid.
     public static func validateCard(_ data: PaymentCardData) -> String? {
         data.isPotentiallyValid ? nil : "Enter valid card details"
     }
 
+    /// Validates that a month/year pair represents a card expiry date that has not yet passed.
+    ///
+    /// - Parameters:
+    ///   - month: The expiry month as a 1- or 2-digit string (e.g. `"1"` or `"01"`).
+    ///   - year: The expiry year as a 2- or 4-digit string (e.g. `"26"` or `"2026"`).
+    /// - Returns: An error message if the month or year are invalid or the card is expired, or `nil` if valid.
     public static func validateCardExpiry(month: String, year: String) -> String? {
         guard let m = Int(month), (1...12).contains(m) else { return "Invalid expiration month" }
         let yearString = year.count == 2 ? "20\(year)" : year
@@ -53,12 +86,20 @@ public enum Validators {
         return nil
     }
 
+    /// Validates that a string is a 4-digit Social Security Number suffix.
+    ///
+    /// - Parameter value: The last 4 digits of an SSN.
+    /// - Returns: An error message if the value is empty or not exactly 4 digits, or `nil` if valid.
     public static func validateSSNLast4(_ value: String) -> String? {
         if value.isEmpty { return "SSN is required" }
         let isValid = value.count == 4 && value.allSatisfy { $0.isNumber }
         return isValid ? nil : "Enter last 4 digits of SSN"
     }
 
+    /// Validates that a string is a valid 9-digit US ABA routing number using the standard checksum algorithm.
+    ///
+    /// - Parameter value: The routing number string to validate.
+    /// - Returns: An error message if the value is empty, not 9 digits, or fails the checksum, or `nil` if valid.
     public static func validateRoutingNumberUS(_ value: String) -> String? {
         if value.isEmpty { return "Routing number is required" }
         guard value.count == 9, value.allSatisfy({ $0.isNumber }) else {
@@ -72,12 +113,28 @@ public enum Validators {
         return checksum == 0 ? nil : "Enter a valid routing number"
     }
 
+    /// Validates that a string is a numeric US bank account number within the allowed length range.
+    ///
+    /// - Parameters:
+    ///   - value: The account number string to validate.
+    ///   - min: The minimum accepted digit count (default `4`).
+    ///   - max: The maximum accepted digit count (default `17`).
+    /// - Returns: An error message if the value is empty, non-numeric, or outside the length range, or `nil` if valid.
     public static func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String? {
         if value.isEmpty { return "Account number is required" }
         let isValid = value.allSatisfy({ $0.isNumber }) && (min...max).contains(value.count)
         return isValid ? nil : "Enter a valid account number"
     }
 
+    /// Validates that year, month, and day strings represent a real date within an acceptable age range.
+    ///
+    /// - Parameters:
+    ///   - year: A 4-digit year string.
+    ///   - month: A 1- or 2-digit month string.
+    ///   - day: A 1- or 2-digit day string.
+    ///   - minAge: The minimum age in years the date of birth must satisfy (default `18`).
+    ///   - maxAge: The maximum age in years the date of birth must satisfy (default `120`).
+    /// - Returns: An error message if any component is missing, the date is invalid, or the resulting age is outside the allowed range, or `nil` if valid.
     public static func validateDateOfBirth(year: String, month: String, day: String,
                                            minAge: Int = 18, maxAge: Int = 120) -> String? {
         guard !year.isEmpty, !month.isEmpty, !day.isEmpty else {
@@ -127,6 +184,15 @@ public enum Validators {
         "SG": #"^\d{6}$"#
     ]
 
+    /// Validates that a string matches the postal code format for a given ISO 3166-1 alpha-2 country code.
+    ///
+    /// Supported country codes: US, CA, GB, AU, DE, FR, NL, MX, IN, JP, BR, IT, ES, IE, NZ, SG.
+    /// For unsupported country codes the value is considered valid and `nil` is returned.
+    ///
+    /// - Parameters:
+    ///   - value: The postal code string to validate.
+    ///   - countryCode: An ISO 3166-1 alpha-2 country code (case-insensitive).
+    /// - Returns: An error message if the value is empty or does not match the country's pattern, or `nil` if valid.
     public static func validatePostalCode(_ value: String, countryCode: String) -> String? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return "Postal code is required" }
@@ -140,6 +206,12 @@ public enum Validators {
 
     private static let phoneUtility = PhoneNumberUtility()
 
+    /// Validates that a raw phone number string is parseable as a valid number for the given region.
+    ///
+    /// - Parameters:
+    ///   - raw: The phone number string to validate (any format accepted by PhoneNumberKit).
+    ///   - regionCode: An ISO 3166-1 alpha-2 region code used to interpret the number (e.g. `"US"`).
+    /// - Returns: An error message if the value is empty or cannot be parsed, or `nil` if valid.
     public static func validatePhoneE164(_ raw: String, regionCode: String) -> String? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return "Phone number is required" }

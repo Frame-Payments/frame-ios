@@ -13,9 +13,15 @@ public typealias ProveOtpProvider = @Sendable () async -> String?
 
 /// User information returned after successful Prove authentication and backend verify.
 public struct ProveUserInfo: Sendable {
+    /// The user's first name as returned by Prove.
     public let firstName: String
+    /// The user's last name as returned by Prove.
     public let lastName: String
 
+    /// Creates a new ``ProveUserInfo`` with the given name components.
+    /// - Parameters:
+    ///   - firstName: The user's first name.
+    ///   - lastName: The user's last name.
     public init(firstName: String, lastName: String) {
         self.firstName = firstName
         self.lastName = lastName
@@ -25,6 +31,11 @@ public struct ProveUserInfo: Sendable {
 /// Closure invoked when Prove auth completes. Performs confirmVerification with accountId and verificationId from create.
 public typealias ProveConfirmHandler = @Sendable (String, String) async throws -> Void
 
+/// Orchestrates the Prove mobile-auth flow within the Frame onboarding SDK.
+///
+/// `ProveAuthService` wraps the `ProveAuth` SDK, drives the silent-auth and optional
+/// OTP-fallback steps, and calls the host-supplied ``ProveConfirmHandler`` on success
+/// to confirm the verification with the Frame backend.
 public final class ProveAuthService: @unchecked Sendable {
     private let accountId: String
     private let verificationId: String
@@ -36,6 +47,12 @@ public final class ProveAuthService: @unchecked Sendable {
     private var otpStartStep: ProveOtpStartStep?
     private var otpFinishStep: ProveOtpFinishStep?
 
+    /// Creates a new ``ProveAuthService`` ready to drive the Prove auth flow.
+    /// - Parameters:
+    ///   - accountId: The Frame account identifier associated with this verification session.
+    ///   - verificationId: The verification identifier returned by `createVerification`.
+    ///   - confirmHandler: Async closure called with `accountId` and `verificationId` once Prove auth succeeds; should call `confirmVerification` on the Frame backend.
+    ///   - otpProvider: Optional async closure that supplies a one-time passcode when the SDK falls back to OTP; return `nil` to cancel the flow.
     public init(accountId: String, verificationId: String, confirmHandler: @escaping ProveConfirmHandler, otpProvider: ProveOtpProvider? = nil) {
         self.accountId = accountId
         self.verificationId = verificationId
