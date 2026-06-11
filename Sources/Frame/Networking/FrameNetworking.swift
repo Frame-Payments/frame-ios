@@ -15,28 +15,47 @@ import Sift
 
 // TODO: Add Pagination for Network Request
 
+/// Central networking hub for the Frame SDK, responsible for authenticating and dispatching
+/// all HTTP requests to the Frame Payments API.
+///
+/// Obtain the singleton via ``shared`` and call ``initializeWithAPIKey(_:publishableKey:applePayMerchantId:theme:debugMode:)``
+/// once at app launch before using any other SDK API.
 public class FrameNetworking: ObservableObject {
+    /// The shared singleton instance used by all SDK components.
     nonisolated(unsafe) public static let shared = FrameNetworking()
-    
+
+    /// Shared JSON encoder used across the SDK.
     public let jsonEncoder = JSONEncoder()
+    /// Shared JSON decoder used across the SDK.
     public let jsonDecoder = JSONDecoder()
-    
+
     var asyncURLSession: URLSessionProtocol = URLSession.shared
     var urlSession: URLSession = URLSession.shared
-    
+
     private var apiSecretKey: String = "" // API Key used to authenticate each request - Bearer Token
     private var apiPublishableKey: String = "" // Publishable key for client-side only endpoints
     private var debugMode: Bool = false // Print API data on task calls.
 
     var isEvervaultConfigured: Bool = false
 
-    // SDK-wide theme. Read by FrameThemeKey.defaultValue
+    /// The active SDK-wide visual theme, applied to all Frame-rendered UI surfaces.
     @MainActor
     public private(set) var globalTheme: FrameTheme = .default
 
     /// Apple Pay merchant identifier, captured at SDK init and read by every Apple Pay surface.
     public private(set) var applePayMerchantId: String?
 
+    /// Initializes the SDK with the provided credentials and configuration.
+    ///
+    /// Call this method once, early in the app lifecycle (e.g. `application(_:didFinishLaunchingWithOptions:)`),
+    /// before making any other SDK calls.
+    ///
+    /// - Parameters:
+    ///   - key: Your Frame Payments secret API key used to authenticate server-side requests.
+    ///   - publishableKey: Your Frame Payments publishable key used for client-side-only endpoints.
+    ///   - applePayMerchantId: Optional Apple Pay merchant identifier required to present Apple Pay sheets.
+    ///   - theme: Visual theme applied to all Frame SDK UI. Defaults to ``FrameTheme/default``.
+    ///   - debugMode: When `true`, request and response bodies are printed to the console. Defaults to `false`.
     public func initializeWithAPIKey(_ key: String,
                                      publishableKey: String,
                                      applePayMerchantId: String? = nil,
@@ -57,7 +76,7 @@ public class FrameNetworking: ObservableObject {
         if !isEvervaultConfigured {
             self.configureEvervault()
         }
-        
+
         // Set global theme
         Task {
             await MainActor.run {
@@ -69,8 +88,15 @@ public class FrameNetworking: ObservableObject {
     func currentSonarSessionId() -> String? {
         SonarSessionStorage.currentSessionId()
     }
-    
+
     // Async/Await
+    /// Performs an authenticated HTTP data task against a Frame API endpoint.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
+    ///   - requestBody: Optional JSON-encoded body data to include in the request.
+    ///   - usePublishableKey: When `true`, the publishable key is used instead of the secret key. Defaults to `false`.
+    /// - Returns: A tuple of the raw response `Data` (if any) and a ``NetworkingError`` (if the request failed).
     public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, usePublishableKey: Bool = false) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
 
@@ -91,7 +117,7 @@ public class FrameNetworking: ObservableObject {
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
         }
-        
+
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
             if debugMode {
@@ -111,12 +137,18 @@ public class FrameNetworking: ObservableObject {
             return (nil, NetworkingError.unknownError)
         }
     }
-    
+
+    /// Performs an authenticated multipart/form-data upload to a Frame API endpoint.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
+    ///   - filesToUpload: An array of ``FileUpload`` values describing each file part to include in the request.
+    /// - Returns: A tuple of the raw response `Data` (if any) and a ``NetworkingError`` (if the request failed).
     public func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload]) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
-        
+
         let multipart = MultipartFormDataBuilder()
-        
+
         filesToUpload.forEach { file in
             multipart.addFile(
                 fieldName: file.fieldName.rawValue,
@@ -125,16 +157,16 @@ public class FrameNetworking: ObservableObject {
                 fileData: file.data
             )
         }
-        
+
         let body = multipart.build()
-        
+
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
-        
+
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
-        
+
         urlRequest.httpBody = body
         urlRequest.setValue(multipart.contentTypeHeader, forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
@@ -143,7 +175,7 @@ public class FrameNetworking: ObservableObject {
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
         }
-        
+
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
             if debugMode {
@@ -163,33 +195,40 @@ public class FrameNetworking: ObservableObject {
             return (nil, NetworkingError.unknownError)
         }
     }
-    
+
     // Completion Handler
+    /// Completion-handler variant of ``performDataTask(endpoint:requestBody:usePublishableKey:)``.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
+    ///   - requestBody: Optional JSON-encoded body data to include in the request.
+    ///   - usePublishableKey: When `true`, the publishable key is used instead of the secret key. Defaults to `false`.
+    ///   - completion: Called on task completion with the raw `Data`, the `URLResponse`, and an optional ``NetworkingError``.
     public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, usePublishableKey: Bool = false, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
-        
+
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
         if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        
+
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
-        
+
         let authKey = usePublishableKey && !apiPublishableKey.isEmpty ? apiPublishableKey : apiSecretKey
         urlRequest.setValue("Bearer \(authKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
-        
+
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
         }
-        
+
         urlSession.dataTask(with: urlRequest) { data, response, error in
             var networkingError: NetworkingError?
-            
+
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 networkingError = NetworkingError.serverError(statusCode: httpResponse.statusCode, errorDescription: error?.localizedDescription ?? "")
             } else if data == nil {
@@ -204,16 +243,22 @@ public class FrameNetworking: ObservableObject {
                     networkingError = NetworkingError.unknownError
                 }
             }
-            
+
             completion(data, response, networkingError)
         }.resume()
     }
-    
+
+    /// Completion-handler variant of ``performMultipartDataTask(endpoint:filesToUpload:)``.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
+    ///   - filesToUpload: An array of ``FileUpload`` values describing each file part to include in the request.
+    ///   - completion: Called on task completion with the raw `Data`, the `URLResponse`, and an optional ``NetworkingError``.
     public func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
-        
+
         let multipart = MultipartFormDataBuilder()
-        
+
         filesToUpload.forEach { file in
             multipart.addFile(
                 fieldName: file.fieldName.rawValue,
@@ -222,29 +267,29 @@ public class FrameNetworking: ObservableObject {
                 fileData: file.data
             )
         }
-        
+
         let body = multipart.build()
-        
+
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
-        
+
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
-        
+
         urlRequest.httpBody = body
         urlRequest.setValue(multipart.contentTypeHeader, forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
         urlRequest.setValue("Bearer \(apiSecretKey)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
-        
+
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
         }
-        
+
         urlSession.dataTask(with: urlRequest) { data, response, error in
             var networkingError: NetworkingError?
-            
+
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 networkingError = NetworkingError.serverError(statusCode: httpResponse.statusCode, errorDescription: error?.localizedDescription ?? "")
             } else if data == nil {
@@ -259,11 +304,11 @@ public class FrameNetworking: ObservableObject {
                     networkingError = NetworkingError.unknownError
                 }
             }
-            
+
             completion(data, response, networkingError)
         }.resume()
     }
-    
+
     func configureEvervault() {
         Task {
             if let configResponse = try? await ConfigurationAPI.getEvervaultConfiguration() {
@@ -277,16 +322,16 @@ public class FrameNetworking: ObservableObject {
             }
         }
     }
-    
+
     private func printDataForTesting(data: Data?) {
         print(returnErrorString(data: data))
     }
-    
+
     private func returnErrorString(data: Data?) -> String {
         if let data, let jsonString = String(data: data, encoding: .utf8) {
             return jsonString
         }
-        
+
         return ""
     }
 }
@@ -331,4 +376,3 @@ private extension Data {
         }
     }
 }
-

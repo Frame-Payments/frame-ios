@@ -8,16 +8,25 @@
 import SwiftUI
 import Frame
 
+/// A reusable SwiftUI view that pairs an optional bold header label with a tappable
+/// dropdown selector row, used throughout the onboarding payment elements to let
+/// users open a picker sheet for a given field.
 public struct DropDownWithHeaderView: View {
     @Environment(\.frameTheme) private var theme
 
+    /// The label displayed above the dropdown row.
     @Binding public var headerText: String
+    /// The currently selected value shown inside the dropdown row.
     @Binding public var dropDownText: String
+    /// Controls whether the associated picker sheet is visible; toggled when the row is tapped.
     @Binding public var showDropdownPicker: Bool
 
+    /// When `true`, the bold header label is rendered above the dropdown row.
     @State public var showHeaderText: Bool = true
+    /// When `true`, a rounded-rectangle stroke border is drawn around the dropdown row.
     @State public var showDropdownBorder: Bool = true
 
+    /// The SwiftUI view hierarchy for the header label and tappable dropdown row.
     public var body: some View {
         VStack(alignment: .leading) {
             if showHeaderText {

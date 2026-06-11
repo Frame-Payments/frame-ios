@@ -5,6 +5,7 @@
 
 import Foundation
 
+/// Utility namespace for formatting date-of-birth components into a standardised string representation used by the SDK.
 public enum DateOfBirthFormatter {
     /// Assembles ISO 8601 "YYYY-MM-DD" with zero-padded month/day. Returns an empty string if any component is empty.
     public static func format(year: String, month: String, day: String) -> String {

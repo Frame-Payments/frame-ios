@@ -14,12 +14,21 @@ import SwiftUI
 /// host-app toast API.
 @MainActor
 public final class FrameToastCenter: ObservableObject {
+    /// The singleton instance used by all SDK modals and the `Frame-Onboarding` module.
     public static let shared = FrameToastCenter()
 
+    /// The message currently displayed in the toast, or `nil` when no toast is visible.
     @Published public var current: String?
 
     private var dismissTask: Task<Void, Never>?
 
+    /// Displays a toast with the given message and schedules automatic dismissal.
+    ///
+    /// Any previously scheduled auto-dismiss is cancelled before the new message is set.
+    ///
+    /// - Parameters:
+    ///   - message: The human-readable text to display in the toast.
+    ///   - seconds: Duration in seconds before the toast is automatically cleared. Defaults to `4.0`.
     public func show(_ message: String, autoDismissAfter seconds: Double = 4.0) {
         dismissTask?.cancel()
         current = message
@@ -31,6 +40,7 @@ public final class FrameToastCenter: ObservableObject {
         }
     }
 
+    /// Immediately hides the current toast and cancels any pending auto-dismiss task.
     public func dismiss() {
         dismissTask?.cancel()
         current = nil

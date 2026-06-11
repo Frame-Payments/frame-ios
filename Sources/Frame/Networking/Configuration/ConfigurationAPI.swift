@@ -8,21 +8,30 @@
 import Foundation
 import Security
 
-// Protocol for Mock Testing
+/// Internal protocol used to abstract `ConfigurationAPI` for mock testing.
 protocol ConfigurationProtocol {
     //async/await
     static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?
     static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?
 }
 
+/// Keys used to identify configuration entries stored in the keychain.
 enum ConfigurationKeys: String {
+    /// Key for the Evervault encryption configuration.
     case evervault
+    /// Key for the Sift fraud-detection configuration.
     case sift
 }
 
-// Charge Intents API
+/// Manages SDK configuration resources, including fetching and caching third-party service
+/// credentials (Evervault, Sift) from the Frame API and persisting them in the system keychain.
 public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     //async/await
+    /// Fetches the Evervault encryption configuration from the Frame API and caches it in the keychain.
+    ///
+    /// - Returns: A ``ConfigurationResponses/GetEvervaultConfigurationResponse`` containing the
+    ///   Evervault app and team identifiers, or `nil` if the response cannot be decoded.
+    /// - Throws: A networking error if the request fails.
     public static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse? {
         let endpoint = ConfigurationEndpoints.getEvervaultConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -35,6 +44,11 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         }
     }
     
+    /// Fetches the Sift fraud-detection configuration from the Frame API and caches it in the keychain.
+    ///
+    /// - Returns: A ``ConfigurationResponses/GetSiftConfigurationResponse`` containing the
+    ///   Sift account identifier and beacon key, or `nil` if the response cannot be decoded.
+    /// - Throws: A networking error if the request fails.
     public static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse? {
         let endpoint = ConfigurationEndpoints.getSiftConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
@@ -47,6 +61,11 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         }
     }
     
+    /// Encodes a `Codable` value and writes (or updates) it in the system keychain under the given key.
+    ///
+    /// - Parameters:
+    ///   - key: The keychain account identifier used to store the value.
+    ///   - value: The `Codable` object to encode and persist.
     public static func saveConfigurationToKeychain(key: String, value: Codable) {
         guard let data = try? JSONEncoder().encode(value) else { return }
         let query: [String: Any] = [
@@ -62,6 +81,10 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         }
     }
     
+    /// Retrieves raw data previously stored in the keychain under the given key.
+    ///
+    /// - Parameter key: The keychain account identifier to look up.
+    /// - Returns: The stored `Data`, or `nil` if no matching entry is found.
     public static func retrieveFromKeychain(key: String) -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,

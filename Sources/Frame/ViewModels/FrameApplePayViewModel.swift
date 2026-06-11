@@ -8,18 +8,30 @@
 import Foundation
 import PassKit
 
+/// View-model that drives the Apple Pay sheet and processes the resulting payment
+/// or payment-method attachment on behalf of the host app.
+///
+/// Instantiate this object with the desired ``FrameApplePayMode`` and
+/// ``PaymentMethodOwner``, then pass it to `FrameApplePayButton` (or call
+/// `presentApplePay()` directly) to begin the flow. Results are delivered via
+/// the `completion` closure.
 @MainActor
 public class FrameApplePayViewModel: NSObject, ObservableObject {
 
+    /// Identifies the entity that will own the resulting payment method.
     public enum PaymentMethodOwner {
+        /// A Frame customer, identified by their customer ID string.
         case customer(String)
+        /// A Frame connected account, identified by their account ID string.
         case account(String)
     }
 
     /// Drives whether the Apple Pay sheet completes by creating a charge (`.charge`)
     /// or only attaches the wallet card to the customer/account (`.addToOwner`).
     public enum FrameApplePayMode {
+        /// Charge the given `amount` (in the currency's smallest unit) in the specified `currency`.
         case charge(amount: Int, currency: String)
+        /// Attach the Apple Pay wallet card to the owner without charging it.
         case addToOwner
     }
 
@@ -32,19 +44,32 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
     ///
     /// `.paymentMethod` carries a persisted wallet PaymentMethod for use in AddPaymentMethod flows.
     public enum FrameApplePayResult {
+        /// A charge was created successfully; `id` is the ChargeIntent or Transfer identifier.
         case charge(id: String)
+        /// A payment method was saved successfully without charging the owner.
         case paymentMethod(FrameObjects.PaymentMethod)
     }
 
     // MARK: - Published state
 
+    /// Indicates whether an Apple Pay authorization or network request is in progress.
     @Published var isProcessing: Bool = false
 
+    /// The mode that determines whether the sheet charges the user or only saves their card.
     let mode: FrameApplePayMode
+
+    /// The customer or account that will own the resulting payment method or charge.
     let owner: PaymentMethodOwner
 
+    /// Optional closure called with the final success or failure result after the Apple Pay flow completes.
     var completion: ((Result<FrameApplePayResult, Error>) -> Void)?
 
+    /// Creates a new `FrameApplePayViewModel`.
+    ///
+    /// - Parameters:
+    ///   - mode: Controls whether the sheet creates a charge or only attaches the wallet card.
+    ///   - owner: The customer or account that will own the resulting resource.
+    ///   - completion: Called on the main actor with the success or failure result after the flow ends.
     public init(mode: FrameApplePayMode,
                 owner: PaymentMethodOwner,
                 completion: ((Result<FrameApplePayResult, Error>) -> Void)? = nil) {
@@ -53,7 +78,9 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         self.completion = completion
     }
 
-    /// Returns true if the device can make Apple Pay payments with at least one of the supported networks.
+    /// Checks whether the device is capable of making Apple Pay payments on a supported network.
+    ///
+    /// - Returns: `true` if the device can make payments using at least one of the SDK's supported networks; `false` otherwise.
     static func canMakePayments() -> Bool {
         PKPaymentAuthorizationController.canMakePayments(usingNetworks: supportedNetworks)
     }
@@ -74,10 +101,14 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         }
     }
 
+    /// The card networks accepted by this SDK's Apple Pay integration.
     private static let supportedNetworks: [PKPaymentNetwork] = [
         .visa, .masterCard, .amex, .discover, .JCB
     ]
 
+    /// Constructs a `PKPaymentRequest` populated from the current `mode` and SDK merchant configuration.
+    ///
+    /// - Returns: A fully configured `PKPaymentRequest` ready to be passed to `PKPaymentAuthorizationController`.
     private func buildPaymentRequest() -> PKPaymentRequest {
         let request = PKPaymentRequest()
         request.merchantIdentifier = FrameNetworking.shared.applePayMerchantId ?? ""
@@ -201,6 +232,7 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
         }
     }
 
+    /// Dismisses the Apple Pay sheet after the flow completes or is cancelled.
     public func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
         controller.dismiss()
     }

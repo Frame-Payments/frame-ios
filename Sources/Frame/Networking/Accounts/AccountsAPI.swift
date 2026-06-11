@@ -34,14 +34,20 @@ protocol AccountsProtocol {
     static func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void)
 }
 
-// Accounts API
+/// Manages account resources in the Frame SDK, providing methods to create, retrieve, update, delete, search, and manage accounts and their associated payment methods.
 public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
-    
+
     //MARK: Methods using async/await
+
+    /// Creates a new account using the provided request body.
+    /// - Parameters:
+    ///   - request: The details required to create the account.
+    ///   - forTesting: When `true`, skips Sift login-event collection; defaults to `false`.
+    /// - Returns: A tuple containing the created ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func createAccount(request: AccountRequest.CreateAccountRequest, forTesting: Bool = false) async throws -> (FrameObjects.Account?, NetworkingError?) {
         let endpoint = AccountEndpoints.createAccount
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
-        
+
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
@@ -52,12 +58,17 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
-    
+
+    /// Updates an existing account identified by its ID.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to update.
+    ///   - request: The fields to update on the account.
+    /// - Returns: A tuple containing the updated ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest) async throws -> (FrameObjects.Account?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.updateAccount(accountId: accountId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
-        
+
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
@@ -65,13 +76,20 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
-    
+
+    /// Retrieves a filtered list of accounts.
+    /// - Parameters:
+    ///   - status: Optional status filter for accounts.
+    ///   - type: Optional type filter for accounts.
+    ///   - externalId: Optional external identifier to filter by.
+    ///   - includeDisabled: When `true`, includes disabled accounts in the results; defaults to `false`.
+    /// - Returns: A tuple containing an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
     public static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool = false) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?) {
         let endpoint = AccountEndpoints.getAccounts(status: status,
                                                     type: type,
                                                     externalId: externalId,
                                                     includeDisabled: includeDisabled)
-        
+
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
             return (decodedResponse, error)
@@ -79,11 +97,16 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
-    
+
+    /// Retrieves a single account by its ID.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to retrieve.
+    ///   - forTesting: When `true`, skips Sift login-event collection; defaults to `false`.
+    /// - Returns: A tuple containing the matching ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func getAccountWith(accountId: String, forTesting: Bool = false) async throws -> (FrameObjects.Account?, NetworkingError?) {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
-        
+
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
@@ -94,7 +117,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             return (nil, error)
         }
     }
-    
+
+    /// Deletes the account identified by the given ID.
+    /// - Parameter accountId: The unique identifier of the account to delete.
+    /// - Returns: A tuple containing the deleted ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
@@ -107,6 +133,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Searches for accounts matching the given email address.
+    /// - Parameter email: The email address to search by.
+    /// - Returns: A tuple containing an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
     public static func searchAccounts(email: String) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?) {
         guard !email.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.searchAccounts(email: email)
@@ -119,6 +148,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Retrieves all payment methods associated with the specified account.
+    /// - Parameter accountId: The unique identifier of the account whose payment methods to retrieve.
+    /// - Returns: A tuple containing a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
     public static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
@@ -131,6 +163,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Restricts the account identified by the given ID, preventing further activity.
+    /// - Parameter accountId: The unique identifier of the account to restrict.
+    /// - Returns: A tuple containing the updated ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
@@ -143,6 +178,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Removes the restriction on the account identified by the given ID, restoring normal activity.
+    /// - Parameter accountId: The unique identifier of the account to unrestrict.
+    /// - Returns: A tuple containing the updated ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
@@ -155,6 +193,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Retrieves a Plaid Link token for the specified account, used to initiate bank-account linking.
+    /// - Parameter accountId: The unique identifier of the account for which to obtain a Plaid Link token.
+    /// - Returns: A tuple containing an ``AccountResponses/PlaidLinkTokenResponse`` and any ``NetworkingError``.
     public static func getPlaidLinkToken(accountId: String) async throws -> (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getPlaidLinkToken(accountId: accountId)
@@ -168,10 +209,15 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     //MARK: Methods using completion handler
+
+    /// Completion-handler variant of `createAccount(request:forTesting:)`.
+    /// - Parameters:
+    ///   - request: The details required to create the account.
+    ///   - completionHandler: Called with the created ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.createAccount
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
-        
+
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
@@ -181,11 +227,16 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             }
         }
     }
-    
+
+    /// Completion-handler variant of `updateAccountWith(accountId:request:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to update.
+    ///   - request: The fields to update on the account.
+    ///   - completionHandler: Called with the updated ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.updateAccount(accountId: accountId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
-        
+
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
@@ -194,13 +245,20 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             }
         }
     }
-    
+
+    /// Completion-handler variant of `getAccounts(status:type:externalId:includeDisabled:)`.
+    /// - Parameters:
+    ///   - status: Optional status filter for accounts.
+    ///   - type: Optional type filter for accounts.
+    ///   - externalId: Optional external identifier to filter by.
+    ///   - includeDisabled: When `true`, includes disabled accounts in the results; defaults to `false`.
+    ///   - completionHandler: Called with an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
     public static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool = false, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.getAccounts(status: status,
                                                     type: type,
                                                     externalId: externalId,
                                                     includeDisabled: includeDisabled)
-        
+
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
@@ -209,10 +267,14 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             }
         }
     }
-    
+
+    /// Completion-handler variant of `getAccountWith(accountId:forTesting:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to retrieve.
+    ///   - completionHandler: Called with the matching ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
-        
+
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
@@ -222,7 +284,11 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
             }
         }
     }
-    
+
+    /// Completion-handler variant of `deleteAccountWith(accountId:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to delete.
+    ///   - completionHandler: Called with the deleted ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
 
@@ -235,6 +301,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of `searchAccounts(email:)`.
+    /// - Parameters:
+    ///   - email: The email address to search by.
+    ///   - completionHandler: Called with an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
     public static func searchAccounts(email: String, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void) {
         guard !email.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.searchAccounts(email: email)
@@ -248,6 +318,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of `getPaymentMethodsForAccount(accountId:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account whose payment methods to retrieve.
+    ///   - completionHandler: Called with a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
     public static func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
@@ -261,6 +335,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of `restrictAccount(accountId:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to restrict.
+    ///   - completionHandler: Called with the updated ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
@@ -274,6 +352,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of `unrestrictAccount(accountId:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account to unrestrict.
+    ///   - completionHandler: Called with the updated ``FrameObjects/Account`` and any ``NetworkingError``.
     public static func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
@@ -287,6 +369,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         }
     }
 
+    /// Completion-handler variant of `getPlaidLinkToken(accountId:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account for which to obtain a Plaid Link token.
+    ///   - completionHandler: Called with an ``AccountResponses/PlaidLinkTokenResponse`` and any ``NetworkingError``.
     public static func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.getPlaidLinkToken(accountId: accountId)

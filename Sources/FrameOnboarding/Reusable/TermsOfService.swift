@@ -8,6 +8,11 @@
 import SwiftUI
 import Frame
 
+/// A SwiftUI view that renders a Frame terms-of-service consent line with tappable
+/// Privacy Policy and Terms of Service hyperlinks, styled using the active ``FrameTheme``.
+///
+/// Embed this view below any primary action button to inform users that proceeding
+/// implies acceptance of Frame's legal agreements.
 public struct TermsOfServiceView: View {
     @Environment(\.frameTheme) private var theme
 
@@ -15,7 +20,9 @@ public struct TermsOfServiceView: View {
     @State private var privacyPolicyURL: URL = URL(string: "https://framepayments.com/privacy")!
     @State private var termsOfServiceURL: URL = URL(string: "https://framepayments.com/terms")!
 
+    /// The horizontal alignment applied to the consent text and its containing frame.
     public var alignment: Alignment = .center
+    /// When `true`, the view is wrapped in a rounded-rectangle surface with a stroke border.
     public var padded: Bool = false
 
     private var composed: AttributedString {
@@ -44,6 +51,17 @@ public struct TermsOfServiceView: View {
         return result
     }
 
+    /// Creates a ``TermsOfServiceView``.
+    ///
+    /// - Parameters:
+    ///   - alignment: Horizontal alignment for the consent text. Defaults to `.center`.
+    ///   - padded: When `true`, wraps the text in a themed rounded-rectangle surface. Defaults to `false`.
+    public init(alignment: Alignment = .center, padded: Bool = false) {
+        self.alignment = alignment
+        self.padded = padded
+    }
+
+    /// The view hierarchy that renders the attributed consent text.
     public var body: some View {
         let textView = Text(composed)
             .font(theme.fonts.caption)

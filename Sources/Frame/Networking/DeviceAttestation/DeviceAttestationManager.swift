@@ -10,18 +10,32 @@ import DeviceCheck
 import CryptoKit
 import Security
 
+/// Errors that can be thrown during the device attestation or assertion flow.
 public enum DeviceAttestationError: Error {
+    /// The current device does not support App Attest (e.g. simulator or older OS).
     case notSupported
+    /// Secure Enclave key generation failed; the associated error contains details.
     case keyGenerationFailed(Error)
+    /// Fetching the attestation challenge from the Frame backend failed.
     case challengeFailed(NetworkingError?)
+    /// Apple's `DCAppAttestService.attestKey(_:clientDataHash:)` call failed.
     case attestationFailed(Error)
+    /// The Frame backend rejected the attestation object.
     case attestationRejected(NetworkingError?)
+    /// No attested key is present in the Keychain; call ``DeviceAttestationManager/attestDevice()`` first.
     case noAttestedKey
+    /// Apple's `DCAppAttestService.generateAssertion(_:clientDataHash:)` call failed.
     case assertionFailed(Error)
 }
 
+/// Manages App Attest-based device attestation and per-request assertion generation for the Frame SDK.
+///
+/// The manager coordinates with Apple's `DCAppAttestService` and the Frame backend to establish
+/// cryptographic proof that a request originates from an unmodified instance of the app running on
+/// genuine Apple hardware. Use ``shared`` to access the singleton instance.
 public class DeviceAttestationManager: ObservableObject {
 
+    /// The shared singleton instance of ``DeviceAttestationManager``.
     nonisolated(unsafe) public static let shared = DeviceAttestationManager()
 
     private let service = DCAppAttestService.shared
@@ -46,6 +60,7 @@ public class DeviceAttestationManager: ObservableObject {
         readKeyIdFromKeychain()
     }
 
+    /// Initialises the manager and restores attested state from the Keychain.
     private init() {
         isDeviceAttested = readKeyIdFromKeychain() != nil
     }
@@ -58,6 +73,9 @@ public class DeviceAttestationManager: ObservableObject {
     /// 5. Persist the key ID in the Keychain
     ///
     /// If a key has already been attested, this method returns the existing key ID.
+    ///
+    /// - Returns: The attested key ID stored in the Keychain.
+    /// - Throws: ``DeviceAttestationError`` if any step in the flow fails.
     public func attestDevice() async throws -> String {
         if let existingKeyId = attestedKeyId {
             return existingKeyId
@@ -116,8 +134,12 @@ public class DeviceAttestationManager: ObservableObject {
         return keyId
     }
 
-    /// Generates an assertion for a payment request.
-    /// Returns (keyId, assertion, clientData) all base64-encoded and ready for the API request.
+    /// Generates an App Attest assertion for a payment request.
+    ///
+    /// - Parameter paymentData: The raw payment data whose hash will be signed by the Secure Enclave.
+    /// - Returns: A tuple of `(keyId, assertion, clientData)`, all base64-encoded and ready for the API request.
+    /// - Throws: ``DeviceAttestationError/noAttestedKey`` if the device has not been attested, or
+    ///   ``DeviceAttestationError/assertionFailed(_:)`` if Apple's assertion call fails.
     public func generateAssertionForPayment(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String) {
         guard let keyId = attestedKeyId else {
             throw DeviceAttestationError.noAttestedKey
@@ -144,8 +166,9 @@ public class DeviceAttestationManager: ObservableObject {
         )
     }
 
-    /// Removes the stored key ID. Call this if the backend rejects the attestation
-    /// and the device needs to be re-attested.
+    /// Removes all stored key IDs from the Keychain and resets ``isDeviceAttested`` to `false`.
+    ///
+    /// Call this if the backend rejects the attestation and the device needs to be re-attested.
     public func resetAttestation() {
         deleteKeychainItem(keychainKey)
         deleteKeychainItem(pendingKeychainKey)

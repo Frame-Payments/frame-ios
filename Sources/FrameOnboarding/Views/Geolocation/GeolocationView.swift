@@ -12,10 +12,23 @@ import CFNetwork
 import CoreLocation
 import Network
 
+/// A SwiftUI view that checks the user's geolocation and detects VPN or proxy usage during onboarding.
+///
+/// `GeolocationView` resolves the device's IP address, inspects network interfaces for active
+/// VPN tunnels, and checks system proxy settings. It displays a state-specific illustration and
+/// title that updates as the check progresses. When a VPN or proxy is detected the view surfaces
+/// action buttons so the user can continue anyway or disable the VPN before proceeding.
 public struct GeolocationView: View {
+    /// Represents the possible states of the geolocation check.
     enum GeolocationState {
-        case checking, verified, vpn
-        
+        /// The geolocation check is currently in progress.
+        case checking
+        /// The geolocation check completed successfully with no VPN or proxy detected.
+        case verified
+        /// A VPN or system proxy was detected on the device.
+        case vpn
+
+        /// The name of the image asset that corresponds to the current state.
         var stateImage: String {
             switch self {
             case .checking:
@@ -26,7 +39,8 @@ public struct GeolocationView: View {
                 return "vpn-detected"
             }
         }
-        
+
+        /// The user-facing title string that describes the current state.
         var stateTitle: String {
             switch self {
             case .checking:
@@ -38,12 +52,16 @@ public struct GeolocationView: View {
             }
         }
     }
-    
+
     @Environment(\.frameTheme) private var theme
+    /// The shared view model that manages onboarding container state, including IP address and coordinates.
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
+    /// A binding that, when set to `true`, advances the onboarding flow to the next step.
     @Binding var continueToNextStep: Bool
+    /// The current geolocation check state, which drives the displayed illustration and title.
     @State var geolocationState: GeolocationState = .checking
-    
+
+    /// The root body of the view.
     public var body: some View {
         GeolocationStateView
             .onAppear {
@@ -54,14 +72,15 @@ public struct GeolocationView: View {
                     self.geolocationState = .vpn
                     return
                 }
-                
+
                 let locationService = LocationService()
                 locationService.requestLocation { coordinates in
                     onboardingContainerViewModel.userCoordinates = coordinates
                 }
             }
     }
-    
+
+    /// A state-driven view that renders the appropriate illustration, title, and action buttons for the current `geolocationState`.
     var GeolocationStateView: some View {
         VStack(spacing: 10.0) {
             if geolocationState == .vpn {
@@ -85,7 +104,8 @@ public struct GeolocationView: View {
             }
         }
     }
-    
+
+    /// Returns `true` if any active network interface name indicates a VPN tunnel (utun, ppp, ipsec, tun, or tap prefix).
     func hasVPNInterface() -> Bool {
         var addrs: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&addrs) == 0, let first = addrs else { return false }
@@ -101,7 +121,8 @@ public struct GeolocationView: View {
         }
         return false
     }
-    
+
+    /// Returns `true` if the system has an HTTP, HTTPS, or SOCKS proxy enabled in `CFNetworkCopySystemProxySettings`.
     func hasSystemProxyEnabled() -> Bool {
         guard let dict = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any] else {
             return false
@@ -121,7 +142,7 @@ public struct GeolocationView: View {
 
         return httpEnabled || httpsEnabled || socksEnabled
     }
-    
+
 //    func currentNetworkSummary(using monitor: NWPathMonitor,
 //                               queue: DispatchQueue = .global(qos: .background),
 //                               onUpdate: @escaping (_ isWifi: Bool, _ isCellular: Bool, _ isExpensive: Bool) -> Void) {

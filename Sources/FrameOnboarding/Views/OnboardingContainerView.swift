@@ -8,7 +8,13 @@
 import SwiftUI
 import Frame
 
+/// Ordered steps that make up an onboarding flow presented by ``OnboardingContainerView``.
+///
+/// Each case maps to a distinct screen in the SDK's identity-verification and payment-setup
+/// sequence. The flow is built at runtime from the ``FrameObjects/Capabilities`` values
+/// supplied to ``OnboardingContainerView/init(accountId:requiredCapabilities:showIntroScreen:showCompletionScreen:onResult:)``.
 public enum OnboardingFlow: Int, CaseIterable, Identifiable {
+    /// A stable string identifier derived from the case's raw integer value.
     public var id: String {
         return "\(self.rawValue)"
     }
@@ -16,14 +22,19 @@ public enum OnboardingFlow: Int, CaseIterable, Identifiable {
 //    case countryVerification
 //    case geolocationVerification
 //    case uploadDocuments
-    
+
+    /// Collects personal-identification details and handles KYC / phone-verification flows.
     case personalInformation = 0
+    /// Prompts the user to add or confirm a card payment method.
     case confirmPaymentMethod = 1
+    /// Prompts the user to add or confirm a bank-account payout method.
     case confirmBankAccount = 2
+    /// Displays a confirmation screen after all verification steps are submitted.
     case verificationSubmitted = 3
 }
 
 extension FrameObjects.Capabilities {
+    /// Maps a ``FrameObjects/Capabilities`` value to the ``OnboardingFlow`` step that handles it.
     public var onboardingStep: OnboardingFlow {
         switch self {
         /* - Platforms will use either .kyc OR .kycprefill capability, not both.
@@ -41,22 +52,46 @@ extension FrameObjects.Capabilities {
     }
 }
 
+/// Root SwiftUI view that orchestrates the Frame SDK's multi-step onboarding experience.
+///
+/// ``OnboardingContainerView`` accepts a list of required ``FrameObjects/Capabilities``,
+/// derives the minimal ordered sequence of ``OnboardingFlow`` steps needed to satisfy them,
+/// and presents each step in turn inside a unified chrome with a progress indicator header.
+/// When the user completes or cancels the flow the ``onResult`` closure is called with a
+/// ``FrameResult``.
 public struct OnboardingContainerView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.frameTheme) private var theme
+    /// The view model that holds mutable onboarding state and drives step transitions.
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
+    /// Closure invoked with the final ``FrameResult`` when the flow ends.
     var onResult: (FrameResult) -> Void
+    /// Whether to show the introductory splash screen before the first onboarding step.
     var showIntroScreen: Bool
+    /// Whether to show the ``OnboardingFlow/verificationSubmitted`` completion screen.
     var showCompletionScreen: Bool
 
+    /// Triggers a forward navigation to the next onboarding step when set to `true`.
     @State private var continueToNextStep: Bool = false
+    /// Triggers a backward navigation to the previous onboarding step when set to `true`.
     @State private var returnToPreviousStep: Bool = false
+    /// Tracks whether the user has moved past the intro screen and into the step sequence.
     @State private var startedOnboarding: Bool = false
+    /// Becomes `true` once any pre-existing account data has been fetched and is ready to display.
     @State private var accountLoaded: Bool = false
+    /// Guards against emitting a `.cancelled` result on dismiss when the flow already completed.
     @State private var didFinish: Bool = false
 
+    /// Creates an ``OnboardingContainerView`` configured for the given account and capability set.
+    ///
+    /// - Parameters:
+    ///   - accountId: An existing Frame account ID to pre-populate data for, or `nil` to create a new account during onboarding.
+    ///   - requiredCapabilities: The set of ``FrameObjects/Capabilities`` the user must satisfy; determines which steps are shown.
+    ///   - showIntroScreen: Pass `false` to skip the introductory splash and begin the first step immediately. Defaults to `true`.
+    ///   - showCompletionScreen: Pass `false` to omit the ``OnboardingFlow/verificationSubmitted`` confirmation screen. Defaults to `true`.
+    ///   - onResult: Closure called with a ``FrameResult`` when the flow finishes or is cancelled.
     public init(accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
                 showIntroScreen: Bool = true,
@@ -88,6 +123,7 @@ public struct OnboardingContainerView: View {
         }
     }
     
+    /// The root view hierarchy: intro splash or the active step screen wrapped in a progress header.
     public var body: some View {
         VStack {
             if startedOnboarding {
@@ -178,6 +214,7 @@ public struct OnboardingContainerView: View {
         }
     }
     
+    /// A fixed-height header bar containing a segmented progress indicator for the onboarding steps.
     var containerHeader: some View {
         Rectangle()
             .fill(theme.colors.onboardingHeaderBackground)
@@ -200,6 +237,10 @@ public struct OnboardingContainerView: View {
             .frame(height: 100.0)
     }
 
+    /// Returns the theme color for a single progress-indicator capsule.
+    ///
+    /// - Parameter filled: `true` if the step represented by the capsule has been reached or completed.
+    /// - Returns: The appropriate ``FrameTheme`` color for the current color scheme and fill state.
     private func progressIndicatorColor(filled: Bool) -> Color {
         switch (colorScheme, filled) {
         case (.dark, true):  return theme.colors.onboardingProgressFilledOnBrand
@@ -209,6 +250,7 @@ public struct OnboardingContainerView: View {
         }
     }
 
+    /// The introductory splash screen shown before the first onboarding step when ``showIntroScreen`` is `true`.
     var onboardingIntro: some View {
         VStack(spacing: 15.0) {
             Spacer()

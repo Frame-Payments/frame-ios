@@ -22,8 +22,20 @@ private struct PKPaymentDataJSON: Decodable {
 
 // MARK: - ApplePayAPI
 
+/// Manages Apple Pay payment-method creation requests to the Frame API.
+///
+/// `ApplePayAPI` is the top-level entry point for tokenising a `PKPayment` received from
+/// PassKit and submitting it to the Frame backend.  All methods include device-attestation
+/// data automatically via ``buildAttestedRequest(from:customerId:accountId:)``.
 public class ApplePayAPI {
 
+    /// Creates a Frame payment method from a `PKPayment`, associating it with a customer.
+    ///
+    /// - Parameters:
+    ///   - payment: The `PKPayment` object returned by the PassKit payment sheet.
+    ///   - customerId: The Frame customer ID to associate with the resulting payment method.
+    /// - Returns: A tuple containing the decoded ``FrameObjects/PaymentMethod`` on success,
+    ///   or a ``NetworkingError`` on failure.
     public static func createPaymentMethodWithCustomerId(
         from payment: PKPayment,
         customerId: String? = nil
@@ -39,6 +51,13 @@ public class ApplePayAPI {
         return (nil, error)
     }
 
+    /// Creates a Frame payment method from a `PKPayment`, associating it with an account.
+    ///
+    /// - Parameters:
+    ///   - payment: The `PKPayment` object returned by the PassKit payment sheet.
+    ///   - accountId: The Frame account ID to associate with the resulting payment method.
+    /// - Returns: A tuple containing the decoded ``FrameObjects/PaymentMethod`` on success,
+    ///   or a ``NetworkingError`` on failure.
     public static func createPaymentMethodWithAccountId(
         from payment: PKPayment,
         accountId: String? = nil
@@ -56,6 +75,19 @@ public class ApplePayAPI {
 
     // MARK: - Request builder
 
+    /// Constructs an ``ApplePayRequests/CreateApplePayPaymentMethodRequest`` from a raw `PKPayment`.
+    ///
+    /// Decodes the encrypted payment token, maps PassKit fields to Frame request models, and
+    /// optionally embeds device-attestation data.
+    ///
+    /// - Parameters:
+    ///   - payment: The `PKPayment` to convert.
+    ///   - customerId: Optional Frame customer ID to embed in the request.
+    ///   - accountId: Optional Frame account ID to embed in the request.
+    ///   - deviceKeyId: The identifier of the attested device key, if available.
+    ///   - deviceAssertion: Base64-encoded device assertion blob, if available.
+    ///   - deviceClientData: Base64-encoded client data used during assertion, if available.
+    /// - Returns: A fully populated ``ApplePayRequests/CreateApplePayPaymentMethodRequest``.
     static func buildRequest(
         from payment: PKPayment,
         customerId: String?,

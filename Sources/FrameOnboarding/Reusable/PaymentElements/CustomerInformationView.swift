@@ -8,8 +8,14 @@
 import SwiftUI
 import Frame
 
+/// A SwiftUI view that collects personal identity information from a customer,
+/// including name, email, phone number, date of birth, and the last four digits
+/// of their Social Security Number. Used during onboarding flows that require
+/// KYC (Know Your Customer) identity verification.
 public struct CustomerInformationView: View {
     @Environment(\.frameTheme) private var theme
+
+    /// The view model that owns the customer identity state and field-level validation.
     @ObservedObject var viewModel: CustomerInformationViewModel
 
     @State private var birthYear: String = ""
@@ -18,12 +24,19 @@ public struct CustomerInformationView: View {
 
     @State private var headerTitle: String
 
+    /// Creates a ``CustomerInformationView``.
+    ///
+    /// - Parameters:
+    ///   - viewModel: The view model that owns and validates the customer identity state.
+    ///   - headerTitle: The bold label displayed above the name/email/phone fields.
+    ///     Defaults to `"Customer Information"`.
     public init(viewModel: CustomerInformationViewModel,
                 headerTitle: String = "Customer Information") {
         self.viewModel = viewModel
         self._headerTitle = State(initialValue: headerTitle)
     }
 
+    /// The root view hierarchy that renders all customer-information input sections.
     public var body: some View {
         VStack(alignment: .leading) {
             Text(headerTitle)
@@ -99,6 +112,7 @@ public struct CustomerInformationView: View {
         birthDay = parts[2]
     }
 
+    /// A grouped row of Month, Day, and Year text fields for capturing the customer's date of birth.
     @ViewBuilder
     var birthdayView: some View {
         HStack {
@@ -144,6 +158,7 @@ public struct CustomerInformationView: View {
             .padding(.horizontal)
     }
 
+    /// A labeled input row that collects the last four digits of the customer's Social Security Number.
     @ViewBuilder
     var socialSecurityView: some View {
         Text("Social Security Number")
