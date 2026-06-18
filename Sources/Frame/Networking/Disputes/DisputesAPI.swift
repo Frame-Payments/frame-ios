@@ -36,11 +36,12 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///   - disputeId: The unique identifier of the dispute to update.
     ///   - request: The update request body containing fields to modify.
     /// - Returns: A tuple of the updated ``FrameObjects/Dispute`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateDispute(disputeId: String, request: DisputeRequests.UpdateDisputeRequest) async throws -> (FrameObjects.Dispute?, NetworkingError?) {
         let endpoint = DisputeEndpoints.updateDispute(disputeId: disputeId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -52,10 +53,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///
     /// - Parameter disputeId: The unique identifier of the dispute to retrieve.
     /// - Returns: A tuple of the fetched ``FrameObjects/Dispute`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getDispute(disputeId: String) async throws -> (FrameObjects.Dispute?, NetworkingError?) {
         let endpoint = DisputeEndpoints.getDispute(disputeId: disputeId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -71,10 +73,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///   - perPage: The number of results to return per page. Defaults to `10`.
     ///   - page: The page number to retrieve. Defaults to `1`.
     /// - Returns: A tuple of the ``DisputeResponses/ListDisputesResponse`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getDisputes(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int = 10, page: Int = 1) async throws -> (DisputeResponses.ListDisputesResponse?, NetworkingError?) {
         let endpoint = DisputeEndpoints.getDisputes(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(DisputeResponses.ListDisputesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -86,10 +89,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///
     /// - Parameter disputeId: The unique identifier of the dispute to close.
     /// - Returns: A tuple of the closed ``FrameObjects/Dispute`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func closeDispute(disputeId: String) async throws -> (FrameObjects.Dispute?, NetworkingError?) {
         let endpoint = DisputeEndpoints.closeDispute(disputeId: disputeId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -103,10 +107,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///   - disputeId: The unique identifier of the dispute to attach documents to.
     ///   - files: An array of ``FileUpload`` values representing the documents to upload.
     /// - Returns: An optional ``NetworkingError`` if the upload failed.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func uploadDocuments(disputeId: String, files: [FileUpload]) async throws -> NetworkingError? {
         guard !disputeId.isEmpty else { return nil }
         let endpoint = DisputeEndpoints.uploadDocuments(disputeId: disputeId)
-        let (_, error) = try await FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: files)
+        let (_, error) = try await FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: files, auth: .secret)
         return error
     }
 
@@ -118,11 +123,12 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///   - disputeId: The unique identifier of the dispute to update.
     ///   - request: The update request body containing fields to modify.
     ///   - completionHandler: Called with the updated ``FrameObjects/Dispute`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateDispute(disputeId: String, request: DisputeRequests.UpdateDisputeRequest, completionHandler: @escaping @Sendable (FrameObjects.Dispute?, NetworkingError?) -> Void) {
         let endpoint = DisputeEndpoints.updateDispute(disputeId: disputeId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -136,10 +142,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - disputeId: The unique identifier of the dispute to retrieve.
     ///   - completionHandler: Called with the fetched ``FrameObjects/Dispute`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getDispute(disputeId: String, completionHandler: @escaping @Sendable (FrameObjects.Dispute?, NetworkingError?) -> Void) {
         let endpoint = DisputeEndpoints.getDispute(disputeId: disputeId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -156,10 +163,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///   - perPage: The number of results to return per page. Defaults to `10`.
     ///   - page: The page number to retrieve. Defaults to `1`.
     ///   - completionHandler: Called with the ``DisputeResponses/ListDisputesResponse`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getDisputes(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int = 10, page: Int = 1, completionHandler: @escaping @Sendable (DisputeResponses.ListDisputesResponse?, NetworkingError?) -> Void) {
         let endpoint = DisputeEndpoints.getDisputes(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(DisputeResponses.ListDisputesResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -173,10 +181,11 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - disputeId: The unique identifier of the dispute to close.
     ///   - completionHandler: Called with the closed ``FrameObjects/Dispute`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func closeDispute(disputeId: String, completionHandler: @escaping @Sendable (FrameObjects.Dispute?, NetworkingError?) -> Void) {
         let endpoint = DisputeEndpoints.closeDispute(disputeId: disputeId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Dispute.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -191,11 +200,12 @@ public class DisputesAPI: DisputesProtocol, @unchecked Sendable {
     ///   - disputeId: The unique identifier of the dispute to attach documents to.
     ///   - files: An array of ``FileUpload`` values representing the documents to upload.
     ///   - completionHandler: Called with an optional ``NetworkingError`` if the upload failed.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func uploadDocuments(disputeId: String, files: [FileUpload], completionHandler: @escaping @Sendable (NetworkingError?) -> Void) {
         guard !disputeId.isEmpty else { return completionHandler(nil) }
         let endpoint = DisputeEndpoints.uploadDocuments(disputeId: disputeId)
 
-        FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: files) { _, _, error in
+        FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: files, auth: .secret) { _, _, error in
             completionHandler(error)
         }
     }

@@ -36,7 +36,7 @@ public class DeviceAttestationAPI: DeviceAttestationProtocol, @unchecked Sendabl
         let endpoint = DeviceAttestationEndpoints.challenge
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
-            usePublishableKey: true
+            auth: .publishable
         )
         if let data,
            let decoded = try? FrameNetworking.shared.jsonDecoder.decode(
@@ -67,7 +67,7 @@ public class DeviceAttestationAPI: DeviceAttestationProtocol, @unchecked Sendabl
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
             requestBody: requestBody,
-            usePublishableKey: true
+            auth: .publishable
         )
         if let data,
            let decoded = try? FrameNetworking.shared.jsonDecoder.decode(
@@ -87,7 +87,7 @@ public class DeviceAttestationAPI: DeviceAttestationProtocol, @unchecked Sendabl
     public static func getChallenge(completionHandler: @escaping @Sendable (DeviceAttestationRequests.ChallengeResponse?, NetworkingError?) -> Void) {
         let endpoint = DeviceAttestationEndpoints.challenge
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, usePublishableKey: true) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data,
                let decoded = try? FrameNetworking.shared.jsonDecoder.decode(
                    DeviceAttestationRequests.ChallengeResponse.self, from: data
@@ -117,7 +117,7 @@ public class DeviceAttestationAPI: DeviceAttestationProtocol, @unchecked Sendabl
         )
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, usePublishableKey: true) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable) { data, response, error in
             if let data,
                let decoded = try? FrameNetworking.shared.jsonDecoder.decode(
                    DeviceAttestationRequests.AttestResponse.self, from: data

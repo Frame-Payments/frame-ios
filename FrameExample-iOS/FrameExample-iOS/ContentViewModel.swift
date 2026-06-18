@@ -22,16 +22,19 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     let applePayMerchantId: String = "merchant.com.yourapp"
     
     init() {
-        // Note: To use this SDK, you must add your sandbox publishable and secret keys here.
-        FrameNetworking.shared.initializeWithAPIKey("ENTER_SECRET_KEY_HERE",
-                                                    publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
-//                                                    theme: FrameTheme(
-//                                                        colors: .init(primaryButton: .purple, error: .orange),
-//                                                        fonts: .init(title: .custom("Avenir-Black", size: 28)),
-//                                                        radii: .init(medium: 16)
-//                                                    ),
-                                                    applePayMerchantId: applePayMerchantId,
-                                                    debugMode: true)
+        // The SDK is publishable-key first: pass your publishable key (pk_) here. Secret keys
+        // grant full merchant privileges and must not ship in an app binary — serve sk_ from your
+        // backend. This example sets a secret key only to exercise the legacy server-side demo
+        // calls below; production apps should omit it.
+        FrameNetworking.shared.initialize(publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
+                                          secretKey: "ENTER_SECRET_KEY_HERE",
+//                                          theme: FrameTheme(
+//                                              colors: .init(primaryButton: .purple, error: .orange),
+//                                              fonts: .init(title: .custom("Avenir-Black", size: 28)),
+//                                              radii: .init(medium: 16)
+//                                          ),
+                                          applePayMerchantId: applePayMerchantId,
+                                          debugMode: true)
 
         Task {
             await self.getCustomers()

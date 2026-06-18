@@ -84,19 +84,28 @@ public struct OnboardingContainerView: View {
     /// Guards against emitting a `.cancelled` result on dismiss when the flow already completed.
     @State private var didFinish: Bool = false
 
+    /// The onboarding-session client secret (`onb_sess_…`) that authenticates the flow, if provided.
+    private let onboardingClientSecret: String?
+
     /// Creates an ``OnboardingContainerView`` configured for the given account and capability set.
     ///
     /// - Parameters:
+    ///   - clientSecret: The onboarding-session token (`onb_sess_…`) minted by your server
+    ///     (`POST /v1/onboarding_sessions`) and handed to your app. While the flow is active every
+    ///     onboarding request authenticates with this token, scoping it to a single account. Pass
+    ///     `nil` only for legacy integrations that still authenticate onboarding with a secret key.
     ///   - accountId: An existing Frame account ID to pre-populate data for, or `nil` to create a new account during onboarding.
     ///   - requiredCapabilities: The set of ``FrameObjects/Capabilities`` the user must satisfy; determines which steps are shown.
     ///   - showIntroScreen: Pass `false` to skip the introductory splash and begin the first step immediately. Defaults to `true`.
     ///   - showCompletionScreen: Pass `false` to omit the ``OnboardingFlow/verificationSubmitted`` confirmation screen. Defaults to `true`.
     ///   - onResult: Closure called with a ``FrameResult`` when the flow finishes or is cancelled.
-    public init(accountId: String? = nil,
+    public init(clientSecret: String? = nil,
+                accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
                 showIntroScreen: Bool = true,
                 showCompletionScreen: Bool = true,
                 onResult: @escaping (FrameResult) -> Void = { _ in }) {
+        self.onboardingClientSecret = clientSecret
         self.onResult = onResult
         self.showIntroScreen = showIntroScreen
         self.showCompletionScreen = showCompletionScreen
@@ -159,6 +168,11 @@ public struct OnboardingContainerView: View {
         .ignoresSafeArea()
         .keyboardDoneToolbar()
         .onAppear {
+            // Bind every onboarding request to the onboarding-session token (onb_sess_…) for the
+            // lifetime of the flow, so calls authenticate per-account instead of with a secret key.
+            if let onboardingClientSecret {
+                FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
+            }
             if !showIntroScreen {
                 self.startedOnboarding = true
             }
@@ -207,6 +221,12 @@ public struct OnboardingContainerView: View {
         }
         .frameToastOverlay()
         .onDisappear {
+            // End the onboarding session so later SDK calls revert to pk_/sk_ authentication.
+            // Only clear it when this view actually began one, so a legacy (clientSecret == nil)
+            // container dismissing doesn't wipe a session another flow may have started.
+            if onboardingClientSecret != nil {
+                FrameNetworking.shared.endOnboardingSession()
+            }
             if !didFinish {
                 didFinish = true
                 onResult(.cancelled)

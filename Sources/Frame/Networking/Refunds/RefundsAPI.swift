@@ -32,11 +32,12 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     ///
     /// - Parameter request: The request body containing the refund details.
     /// - Returns: A tuple of the created ``FrameObjects/Refund`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createRefund(request: RefundRequests.CreateRefundRequest) async throws -> (FrameObjects.Refund?, NetworkingError?) {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -52,10 +53,11 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     ///   - perPage: The number of results to return per page.
     ///   - page: The page number to retrieve.
     /// - Returns: A tuple of a ``RefundResponses/ListRefundsResponse`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil) async throws -> (RefundResponses.ListRefundsResponse?, NetworkingError?) {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(RefundResponses.ListRefundsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -67,11 +69,12 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     ///
     /// - Parameter refundId: The unique identifier of the refund to retrieve.
     /// - Returns: A tuple of the matching ``FrameObjects/Refund`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getRefundWith(refundId: String) async throws -> (FrameObjects.Refund?, NetworkingError?) {
         guard !refundId.isEmpty else { return (nil, nil) }
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -83,11 +86,12 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     ///
     /// - Parameter refundId: The unique identifier of the refund to cancel.
     /// - Returns: A tuple of the updated ``FrameObjects/Refund`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func cancelRefund(refundId: String) async throws -> (FrameObjects.Refund?, NetworkingError?) {
         guard !refundId.isEmpty else { return (nil, nil) }
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -102,11 +106,12 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - request: The request body containing the refund details.
     ///   - completionHandler: Called with the created ``FrameObjects/Refund`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createRefund(request: RefundRequests.CreateRefundRequest, completionHandler: @escaping @Sendable (FrameObjects.Refund?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -123,10 +128,11 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     ///   - perPage: The number of results to return per page.
     ///   - page: The page number to retrieve.
     ///   - completionHandler: Called with a ``RefundResponses/ListRefundsResponse`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (RefundResponses.ListRefundsResponse?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(RefundResponses.ListRefundsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -140,10 +146,11 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - refundId: The unique identifier of the refund to retrieve.
     ///   - completionHandler: Called with the matching ``FrameObjects/Refund`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getRefundWith(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -157,10 +164,11 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - refundId: The unique identifier of the refund to cancel.
     ///   - completionHandler: Called with the updated ``FrameObjects/Refund`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func cancelRefund(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

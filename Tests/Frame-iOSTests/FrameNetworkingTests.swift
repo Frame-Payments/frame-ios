@@ -13,8 +13,14 @@ class MockURLProtocol: URLProtocol {
     static var mockData: Data?
     static var mockResponse: URLResponse?
     static var mockError: Error?
+    /// Records the most recent request so tests can inspect the headers the SDK produced
+    /// (e.g. the `Authorization` Bearer token) on the completion-handler / multipart paths.
+    static var lastRequest: URLRequest?
 
-    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canInit(with request: URLRequest) -> Bool {
+        lastRequest = request
+        return true
+    }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
