@@ -131,6 +131,19 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
     }
 
+    /// A non-`onb_sess_` token passed to `beginOnboardingSession` still applies (warn-not-break);
+    /// the SDK logs a guardrail warning but uses the value verbatim so behavior is unchanged.
+    func testBeginOnboardingSessionAppliesNonPrefixedTokenVerbatim() async throws {
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
+        let session = makeSession()
+        FrameNetworking.shared.beginOnboardingSession(clientSecret: "pk_wrong_token")
+        defer { FrameNetworking.shared.endOnboardingSession() }
+
+        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_wrong_token")
+    }
+
     /// A representative client-safe API (card tokenization) sends the publishable key.
     func testClientSafeAPIUsesPublishableKey() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")

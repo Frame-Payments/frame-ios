@@ -142,6 +142,13 @@ public class FrameNetworking: ObservableObject {
     ///
     /// - Parameter clientSecret: The onboarding-session token (`onb_sess_…`).
     public func beginOnboardingSession(clientSecret: String) {
+        if !clientSecret.hasPrefix("onb_sess_") {
+            warnOnce(&hasWarnedAboutOnboardingTokenPrefix,
+                     "⚠️ Frame: beginOnboardingSession was called with a token that is not an onboarding-session "
+                     + "token (onb_sess_…). Onboarding requests authenticate with this value verbatim, so a publishable "
+                     + "key, secret key, or charge-intent client secret will not scope the flow to an account and may be "
+                     + "rejected. Mint the token from your backend via POST /v1/onboarding_sessions.")
+        }
         onboardingSessionToken = clientSecret
     }
 
@@ -191,6 +198,9 @@ public class FrameNetworking: ObservableObject {
 
     /// Set once the secret key has been used to authenticate a live request.
     private var hasWarnedAboutSecretKeyRequest = false
+
+    /// Set once a non-`onb_sess_` onboarding token warning has been emitted.
+    private var hasWarnedAboutOnboardingTokenPrefix = false
 
     private func warnSecretKeyMisuse(context: String) {
         warnOnce(&hasWarnedAboutSecretKeyUsage, secretKeyWarning(context: context))
