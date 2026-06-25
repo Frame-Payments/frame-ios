@@ -23,7 +23,7 @@ public class TermsOfServiceAPI {
         let endpoint = TermsOfServiceEndpoints.createToken
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode([String: String]())
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
         if let data, let decoded = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.TermsOfServiceTokenResponse.self, from: data) {
             return (decoded, error)
         }
@@ -40,7 +40,7 @@ public class TermsOfServiceAPI {
         let endpoint = TermsOfServiceEndpoints.update
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
         if let data, let decoded = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.TermsOfServiceTokenResponse.self, from: data) {
             return (decoded, error)
         }
@@ -57,7 +57,7 @@ public class TermsOfServiceAPI {
         let endpoint = TermsOfServiceEndpoints.createToken
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode([String: String]())
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, _, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable) { data, _, error in
             if let data, let decoded = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.TermsOfServiceTokenResponse.self, from: data) {
                 completionHandler(decoded, error)
             } else {
@@ -77,7 +77,7 @@ public class TermsOfServiceAPI {
         let endpoint = TermsOfServiceEndpoints.update
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, _, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable) { data, _, error in
             if let data, let decoded = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.TermsOfServiceTokenResponse.self, from: data) {
                 completionHandler(decoded, error)
             } else {

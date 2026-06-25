@@ -109,8 +109,8 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
     /// Retrieves a single account by its ID.
     ///
-    /// - Note: Standalone account retrieval is a server operation and authenticates with the secret
-    ///   key. During the SDK onboarding flow these calls instead carry the active onboarding-session
+    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
+    ///   During the SDK onboarding flow these calls instead carry the active onboarding-session
     ///   token automatically — see ``FrameNetworking/beginOnboardingSession(clientSecret:)``.
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to retrieve.
@@ -120,7 +120,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
@@ -164,14 +164,15 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     /// Retrieves all payment methods associated with the specified account.
+    ///
+    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
     /// - Parameter accountId: The unique identifier of the account whose payment methods to retrieve.
     /// - Returns: A tuple containing a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
-    @available(*, deprecated, message: "Server-only: list account payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -294,7 +295,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     public static func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
@@ -340,15 +341,16 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     /// Completion-handler variant of `getPaymentMethodsForAccount(accountId:)`.
+    ///
+    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
     /// - Parameters:
     ///   - accountId: The unique identifier of the account whose payment methods to retrieve.
     ///   - completionHandler: Called with a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
-    @available(*, deprecated, message: "Server-only: list account payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

@@ -5,7 +5,10 @@
 //  Guard tests for the publishable-key-first auth model (FRA-4313).
 //
 //  These assert that:
-//   - the default credential for a request is the publishable key (pk_), not the secret key;
+//   - client-safe endpoints (tokenization, config, identity, ToS) authenticate with the
+//     publishable key (pk_) — they opt in explicitly via `.publishable`;
+//   - the transport default is `.secret` (most of the API is server-only), so a call with no
+//     explicit `auth:` sends sk_;
 //   - an explicit client secret (charge intent / onboarding session) is sent verbatim;
 //   - while an onboarding session is active, every request carries the onb_sess_ token;
 //   - initializing with an sk_ key does not reject — it warns and continues (non-breaking).
@@ -74,14 +77,16 @@ final class PublishableKeyGuardTests: XCTestCase {
         return session
     }
 
-    /// The default `auth` resolves to the publishable key, never the secret key.
-    func testDefaultAuthUsesPublishableKey() async throws {
+    /// The transport-layer default `auth` resolves to the secret key. Most of the API surface is
+    /// server-only, so the default is `.secret`; client-safe endpoints opt in explicitly with
+    /// `.publishable` (see `testClientSafeAPIUsesPublishableKey`).
+    func testDefaultAuthUsesSecretKey() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()
 
         _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
 
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_456")
     }
 
     /// An explicitly secret-tagged request uses the secret key (the only path that should).
@@ -119,14 +124,15 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer onb_sess_live_token")
     }
 
-    /// Ending the onboarding session restores publishable-key authentication.
+    /// Ending the onboarding session restores normal credential resolution: a `.publishable`
+    /// request again sends the publishable key instead of the onboarding-session token.
     func testEndingOnboardingSessionRestoresPublishableKey() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123")
         let session = makeSession()
         FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_live_token")
         FrameNetworking.shared.endOnboardingSession()
 
-        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
 
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
     }
@@ -167,7 +173,7 @@ final class PublishableKeyGuardTests: XCTestCase {
         let session = makeSession()
 
         // Does not crash/throw; the (misused) key is what gets sent for a publishable request.
-        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_oops")
     }
 
@@ -199,8 +205,8 @@ final class PublishableKeyGuardTests: XCTestCase {
     }
 
     /// The completion-handler request path (which builds the Authorization header separately from
-    /// the async path) also defaults to the publishable key.
-    func testCompletionHandlerPathDefaultsToPublishableKey() {
+    /// the async path) resolves the same default as the async path: the secret key.
+    func testCompletionHandlerPathDefaultsToSecretKey() {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         FrameNetworking.shared.endOnboardingSession()
         FrameNetworking.shared.urlSession = makeMockURLSession()
@@ -223,20 +229,21 @@ final class PublishableKeyGuardTests: XCTestCase {
 
         // URLSession can relocate the Authorization header; assert via the captured request if present.
         if let header = MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "Authorization") {
-            XCTAssertEqual(header, "Bearer pk_test_123")
+            XCTAssertEqual(header, "Bearer sk_test_456")
         }
     }
 
-    /// The multipart upload path resolves auth via the same mechanism: explicit `.secret` sends sk_.
+    /// The multipart upload path resolves auth via the same mechanism: explicit `.publishable`
+    /// sends pk_, and the default (`.secret`) sends sk_.
     func testMultipartUsesResolvedAuth() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()
         session.data = Data("{}".utf8)
 
-        _ = try await FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: [], auth: .secret)
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_456")
+        _ = try await FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: [], auth: .publishable)
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
 
         _ = try await FrameNetworking.shared.performMultipartDataTask(endpoint: endpoint, filesToUpload: [])
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_456")
     }
 }

@@ -32,7 +32,7 @@ public final class SessionManager {
         do {
             let endpoint = SonarSessionEndpoints.create
             let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
+            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body, auth: .publishable)
             
             if let error {
                 throw error
@@ -58,7 +58,7 @@ public final class SessionManager {
         do {
             let endpoint = SonarSessionEndpoints.update(id: current)
             let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
+            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body, auth: .publishable)
             
             if let error {
                 throw error
