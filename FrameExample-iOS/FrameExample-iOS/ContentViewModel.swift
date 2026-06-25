@@ -17,6 +17,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     @Published var customers: [FrameObjects.Customer] = []
     @Published var chargeIntents: [FrameObjects.ChargeIntent] = []
     @Published var refunds: [FrameObjects.Refund] = []
+    /// The onboarding-session token (`onb_sess_…`) minted for the demo flow, if any.
+    @Published var onboardingClientSecret: String?
     
     // Replace with your Apple Pay merchant ID registered in your entitlements
     let applePayMerchantId: String = "merchant.com.yourapp"
@@ -207,6 +209,36 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
             }
         } catch let error {
             print (error.localizedDescription)
+        }
+    }
+
+    // MARK: Onboarding session (demo / testing only)
+
+    /// Mints an onboarding-session token (`onb_sess_…`) for the given account so the example app can
+    /// exercise the onboarding flow end-to-end.
+    ///
+    /// - Important: This is **not** the intended production path. Creating an onboarding session is a
+    ///   server-only operation that authenticates with your secret key (`sk_`), which must never ship
+    ///   in an app binary. Real integrations mint this token from their backend
+    ///   (`POST /v1/onboarding_sessions`) and hand it to the app. The example app does it inline only
+    ///   because it already configures an `sk_` to exercise the legacy server-side demo calls.
+    /// - Parameter accountId: The existing Frame account to onboard.
+    func mintOnboardingClientSecret(accountId: String) async {
+        let request = OnboardingSessionRequest.CreateOnboardingSessionRequest(
+            accountId: accountId,
+            steps: [.idVerification, .geoCompliance, .paymentMethod]
+        )
+        do {
+            let (session, error) = try await OnboardingSessionsAPI.createOnboardingSession(request: request)
+            if let clientSecret = session?.clientSecret {
+                DispatchQueue.main.async {
+                    self.onboardingClientSecret = clientSecret
+                }
+            } else {
+                print("⚠️ Frame example: failed to mint onboarding session token. Error: \(String(describing: error))")
+            }
+        } catch let error {
+            print(error.localizedDescription)
         }
     }
 }
