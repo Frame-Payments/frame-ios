@@ -36,6 +36,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///
     /// - Parameter request: The request body containing the product details to create.
     /// - Returns: A tuple containing the newly created ``FrameObjects/Product`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func createProduct(request: ProductRequests.CreateProductRequest) async throws -> (FrameObjects.Product?, NetworkingError?) {
         let endpoint = ProductEndpoints.createProduct
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -54,6 +55,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the product to update.
     ///   - request: The request body containing the fields to update.
     /// - Returns: A tuple containing the updated ``FrameObjects/Product`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func updateProduct(productId: String, request: ProductRequests.UpdateProductRequest) async throws -> (FrameObjects.Product?, NetworkingError?) {
         let endpoint = ProductEndpoints.updateProduct(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -72,6 +74,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///   - perPage: The maximum number of products to return per page.
     ///   - page: The page number to retrieve.
     /// - Returns: A tuple containing a ``ProductResponses/ListProductsResponse`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func getProducts(perPage: Int?, page: Int?) async throws -> (ProductResponses.ListProductsResponse?, NetworkingError?) {
         let endpoint = ProductEndpoints.getProducts(perPage: perPage, page: page)
 
@@ -87,6 +90,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///
     /// - Parameter productId: The unique identifier of the product to fetch.
     /// - Returns: A tuple containing the matching ``FrameObjects/Product`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func getProduct(productId: String) async throws -> (FrameObjects.Product?, NetworkingError?) {
         let endpoint = ProductEndpoints.getProduct(productId: productId)
 
@@ -105,6 +109,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///   - active: An optional flag to filter by active or inactive products.
     ///   - shippable: An optional flag to filter by whether products are shippable.
     /// - Returns: A tuple containing a ``ProductResponses/SearchProductResponse`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func searchProduct(name: String?, active: Bool?, shippable: Bool?) async throws -> (ProductResponses.SearchProductResponse?, NetworkingError?) {
         let endpoint = ProductEndpoints.searchProduct(name: name, active: active, shippable: shippable)
 
@@ -120,6 +125,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///
     /// - Parameter productId: The unique identifier of the product to delete.
     /// - Returns: A tuple containing a ``ProductResponses/DeleteProductResponse`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func deleteProduct(productId: String) async throws -> (ProductResponses.DeleteProductResponse?, NetworkingError?) {
         let endpoint = ProductEndpoints.deleteProduct(productId: productId)
 
@@ -138,6 +144,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - request: The request body containing the product details to create.
     ///   - completionHandler: Called with the newly created ``FrameObjects/Product`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func createProduct(request: ProductRequests.CreateProductRequest, completionHandler: @escaping @Sendable (FrameObjects.Product?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.createProduct
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -157,6 +164,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the product to update.
     ///   - request: The request body containing the fields to update.
     ///   - completionHandler: Called with the updated ``FrameObjects/Product`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func updateProduct(productId: String, request: ProductRequests.UpdateProductRequest, completionHandler: @escaping @Sendable (FrameObjects.Product?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.updateProduct(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -176,6 +184,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///   - perPage: The maximum number of products to return per page.
     ///   - page: The page number to retrieve.
     ///   - completionHandler: Called with a ``ProductResponses/ListProductsResponse`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func getProducts(perPage: Int?, page: Int?, completionHandler: @escaping @Sendable (ProductResponses.ListProductsResponse?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.getProducts(perPage: perPage, page: page)
 
@@ -193,6 +202,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - productId: The unique identifier of the product to fetch.
     ///   - completionHandler: Called with the matching ``FrameObjects/Product`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func getProduct(productId: String, completionHandler: @escaping @Sendable (FrameObjects.Product?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.getProduct(productId: productId)
 
@@ -212,6 +222,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     ///   - active: An optional flag to filter by active or inactive products.
     ///   - shippable: An optional flag to filter by whether products are shippable.
     ///   - completionHandler: Called with a ``ProductResponses/SearchProductResponse`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func searchProduct(name: String?, active: Bool?, shippable: Bool?, completionHandler: @escaping @Sendable (ProductResponses.SearchProductResponse?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.searchProduct(name: name, active: active, shippable: shippable)
 
@@ -229,6 +240,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - productId: The unique identifier of the product to delete.
     ///   - completionHandler: Called with a ``ProductResponses/DeleteProductResponse`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     static func deleteProduct(productId: String, completionHandler: @escaping @Sendable (ProductResponses.DeleteProductResponse?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.deleteProduct(productId: productId)
 

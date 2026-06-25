@@ -14,6 +14,29 @@ class NetworkingConstants {
     static let mainAPIURL: String = "https://api.framepayments.com"
 }
 
+/// Selects which credential authenticates a Frame API request.
+///
+/// The Frame iOS SDK is **publishable-key first**: client-safe endpoints (tokenization,
+/// config, device attestation, charge confirm) authenticate with your publishable key
+/// (`pk_`). A publishable key is safe to embed in an app binary — it can only tokenize and
+/// retrieve/confirm objects the client already owns.
+///
+/// - Warning: ``secret`` sends your secret key (`sk_`), which grants full merchant
+///   privileges. A secret key must never ship inside an app binary; serve it only from your
+///   backend. The SDK emits a one-time runtime warning the first time ``secret`` is used.
+public enum FrameAuthMode: Sendable {
+    /// Authenticate with the publishable key (`pk_`). Set explicitly on client-safe endpoints
+    /// (tokenization, config, device attestation) that are safe to call from an app binary.
+    case publishable
+    /// Authenticate with the secret key (`sk_`). Server-only — avoid shipping this in an app binary.
+    case secret
+    /// Authenticate with a server-minted, per-object client secret used as a Bearer token.
+    ///
+    /// Covers both the charge-intent / 3DS `client_secret` (`ci_<id>_secret_…`) and the
+    /// onboarding-session token (`onb_sess_…`).
+    case clientSecret(String)
+}
+
 /// The HTTP method to use when making a network request.
 public enum HTTPMethod: String {
     /// Removes the specified resource.

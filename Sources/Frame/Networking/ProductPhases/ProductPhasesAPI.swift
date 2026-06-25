@@ -49,6 +49,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///
     /// - Parameter productId: The unique identifier of the product whose phases should be listed.
     /// - Returns: A tuple containing the list response and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func listAllProductPhases(productId: String) async throws -> (ProductPhasesResponses.ListProductPhasesResponse?, NetworkingError?) {
         guard productId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.getAllProductPhases(productId: productId)
@@ -67,6 +68,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the owning product.
     ///   - phaseId: The unique identifier of the subscription phase.
     /// - Returns: A tuple containing the decoded phase and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getProductPhase(productId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard productId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.getProductPhaseWith(productId: productId, phaseId: phaseId)
@@ -85,6 +87,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the product to which the phase will be added.
     ///   - request: The request body describing the phase to create.
     /// - Returns: A tuple containing the newly created phase and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createProductPhase(productId: String, request: ProductPhaseRequests.CreateProductPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard productId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.createProductPhase(productId: productId)
@@ -105,6 +108,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - phaseId: The unique identifier of the phase to update.
     ///   - request: The request body containing the fields to update.
     /// - Returns: A tuple containing the updated phase and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateProductPhase(productId: String, phaseId: String, request: ProductPhaseRequests.UpdateProductPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard productId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.updateProductPhaseWith(productId: productId, phaseId: phaseId)
@@ -124,6 +128,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the owning product.
     ///   - phaseId: The unique identifier of the phase to delete.
     /// - Returns: Any networking error that occurred, or `nil` on success.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func deleteProductPhase(productId: String, phaseId: String) async throws -> (NetworkingError?) {
         guard productId != "" && phaseId != "" else { return (nil) }
         let endpoint = ProductPhaseEndpoints.deleteProductPhase(productId: productId, phaseId: phaseId)
@@ -138,6 +143,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the product whose phases should be replaced.
     ///   - request: The request body containing the complete, ordered set of phases.
     /// - Returns: A tuple containing the updated list of phases and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func bulkUpdateProductPhases(productId: String, request: ProductPhaseRequests.BulkUpdateProductPhase) async throws -> (ProductPhasesResponses.ListProductPhasesResponse?, NetworkingError?) {
         guard productId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.bulkUpdateProductPhases(productId: productId)
@@ -158,6 +164,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - productId: The unique identifier of the product whose phases should be listed.
     ///   - completionHandler: Called with the list response and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func listAllProductPhases(productId: String, completionHandler: @escaping @Sendable (ProductPhasesResponses.ListProductPhasesResponse?, NetworkingError?) -> Void) {
         guard productId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.getAllProductPhases(productId: productId)
@@ -177,6 +184,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the owning product.
     ///   - phaseId: The unique identifier of the subscription phase.
     ///   - completionHandler: Called with the decoded phase and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getProductPhase(productId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard productId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.getProductPhaseWith(productId: productId, phaseId: phaseId)
@@ -196,6 +204,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the product to which the phase will be added.
     ///   - request: The request body describing the phase to create.
     ///   - completionHandler: Called with the newly created phase and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createProductPhase(productId: String, request: ProductPhaseRequests.CreateProductPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard productId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.createProductPhase(productId: productId)
@@ -217,6 +226,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - phaseId: The unique identifier of the phase to update.
     ///   - request: The request body containing the fields to update.
     ///   - completionHandler: Called with the updated phase and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateProductPhase(productId: String, phaseId: String, request: ProductPhaseRequests.UpdateProductPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard productId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.updateProductPhaseWith(productId: productId, phaseId: phaseId)
@@ -237,6 +247,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the owning product.
     ///   - phaseId: The unique identifier of the phase to delete.
     ///   - completionHandler: Called with any networking error that occurred, or `nil` on success.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func deleteProductPhase(productId: String, phaseId: String, completionHandler: @escaping @Sendable (NetworkingError?) -> Void) {
         guard productId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = ProductPhaseEndpoints.deleteProductPhase(productId: productId, phaseId: phaseId)
@@ -252,6 +263,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
     ///   - productId: The unique identifier of the product whose phases should be replaced.
     ///   - request: The request body containing the complete, ordered set of phases.
     ///   - completionHandler: Called with the updated product list response and any networking error that occurred.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func bulkUpdateProductPhases(productId: String, request: ProductPhaseRequests.BulkUpdateProductPhase, completionHandler: @escaping @Sendable (ProductResponses.ListProductsResponse?, NetworkingError?) -> Void) {
         guard productId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.bulkUpdateProductPhases(productId: productId)

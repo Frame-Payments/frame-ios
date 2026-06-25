@@ -40,6 +40,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     //MARK: Methods using async/await
 
     /// Creates a new account using the provided request body.
+    ///
+    /// - Note: Standalone account creation is a server operation and authenticates with the secret
+    ///   key. During the SDK onboarding flow these calls instead carry the active onboarding-session
+    ///   token (`onb_sess_…`) automatically — see ``FrameNetworking/beginOnboardingSession(clientSecret:)``.
     /// - Parameters:
     ///   - request: The details required to create the account.
     ///   - forTesting: When `true`, skips Sift login-event collection; defaults to `false`.
@@ -60,6 +64,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     /// Updates an existing account identified by its ID.
+    ///
+    /// - Note: Standalone account updates are a server operation and authenticate with the secret
+    ///   key. During the SDK onboarding flow these calls instead carry the active onboarding-session
+    ///   token automatically — see ``FrameNetworking/beginOnboardingSession(clientSecret:)``.
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to update.
     ///   - request: The fields to update on the account.
@@ -84,6 +92,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     ///   - externalId: Optional external identifier to filter by.
     ///   - includeDisabled: When `true`, includes disabled accounts in the results; defaults to `false`.
     /// - Returns: A tuple containing an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: enumerate accounts from your backend with sk_, not from the app.")
     public static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool = false) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?) {
         let endpoint = AccountEndpoints.getAccounts(status: status,
                                                     type: type,
@@ -99,6 +108,10 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     /// Retrieves a single account by its ID.
+    ///
+    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
+    ///   During the SDK onboarding flow these calls instead carry the active onboarding-session
+    ///   token automatically — see ``FrameNetworking/beginOnboardingSession(clientSecret:)``.
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to retrieve.
     ///   - forTesting: When `true`, skips Sift login-event collection; defaults to `false`.
@@ -107,7 +120,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
@@ -121,6 +134,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// Deletes the account identified by the given ID.
     /// - Parameter accountId: The unique identifier of the account to delete.
     /// - Returns: A tuple containing the deleted ``FrameObjects/Account`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: delete accounts from your backend with sk_, not from the app.")
     public static func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
@@ -136,6 +150,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// Searches for accounts matching the given email address.
     /// - Parameter email: The email address to search by.
     /// - Returns: A tuple containing an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: search accounts from your backend with sk_, not from the app.")
     public static func searchAccounts(email: String) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?) {
         guard !email.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.searchAccounts(email: email)
@@ -149,13 +164,15 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     /// Retrieves all payment methods associated with the specified account.
+    ///
+    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
     /// - Parameter accountId: The unique identifier of the account whose payment methods to retrieve.
     /// - Returns: A tuple containing a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
     public static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -166,6 +183,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// Restricts the account identified by the given ID, preventing further activity.
     /// - Parameter accountId: The unique identifier of the account to restrict.
     /// - Returns: A tuple containing the updated ``FrameObjects/Account`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: restrict accounts from your backend with sk_, not from the app.")
     public static func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
@@ -181,6 +199,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// Removes the restriction on the account identified by the given ID, restoring normal activity.
     /// - Parameter accountId: The unique identifier of the account to unrestrict.
     /// - Returns: A tuple containing the updated ``FrameObjects/Account`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: unrestrict accounts from your backend with sk_, not from the app.")
     public static func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?) {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
@@ -253,6 +272,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     ///   - externalId: Optional external identifier to filter by.
     ///   - includeDisabled: When `true`, includes disabled accounts in the results; defaults to `false`.
     ///   - completionHandler: Called with an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: enumerate accounts from your backend with sk_, not from the app.")
     public static func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool = false, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.getAccounts(status: status,
                                                     type: type,
@@ -275,7 +295,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     public static func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
@@ -289,6 +309,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to delete.
     ///   - completionHandler: Called with the deleted ``FrameObjects/Account`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: delete accounts from your backend with sk_, not from the app.")
     public static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
 
@@ -305,6 +326,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - email: The email address to search by.
     ///   - completionHandler: Called with an ``AccountResponses/ListAccountsResponse`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: search accounts from your backend with sk_, not from the app.")
     public static func searchAccounts(email: String, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void) {
         guard !email.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.searchAccounts(email: email)
@@ -319,6 +341,8 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     }
 
     /// Completion-handler variant of `getPaymentMethodsForAccount(accountId:)`.
+    ///
+    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
     /// - Parameters:
     ///   - accountId: The unique identifier of the account whose payment methods to retrieve.
     ///   - completionHandler: Called with a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
@@ -326,7 +350,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -339,6 +363,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to restrict.
     ///   - completionHandler: Called with the updated ``FrameObjects/Account`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: restrict accounts from your backend with sk_, not from the app.")
     public static func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
@@ -356,6 +381,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to unrestrict.
     ///   - completionHandler: Called with the updated ``FrameObjects/Account`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: unrestrict accounts from your backend with sk_, not from the app.")
     public static func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)

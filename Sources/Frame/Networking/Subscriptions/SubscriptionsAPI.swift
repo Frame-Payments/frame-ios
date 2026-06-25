@@ -41,6 +41,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///
     /// - Parameter request: The request body containing subscription creation parameters.
     /// - Returns: A tuple of the created ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -59,6 +60,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///   - subscriptionId: The unique identifier of the subscription to update.
     ///   - request: The request body containing fields to update.
     /// - Returns: A tuple of the updated ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
         guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
@@ -78,6 +80,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///   - page: The page number to retrieve. Pass `nil` to use the API default.
     ///   - perPage: The number of results per page. Pass `nil` to use the API default.
     /// - Returns: A tuple of the ``SubscriptionResponses/ListSubscriptionsResponse`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil) async throws -> (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
 
@@ -93,6 +96,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///
     /// - Parameter subscriptionId: The unique identifier of the subscription.
     /// - Returns: A tuple of the matching ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getSubscription(subscriptionId: String) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
         guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
@@ -109,6 +113,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///
     /// - Parameter request: The request body containing search filters.
     /// - Returns: A tuple of matching ``FrameObjects/Subscription`` objects and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?) async throws -> ([FrameObjects.Subscription]?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -125,6 +130,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///
     /// - Parameter subscriptionId: The unique identifier of the subscription to cancel.
     /// - Returns: A tuple of the cancelled ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func cancelSubscription(subscriptionId: String) async throws -> (FrameObjects.Subscription?, NetworkingError?) {
         guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
@@ -144,6 +150,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - request: The request body containing subscription creation parameters.
     ///   - completionHandler: Called with the created ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createSubscription(request: SubscriptionRequest.CreateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -163,6 +170,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///   - subscriptionId: The unique identifier of the subscription to update.
     ///   - request: The request body containing fields to update.
     ///   - completionHandler: Called with the updated ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateSubscription(subscriptionId: String, request: SubscriptionRequest.UpdateSubscriptionRequest?, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -182,6 +190,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     ///   - page: The page number to retrieve. Pass `nil` to use the API default.
     ///   - perPage: The number of results per page. Pass `nil` to use the API default.
     ///   - completionHandler: Called with the ``SubscriptionResponses/ListSubscriptionsResponse`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
 
@@ -199,6 +208,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - subscriptionId: The unique identifier of the subscription.
     ///   - completionHandler: Called with the matching ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
 
@@ -216,6 +226,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - request: The request body containing search filters.
     ///   - completionHandler: Called with matching ``FrameObjects/Subscription`` objects and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func searchSubscription(request: SubscriptionRequest.SearchSubscriptionRequest?, completionHandler: @escaping @Sendable ([FrameObjects.Subscription]?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -234,6 +245,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - subscriptionId: The unique identifier of the subscription to cancel.
     ///   - completionHandler: Called with the cancelled ``FrameObjects/Subscription`` and any ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
 

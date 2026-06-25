@@ -56,6 +56,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///   - page: The page number to retrieve, or `nil` for the default first page.
     ///   - perPage: The number of results per page, or `nil` to use the API default.
     /// - Returns: A tuple containing the decoded list response and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: list payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
 
@@ -71,6 +72,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///
     /// - Parameter paymentMethodId: The unique identifier of the payment method to fetch.
     /// - Returns: A tuple containing the decoded ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: retrieve payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
@@ -89,6 +91,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///   - customerId: The unique identifier of the customer.
     ///   - forTesting: Pass `true` to suppress Sift fraud-signal collection during tests.
     /// - Returns: A tuple containing the decoded list response and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: list payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethodsWithCustomer(customerId: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
       guard !customerId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
@@ -115,7 +118,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
       guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithAccount(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             if !forTesting {
                 // Redundancy incase no Customer API calls are ever made.
@@ -155,7 +158,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
 
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -171,7 +174,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -204,6 +207,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///   - paymentMethodId: The unique identifier of the payment method to attach.
     ///   - request: The ``PaymentMethodRequest/AttachPaymentMethodRequest`` specifying the target customer or account.
     /// - Returns: A tuple containing the updated ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: attach payment methods from your backend with sk_, not from the app.")
     public static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
     guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
@@ -221,6 +225,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///
     /// - Parameter paymentMethodId: The unique identifier of the payment method to detach.
     /// - Returns: A tuple containing the detached ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: detach payment methods from your backend with sk_, not from the app.")
     public static func detachPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
@@ -237,6 +242,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///
     /// - Parameter paymentMethodId: The unique identifier of the payment method to block.
     /// - Returns: A tuple containing the blocked ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: block payment methods from your backend with sk_, not from the app.")
     public static func blockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.blockPaymentMethodWith(paymentMethodId: paymentMethodId)
@@ -253,6 +259,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///
     /// - Parameter paymentMethodId: The unique identifier of the payment method to unblock.
     /// - Returns: A tuple containing the unblocked ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: unblock payment methods from your backend with sk_, not from the app.")
     public static func unblockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?) {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.unblockPaymentMethodWith(paymentMethodId: paymentMethodId)
@@ -289,6 +296,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///   - page: The page number to retrieve, or `nil` for the default first page.
     ///   - perPage: The number of results per page, or `nil` to use the API default.
     ///   - completionHandler: Called with the decoded list response and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: list payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
 
@@ -306,6 +314,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - paymentMethodId: The unique identifier of the payment method to fetch.
     ///   - completionHandler: Called with the decoded ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: retrieve payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
 
@@ -323,6 +332,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - customerId: The unique identifier of the customer.
     ///   - completionHandler: Called with the decoded list response and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: list payment methods from your backend with sk_, not from the app.")
     public static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
 
@@ -344,7 +354,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func getPaymentMethodsWithAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithAccount(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: accountId, email: "")
                 completionHandler(decodedResponse, error)
@@ -386,7 +396,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
 
                 let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(encryptedRequest)
 
-                let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
+                let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
                 if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                     completionHandler(decodedResponse, error)
                 } else {
@@ -407,7 +417,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         let endpoint = PaymentMethodEndpoints.createPaymentMethod
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -441,6 +451,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///   - paymentMethodId: The unique identifier of the payment method to attach.
     ///   - request: The ``PaymentMethodRequest/AttachPaymentMethodRequest`` specifying the target customer or account.
     ///   - completionHandler: Called with the updated ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: attach payment methods from your backend with sk_, not from the app.")
     public static func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -459,6 +470,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - paymentMethodId: The unique identifier of the payment method to detach.
     ///   - completionHandler: Called with the detached ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: detach payment methods from your backend with sk_, not from the app.")
     public static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
 
@@ -476,6 +488,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - paymentMethodId: The unique identifier of the payment method to block.
     ///   - completionHandler: Called with the blocked ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: block payment methods from your backend with sk_, not from the app.")
     public static func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.blockPaymentMethodWith(paymentMethodId: paymentMethodId)
 
@@ -493,6 +506,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - paymentMethodId: The unique identifier of the payment method to unblock.
     ///   - completionHandler: Called with the unblocked ``FrameObjects/PaymentMethod`` and an optional ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: unblock payment methods from your backend with sk_, not from the app.")
     public static func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.unblockPaymentMethodWith(paymentMethodId: paymentMethodId)
 

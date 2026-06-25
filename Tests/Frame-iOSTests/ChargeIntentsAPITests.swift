@@ -60,15 +60,15 @@ final class ChargeIntentsAPITests: XCTestCase {
     
     func testConfirmChargeIntent() async  {
         FrameNetworking.shared.asyncURLSession = session
-        let confirmation = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "").0
+        let confirmation = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "", clientSecret: "ci_secret_test").0
         XCTAssertNil(confirmation)
-        
-        let confirmationTwo = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "123").0
+
+        let confirmationTwo = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "123", clientSecret: "ci_secret_test").0
         XCTAssertNil(confirmationTwo)
-        
+
         do {
             session.data = try JSONEncoder().encode(chargeIntentResponse)
-            let (confirmationThree, _) = try await ChargeIntentsAPI.confirmChargeIntent(intentId: "1234")
+            let (confirmationThree, _) = try await ChargeIntentsAPI.confirmChargeIntent(intentId: "1234", clientSecret: "ci_secret_test")
             XCTAssertNotNil(confirmationThree)
             XCTAssertEqual(confirmationThree?.shipping, chargeIntentResponse.shipping)
         } catch {
@@ -116,15 +116,15 @@ final class ChargeIntentsAPITests: XCTestCase {
     
     func testGetChargeIntent() async  {
         FrameNetworking.shared.asyncURLSession = session
-        let intentOne = try? await ChargeIntentsAPI.getChargeIntent(intentId: "").0
+        let intentOne = try? await ChargeIntentsAPI.getChargeIntent(intentId: "", clientSecret: "ci_secret_test").0
         XCTAssertNil(intentOne)
-        
-        let intentTwo = try? await ChargeIntentsAPI.getChargeIntent(intentId: "123").0
+
+        let intentTwo = try? await ChargeIntentsAPI.getChargeIntent(intentId: "123", clientSecret: "ci_secret_test").0
         XCTAssertNil(intentTwo)
-        
+
         do {
             session.data = try JSONEncoder().encode(chargeIntentResponse)
-            let (intentThree, _) = try await ChargeIntentsAPI.getChargeIntent(intentId: "1234")
+            let (intentThree, _) = try await ChargeIntentsAPI.getChargeIntent(intentId: "1234", clientSecret: "ci_secret_test")
             XCTAssertNotNil(intentThree)
             XCTAssertEqual(intentThree?.shipping, chargeIntentResponse.shipping)
         } catch {

@@ -84,6 +84,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
     ///   - accountId: The unique identifier of the account.
     ///   - name: The name of the capability to retrieve.
     /// - Returns: A tuple containing the matching capability and any networking error encountered.
+    @available(*, deprecated, message: "Server-only: manage individual capabilities from your backend with sk_, not from the app.")
     public static func getCapabilityWith(accountId: String, name: String) async throws -> (FrameObjects.Capability?, NetworkingError?) {
         guard !accountId.isEmpty, !name.isEmpty else { return (nil, nil) }
         let endpoint = CapabilityEndpoints.getCapabilityWith(accountId: accountId, name: name)
@@ -102,6 +103,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
     ///   - accountId: The unique identifier of the account.
     ///   - name: The name of the capability to disable.
     /// - Returns: A tuple containing the updated capability and any networking error encountered.
+    @available(*, deprecated, message: "Server-only: manage individual capabilities from your backend with sk_, not from the app.")
     public static func disableCapabilityWith(accountId: String, name: String) async throws -> (FrameObjects.Capability?, NetworkingError?) {
         guard !accountId.isEmpty, !name.isEmpty else { return (nil, nil) }
         let endpoint = CapabilityEndpoints.disableCapabilityWith(accountId: accountId, name: name)
@@ -160,6 +162,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
     ///   - accountId: The unique identifier of the account.
     ///   - name: The name of the capability to retrieve.
     ///   - completionHandler: Called with the matching capability and any networking error encountered.
+    @available(*, deprecated, message: "Server-only: manage individual capabilities from your backend with sk_, not from the app.")
     public static func getCapabilityWith(accountId: String, name: String, completionHandler: @escaping @Sendable (FrameObjects.Capability?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty, !name.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = CapabilityEndpoints.getCapabilityWith(accountId: accountId, name: name)
@@ -179,6 +182,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
     ///   - accountId: The unique identifier of the account.
     ///   - name: The name of the capability to disable.
     ///   - completionHandler: Called with the updated capability and any networking error encountered.
+    @available(*, deprecated, message: "Server-only: manage individual capabilities from your backend with sk_, not from the app.")
     public static func disableCapabilityWith(accountId: String, name: String, completionHandler: @escaping @Sendable (FrameObjects.Capability?, NetworkingError?) -> Void) {
         guard !accountId.isEmpty, !name.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = CapabilityEndpoints.disableCapabilityWith(accountId: accountId, name: name)

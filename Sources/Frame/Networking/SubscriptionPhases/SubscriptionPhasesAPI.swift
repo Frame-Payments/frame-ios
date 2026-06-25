@@ -109,6 +109,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     /// Lists all phases for the given subscription.
     /// - Parameter subscriptionId: The unique identifier of the parent subscription.
     /// - Returns: A paginated list of subscription phases and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func listAllSubscriptionPhases(subscriptionId: String) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
@@ -126,6 +127,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - phaseId: The unique identifier of the phase to retrieve.
     /// - Returns: The requested ``FrameObjects/SubscriptionPhase`` and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
@@ -143,6 +145,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - request: The creation parameters.
     /// - Returns: The newly created ``FrameObjects/SubscriptionPhase`` and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.createSubscriptionPhase(subscriptionId: subscriptionId)
@@ -162,6 +165,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - phaseId: The unique identifier of the phase to update.
     ///   - request: The update parameters.
     /// - Returns: The updated ``FrameObjects/SubscriptionPhase`` and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase) async throws -> (FrameObjects.SubscriptionPhase?, NetworkingError?) {
         guard subscriptionId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.updateSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
@@ -180,6 +184,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - phaseId: The unique identifier of the phase to delete.
     /// - Returns: An optional networking error if the deletion failed.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String) async throws -> (NetworkingError?) {
         guard subscriptionId != "" && phaseId != "" else { return (nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
@@ -193,6 +198,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - request: The bulk-update parameters.
     /// - Returns: The updated list of phases and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase) async throws -> (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) {
         guard subscriptionId != "" else { return (nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)
@@ -212,6 +218,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     /// - Parameters:
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - completionHandler: Called with the paginated list response and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func listAllSubscriptionPhases(subscriptionId: String, completionHandler: @escaping @Sendable (SubscriptionPhasesResponses.ListSubscriptionPhasesResponse?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getAllSubscriptionPhases(subscriptionId: subscriptionId)
@@ -230,6 +237,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - phaseId: The unique identifier of the phase to fetch.
     ///   - completionHandler: Called with the matching phase and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.getSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
@@ -248,6 +256,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - request: The creation parameters.
     ///   - completionHandler: Called with the newly created phase and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func createSubscriptionPhase(subscriptionId: String, request: SubscriptionPhaseRequests.CreateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.createSubscriptionPhase(subscriptionId: subscriptionId)
@@ -268,6 +277,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - phaseId: The unique identifier of the phase to update.
     ///   - request: The update parameters.
     ///   - completionHandler: Called with the updated phase and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func updateSubscriptionPhase(subscriptionId: String, phaseId: String, request: SubscriptionPhaseRequests.UpdateSubscriptionPhase, completionHandler: @escaping @Sendable (FrameObjects.SubscriptionPhase?, NetworkingError?) -> Void) {
         guard subscriptionId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.updateSubscriptionPhaseWith(subscriptionId: subscriptionId, phaseId: phaseId)
@@ -287,6 +297,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - phaseId: The unique identifier of the phase to delete.
     ///   - completionHandler: Called with an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func deleteSubscriptionPhase(subscriptionId: String, phaseId: String, completionHandler: @escaping @Sendable (NetworkingError?) -> Void) {
         guard subscriptionId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = SubscriptionPhaseEndpoints.deleteSubscriptionPhase(subscriptionId: subscriptionId, phaseId: phaseId)
@@ -301,6 +312,7 @@ public class SubscriptionPhasesAPI: SubscriptionPhasesProtocol, @unchecked Senda
     ///   - subscriptionId: The unique identifier of the parent subscription.
     ///   - request: The bulk-update parameters.
     ///   - completionHandler: Called with the updated subscriptions list response and an optional networking error.
+    @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func bulkUpdateSubscriptionPhases(subscriptionId: String, request: SubscriptionPhaseRequests.BulkUpdateScriptionPhase, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
         guard subscriptionId != "" else { return completionHandler(nil, nil) }
         let endpoint = SubscriptionPhaseEndpoints.bulkUpdateSubscriptionPhases(subscriptionId: subscriptionId)

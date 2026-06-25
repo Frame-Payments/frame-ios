@@ -12,21 +12,21 @@ protocol ChargeIntentsProtocol {
     //async/await
     static func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
     static func captureChargeIntent(intentId: String, request: ChargeIntentsRequests.CaptureChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
-    static func confirmChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
+    static func confirmChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
     static func cancelChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
     static func voidRemainingChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
     static func getAllChargeIntents(page: Int?, perPage: Int?) async throws -> (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?)
-    static func getChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
+    static func getChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
     static func updateChargeIntent(intentId: String, request: ChargeIntentsRequests.UpdateChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)
 
     // completionHandlers
     static func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
     static func captureChargeIntent(intentId: String, request: ChargeIntentsRequests.CaptureChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
-    static func confirmChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
+    static func confirmChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
     static func cancelChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
     static func voidRemainingChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
     static func getAllChargeIntents(page: Int?, perPage: Int?, completionHandler: @escaping @Sendable (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?) -> Void)
-    static func getChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
+    static func getChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
     static func updateChargeIntent(intentId: String, request: ChargeIntentsRequests.UpdateChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)
 }
 
@@ -37,6 +37,12 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     // MARK: - async/await
 
     /// Creates a new charge intent, automatically attaching the current Sonar session ID and client IP fraud signals.
+    ///
+    /// - Important: Creating a charge intent is a **server-only** operation — your server owns the
+    ///   amount and must mint it with your secret key (`sk_`). Under the publishable-key model the
+    ///   client retrieves/confirms a server-minted intent via its `client_secret`
+    ///   (see ``confirmChargeIntent(intentId:clientSecret:)``). This method authenticates with the
+    ///   secret key and is retained only for existing in-app charge flows.
     ///
     /// - Parameter request: The parameters for the charge intent to create.
     /// - Returns: A tuple containing the created ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
@@ -64,6 +70,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///   - intentId: The unique identifier of the charge intent to capture.
     ///   - request: Additional capture parameters such as amount to capture.
     /// - Returns: A tuple containing the updated ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only: capture charge intents from your backend with sk_, not from the app.")
     public static func captureChargeIntent(intentId: String, request: ChargeIntentsRequests.CaptureChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
         guard !intentId.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.captureChargeIntent(intentId: intentId)
@@ -77,15 +84,22 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         }
     }
 
-    /// Confirms a charge intent, moving it to an authorised state.
+    /// Confirms a server-minted charge intent in-app, moving it to an authorised state.
     ///
-    /// - Parameter intentId: The unique identifier of the charge intent to confirm.
+    /// The intent must already exist — your server creates it (`POST /v1/charge_intents` with
+    /// `sk_`) and hands the resulting `client_secret` to your app. Confirmation authenticates
+    /// with that `client_secret`, never the secret key. Mirrors `frame-js`'s
+    /// `confirmCardPayment(clientSecret)`.
+    ///
+    /// - Parameters:
+    ///   - intentId: The unique identifier of the charge intent to confirm.
+    ///   - clientSecret: The charge intent's server-minted `client_secret` (`ci_<id>_secret_…`).
     /// - Returns: A tuple containing the confirmed ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
-    public static func confirmChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
-        guard !intentId.isEmpty else { return (nil, nil) }
+    public static func confirmChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
+        guard !intentId.isEmpty, !clientSecret.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.confirmChargeIntent(intentId: intentId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret))
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
 //            SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
             return (decodedResponse, error)
@@ -98,6 +112,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///
     /// - Parameter intentId: The unique identifier of the charge intent to cancel.
     /// - Returns: A tuple containing the cancelled ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only: cancel charge intents from your backend with sk_, not from the app.")
     public static func cancelChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
         guard !intentId.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.cancelChargeIntent(intentId: intentId)
@@ -116,6 +131,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///   - page: The page number to retrieve, or `nil` for the first page.
     ///   - perPage: The number of results per page, or `nil` to use the API default.
     /// - Returns: A tuple containing a ``ChargeIntentResponses/ListChargeIntentsResponse`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only: enumerate charge intents from your backend with sk_, not from the app.")
     public static func getAllChargeIntents(page: Int? = nil, perPage: Int? = nil) async throws -> (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?) {
         let endpoint = ChargeIntentEndpoints.getAllChargeIntents(perPage: perPage, page: page)
 
@@ -127,15 +143,17 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         }
     }
 
-    /// Fetches a single charge intent by its identifier.
+    /// Retrieves a single server-minted charge intent in-app using its `client_secret`.
     ///
-    /// - Parameter intentId: The unique identifier of the charge intent to retrieve.
+    /// - Parameters:
+    ///   - intentId: The unique identifier of the charge intent to retrieve.
+    ///   - clientSecret: The charge intent's server-minted `client_secret` (`ci_<id>_secret_…`).
     /// - Returns: A tuple containing the matching ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
-    public static func getChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
-        guard !intentId.isEmpty else { return (nil, nil) }
+    public static func getChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
+        guard !intentId.isEmpty, !clientSecret.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.getChargeIntent(intentId: intentId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret))
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -149,6 +167,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///   - intentId: The unique identifier of the charge intent to update.
     ///   - request: The fields to update on the charge intent.
     /// - Returns: A tuple containing the updated ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only: update charge intents from your backend with sk_, not from the app.")
     public static func updateChargeIntent(intentId: String, request: ChargeIntentsRequests.UpdateChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
         let endpoint = ChargeIntentEndpoints.updateChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -165,6 +184,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///
     /// - Parameter intentId: The unique identifier of the charge intent whose remaining authorisation should be voided.
     /// - Returns: A tuple containing the updated ``FrameObjects/ChargeIntent`` on success, or a ``NetworkingError`` on failure.
+    @available(*, deprecated, message: "Server-only: void charge intents from your backend with sk_, not from the app.")
     public static func voidRemainingChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
         guard !intentId.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.voidRemainingChargeIntent(intentId: intentId)
@@ -208,6 +228,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///   - intentId: The unique identifier of the charge intent to capture.
     ///   - request: Additional capture parameters such as amount to capture.
     ///   - completionHandler: Called with the updated ``FrameObjects/ChargeIntent`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: capture charge intents from your backend with sk_, not from the app.")
     public static func captureChargeIntent(intentId: String, request: ChargeIntentsRequests.CaptureChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.captureChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -221,15 +242,17 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         }
     }
 
-    /// Completion-handler variant of ``confirmChargeIntentAsync(_:)``.
+    /// Completion-handler variant of ``confirmChargeIntent(intentId:clientSecret:)``.
     ///
     /// - Parameters:
     ///   - intentId: The unique identifier of the charge intent to confirm.
+    ///   - clientSecret: The charge intent's server-minted `client_secret` (`ci_<id>_secret_…`).
     ///   - completionHandler: Called with the confirmed ``FrameObjects/ChargeIntent`` or a ``NetworkingError``.
-    public static func confirmChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
+    public static func confirmChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
+        guard !intentId.isEmpty, !clientSecret.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = ChargeIntentEndpoints.confirmChargeIntent(intentId: intentId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret)) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
 //                SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
                 completionHandler(decodedResponse, error)
@@ -244,6 +267,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - intentId: The unique identifier of the charge intent to cancel.
     ///   - completionHandler: Called with the cancelled ``FrameObjects/ChargeIntent`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: cancel charge intents from your backend with sk_, not from the app.")
     public static func cancelChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.cancelChargeIntent(intentId: intentId)
 
@@ -262,6 +286,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///   - page: The page number to retrieve, or `nil` for the first page.
     ///   - perPage: The number of results per page, or `nil` to use the API default.
     ///   - completionHandler: Called with a ``ChargeIntentResponses/ListChargeIntentsResponse`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: enumerate charge intents from your backend with sk_, not from the app.")
     public static func getAllChargeIntents(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.getAllChargeIntents(perPage: perPage, page: page)
 
@@ -274,15 +299,17 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         }
     }
 
-    /// Completion-handler variant of ``getChargeIntentAsync(_:)``.
+    /// Completion-handler variant of ``getChargeIntent(intentId:clientSecret:)``.
     ///
     /// - Parameters:
     ///   - intentId: The unique identifier of the charge intent to retrieve.
+    ///   - clientSecret: The charge intent's server-minted `client_secret` (`ci_<id>_secret_…`).
     ///   - completionHandler: Called with the matching ``FrameObjects/ChargeIntent`` or a ``NetworkingError``.
-    public static func getChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
+    public static func getChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
+        guard !intentId.isEmpty, !clientSecret.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = ChargeIntentEndpoints.getChargeIntent(intentId: intentId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret)) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -297,6 +324,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     ///   - intentId: The unique identifier of the charge intent to update.
     ///   - request: The fields to update on the charge intent.
     ///   - completionHandler: Called with the updated ``FrameObjects/ChargeIntent`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: update charge intents from your backend with sk_, not from the app.")
     public static func updateChargeIntent(intentId: String, request: ChargeIntentsRequests.UpdateChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.updateChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
@@ -315,6 +343,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     /// - Parameters:
     ///   - intentId: The unique identifier of the charge intent whose remaining authorisation should be voided.
     ///   - completionHandler: Called with the updated ``FrameObjects/ChargeIntent`` or a ``NetworkingError``.
+    @available(*, deprecated, message: "Server-only: void charge intents from your backend with sk_, not from the app.")
     public static func voidRemainingChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         guard !intentId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = ChargeIntentEndpoints.voidRemainingChargeIntent(intentId: intentId)
