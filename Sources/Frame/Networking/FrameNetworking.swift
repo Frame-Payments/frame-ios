@@ -227,9 +227,9 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
     ///   - requestBody: Optional JSON-encoded body data to include in the request.
-    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/publishable``.
+    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/secret``.
     /// - Returns: A tuple of the raw response `Data` (if any) and a ``NetworkingError`` (if the request failed).
-    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .publishable) async throws -> (Data?, NetworkingError?) {
+    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
 
         var urlRequest = URLRequest(url: url)
@@ -274,9 +274,9 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
     ///   - filesToUpload: An array of ``FileUpload`` values describing each file part to include in the request.
-    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/publishable``.
+    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/secret``.
     /// - Returns: A tuple of the raw response `Data` (if any) and a ``NetworkingError`` (if the request failed).
-    public func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .publishable) async throws -> (Data?, NetworkingError?) {
+    public func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return (nil, nil) }
 
         let multipart = MultipartFormDataBuilder()
@@ -334,9 +334,9 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
     ///   - requestBody: Optional JSON-encoded body data to include in the request.
-    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/publishable``.
+    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/secret``.
     ///   - completion: Called on task completion with the raw `Data`, the `URLResponse`, and an optional ``NetworkingError``.
-    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .publishable, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
+    public func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
 
         var urlRequest = URLRequest(url: url)
@@ -384,9 +384,9 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - endpoint: The ``FrameNetworkingEndpoints`` value that specifies the URL path, HTTP method, and query items.
     ///   - filesToUpload: An array of ``FileUpload`` values describing each file part to include in the request.
-    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/publishable``.
+    ///   - auth: Which credential authenticates the request. Defaults to ``FrameAuthMode/secret``.
     ///   - completion: Called on task completion with the raw `Data`, the `URLResponse`, and an optional ``NetworkingError``.
-    public func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .publishable, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
+    public func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLResponse?, NetworkingError?) -> Void) {
         guard let url = URL(string: NetworkingConstants.mainAPIURL + endpoint.endpointURL) else { return completion(nil, nil, nil) }
 
         let multipart = MultipartFormDataBuilder()

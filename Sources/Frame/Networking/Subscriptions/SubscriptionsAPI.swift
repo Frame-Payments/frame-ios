@@ -46,7 +46,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -66,7 +66,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -84,7 +84,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil) async throws -> (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -101,7 +101,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -118,7 +118,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
             return (decodedResponse.data, error)
         } else {
@@ -135,7 +135,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         guard !subscriptionId.isEmpty else { return (nil, nil) }
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -155,7 +155,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.createSubscription
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -175,7 +175,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.updateSubscription(subscriptionId: subscriptionId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -194,7 +194,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     public static func getSubscriptions(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (SubscriptionResponses.ListSubscriptionsResponse?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.getSubscriptions(perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -212,7 +212,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     public static func getSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.getSubscription(subscriptionId: subscriptionId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -231,7 +231,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
         let endpoint = SubscriptionEndpoints.searchSubscriptions
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(SubscriptionResponses.ListSubscriptionsResponse.self, from: data) {
                 completionHandler(decodedResponse.data, error)
             } else {
@@ -249,7 +249,7 @@ public class SubscriptionsAPI: SubscriptionsProtocol, @unchecked Sendable {
     public static func cancelSubscription(subscriptionId: String, completionHandler: @escaping @Sendable (FrameObjects.Subscription?, NetworkingError?) -> Void) {
         let endpoint = SubscriptionEndpoints.cancelSubscription(subscriptionId: subscriptionId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Subscription.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

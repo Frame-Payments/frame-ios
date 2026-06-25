@@ -25,7 +25,8 @@ class NetworkingConstants {
 ///   privileges. A secret key must never ship inside an app binary; serve it only from your
 ///   backend. The SDK emits a one-time runtime warning the first time ``secret`` is used.
 public enum FrameAuthMode: Sendable {
-    /// Authenticate with the publishable key (`pk_`). This is the default for all client-safe endpoints.
+    /// Authenticate with the publishable key (`pk_`). Set explicitly on client-safe endpoints
+    /// (tokenization, config, device attestation) that are safe to call from an app binary.
     case publishable
     /// Authenticate with the secret key (`sk_`). Server-only — avoid shipping this in an app binary.
     case secret

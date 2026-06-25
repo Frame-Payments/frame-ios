@@ -54,7 +54,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
     @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getLineItems(invoiceId: String) async throws -> (InvoiceLineItemResponses.ListLineItemsResponse?, NetworkingError?) {
         let endpoint = InvoiceLineItemEndpoints.getLineItems(invoiceId: invoiceId)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(InvoiceLineItemResponses.ListLineItemsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -73,7 +73,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
         let endpoint = InvoiceLineItemEndpoints.createLineItem(invoiceId: invoiceId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.InvoiceLineItem.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -93,7 +93,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
         let endpoint = InvoiceLineItemEndpoints.updateLineItem(invoiceId: invoiceId, itemId: itemId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.InvoiceLineItem.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -110,7 +110,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
     @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func getLineItem(invoiceId: String, itemId: String) async throws -> (FrameObjects.InvoiceLineItem?, NetworkingError?) {
         let endpoint = InvoiceLineItemEndpoints.getLineItem(invoiceId: invoiceId, itemId: itemId)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.InvoiceLineItem.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -127,7 +127,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
     @available(*, deprecated, message: "Server-only — call this from your backend with your secret key (sk_), not from the app.")
     public static func deleteLineItem(invoiceId: String, itemId: String) async throws -> (InvoiceLineItemResponses.DeleteLineItemResponse?, NetworkingError?) {
         let endpoint = InvoiceLineItemEndpoints.deleteLineItem(invoiceId: invoiceId, itemId: itemId)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(InvoiceLineItemResponses.DeleteLineItemResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -146,7 +146,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
     public static func getLineItems(invoiceId: String, completionHandler: @escaping @Sendable (InvoiceLineItemResponses.ListLineItemsResponse?, NetworkingError?) -> Void) {
         let endpoint = InvoiceLineItemEndpoints.getLineItems(invoiceId: invoiceId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(InvoiceLineItemResponses.ListLineItemsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -166,7 +166,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
         let endpoint = InvoiceLineItemEndpoints.createLineItem(invoiceId: invoiceId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.InvoiceLineItem.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -187,7 +187,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
         let endpoint = InvoiceLineItemEndpoints.updateLineItem(invoiceId: invoiceId, itemId: itemId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.InvoiceLineItem.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -206,7 +206,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
     public static func getLineItem(invoiceId: String, itemId: String, completionHandler: @escaping @Sendable (FrameObjects.InvoiceLineItem?, NetworkingError?) -> Void) {
         let endpoint = InvoiceLineItemEndpoints.getLineItem(invoiceId: invoiceId, itemId: itemId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.InvoiceLineItem.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -225,7 +225,7 @@ public class InvoiceLineItemsAPI: InvoiceLineItemProtocol {
     public static func deleteLineItem(invoiceId: String, itemId: String, completionHandler: @escaping @Sendable (InvoiceLineItemResponses.DeleteLineItemResponse?, NetworkingError?) -> Void) {
         let endpoint = InvoiceLineItemEndpoints.deleteLineItem(invoiceId: invoiceId, itemId: itemId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(InvoiceLineItemResponses.DeleteLineItemResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

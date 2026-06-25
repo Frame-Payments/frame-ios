@@ -52,8 +52,23 @@ jobs:
           fi
           echo "✅ Dark-mode lint passed."
 
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Select Xcode
+        run: |
+          set -euo pipefail
+          # Pick the highest installed Xcode 16.x (image rotation changes the exact
+          # patch version, so don't hardcode a path that may not exist).
+          XCODE_APP="$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1 || true)"
+          if [ -z "$XCODE_APP" ]; then
+            # Fall back to any installed Xcode, then the system default.
+            XCODE_APP="$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1 || true)"
+          fi
+          if [ -n "$XCODE_APP" ]; then
+            echo "Selecting $XCODE_APP"
+            sudo xcode-select -s "$XCODE_APP"
+          else
+            echo "No /Applications/Xcode*.app found; using current selection."
+          fi
+          xcodebuild -version
 
       - name: Configure Prove Swift Package Registry
         run: |

@@ -89,7 +89,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
         guard !accountId.isEmpty, !name.isEmpty else { return (nil, nil) }
         let endpoint = CapabilityEndpoints.getCapabilityWith(accountId: accountId, name: name)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Capability.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -108,7 +108,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
         guard !accountId.isEmpty, !name.isEmpty else { return (nil, nil) }
         let endpoint = CapabilityEndpoints.disableCapabilityWith(accountId: accountId, name: name)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Capability.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -167,7 +167,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
         guard !accountId.isEmpty, !name.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = CapabilityEndpoints.getCapabilityWith(accountId: accountId, name: name)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Capability.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -187,7 +187,7 @@ public class CapabilitiesAPI: CapabilitiesProtocol, @unchecked Sendable {
         guard !accountId.isEmpty, !name.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = CapabilityEndpoints.disableCapabilityWith(accountId: accountId, name: name)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Capability.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

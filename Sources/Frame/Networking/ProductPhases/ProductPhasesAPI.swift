@@ -54,7 +54,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         guard productId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.getAllProductPhases(productId: productId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -73,7 +73,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         guard productId != "" && phaseId != "" else { return (nil, nil) }
         let endpoint = ProductPhaseEndpoints.getProductPhaseWith(productId: productId, phaseId: phaseId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -93,7 +93,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.createProductPhase(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -114,7 +114,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.updateProductPhaseWith(productId: productId, phaseId: phaseId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -133,7 +133,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         guard productId != "" && phaseId != "" else { return (nil) }
         let endpoint = ProductPhaseEndpoints.deleteProductPhase(productId: productId, phaseId: phaseId)
 
-        let (_, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (_, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         return error
     }
 
@@ -149,7 +149,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.bulkUpdateProductPhases(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -169,7 +169,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         guard productId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.getAllProductPhases(productId: productId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductPhasesResponses.ListProductPhasesResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -189,7 +189,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         guard productId != "", phaseId != "" else { return completionHandler(nil, nil) }
         let endpoint = ProductPhaseEndpoints.getProductPhaseWith(productId: productId, phaseId: phaseId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -210,7 +210,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.createProductPhase(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -232,7 +232,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.updateProductPhaseWith(productId: productId, phaseId: phaseId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.SubscriptionPhase.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -252,7 +252,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         guard productId != "", phaseId != "" else { return completionHandler(nil) }
         let endpoint = ProductPhaseEndpoints.deleteProductPhase(productId: productId, phaseId: phaseId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             completionHandler(error)
         }
     }
@@ -269,7 +269,7 @@ public class ProductPhasesAPI: ProductPhasesProtocol, @unchecked Sendable {
         let endpoint = ProductPhaseEndpoints.bulkUpdateProductPhases(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.ListProductsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

@@ -41,7 +41,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
         let endpoint = ProductEndpoints.createProduct
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Product.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -60,7 +60,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
         let endpoint = ProductEndpoints.updateProduct(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Product.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -78,7 +78,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func getProducts(perPage: Int?, page: Int?) async throws -> (ProductResponses.ListProductsResponse?, NetworkingError?) {
         let endpoint = ProductEndpoints.getProducts(perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.ListProductsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -94,7 +94,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func getProduct(productId: String) async throws -> (FrameObjects.Product?, NetworkingError?) {
         let endpoint = ProductEndpoints.getProduct(productId: productId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Product.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -113,7 +113,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func searchProduct(name: String?, active: Bool?, shippable: Bool?) async throws -> (ProductResponses.SearchProductResponse?, NetworkingError?) {
         let endpoint = ProductEndpoints.searchProduct(name: name, active: active, shippable: shippable)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.SearchProductResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -129,7 +129,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func deleteProduct(productId: String) async throws -> (ProductResponses.DeleteProductResponse?, NetworkingError?) {
         let endpoint = ProductEndpoints.deleteProduct(productId: productId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.DeleteProductResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -149,7 +149,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
         let endpoint = ProductEndpoints.createProduct
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Product.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -169,7 +169,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
         let endpoint = ProductEndpoints.updateProduct(productId: productId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Product.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -188,7 +188,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func getProducts(perPage: Int?, page: Int?, completionHandler: @escaping @Sendable (ProductResponses.ListProductsResponse?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.getProducts(perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.ListProductsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -206,7 +206,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func getProduct(productId: String, completionHandler: @escaping @Sendable (FrameObjects.Product?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.getProduct(productId: productId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Product.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -226,7 +226,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func searchProduct(name: String?, active: Bool?, shippable: Bool?, completionHandler: @escaping @Sendable (ProductResponses.SearchProductResponse?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.searchProduct(name: name, active: active, shippable: shippable)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.SearchProductResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -244,7 +244,7 @@ public class ProductsAPI: ProductsProtocol, @unchecked Sendable {
     static func deleteProduct(productId: String, completionHandler: @escaping @Sendable (ProductResponses.DeleteProductResponse?, NetworkingError?) -> Void) {
         let endpoint = ProductEndpoints.deleteProduct(productId: productId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ProductResponses.DeleteProductResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

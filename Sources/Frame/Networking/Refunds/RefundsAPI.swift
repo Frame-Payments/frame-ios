@@ -37,7 +37,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -57,7 +57,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     public static func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil) async throws -> (RefundResponses.ListRefundsResponse?, NetworkingError?) {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(RefundResponses.ListRefundsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -74,7 +74,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         guard !refundId.isEmpty else { return (nil, nil) }
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -91,7 +91,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         guard !refundId.isEmpty else { return (nil, nil) }
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -111,7 +111,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
         let endpoint = RefundEndpoints.createRefund
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -132,7 +132,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     public static func getRefunds(chargeId: String? = nil, chargeIntentId: String? = nil, perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (RefundResponses.ListRefundsResponse?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.getRefunds(chargeId: chargeId, chargeIntentId: chargeIntentId, perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(RefundResponses.ListRefundsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -150,7 +150,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     public static func getRefundWith(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.getRefundWith(refundId: refundId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -168,7 +168,7 @@ public class RefundsAPI: RefundsProtocol, @unchecked Sendable {
     public static func cancelRefund(refundId: String, completionHandler: @escaping @Sendable (FrameObjects.Refund?, NetworkingError?) -> Void) {
         let endpoint = RefundEndpoints.cancelRefund(refundId: refundId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Refund.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

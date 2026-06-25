@@ -35,7 +35,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         let endpoint = TransferEndpoints.createTransfer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         // Don't try to decode an error response as a Transfer — performDataTask
         // already mapped non-2xx to .serverError(statusCode:, errorDescription:);
         // attempting decode would overwrite that with .decodingFailed.
@@ -60,7 +60,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         guard !transferId.isEmpty else { return (nil, nil) }
         let endpoint = TransferEndpoints.getTransferWith(transferId: transferId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -78,7 +78,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     public static func getTransfers(perPage: Int? = nil, page: Int? = nil) async throws -> (TransferResponses.ListTransfersResponse?, NetworkingError?) {
         let endpoint = TransferEndpoints.getTransfers(perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(TransferResponses.ListTransfersResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -98,7 +98,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
         let endpoint = TransferEndpoints.createTransfer
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -116,7 +116,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     public static func getTransferWith(transferId: String, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.getTransferWith(transferId: transferId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -135,7 +135,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     public static func getTransfers(perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (TransferResponses.ListTransfersResponse?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.getTransfers(perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(TransferResponses.ListTransfersResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

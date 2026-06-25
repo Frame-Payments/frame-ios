@@ -52,7 +52,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.createAccount
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
@@ -77,7 +77,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.updateAccount(accountId: accountId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -99,7 +99,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
                                                     externalId: externalId,
                                                     includeDisabled: includeDisabled)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -120,7 +120,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
@@ -139,7 +139,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -155,7 +155,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !email.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.searchAccounts(email: email)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -171,7 +171,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -187,7 +187,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -203,7 +203,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -236,7 +236,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.createAccount
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
@@ -255,7 +255,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.updateAccount(accountId: accountId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -278,7 +278,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
                                                     externalId: externalId,
                                                     includeDisabled: includeDisabled)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -294,7 +294,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     public static func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
@@ -312,7 +312,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     public static func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
         let endpoint = AccountEndpoints.deleteAccountWith(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -330,7 +330,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !email.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.searchAccounts(email: email)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.ListAccountsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -348,7 +348,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.getAccountPaymentMethods(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -366,7 +366,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.restrictAccount(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -384,7 +384,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         guard !accountId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

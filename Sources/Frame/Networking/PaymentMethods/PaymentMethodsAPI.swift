@@ -60,7 +60,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -77,7 +77,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -96,7 +96,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
       guard !customerId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             if !forTesting {
                 // Redundancy incase no Customer API calls are ever made.
@@ -213,7 +213,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -230,7 +230,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -247,7 +247,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.blockPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -264,7 +264,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
       guard !paymentMethodId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.unblockPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -300,7 +300,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethods(perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -318,7 +318,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -336,7 +336,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithCustomer(customerId: customerId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
                 SiftManager.collectLoginEvent(customerId: customerId, email: "")
                 completionHandler(decodedResponse, error)
@@ -456,7 +456,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         let endpoint = PaymentMethodEndpoints.attachPaymentMethodWith(paymentMethodId: paymentMethodId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -474,7 +474,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.detachPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -492,7 +492,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.blockPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -510,7 +510,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     public static func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void) {
         let endpoint = PaymentMethodEndpoints.unblockPaymentMethodWith(paymentMethodId: paymentMethodId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

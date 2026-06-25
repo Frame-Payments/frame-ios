@@ -56,7 +56,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
 
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(updatedRequest)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -76,7 +76,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         let endpoint = ChargeIntentEndpoints.captureChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -117,7 +117,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         guard !intentId.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.cancelChargeIntent(intentId: intentId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -135,7 +135,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     public static func getAllChargeIntents(page: Int? = nil, perPage: Int? = nil) async throws -> (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?) {
         let endpoint = ChargeIntentEndpoints.getAllChargeIntents(perPage: perPage, page: page)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ChargeIntentResponses.ListChargeIntentsResponse.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -172,7 +172,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         let endpoint = ChargeIntentEndpoints.updateChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -189,7 +189,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         guard !intentId.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.voidRemainingChargeIntent(intentId: intentId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -213,7 +213,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
 
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(updatedRequest)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -233,7 +233,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         let endpoint = ChargeIntentEndpoints.captureChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -271,7 +271,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     public static func cancelChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.cancelChargeIntent(intentId: intentId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -290,7 +290,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     public static func getAllChargeIntents(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?) -> Void) {
         let endpoint = ChargeIntentEndpoints.getAllChargeIntents(perPage: perPage, page: page)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ChargeIntentResponses.ListChargeIntentsResponse.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -329,7 +329,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         let endpoint = ChargeIntentEndpoints.updateChargeIntent(intentId: intentId)
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
@@ -348,7 +348,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         guard !intentId.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = ChargeIntentEndpoints.voidRemainingChargeIntent(intentId: intentId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
