@@ -108,8 +108,44 @@ public class DeviceAttestationManager: ObservableObject {
     nonisolated(unsafe) public static let shared = DeviceAttestationManager()
 
     private let service = DCAppAttestService.shared
-    private let keychainKey = "com.framepayments.device-attest-key-id"
-    private let pendingKeychainKey = "com.framepayments.device-attest-key-id-pending"
+
+    /// The App Attest environment a key was minted in.
+    ///
+    /// App Attest key IDs are scoped to the environment that created them: a key attested in
+    /// `development` does not exist in `production` and vice versa. Apple exposes no API to query
+    /// the current environment, so it is inferred from the embedded provisioning profile — present
+    /// in development and ad-hoc builds, absent in TestFlight and App Store builds.
+    ///
+    /// This is a heuristic, but a stable one for any given build: the answer cannot change between
+    /// launches of the same binary. A wrong-but-stable answer costs one re-attestation; the
+    /// reset-and-retry in ``generateAssertionForPayment(paymentData:)`` covers the remainder.
+    enum AppAttestEnvironment: String {
+        case development
+        case production
+
+        static var current: AppAttestEnvironment {
+            Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision") == nil
+                ? .production
+                : .development
+        }
+    }
+
+    /// Keychain account for the attested key, namespaced by App Attest environment.
+    ///
+    /// Namespacing prevents a key minted by a local development build from being silently reused by
+    /// a TestFlight build of the same app on the same device — the two share a bundle ID, and so
+    /// shared an unscoped Keychain item, which Apple then rejected at assertion time.
+    private var keychainKey: String {
+        "com.framepayments.device-attest-key-id.\(AppAttestEnvironment.current.rawValue)"
+    }
+
+    private var pendingKeychainKey: String {
+        "com.framepayments.device-attest-key-id-pending.\(AppAttestEnvironment.current.rawValue)"
+    }
+
+    /// The pre-namespacing Keychain accounts. Read only to migrate away from; never written.
+    private let legacyKeychainKey = "com.framepayments.device-attest-key-id"
+    private let legacyPendingKeychainKey = "com.framepayments.device-attest-key-id-pending"
 
     // MARK: - Published state
 
@@ -210,6 +246,23 @@ public class DeviceAttestationManager: ObservableObject {
     /// - Throws: ``DeviceAttestationError/noAttestedKey`` if the device has not been attested, or
     ///   ``DeviceAttestationError/assertionFailed(_:)`` if Apple's assertion call fails.
     public func generateAssertionForPayment(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String) {
+        do {
+            return try await assertOnce(paymentData: paymentData)
+        } catch let error as DeviceAttestationError {
+            // A stored key that Apple no longer recognises is unrecoverable by retrying with the
+            // same key — the only remedy is to discard it and attest afresh. This rescues a device
+            // wedged by a pre-namespacing key, and covers the case where `AppAttestEnvironment`
+            // guesses wrong. Bounded to a single retry: `assertOnce` is called directly, never
+            // through this method, so the recovery path cannot recurse.
+            guard case .assertionFailed = error else { throw error }
+            resetAttestation()
+            _ = try await attestDevice()
+            return try await assertOnce(paymentData: paymentData)
+        }
+    }
+
+    /// One attempt at generating an assertion with the currently stored key. No recovery.
+    private func assertOnce(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String) {
         guard let keyId = attestedKeyId else {
             throw DeviceAttestationError.noAttestedKey
         }
@@ -241,6 +294,10 @@ public class DeviceAttestationManager: ObservableObject {
     public func resetAttestation() {
         deleteKeychainItem(keychainKey)
         deleteKeychainItem(pendingKeychainKey)
+        // Also clear the pre-namespacing items. Namespacing orphans rather than removes them, and
+        // an orphan left behind would still be read by an older SDK version sharing this Keychain.
+        deleteKeychainItem(legacyKeychainKey)
+        deleteKeychainItem(legacyPendingKeychainKey)
         isDeviceAttested = false
     }
 

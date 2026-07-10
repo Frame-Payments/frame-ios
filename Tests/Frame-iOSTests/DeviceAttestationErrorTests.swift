@@ -92,6 +92,37 @@ final class DeviceAttestationErrorToastMessageTests: XCTestCase {
     }
 }
 
+// MARK: - App Attest environment namespacing tests
+
+final class AppAttestEnvironmentTests: XCTestCase {
+
+    typealias Environment = DeviceAttestationManager.AppAttestEnvironment
+
+    /// The regression that wedged the merchant: a development key reused by a TestFlight build.
+    /// The two environments must never resolve to the same Keychain account.
+    func testEnvironmentsProduceDistinctKeychainAccounts() {
+        XCTAssertNotEqual(Environment.development.rawValue, Environment.production.rawValue)
+    }
+
+    /// Detection must be stable across calls — an unstable answer would re-attest on every launch,
+    /// burning Secure Enclave keys and hammering the /attest endpoint.
+    func testCurrentEnvironmentIsStableAcrossCalls() {
+        let first = Environment.current
+        for _ in 0..<10 {
+            XCTAssertEqual(Environment.current, first)
+        }
+    }
+
+    /// The test bundle carries no embedded.mobileprovision, so detection must report production
+    /// rather than crashing or defaulting to development. This pins the fallback direction:
+    /// mislabelling a dev build as production costs one re-attestation, which reset-and-retry
+    /// absorbs; the reverse would let a dev key be trusted in production.
+    func testAbsentProvisioningProfileResolvesToProduction() {
+        XCTAssertNil(Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"))
+        XCTAssertEqual(Environment.current, .production)
+    }
+}
+
 // MARK: - DeviceAttestationError.debugDescription tests
 
 final class DeviceAttestationErrorDebugDescriptionTests: XCTestCase {
