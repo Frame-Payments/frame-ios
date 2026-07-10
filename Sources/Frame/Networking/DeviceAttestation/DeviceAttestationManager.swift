@@ -28,6 +28,75 @@ public enum DeviceAttestationError: Error {
     case assertionFailed(Error)
 }
 
+extension DeviceAttestationError {
+    /// User-facing message for the toast surface, prefixed with "Error: " to match
+    /// ``NetworkingError/toastMessage(fallback:)``.
+    ///
+    /// Each case maps to a distinct message so a merchant bug report identifies which step of the
+    /// attestation flow failed. For ``challengeFailed(_:)`` and ``attestationRejected(_:)`` the
+    /// associated ``NetworkingError`` may carry a server-supplied message; that is preferred over
+    /// the static text when present.
+    ///
+    /// The underlying `Error` of ``keyGenerationFailed(_:)``, ``attestationFailed(_:)`` and
+    /// ``assertionFailed(_:)`` is deliberately omitted — it is a system error (e.g.
+    /// `Error Domain=com.apple.devicecheck.error Code=2`) written for developers, not shoppers.
+    /// Use ``debugDescription`` to recover it.
+    public func toastMessage() -> String {
+        let body: String
+        switch self {
+        case .notSupported:
+            body = "Apple Pay is not available on this device."
+        case .keyGenerationFailed:
+            body = "Apple Pay could not be set up securely on this device. Please use a card instead."
+        case .challengeFailed(let networkingError):
+            body = Self.serverMessage(from: networkingError)
+                ?? "Apple Pay is temporarily unavailable. Please try again or use a card."
+        case .attestationFailed:
+            body = "Apple Pay could not verify this app. Please use a card instead."
+        case .attestationRejected(let networkingError):
+            body = Self.serverMessage(from: networkingError)
+                ?? "Apple Pay could not verify this device. Please use a card instead."
+        case .noAttestedKey:
+            body = "Apple Pay is not set up on this device yet. Please try again or use a card."
+        case .assertionFailed:
+            body = "Apple Pay could not authorize this payment. Please try again or use a card."
+        }
+        return "Error: \(body)"
+    }
+
+    /// Developer-facing description naming the failed case and including any underlying error.
+    ///
+    /// Intended for logs, `debugMode` output and bug reports — never for a user-visible surface.
+    public var debugDescription: String {
+        switch self {
+        case .notSupported:
+            return "DeviceAttestationError.notSupported: DCAppAttestService.isSupported == false"
+        case .keyGenerationFailed(let error):
+            return "DeviceAttestationError.keyGenerationFailed: \(error)"
+        case .challengeFailed(let networkingError):
+            return "DeviceAttestationError.challengeFailed: \(Self.describe(networkingError))"
+        case .attestationFailed(let error):
+            return "DeviceAttestationError.attestationFailed: \(error)"
+        case .attestationRejected(let networkingError):
+            return "DeviceAttestationError.attestationRejected: \(Self.describe(networkingError))"
+        case .noAttestedKey:
+            return "DeviceAttestationError.noAttestedKey: no attested key in Keychain"
+        case .assertionFailed(let error):
+            return "DeviceAttestationError.assertionFailed: \(error)"
+        }
+    }
+
+    /// The server-supplied message from a `.serverError`, when one is present and parseable.
+    private static func serverMessage(from networkingError: NetworkingError?) -> String? {
+        guard case .serverError(_, let description) = networkingError else { return nil }
+        return NetworkingError.extractEnvelopeMessage(description)
+    }
+
+    private static func describe(_ networkingError: NetworkingError?) -> String {
+        networkingError.map { "\($0)" } ?? "no underlying NetworkingError"
+    }
+}
+
 /// Manages App Attest-based device attestation and per-request assertion generation for the Frame SDK.
 ///
 /// The manager coordinates with Apple's `DCAppAttestService` and the Frame backend to establish
