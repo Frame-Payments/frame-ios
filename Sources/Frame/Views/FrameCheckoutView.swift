@@ -161,8 +161,8 @@ public struct FrameCheckoutView: View {
                 let message: String
                 if let networkingError = error as? NetworkingError {
                     message = networkingError.toastMessage()
-                } else if error is DeviceAttestationError {
-                    message = "Error: Apple Pay is not available, there was a device attestation error. Please use a card instead."
+                } else if let attestationError = error as? DeviceAttestationError {
+                    message = attestationError.toastMessage()
                 } else {
                     message = "Error: Apple Pay could not complete. Please try again or use a card."
                 }
