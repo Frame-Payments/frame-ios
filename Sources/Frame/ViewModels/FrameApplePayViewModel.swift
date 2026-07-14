@@ -218,6 +218,9 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     }
 
                 case .account(let accountId):
+                    // The server rejects the transfer outright without a live session for this account.
+                    try await SessionManager.shared.ensureSession(accountId: accountId)
+
                     let request = TransferRequests.CreateTransferRequest(
                         amount: amount,
                         accountId: accountId,
