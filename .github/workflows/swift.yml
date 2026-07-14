@@ -2,13 +2,15 @@ name: Frame Package Test (iOS)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 3.x ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, 3.x ]
 
 jobs:
   test:
-    runs-on: macos-latest
+    # Pinned: macos-latest has rolled to macos-26, which ships only Xcode 26.x. macos-15 is the
+    # newest image still carrying the Xcode 16.4 this SDK builds against.
+    runs-on: macos-15
 
     steps:
       - name: Checkout repository
