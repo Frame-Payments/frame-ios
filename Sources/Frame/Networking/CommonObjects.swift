@@ -164,11 +164,29 @@ extension NetworkingError {
     public func toastMessage(fallback: String = "Something went wrong. Please try again.") -> String {
         let body: String
         if case .serverError(_, let description) = self {
-            body = Self.extractEnvelopeMessage(description) ?? fallback
+            let message = Self.extractEnvelopeMessage(description)
+            body = message.flatMap(Self.riskMessage(for:)) ?? message ?? fallback
         } else {
             body = fallback
         }
         return "Error: \(body)"
+    }
+
+    /// Human copy for the risk and geo-compliance rejections, which the server reports as bare
+    /// codes (`sonar_session_required`) that would otherwise be shown to shoppers verbatim.
+    ///
+    /// - Returns: The replacement message, or `nil` if `message` is not one of these codes.
+    static func riskMessage(for message: String) -> String? {
+        switch message.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "sonar_session_required":
+            return "We couldn't verify this device. Please try again."
+        case "geo_compliance_blocked":
+            return "Payments aren't available in your location."
+        case "geo_compliance_vpn_detected":
+            return "Please turn off your VPN or proxy and try again."
+        default:
+            return nil
+        }
     }
 
     /// Extracts a user-facing message from the Frame error envelope JSON.

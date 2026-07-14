@@ -1,101 +1,190 @@
 import Foundation
 
+// MARK: - SessionManagerError
+
+/// Failures raised while establishing a Sonar fraud-detection session.
+public enum SessionManagerError: Error, Equatable {
+    /// Fingerprint could not produce a visitor ID, so no session can be created.
+    ///
+    /// Without a visitor ID the server has no device to attach the session to, and any payment
+    /// made against it is rejected by risk checks.
+    case missingVisitorId
+
+    /// The session create or update request failed.
+    case requestFailed(NetworkingError)
+}
+
 // MARK: - SessionManager
 
-/// Manages the lifecycle of a Sonar fraud-detection session, including creation, updating, and local persistence.
+/// Manages the lifecycle of a Sonar fraud-detection session, including creation, refresh, and
+/// local persistence.
 ///
-/// `SessionManager` coordinates with `FingerprintManager` to obtain a device visitor ID and then
-/// creates or refreshes a Sonar session via the Frame networking layer. The resulting session ID is
-/// persisted in `UserDefaults` so that subsequent launches can resume an existing session instead of
-/// creating a new one.
-public final class SessionManager {
-    private let visitorId: String
-    private let storage: SessionStorage = UserDefaultsSessionStorage()
+/// A Sonar session is what lets the server run risk and geo-compliance checks against a payment.
+/// The server resolves a charge's session *through the Frame account*, so a session is only usable
+/// once it has been associated with one — a session created without an account is invisible to
+/// those checks and the payment is rejected with `sonar_session_required`.
+///
+/// Sessions are therefore persisted per account, and are refreshed periodically: the server only
+/// accepts a session whose most recent device event is recent, so a session left untouched for long
+/// enough goes stale and stops backing payments.
+///
+/// Call ``ensureSession(accountId:)`` before taking a payment and await the result; it is idempotent
+/// and coalesces concurrent callers onto a single network round trip.
+public actor SessionManager {
+    /// The shared session manager used by the SDK.
+    public static let shared = SessionManager()
 
-    /// Creates a `SessionManager` bound to the given Fingerprint visitor identifier.
+    /// How long a stored session is trusted before it is refreshed.
     ///
-    /// - Parameter visitorId: The Fingerprint visitor ID used to associate this session with a device.
-    public init(visitorId: String) {
-        self.visitorId = visitorId
-    }
+    /// The server rejects sessions whose latest device event has aged out, so this sits well inside
+    /// that window: refreshing early is cheap, while being even slightly late fails the payment.
+    private static let refreshInterval: TimeInterval = 15 * 60
 
-    /// Creates a new Sonar session if none is stored, or updates the existing session.
-    public func initialize() async {
-        if storage.get() == nil {
-            await createSession()
-        } else {
-            await updateSession()
-        }
-    }
+    /// Cap on how long the SDK waits for Fingerprint to identify the device. A payment must not be
+    /// held up indefinitely by the fingerprinting SDK.
+    private static let visitorIdTimeout: TimeInterval = 5
 
-    private func createSession() async {
-        do {
-            let endpoint = SonarSessionEndpoints.create
-            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
-            
-            if let error {
-                throw error
-            }
-            
-            guard let data else {
-                throw NetworkingError.noData
-            }
-            
-            let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
-            setSession(response.sonarSessionId)
-        } catch {
-            print("Failed to create charge session: \(error)")
-        }
-    }
+    private let storage: SessionStorage
 
-    private func updateSession() async {
-        guard let current = storage.get() else {
-            await createSession()
-            return
-        }
+    /// In-flight work, keyed by account, so concurrent callers (e.g. a double-tapped Pay button)
+    /// share one round trip instead of racing to mint duplicate sessions.
+    private var inFlight: [String: Task<SessionId, Error>] = [:]
 
-        do {
-            let endpoint = SonarSessionEndpoints.update(id: current)
-            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
-            
-            if let error {
-                throw error
-            }
-            
-            guard let data else {
-                throw NetworkingError.noData
-            }
-            
-            let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
-            setSession(response.sonarSessionId)
-        } catch {
-            print("Failed to update session, creating new one: \(error)")
-            clearStoredSessionId()
-            await createSession()
-            return
-        }
-    }
-
-    private func setSession(_ sessionId: SessionId) {
-        storage.set(sessionId)
-    }
-    
-    private func clearStoredSessionId() {
-        storage.clear()
-    }
-    
-    /// Convenience method that fetches the Fingerprint visitor ID and initialises a `SessionManager` in one step.
+    /// Creates a session manager backed by the given storage.
     ///
-    /// Call this from your app's startup path to ensure a valid Sonar session exists before processing payments.
+    /// - Parameter storage: Where session identifiers are persisted. Defaults to `UserDefaults`.
+    public init(storage: SessionStorage = UserDefaultsSessionStorage()) {
+        self.storage = storage
+    }
+
+    /// Returns a session for `accountId` that is fresh enough to back a payment, creating or
+    /// refreshing one if necessary.
+    ///
+    /// Awaiting this before a payment guarantees the session exists and is associated with the
+    /// account — otherwise the payment races SDK start-up and can be rejected with
+    /// `sonar_session_required`.
+    ///
+    /// - Parameter accountId: The Frame account the payment belongs to.
+    /// - Returns: The session identifier to send with the payment.
+    /// - Throws: ``SessionManagerError`` if no session could be established.
+    @discardableResult
+    public func ensureSession(accountId: String) async throws -> SessionId {
+        if let existing = storage.get(accountId: accountId), isFresh(accountId: accountId) {
+            return existing
+        }
+
+        if let running = inFlight[accountId] {
+            return try await running.value
+        }
+
+        let task = Task<SessionId, Error> {
+            try await establishSession(accountId: accountId)
+        }
+        inFlight[accountId] = task
+
+        defer { inFlight[accountId] = nil }
+        return try await task.value
+    }
+
+    /// Establishes a session at SDK start-up, before an account is known.
+    ///
+    /// This is a head start, not a guarantee: the server fetches the device event for a new session
+    /// asynchronously, so creating the session early gives that event time to land before checkout.
+    /// The session is adopted by the account on the first ``ensureSession(accountId:)`` call.
+    ///
+    /// Failures are non-fatal and left to ``ensureSession(accountId:)`` to retry and report, so this
+    /// never throws into the SDK's start-up path.
     public static func initializeSession() async {
-        do {
-            guard let visitorId = try await FingerprintManager.getVisitorId() else { return }
-            let manager = SessionManager(visitorId: visitorId)
-            await manager.initialize()
-        } catch {
-            print("Failed to initialize session with Fingerprint visitorId: \(error)")
+        try? await shared.warmUp()
+    }
+
+    /// Creates a pre-account session if none is stored. See ``initializeSession()``.
+    func warmUp() async throws {
+        guard storage.get(accountId: nil) == nil else { return }
+        let session = try await createSession(accountId: nil)
+        store(session, accountId: nil)
+    }
+
+    // MARK: - Private
+
+    private func isFresh(accountId: String?) -> Bool {
+        guard let last = storage.lastRefresh(accountId: accountId) else { return false }
+        return Date().timeIntervalSince(last) < Self.refreshInterval
+    }
+
+    private func store(_ session: SessionId, accountId: String?) {
+        storage.set(session, accountId: accountId)
+        storage.setLastRefresh(Date(), accountId: accountId)
+    }
+
+    /// Produces a fresh, account-associated session, reusing whatever is already stored.
+    ///
+    /// Three cases, in order of preference:
+    /// 1. A session already exists for the account — refresh it so it is inside the server's
+    ///    freshness window again.
+    /// 2. A pre-account session exists — adopt it onto this account and retire the legacy slot, so
+    ///    it can never be adopted a second time by a different account.
+    /// 3. Nothing stored — create one against the account.
+    private func establishSession(accountId: String) async throws -> SessionId {
+        if let existing = storage.get(accountId: accountId) {
+            let refreshed = try await refreshSession(existing, accountId: accountId)
+            store(refreshed, accountId: accountId)
+            return refreshed
         }
+
+        if let legacy = storage.get(accountId: nil) {
+            let adopted = try await refreshSession(legacy, accountId: accountId)
+            store(adopted, accountId: accountId)
+            // Retire the legacy slot: it now belongs to this account, and leaving it readable would
+            // let the next account on this device adopt the same session.
+            storage.clear(accountId: nil)
+            return adopted
+        }
+
+        let created = try await createSession(accountId: accountId)
+        store(created, accountId: accountId)
+        return created
+    }
+
+    private func createSession(accountId: String?) async throws -> SessionId {
+        let body = SessionRequestBody(fingerprintVisitorId: try await visitorId(), accountId: accountId)
+        return try await perform(endpoint: SonarSessionEndpoints.create, body: body)
+    }
+
+    /// Updates an existing session, which both associates it with `accountId` and records a new
+    /// device event server-side — the latter is what returns the session to the server's freshness
+    /// window.
+    ///
+    /// A session the server no longer recognises (expired, or created under different credentials)
+    /// is replaced rather than propagated as an error.
+    private func refreshSession(_ session: SessionId, accountId: String) async throws -> SessionId {
+        let body = SessionRequestBody(fingerprintVisitorId: try await visitorId(), accountId: accountId)
+        do {
+            return try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
+        } catch SessionManagerError.requestFailed {
+            storage.clear(accountId: accountId)
+            return try await createSession(accountId: accountId)
+        }
+    }
+
+    private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
+        let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded)
+
+        if let error { throw SessionManagerError.requestFailed(error) }
+        guard let data else { throw SessionManagerError.requestFailed(.noData) }
+
+        do {
+            return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
+        } catch {
+            throw SessionManagerError.requestFailed(.decodingFailed)
+        }
+    }
+
+    private func visitorId() async throws -> String {
+        guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout), !id.isEmpty else {
+            throw SessionManagerError.missingVisitorId
+        }
+        return id
     }
 }

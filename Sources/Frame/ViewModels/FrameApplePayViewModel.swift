@@ -218,6 +218,10 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     }
 
                 case .account(let accountId):
+                    // As in the card flow: the server scores this transfer against the account's
+                    // Sonar session, so make sure one exists before charging.
+                    try await SessionManager.shared.ensureSession(accountId: accountId)
+
                     let request = TransferRequests.CreateTransferRequest(
                         amount: amount,
                         accountId: accountId,

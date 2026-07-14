@@ -32,6 +32,12 @@ public class TransferRequests {
         /// Arbitrary key-value metadata to attach to the transfer.
         public let metadata: [String: String]?
 
+        /// The Sonar session backing this transfer's risk checks.
+        ///
+        /// Populated by ``TransfersAPI`` and only ever sent on charge-backed transfers: the API
+        /// accepts it alongside a `sourcePaymentMethodId` and rejects it without one.
+        var sonarSessionId: String?
+
         /// Creates a new ``CreateTransferRequest``.
         ///
         /// - Parameters:
@@ -63,6 +69,7 @@ public class TransferRequests {
             case accountId = "account_id"
             case sourcePaymentMethodId = "source_payment_method_id"
             case destinationPaymentMethodId = "destination_payment_method_id"
+            case sonarSessionId = "sonar_session_id"
         }
     }
 }
