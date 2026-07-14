@@ -45,7 +45,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
 
         // Automatically insert client's ip address for charge intent
         var updatedRequest = request
-        updatedRequest.sonarSessionId = FrameNetworking.shared.currentSonarSessionId()
+        updatedRequest.sonarSessionId = FrameNetworking.shared.currentSonarSessionId(accountId: request.account)
         updatedRequest.fraudSignals = ChargeIntentsRequests.FraudSignals(clientIp: SiftManager.getIPAddress())
 
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(updatedRequest)
@@ -188,7 +188,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         let endpoint = ChargeIntentEndpoints.createChargeIntent
 
         var updatedRequest = request
-        updatedRequest.sonarSessionId = FrameNetworking.shared.currentSonarSessionId()
+        updatedRequest.sonarSessionId = FrameNetworking.shared.currentSonarSessionId(accountId: request.account)
         updatedRequest.fraudSignals = ChargeIntentsRequests.FraudSignals(clientIp: SiftManager.getIPAddress())
 
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(updatedRequest)

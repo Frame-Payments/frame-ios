@@ -85,8 +85,12 @@ public class FrameNetworking: ObservableObject {
         }
     }
 
-    func currentSonarSessionId() -> String? {
-        SonarSessionStorage.currentSessionId()
+    /// The Sonar session stored for `accountId`, if any.
+    ///
+    /// Prefer `SessionManager.shared.ensureSession(accountId:)` on a payment path — this only reads
+    /// what is already persisted and will return `nil` if no session has been established yet.
+    func currentSonarSessionId(accountId: String? = nil) -> String? {
+        SonarSessionStorage.currentSessionId(accountId: accountId)
     }
 
     // Async/Await
