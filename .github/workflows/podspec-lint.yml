@@ -2,12 +2,12 @@ name: Podspec Lint
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 3.x ]
     paths:
       - '**.podspec'
       - '.github/workflows/podspec-lint.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ main, 3.x ]
     paths:
       - '**.podspec'
       - '.github/workflows/podspec-lint.yml'
