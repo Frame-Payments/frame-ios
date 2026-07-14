@@ -45,74 +45,6 @@ public actor SessionManager {
         self.storage = storage
     }
 
-    /// Creates a new Sonar session if none is stored, or updates the existing session.
-    public func initialize() async {
-        if storage.get() == nil {
-            await createSession()
-        } else {
-            await updateSession()
-        }
-    }
-
-    private func createSession() async {
-        do {
-            let endpoint = SonarSessionEndpoints.create
-            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body, auth: .publishable)
-            
-            if let error {
-                throw error
-            }
-            
-            guard let data else {
-                throw NetworkingError.noData
-            }
-            
-            let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
-            setSession(response.sonarSessionId)
-        } catch {
-            print("Failed to create charge session: \(error)")
-        }
-    }
-
-    private func updateSession() async {
-        guard let current = storage.get() else {
-            await createSession()
-            return
-        }
-
-        do {
-            let endpoint = SonarSessionEndpoints.update(id: current)
-            let body = try FrameNetworking.shared.jsonEncoder.encode(SessionRequestBody(fingerprintVisitorId: visitorId))
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body, auth: .publishable)
-            
-            if let error {
-                throw error
-            }
-            
-            guard let data else {
-                throw NetworkingError.noData
-            }
-            
-            let response = try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data)
-            setSession(response.sonarSessionId)
-        } catch {
-            print("Failed to update session, creating new one: \(error)")
-            clearStoredSessionId()
-            await createSession()
-            return
-        }
-    }
-
-    private func setSession(_ sessionId: SessionId) {
-        storage.set(sessionId)
-    }
-    
-    private func clearStoredSessionId() {
-        storage.clear()
-    }
-    
-    /// Convenience method that fetches the Fingerprint visitor ID and initialises a `SessionManager` in one step.
     /// Returns a session for `accountId` that is fresh enough to back a payment, creating or
     /// refreshing one if necessary.
     ///
@@ -205,6 +137,27 @@ public actor SessionManager {
             storage.clear(accountId: accountId)
             return try await createSession(accountId: accountId)
         }
+    }
+
+    private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
+        let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded)
+
+        if let error { throw SessionManagerError.requestFailed(error) }
+        guard let data else { throw SessionManagerError.requestFailed(.noData) }
+
+        do {
+            return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
+        } catch {
+            throw SessionManagerError.requestFailed(.decodingFailed)
+        }
+    }
+
+    private func visitorId() async throws -> String {
+        guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout), !id.isEmpty else {
+            throw SessionManagerError.missingVisitorId
+        }
+        return id
     }
 
     private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
