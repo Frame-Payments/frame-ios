@@ -4,10 +4,7 @@ import Foundation
 
 /// Failures raised while establishing a Sonar fraud-detection session.
 public enum SessionManagerError: Error, Equatable {
-    /// Fingerprint could not produce a visitor ID, so no session can be created.
-    ///
-    /// Without a visitor ID the server has no device to attach the session to, and any payment
-    /// made against it is rejected by risk checks.
+    /// Fingerprint could not identify the device, so no session can be created.
     case missingVisitorId
 
     /// The session create or update request failed.
@@ -19,35 +16,26 @@ public enum SessionManagerError: Error, Equatable {
 /// Manages the lifecycle of a Sonar fraud-detection session, including creation, refresh, and
 /// local persistence.
 ///
-/// A Sonar session is what lets the server run risk and geo-compliance checks against a payment.
-/// The server resolves a charge's session *through the Frame account*, so a session is only usable
-/// once it has been associated with one — a session created without an account is invisible to
-/// those checks and the payment is rejected with `sonar_session_required`.
+/// The server resolves a payment's session *through the Frame account*, so a session only backs a
+/// payment once it has been associated with one; a session created without an account is invisible
+/// to risk checks and the payment is rejected with `sonar_session_required`. Sessions also go stale:
+/// the server requires the session's latest device event to be recent, and only a create or update
+/// call records one.
 ///
-/// Sessions are therefore persisted per account, and are refreshed periodically: the server only
-/// accepts a session whose most recent device event is recent, so a session left untouched for long
-/// enough goes stale and stops backing payments.
-///
-/// Call ``ensureSession(accountId:)`` before taking a payment and await the result; it is idempotent
-/// and coalesces concurrent callers onto a single network round trip.
+/// Call ``ensureSession(accountId:)`` before taking a payment and await the result.
 public actor SessionManager {
     /// The shared session manager used by the SDK.
     public static let shared = SessionManager()
 
-    /// How long a stored session is trusted before it is refreshed.
-    ///
-    /// The server rejects sessions whose latest device event has aged out, so this sits well inside
-    /// that window: refreshing early is cheap, while being even slightly late fails the payment.
+    /// Sits well inside the server's freshness window: refreshing early is cheap, being slightly
+    /// late fails the payment.
     private static let refreshInterval: TimeInterval = 15 * 60
 
-    /// Cap on how long the SDK waits for Fingerprint to identify the device. A payment must not be
-    /// held up indefinitely by the fingerprinting SDK.
+    /// A payment must not be held up indefinitely by the fingerprinting SDK.
     private static let visitorIdTimeout: TimeInterval = 5
 
     private let storage: SessionStorage
 
-    /// In-flight work, keyed by account, so concurrent callers (e.g. a double-tapped Pay button)
-    /// share one round trip instead of racing to mint duplicate sessions.
     private var inFlight: [String: Task<SessionId, Error>] = [:]
 
     /// Creates a session manager backed by the given storage.
@@ -60,9 +48,7 @@ public actor SessionManager {
     /// Returns a session for `accountId` that is fresh enough to back a payment, creating or
     /// refreshing one if necessary.
     ///
-    /// Awaiting this before a payment guarantees the session exists and is associated with the
-    /// account — otherwise the payment races SDK start-up and can be rejected with
-    /// `sonar_session_required`.
+    /// Idempotent, and coalesces concurrent callers onto a single round trip.
     ///
     /// - Parameter accountId: The Frame account the payment belongs to.
     /// - Returns: The session identifier to send with the payment.
@@ -88,12 +74,9 @@ public actor SessionManager {
 
     /// Establishes a session at SDK start-up, before an account is known.
     ///
-    /// This is a head start, not a guarantee: the server fetches the device event for a new session
-    /// asynchronously, so creating the session early gives that event time to land before checkout.
-    /// The session is adopted by the account on the first ``ensureSession(accountId:)`` call.
-    ///
-    /// Failures are non-fatal and left to ``ensureSession(accountId:)`` to retry and report, so this
-    /// never throws into the SDK's start-up path.
+    /// The server fetches a new session's device event asynchronously, so starting early gives that
+    /// event time to land before checkout. ``ensureSession(accountId:)`` then adopts the session onto
+    /// the account, and is left to retry and report any failure here.
     public static func initializeSession() async {
         try? await shared.warmUp()
     }
@@ -117,14 +100,6 @@ public actor SessionManager {
         storage.setLastRefresh(Date(), accountId: accountId)
     }
 
-    /// Produces a fresh, account-associated session, reusing whatever is already stored.
-    ///
-    /// Three cases, in order of preference:
-    /// 1. A session already exists for the account — refresh it so it is inside the server's
-    ///    freshness window again.
-    /// 2. A pre-account session exists — adopt it onto this account and retire the legacy slot, so
-    ///    it can never be adopted a second time by a different account.
-    /// 3. Nothing stored — create one against the account.
     private func establishSession(accountId: String) async throws -> SessionId {
         if let existing = storage.get(accountId: accountId) {
             let refreshed = try await refreshSession(existing, accountId: accountId)
@@ -135,8 +110,8 @@ public actor SessionManager {
         if let legacy = storage.get(accountId: nil) {
             let adopted = try await refreshSession(legacy, accountId: accountId)
             store(adopted, accountId: accountId)
-            // Retire the legacy slot: it now belongs to this account, and leaving it readable would
-            // let the next account on this device adopt the same session.
+            // Leaving the legacy slot readable would let the next account on this device adopt the
+            // same session.
             storage.clear(accountId: nil)
             return adopted
         }
@@ -151,17 +126,14 @@ public actor SessionManager {
         return try await perform(endpoint: SonarSessionEndpoints.create, body: body)
     }
 
-    /// Updates an existing session, which both associates it with `accountId` and records a new
-    /// device event server-side — the latter is what returns the session to the server's freshness
-    /// window.
-    ///
-    /// A session the server no longer recognises (expired, or created under different credentials)
-    /// is replaced rather than propagated as an error.
+    /// Updates an existing session, associating it with `accountId` and recording a new device event
+    /// server-side — the latter is what returns the session to the freshness window.
     private func refreshSession(_ session: SessionId, accountId: String) async throws -> SessionId {
         let body = SessionRequestBody(fingerprintVisitorId: try await visitorId(), accountId: accountId)
         do {
             return try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
         } catch SessionManagerError.requestFailed {
+            // The server no longer recognises this session, so replace it rather than fail the payment.
             storage.clear(accountId: accountId)
             return try await createSession(accountId: accountId)
         }

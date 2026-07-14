@@ -7,14 +7,10 @@
 
 import Foundation
 
-/// A protocol that defines read, write, and clear operations for persisting a ``SessionId``.
+/// A backing store for the Sonar session identifiers held by the Frame SDK.
 ///
-/// Sessions are scoped to a Frame account. Passing `accountId: nil` addresses the legacy,
-/// pre-account slot, which exists so sessions minted before an account was known can be adopted
-/// once the account is.
-///
-/// Conform to this protocol to provide a custom backing store for the active Sonar charge session
-/// identifier used by the Frame SDK.
+/// Sessions are scoped to a Frame account. `accountId: nil` addresses the pre-account slot, holding
+/// a session minted before the account was known so it can be adopted once it is.
 public protocol SessionStorage {
     /// Returns the session persisted for the given account, or `nil` if none is stored.
     func get(accountId: String?) -> SessionId?
@@ -23,29 +19,27 @@ public protocol SessionStorage {
     ///
     /// - Parameters:
     ///   - value: The ``SessionId`` to store.
-    ///   - accountId: The account the session belongs to, or `nil` for the legacy slot.
+    ///   - accountId: The account the session belongs to, or `nil` for the pre-account slot.
     func set(_ value: SessionId, accountId: String?)
 
     /// Removes the persisted session identifier for the given account.
     func clear(accountId: String?)
 
-    /// The time the session for the given account was last created or refreshed on the server,
-    /// or `nil` when unknown.
+    /// When the given account's session was last created or refreshed on the server, or `nil` when
+    /// unknown.
     func lastRefresh(accountId: String?) -> Date?
 
-    /// Records that the session for the given account was refreshed on the server at `date`.
+    /// Records that the given account's session was created or refreshed on the server at `date`.
     func setLastRefresh(_ date: Date, accountId: String?)
 }
 
 /// A ``SessionStorage`` implementation backed by `UserDefaults`.
 ///
-/// Sessions are keyed per account (`frame_sonar_session_id_{accountId}`) so that a session minted
-/// for one account can never be reused by another on the same device. The unscoped legacy key is
-/// retained for sessions created before an account is known; ``UserDefaultsSessionStorage`` only
-/// reads it, and ``SessionManager`` clears it once the session has been adopted by an account.
+/// Keying per account is what stops one account's session being reused by the next account on the
+/// same device.
 public final class UserDefaultsSessionStorage: SessionStorage {
-    /// The unscoped key used before per-account scoping existed. Still read so an in-flight session
-    /// survives an SDK upgrade, but never written for an account-scoped session.
+    /// The unscoped key predating per-account scoping. Still read so a session survives an SDK
+    /// upgrade, but never written for an account-scoped session.
     static let legacyKey = "frame_charge_session_id"
 
     private static let keyPrefix = "frame_sonar_session_id_"

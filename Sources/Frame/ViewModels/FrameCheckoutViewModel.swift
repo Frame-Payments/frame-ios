@@ -244,8 +244,8 @@ class FrameCheckoutViewModel: ObservableObject {
         }
         guard let paymentMethodId else { return nil }
 
-        // The transfer is only scored once the account has a live Sonar session, so wait for one
-        // rather than racing SDK start-up and having the server reject the payment outright.
+        // The server rejects the transfer outright without a live session for this account, so wait
+        // for one rather than racing SDK start-up.
         try await SessionManager.shared.ensureSession(accountId: accountId)
 
         let request = TransferRequests.CreateTransferRequest(

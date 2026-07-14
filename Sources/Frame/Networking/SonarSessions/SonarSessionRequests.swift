@@ -27,9 +27,9 @@ public struct SessionRequestBody: Encodable {
 
     /// The Frame account the session belongs to.
     ///
-    /// Required for any session that will back a payment: the server resolves a charge's session
-    /// through the account, so a session created without this is invisible to risk checks and the
-    /// payment is rejected with `sonar_session_required`. Omitted only for pre-account sessions.
+    /// Required for any session that will back a payment: the server resolves a payment's session
+    /// through the account, so one created without this is invisible to risk checks and the payment
+    /// is rejected with `sonar_session_required`.
     let accountId: String?
 
     init(fingerprintVisitorId: String, accountId: String? = nil) {

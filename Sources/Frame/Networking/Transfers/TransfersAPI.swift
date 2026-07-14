@@ -25,12 +25,11 @@ protocol TransfersProtocol {
 /// Manages transfer resources in the Frame Payments SDK, providing methods to create and retrieve transfers.
 public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
 
-    /// Attaches the account's Sonar session so the server can run risk and geo-compliance checks
-    /// against the transfer.
+    /// Attaches the account's Sonar session so the server can run its risk checks against the
+    /// transfer.
     ///
-    /// Only charge-backed transfers carry it. A direct transfer (a payout — no source payment
-    /// method) has no charge to score, and the API rejects the field outright on those, so sending
-    /// it there would turn a working payout into a 400.
+    /// Only charge-backed transfers carry it: a payout has no charge to score, and the API rejects
+    /// the field outright on those, so sending it would turn a working payout into a 400.
     private static func withSonarSession(
         _ request: TransferRequests.CreateTransferRequest
     ) -> TransferRequests.CreateTransferRequest {

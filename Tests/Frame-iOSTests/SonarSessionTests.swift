@@ -10,9 +10,8 @@ import XCTest
 
 // MARK: - Request encoding
 
-/// The server resolves a payment's Sonar session through the account, so a session created without
-/// an `account_id` is invisible to risk checks and the payment is rejected with
-/// `sonar_session_required`. Omitting the field was the original bug.
+/// Omitting `account_id` was the original bug: the server resolves a payment's session through the
+/// account, so a session without one is invisible to risk checks.
 final class SessionRequestBodyTests: XCTestCase {
 
     private func encode(_ body: SessionRequestBody) throws -> [String: Any] {
@@ -37,8 +36,7 @@ final class SessionRequestBodyTests: XCTestCase {
 
 // MARK: - Per-account storage
 
-/// Sessions are keyed per account so one account's session can never be adopted by the next account
-/// on the same device — the cross-account contamination fixed on the web SDK in FRA-3280.
+/// Guards the cross-account contamination fixed on the web SDK in FRA-3280.
 final class SessionStorageTests: XCTestCase {
 
     private var defaults: UserDefaults!
@@ -65,15 +63,13 @@ final class SessionStorageTests: XCTestCase {
         XCTAssertEqual(storage.get(accountId: "acc_b"), "fps_b")
     }
 
-    /// The A→B regression: account B must never read account A's session.
     func testOneAccountsSessionIsNotVisibleToAnother() {
         storage.set("fps_a", accountId: "acc_a")
 
         XCTAssertNil(storage.get(accountId: "acc_b"))
     }
 
-    /// A session stored for an account must not leak into the pre-account slot, or the next account
-    /// on this device would adopt it.
+    /// Leaking into the pre-account slot would let the next account on this device adopt it.
     func testAccountSessionIsNotWrittenToTheLegacySlot() {
         storage.set("fps_a", accountId: "acc_a")
 
@@ -81,8 +77,6 @@ final class SessionStorageTests: XCTestCase {
         XCTAssertNil(defaults.string(forKey: UserDefaultsSessionStorage.legacyKey))
     }
 
-    /// A session created before an account was known lives in the legacy slot, which is what makes
-    /// it adoptable later.
     func testPreAccountSessionUsesTheLegacyKey() {
         storage.set("fps_legacy", accountId: nil)
 
@@ -90,8 +84,7 @@ final class SessionStorageTests: XCTestCase {
         XCTAssertEqual(defaults.string(forKey: UserDefaultsSessionStorage.legacyKey), "fps_legacy")
     }
 
-    /// A session persisted by an older SDK build must still be readable after upgrade, so an
-    /// in-flight session survives rather than being silently abandoned.
+    /// A session in flight when the SDK is upgraded must survive rather than be abandoned.
     func testSessionWrittenByAnOlderBuildIsStillReadable() {
         defaults.set("fps_from_old_build", forKey: UserDefaultsSessionStorage.legacyKey)
 
@@ -128,8 +121,8 @@ final class SessionStorageTests: XCTestCase {
 
 // MARK: - Transfer encoding
 
-/// The API accepts `sonar_session_id` only on charge-backed transfers and rejects it on payouts, so
-/// the field must never be attached to a transfer that has no source payment method.
+/// The API rejects `sonar_session_id` on payouts, so it must never be attached to a transfer with no
+/// source payment method.
 final class TransferSonarSessionTests: XCTestCase {
 
     private func encode(_ request: TransferRequests.CreateTransferRequest) throws -> [String: Any] {
@@ -146,7 +139,7 @@ final class TransferSonarSessionTests: XCTestCase {
         XCTAssertEqual(try encode(request)["sonar_session_id"] as? String, "fps_1")
     }
 
-    /// Sending the field on a payout would turn a working transfer into a 400.
+    /// Sending it here would turn a working payout into a 400.
     func testPayoutTransferOmitsTheSonarSessionEntirely() throws {
         let request = TransferRequests.CreateTransferRequest(amount: 5000,
                                                              accountId: "acc_1",
@@ -158,8 +151,7 @@ final class TransferSonarSessionTests: XCTestCase {
 
 // MARK: - Error copy
 
-/// The server reports these rejections as bare codes; shown verbatim they read as
-/// "Error: sonar_session_required", which is what merchants reported.
+/// Shown verbatim these read as "Error: sonar_session_required", which is what merchants reported.
 final class RiskErrorMessageTests: XCTestCase {
 
     private func toast(forServerMessage message: String) -> String {
@@ -179,7 +171,6 @@ final class RiskErrorMessageTests: XCTestCase {
         XCTAssertFalse(toast(forServerMessage: "geo_compliance_vpn_detected").contains("geo_compliance"))
     }
 
-    /// Server messages that are already human must be passed through untouched.
     func testUnrecognisedServerMessagesArePassedThrough() {
         XCTAssertEqual(toast(forServerMessage: "Card submitted is not a test card"),
                        "Error: Card submitted is not a test card")

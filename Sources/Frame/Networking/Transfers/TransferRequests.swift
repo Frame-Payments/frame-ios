@@ -34,8 +34,8 @@ public class TransferRequests {
 
         /// The Sonar session backing this transfer's risk checks.
         ///
-        /// Populated by ``TransfersAPI`` and only ever sent on charge-backed transfers: the API
-        /// accepts it alongside a `sourcePaymentMethodId` and rejects it without one.
+        /// Populated by ``TransfersAPI``. Only sent on charge-backed transfers — the API rejects it
+        /// without a `sourcePaymentMethodId`.
         var sonarSessionId: String?
 
         /// Creates a new ``CreateTransferRequest``.
