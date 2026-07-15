@@ -83,7 +83,8 @@ public actor SessionManager {
 
     /// Creates a pre-account session if none is stored. See ``initializeSession()``.
     func warmUp() async throws {
-        guard storage.get(accountId: nil) == nil else { return }
+        /// Commented this out to force creating a new sonar session each time they open the app
+//        guard storage.get(accountId: nil) == nil else { return }
         let session = try await createSession(accountId: nil)
         store(session, accountId: nil)
     }

@@ -4,7 +4,7 @@ import FingerprintPro
 /// Configuration container for Fingerprint iOS SDK used by Frame.
 public enum FingerprintConfiguration {
     /// Public API key obtained from the Fingerprint dashboard.
-    public static var apiKey: String = "YEn02ZgQBqkN8wEwXQgU"
+    public static var apiKey: String = "fsaGPdLEMV0jkbJztEj1"
 
     /// Backend region associated with the API key.
     /// Defaults to `.global` (US). Make sure this matches your workspace region.
@@ -12,6 +12,9 @@ public enum FingerprintConfiguration {
 
     /// Whether to request extended response format from Fingerprint.
     public static var extendedResponseFormat: Bool = false
+
+    /// Whether the Fingerprint SDK may collect location data and attach it to the device event.
+    public static var allowUseOfLocationData: Bool = false
 }
 
 enum FingerprintManager {
@@ -30,7 +33,8 @@ enum FingerprintManager {
         let configuration = Configuration(
             apiKey: FingerprintConfiguration.apiKey,
             region: FingerprintConfiguration.region,
-            extendedResponseFormat: FingerprintConfiguration.extendedResponseFormat
+            extendedResponseFormat: FingerprintConfiguration.extendedResponseFormat,
+            allowUseOfLocationData: FingerprintConfiguration.allowUseOfLocationData
         )
 
         let instance = FingerprintProFactory.getInstance(configuration)
