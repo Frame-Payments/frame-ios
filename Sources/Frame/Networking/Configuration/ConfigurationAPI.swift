@@ -12,6 +12,7 @@ import Security
 protocol ConfigurationProtocol {
     //async/await
     static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?
+    static func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?
     static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?
 }
 
@@ -19,12 +20,14 @@ protocol ConfigurationProtocol {
 enum ConfigurationKeys: String {
     /// Key for the Evervault encryption configuration.
     case evervault
+    /// Key for the Fingerprint device-intelligence configuration.
+    case fingerprint
     /// Key for the Sift fraud-detection configuration.
     case sift
 }
 
 /// Manages SDK configuration resources, including fetching and caching third-party service
-/// credentials (Evervault, Sift) from the Frame API and persisting them in the system keychain.
+/// credentials (Evervault, Fingerprint, Sift) from the Frame API and persisting them in the system keychain.
 public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     //async/await
     /// Fetches the Evervault encryption configuration from the Frame API and caches it in the keychain.
@@ -44,6 +47,23 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         }
     }
     
+    /// Fetches the Fingerprint device-intelligence configuration from the Frame API and caches it in the keychain.
+    ///
+    /// - Returns: A ``ConfigurationResponses/GetFingerprintConfigurationResponse`` containing the
+    ///   Fingerprint public API key and region, or `nil` if the response cannot be decoded.
+    /// - Throws: A networking error if the request fails.
+    public static func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse? {
+        let endpoint = ConfigurationEndpoints.getFingerprintConfiguration
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetFingerprintConfigurationResponse.self, from: data) {
+            // Save configuration to chain
+            ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.fingerprint.rawValue, value: decodedResponse)
+            return decodedResponse
+        } else {
+            return nil
+        }
+    }
+
     /// Fetches the Sift fraud-detection configuration from the Frame API and caches it in the keychain.
     ///
     /// - Returns: A ``ConfigurationResponses/GetSiftConfigurationResponse`` containing the
