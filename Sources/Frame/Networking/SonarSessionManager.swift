@@ -83,7 +83,8 @@ public actor SessionManager {
 
     /// Creates a pre-account session if none is stored. See ``initializeSession()``.
     func warmUp() async throws {
-        guard storage.get(accountId: nil) == nil else { return }
+        /// Commented this out to force creating a new sonar session each time they open the app
+//        guard storage.get(accountId: nil) == nil else { return }
         let session = try await createSession(accountId: nil)
         store(session, accountId: nil)
     }
@@ -137,27 +138,6 @@ public actor SessionManager {
             storage.clear(accountId: accountId)
             return try await createSession(accountId: accountId)
         }
-    }
-
-    private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
-        let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded)
-
-        if let error { throw SessionManagerError.requestFailed(error) }
-        guard let data else { throw SessionManagerError.requestFailed(.noData) }
-
-        do {
-            return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
-        } catch {
-            throw SessionManagerError.requestFailed(.decodingFailed)
-        }
-    }
-
-    private func visitorId() async throws -> String {
-        guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout), !id.isEmpty else {
-            throw SessionManagerError.missingVisitorId
-        }
-        return id
     }
 
     private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
