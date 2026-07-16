@@ -228,7 +228,7 @@ public struct FrameCheckoutView: View {
         // Evervault Card Input
         PaymentCardInput(cardData: $checkoutViewModel.cardData)
             .paymentCardInputStyle(EncryptedPaymentCardInput())
-            .onChange(of: checkoutViewModel.cardData.isPotentiallyValid) { _ in
+            .onChange(of: checkoutViewModel.cardData.isPotentiallyValid) { _, _ in
                 checkoutViewModel.clearError(.card)
             }
         if let cardError = checkoutViewModel.fieldErrors[.card] {

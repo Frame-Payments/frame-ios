@@ -9,6 +9,7 @@ import FingerprintPro
 public enum FingerprintConfiguration {
     /// Whether to request extended response format from Fingerprint.
     public static var extendedResponseFormat: Bool = false
+    public static var allowUseOfLocationData: Bool = false
 }
 
 enum FingerprintManager {

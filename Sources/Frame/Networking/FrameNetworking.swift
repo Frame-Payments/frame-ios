@@ -250,7 +250,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         do {
@@ -309,7 +309,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         do {
@@ -358,7 +358,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
 
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         urlSession.dataTask(with: urlRequest) { data, response, error in
@@ -420,7 +420,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
 
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         urlSession.dataTask(with: urlRequest) { data, response, error in

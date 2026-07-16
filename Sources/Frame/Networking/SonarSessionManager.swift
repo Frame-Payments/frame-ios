@@ -142,7 +142,7 @@ public actor SessionManager {
 
     private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
         let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishable)
 
         if let error { throw SessionManagerError.requestFailed(error) }
         guard let data else { throw SessionManagerError.requestFailed(.noData) }
