@@ -24,6 +24,22 @@ protocol TransfersProtocol {
 
 /// Manages transfer resources in the Frame Payments SDK, providing methods to create and retrieve transfers.
 public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
+
+    /// Attaches the account's Sonar session so the server can run its risk checks against the
+    /// transfer.
+    ///
+    /// Only charge-backed transfers carry it: a payout has no charge to score, and the API rejects
+    /// the field outright on those, so sending it would turn a working payout into a 400.
+    private static func withSonarSession(
+        _ request: TransferRequests.CreateTransferRequest
+    ) -> TransferRequests.CreateTransferRequest {
+        guard request.sourcePaymentMethodId != nil else { return request }
+
+        var updated = request
+        updated.sonarSessionId = FrameNetworking.shared.currentSonarSessionId(accountId: request.accountId)
+        return updated
+    }
+
     //async/await
 
     /// Creates a new transfer using the provided request body.
@@ -33,7 +49,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     /// - Important: Money movement is a server-only operation; this authenticates with the secret key.
     public static func createTransfer(request: TransferRequests.CreateTransferRequest) async throws -> (FrameObjects.Transfer?, NetworkingError?) {
         let endpoint = TransferEndpoints.createTransfer
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(withSonarSession(request))
 
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         // Don't try to decode an error response as a Transfer — performDataTask
@@ -96,7 +112,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     /// - Important: Money movement is a server-only operation; this authenticates with the secret key.
     public static func createTransfer(request: TransferRequests.CreateTransferRequest, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.createTransfer
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(withSonarSession(request))
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {

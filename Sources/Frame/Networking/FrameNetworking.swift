@@ -217,8 +217,12 @@ public class FrameNetworking: ObservableObject {
         print(message)
     }
 
-    func currentSonarSessionId() -> String? {
-        SonarSessionStorage.currentSessionId()
+    /// The Sonar session stored for `accountId`, if any.
+    ///
+    /// Prefer `SessionManager.shared.ensureSession(accountId:)` on a payment path — this only reads
+    /// what is already persisted and will return `nil` if no session has been established yet.
+    func currentSonarSessionId(accountId: String? = nil) -> String? {
+        SonarSessionStorage.currentSessionId(accountId: accountId)
     }
 
     // Async/Await
@@ -246,7 +250,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         do {
@@ -305,7 +309,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         do {
@@ -354,7 +358,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
 
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         urlSession.dataTask(with: urlRequest) { data, response, error in
@@ -416,7 +420,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
 
         if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(SiftManager.getIPAddress(), forHTTPHeaderField: "ip_address")
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
 
         urlSession.dataTask(with: urlRequest) { data, response, error in

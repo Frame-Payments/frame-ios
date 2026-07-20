@@ -110,7 +110,7 @@ class OnboardingContainerViewModel: ObservableObject {
                 } else {
                     // Update capabilities to match what is required by merchant
                     let request = CapabilityRequest.RequestCapabilitiesRequest(capabilities: requiredCapabilities)
-                    let (capabilities, _) = try await CapabilitiesAPI.requestCapabilities(accountId: accountId, request: request)
+                    let (_, _) = try await CapabilitiesAPI.requestCapabilities(accountId: accountId, request: request)
                     // Then recheck account.
                     await self.checkExistingAccount()
                 }
@@ -208,7 +208,7 @@ class OnboardingContainerViewModel: ObservableObject {
             let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
-            try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
+            _ = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
         } catch let error {
             print(error)
         }

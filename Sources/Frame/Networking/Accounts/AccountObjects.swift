@@ -30,7 +30,7 @@ extension FrameObjects {
     }
 
     /// Records acceptance of the Frame terms of service for an account.
-    public struct AccountTermsOfService: Codable, Equatable {
+    public struct AccountTermsOfService: Codable, Equatable, Sendable {
         /// Unique token identifying the version of the terms that was accepted.
         public var token: String?
         /// IP address from which the terms were accepted.

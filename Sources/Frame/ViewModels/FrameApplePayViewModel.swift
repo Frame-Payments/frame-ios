@@ -64,6 +64,15 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
     /// Optional closure called with the final success or failure result after the Apple Pay flow completes.
     var completion: ((Result<FrameApplePayResult, Error>) -> Void)?
 
+    /// The result produced in `didAuthorizePayment`, held until the Apple Pay
+    /// sheet has actually dismissed. We must not deliver it inline: the host's
+    /// completion (e.g. `FrameCheckoutView`) dismisses the checkout sheet on
+    /// success, and on iOS 26+ dismissing the presenting controller while the
+    /// Apple Pay sheet is still up strands the Apple Pay sheet on screen. Firing
+    /// from `paymentAuthorizationControllerDidFinish` — after `dismiss()` — means
+    /// the Apple Pay sheet is gone before the host reacts.
+    private var pendingResult: Result<FrameApplePayResult, Error>?
+
     /// Creates a new `FrameApplePayViewModel`.
     ///
     /// - Parameters:
@@ -173,14 +182,14 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                 if methodError?.isAssertionRejection == true {
                     DeviceAttestationManager.shared.resetAttestation()
                 }
-                completion?(.failure(methodError ?? NetworkingError.unknownError))
+                pendingResult = .failure(methodError ?? NetworkingError.unknownError)
                 return PKPaymentAuthorizationResult(status: .failure, errors: nil)
             }
             let paymentMethodId = paymentMethod.id
 
             switch mode {
             case .addToOwner:
-                completion?(.success(.paymentMethod(paymentMethod)))
+                pendingResult = .success(.paymentMethod(paymentMethod))
                 return PKPaymentAuthorizationResult(status: .success, errors: nil)
 
             case .charge(let amount, let currency):
@@ -201,14 +210,17 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
 
                     if let chargeIntent {
-                        completion?(.success(.charge(id: chargeIntent.id)))
+                        pendingResult = .success(.charge(id: chargeIntent.id))
                         return PKPaymentAuthorizationResult(status: .success, errors: nil)
                     } else {
-                        completion?(.failure(chargeError ?? NetworkingError.unknownError))
+                        pendingResult = .failure(chargeError ?? NetworkingError.unknownError)
                         return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                     }
 
                 case .account(let accountId):
+                    // The server rejects the transfer outright without a live session for this account.
+                    try await SessionManager.shared.ensureSession(accountId: accountId)
+
                     let request = TransferRequests.CreateTransferRequest(
                         amount: amount,
                         accountId: accountId,
@@ -218,22 +230,37 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
 
                     if let transfer {
-                        completion?(.success(.charge(id: transfer.id)))
+                        pendingResult = .success(.charge(id: transfer.id))
                         return PKPaymentAuthorizationResult(status: .success, errors: nil)
                     } else {
-                        completion?(.failure(transferError ?? NetworkingError.unknownError))
+                        pendingResult = .failure(transferError ?? NetworkingError.unknownError)
                         return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                     }
                 }
             }
         } catch {
-            completion?(.failure(error))
+            pendingResult = .failure(error)
             return PKPaymentAuthorizationResult(status: .failure, errors: nil)
         }
     }
 
-    /// Dismisses the Apple Pay sheet after the flow completes or is cancelled.
+    /// Dismisses the Apple Pay sheet, then delivers the result to the host.
+    ///
+    /// Delivery is deferred to the `dismiss` completion (rather than fired inline
+    /// from `didAuthorizePayment`) so the Apple Pay sheet is fully torn down before
+    /// the host's completion runs. On iOS 26+ a host that dismisses its own
+    /// presenting controller on success — as `FrameCheckoutView` does — while the
+    /// Apple Pay sheet is still up will otherwise strand the Apple Pay sheet on
+    /// screen. If the user cancelled, `pendingResult` is nil and nothing is delivered.
     public func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
-        controller.dismiss()
+        controller.dismiss { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                if let result = self.pendingResult {
+                    self.pendingResult = nil
+                    self.completion?(result)
+                }
+            }
+        }
     }
 }
