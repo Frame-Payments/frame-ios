@@ -54,7 +54,7 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     /// - Throws: A networking error if the request fails.
     public static func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse? {
         let endpoint = ConfigurationEndpoints.getFingerprintConfiguration
-        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetFingerprintConfigurationResponse.self, from: data) {
             // Save configuration to chain
             ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.fingerprint.rawValue, value: decodedResponse)
