@@ -241,6 +241,9 @@ public class FrameNetworking: ObservableObject {
         if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
+        if let acceptHeader = endpoint.acceptHeader {
+            urlRequest.setValue(acceptHeader, forHTTPHeaderField: "Accept")
+        }
 
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
@@ -347,6 +350,9 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
         if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        if let acceptHeader = endpoint.acceptHeader {
+            urlRequest.setValue(acceptHeader, forHTTPHeaderField: "Accept")
         }
 
         urlRequest.httpBody = requestBody

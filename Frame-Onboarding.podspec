@@ -26,4 +26,7 @@ Pod::Spec.new do |s|
   s.dependency 'Frame-iOS', "= #{s.version}"
   s.dependency 'ProveAuth', '~> 6.10'
   s.dependency 'Plaid', '~> 6.4'
+  # Persona Inquiry SDK v2 — government-ID identity verification (no-SSN onboarding path).
+  # NOTE: v2.48.0 is Persona's last CocoaPods release; newer versions ship via SPM only.
+  s.dependency 'PersonaInquirySDK2', '~> 2.48'
 end

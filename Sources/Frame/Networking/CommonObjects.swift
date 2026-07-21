@@ -104,6 +104,18 @@ public protocol FrameNetworkingEndpoints {
 
     /// Optional query parameters to append to the request URL.
     var queryItems: [URLQueryItem]? { get }
+
+    /// Optional value for the request's `Accept` header. Defaults to `nil` (no header set).
+    ///
+    /// Endpoints that must negotiate a specific response representation (e.g. an endpoint that
+    /// returns HTML by default but supports a JSON variant) can override this to request it.
+    var acceptHeader: String? { get }
+}
+
+/// Default implementations for optional ``FrameNetworkingEndpoints`` requirements.
+public extension FrameNetworkingEndpoints {
+    /// Default: no explicit `Accept` header. Endpoints override only when they need one.
+    var acceptHeader: String? { nil }
 }
 
 /// An abstraction over `URLSession` used to enable testing of network calls.

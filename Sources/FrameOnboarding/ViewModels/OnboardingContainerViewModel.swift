@@ -65,7 +65,16 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
     @Published var isPerformingAction: Bool = false
+
+    /// Set to `true` once the applicant has verified identity with a government ID via Persona
+    /// (the no-SSN path). While `true`, the SSN input and the "I don't have a social security
+    /// number" button are hidden, SSN validation is skipped, and no SSN is sent to the API.
+    @Published var identityVerifiedViaGovId: Bool = false
+    /// The Persona inquiry id used for the successful government-ID verification, if any.
+    @Published var personaInquiryId: String?
+
     private var plaidHandler: Handler?
+    private var personaService: PersonaService?
 
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
 
@@ -152,7 +161,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                                   countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssn: createdCustomerIdentity.ssn)
+                                                                           ssn: identityVerifiedViaGovId ? nil : createdCustomerIdentity.ssn)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
@@ -204,7 +213,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                                   countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssnLastFour: createdCustomerIdentity.ssn)
+                                                                           ssnLastFour: identityVerifiedViaGovId ? nil : createdCustomerIdentity.ssn)
             let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
@@ -473,6 +482,49 @@ class OnboardingContainerViewModel: ObservableObject {
                 self.clearAccountDetails()
             }
         } catch let error {
+            print(error)
+        }
+    }
+
+    /// No-SSN identity verification: create a Persona inquiry server-side, present the Persona SDK
+    /// against it, then confirm the result with the Frame backend.
+    ///
+    /// Persona's client-side completion is best-effort, so the `/idv/complete` response is treated
+    /// as the source of truth for flipping `identityVerifiedViaGovId`. A cancel, a Persona error,
+    /// or a non-verified / pending server response leaves the applicant un-verified so they can
+    /// retry or fall back to entering an SSN.
+    ///
+    /// - Parameter viewController: The view controller to present the Persona UI from.
+    func verifyIdentityWithoutSsn(from viewController: UIViewController) async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
+        do {
+            // 1. Server pre-creates the Persona inquiry and returns its id.
+            let (session, sessionError) = try await IdentityVerificationAPI.createSession()
+            reportError(sessionError)
+            guard let inquiryId = session?.inquiryId else { return }
+
+            // 2. Launch the Persona SDK against the pre-created inquiry.
+            let service = PersonaService(inquiryId: inquiryId)
+            self.personaService = service
+            let outcome = try await service.start(from: viewController)
+            self.personaService = nil
+
+            // A cancel is a normal, non-error exit — leave the applicant un-verified.
+            guard case .completed = outcome else { return }
+
+            // 3. Confirm with the backend — the authoritative verification result. A non-JSON or
+            //    error response decodes to nil (endpoint may not exist yet, FRA-5363); treat that
+            //    as pending rather than verified.
+            let (completion, completeError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
+            reportError(completeError)
+            if completion?.verified == true {
+                self.personaInquiryId = inquiryId
+                self.identityVerifiedViaGovId = true
+            }
+        } catch let error {
+            self.personaService = nil
             print(error)
         }
     }

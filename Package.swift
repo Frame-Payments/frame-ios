@@ -24,7 +24,11 @@ let package = Package(
         .package(id: "swift.proveauth", from: "6.10.2"),
         .package(url: "https://github.com/fingerprintjs/fingerprintjs-pro-ios", from: "2.0.0"),
         .package(url: "https://github.com/plaid/plaid-ios", from: "5.6.0"),
-        .package(url: "https://github.com/marmelroy/PhoneNumberKit.git", from: "4.0.0")
+        .package(url: "https://github.com/marmelroy/PhoneNumberKit.git", from: "4.0.0"),
+        // Persona Inquiry SDK v2 (dynamic-flow). Used by FrameOnboarding for government-ID
+        // identity verification when the applicant has no SSN. SPM product is
+        // `PersonaInquirySDK2`; the importable module is `Persona2`.
+        .package(url: "https://github.com/persona-id/inquiry-ios-2.git", .upToNextMajor(from: "2.51.1"))
     ],
     targets: [
         .target(
@@ -45,7 +49,8 @@ let package = Package(
                 dependencies: [
                     .target(name: "Frame"),
                     .product(name: "ProveAuth", package: "swift.proveauth", condition: .when(platforms: [.iOS])),
-                    .product(name: "LinkKit", package: "plaid-ios", condition: .when(platforms: [.iOS]))
+                    .product(name: "LinkKit", package: "plaid-ios", condition: .when(platforms: [.iOS])),
+                    .product(name: "PersonaInquirySDK2", package: "inquiry-ios-2", condition: .when(platforms: [.iOS]))
                 ],
                 swiftSettings: [
                     .define("EXCLUDE_MACOS", .when(platforms: [.macOS]))
