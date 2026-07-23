@@ -109,17 +109,22 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer ci_abc_secret_xyz")
     }
 
-    /// While an onboarding session is active, every request — even a `.secret`-tagged one —
-    /// carries the onboarding-session token, scoping the flow to one account.
-    func testOnboardingSessionOverridesAllAuthModes() async throws {
+    /// While an onboarding session is active, a `.secret`-tagged request carries the
+    /// onboarding-session token, scoping the flow to one account. An explicit `.publishable`
+    /// request, however, wins over the session: merchant-level publishable-only endpoints
+    /// (terms_of_service, device_attestation, …) reject the onb_sess_ token, so the pk_ must be
+    /// used even mid-session. Precedence: clientSecret > publishable > session > secret.
+    func testOnboardingSessionOverridesSecretButNotExplicitPublishable() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()
         FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_live_token")
         defer { FrameNetworking.shared.endOnboardingSession() }
 
+        // An explicit publishable-key request bypasses the session.
         _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer onb_sess_live_token")
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
 
+        // A `.secret`-tagged (default) request is still scoped to the session token.
         _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer onb_sess_live_token")
     }
