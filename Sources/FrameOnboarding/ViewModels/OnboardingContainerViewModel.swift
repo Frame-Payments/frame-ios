@@ -94,6 +94,10 @@ class OnboardingContainerViewModel: ObservableObject {
     // Load existing account object to show on account page.
     func checkExistingAccount(updateCapabilies: Bool = false) async {
         guard let accountId else { return }
+        // A host that launches onboarding with an existing accountId but no clientSecret has no
+        // account-creation step to mint from, so bind a session here too — otherwise IDV and other
+        // account-scoped requests fall back to the configured key. No-ops if a session is already active.
+        await beginOnboardingSessionIfNeeded()
         do {
             let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
             reportError(error)
@@ -149,6 +153,28 @@ class OnboardingContainerViewModel: ObservableObject {
         self.currentStep = onboardingArray.first ?? .personalInformation
     }
     
+    /// Mints an account-scoped onboarding session (`onb_sess_…`) for the just-created account and
+    /// binds every subsequent onboarding request to it, so calls like IDV authenticate as the
+    /// session instead of falling back to the configured `pk_`/`sk_`. Uses the publishable key,
+    /// which `POST /v1/onboarding_sessions` accepts, so no secret key leaves the device.
+    ///
+    /// Idempotent and safe to call after each account-creation path: it does nothing when the host
+    /// already supplied a `clientSecret` (a session is active) or when no account exists yet.
+    private func beginOnboardingSessionIfNeeded() async {
+        guard !FrameNetworking.shared.hasActiveOnboardingSession else { return }
+        guard let accountId else { return }
+
+        let request = OnboardingSessionRequest.CreateOnboardingSessionRequest(accountId: accountId)
+        do {
+            let (session, error) = try await OnboardingSessionsAPI.createOnboardingSessionWithPublishableKey(request: request)
+            reportError(error)
+            guard let clientSecret = session?.clientSecret else { return }
+            FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
+        } catch let error {
+            print(error)
+        }
+    }
+
     // Create new individual account if no ID was previously provided to start onboarding.
     func createIndividualAccount() async {
         guard beginAction() else { return }
@@ -170,6 +196,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let account else { return }
             self.accountId = account.id
+            await beginOnboardingSessionIfNeeded()
         } catch let error {
             print(error)
         }
@@ -190,6 +217,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let account else { return }
             self.accountId = account.id
+            await beginOnboardingSessionIfNeeded()
             return
         } catch let error {
             print(error)

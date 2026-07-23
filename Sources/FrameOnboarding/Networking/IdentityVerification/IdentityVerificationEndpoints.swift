@@ -21,9 +21,9 @@ enum IdentityVerificationEndpoints: FrameNetworkingEndpoints {
     var endpointURL: String {
         switch self {
         case .createSession:
-            return "/idv/session"
+            return "/v1/idv/session"
         case .complete:
-            return "/idv/complete"
+            return "/v1/idv/complete"
         }
     }
 

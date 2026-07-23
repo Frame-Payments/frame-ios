@@ -20,6 +20,15 @@
       }
     },
     {
+      "identity" : "inquiry-ios-2",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/persona-id/inquiry-ios-2.git",
+      "state" : {
+        "revision" : "c3e28d809170f9edc2913cc0bdfc5730c08c1b32",
+        "version" : "2.51.1"
+      }
+    },
+    {
       "identity" : "phonenumberkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/marmelroy/PhoneNumberKit.git",

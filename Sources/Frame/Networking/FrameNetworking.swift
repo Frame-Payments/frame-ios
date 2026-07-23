@@ -157,6 +157,12 @@ public class FrameNetworking: ObservableObject {
         onboardingSessionToken = nil
     }
 
+    /// Whether an onboarding session (`onb_sess_…`) is currently active. Lets the onboarding flow
+    /// avoid re-minting a session when the host already supplied one via ``OnboardingContainerView``.
+    public var hasActiveOnboardingSession: Bool {
+        onboardingSessionToken != nil
+    }
+
     /// Resolves the Bearer token for a request based on its ``FrameAuthMode``.
     ///
     /// While an onboarding session is active (see ``beginOnboardingSession(clientSecret:)``), the
