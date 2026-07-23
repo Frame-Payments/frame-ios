@@ -65,7 +65,16 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var pendingTwilioVerificationId: String?
     @Published var pendingTwilioVerificationAccountId: String?
     @Published var isPerformingAction: Bool = false
+
+    /// Set to `true` once the applicant has verified identity with a government ID via Persona
+    /// (the no-SSN path). While `true`, the SSN input and the "I don't have a social security
+    /// number" button are hidden, SSN validation is skipped, and no SSN is sent to the API.
+    @Published var identityVerifiedViaGovId: Bool = false
+    /// The Persona inquiry id used for the successful government-ID verification, if any.
+    @Published var personaInquiryId: String?
+
     private var plaidHandler: Handler?
+    private var personaService: PersonaService?
 
     private var proveOTPContinuation: CheckedContinuation<String?, Never>?
 
@@ -85,6 +94,10 @@ class OnboardingContainerViewModel: ObservableObject {
     // Load existing account object to show on account page.
     func checkExistingAccount(updateCapabilies: Bool = false) async {
         guard let accountId else { return }
+        // A host that launches onboarding with an existing accountId but no clientSecret has no
+        // account-creation step to mint from, so bind a session here too — otherwise IDV and other
+        // account-scoped requests fall back to the configured key. No-ops if a session is already active.
+        await beginOnboardingSessionIfNeeded()
         do {
             let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
             reportError(error)
@@ -140,6 +153,28 @@ class OnboardingContainerViewModel: ObservableObject {
         self.currentStep = onboardingArray.first ?? .personalInformation
     }
     
+    /// Mints an account-scoped onboarding session (`onb_sess_…`) for the just-created account and
+    /// binds every subsequent onboarding request to it, so calls like IDV authenticate as the
+    /// session instead of falling back to the configured `pk_`/`sk_`. Uses the publishable key,
+    /// which `POST /v1/onboarding_sessions` accepts, so no secret key leaves the device.
+    ///
+    /// Idempotent and safe to call after each account-creation path: it does nothing when the host
+    /// already supplied a `clientSecret` (a session is active) or when no account exists yet.
+    private func beginOnboardingSessionIfNeeded() async {
+        guard !FrameNetworking.shared.hasActiveOnboardingSession else { return }
+        guard let accountId else { return }
+
+        let request = OnboardingSessionRequest.CreateOnboardingSessionRequest(accountId: accountId)
+        do {
+            let (session, error) = try await OnboardingSessionsAPI.createOnboardingSessionWithPublishableKey(request: request)
+            reportError(error)
+            guard let clientSecret = session?.clientSecret else { return }
+            FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
+        } catch let error {
+            print(error)
+        }
+    }
+
     // Create new individual account if no ID was previously provided to start onboarding.
     func createIndividualAccount() async {
         guard beginAction() else { return }
@@ -152,7 +187,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                                   countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssn: createdCustomerIdentity.ssn)
+                                                                           ssn: identityVerifiedViaGovId ? nil : createdCustomerIdentity.ssn)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
@@ -161,6 +196,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let account else { return }
             self.accountId = account.id
+            await beginOnboardingSessionIfNeeded()
         } catch let error {
             print(error)
         }
@@ -181,6 +217,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let account else { return }
             self.accountId = account.id
+            await beginOnboardingSessionIfNeeded()
             return
         } catch let error {
             print(error)
@@ -204,7 +241,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                                   countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssnLastFour: createdCustomerIdentity.ssn)
+                                                                           ssnLastFour: identityVerifiedViaGovId ? nil : createdCustomerIdentity.ssn)
             let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
@@ -475,6 +512,78 @@ class OnboardingContainerViewModel: ObservableObject {
         } catch let error {
             print(error)
         }
+    }
+
+    /// No-SSN identity verification: create a Persona inquiry server-side, present the Persona SDK
+    /// against it, then confirm the result with the Frame backend.
+    ///
+    /// Persona's client-side completion is best-effort, so the `/idv/complete` response is treated
+    /// as the source of truth for flipping `identityVerifiedViaGovId`. A cancel, a Persona error,
+    /// or a non-verified / pending server response leaves the applicant un-verified so they can
+    /// retry or fall back to entering an SSN.
+    ///
+    /// - Parameter viewController: The view controller to present the Persona UI from.
+    func verifyIdentityWithoutSsn(from viewController: UIViewController) async {
+        guard beginAction() else { return }
+        defer { endAction() }
+
+        do {
+            // 1. Server pre-creates the Persona inquiry and returns its id. On error, surface the
+            //    toast and stop — don't launch Persona against a possibly-invalid inquiry.
+            let (session, sessionError) = try await IdentityVerificationAPI.createSession()
+            guard sessionError == nil, let inquiryId = session?.inquiryId else {
+                reportError(sessionError)
+                return
+            }
+
+            // 1a. Pre-existing accounts may already have an approved inquiry. An approved inquiry is
+            //     terminal — the Persona SDK can't open a session on it and errors out. Ask the
+            //     backend first (it reads status from Persona's API, which works on terminal
+            //     inquiries); if already verified, skip Persona entirely. A nil/false result means
+            //     not-yet-verified, so fall through and run the Persona flow as normal.
+            let (existing, existingError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
+            if existingError == nil, existing?.verified == true {
+                self.personaInquiryId = inquiryId
+                self.identityVerifiedViaGovId = true
+                return
+            }
+
+            // 2. Launch the Persona SDK against the pre-created inquiry.
+            let service = PersonaService(inquiryId: inquiryId)
+            self.personaService = service
+            let outcome = try await service.start(from: viewController)
+            self.personaService = nil
+
+            // A cancel is a normal, non-error exit — leave the applicant un-verified.
+            guard case .completed = outcome else { return }
+
+            // 3. Confirm with the backend — the authoritative verification result. A non-JSON or
+            //    error response decodes to nil (endpoint may not exist yet, FRA-5363); treat that
+            //    as pending rather than verified.
+            let (completion, completeError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
+            guard completeError == nil else {
+                reportError(completeError)
+                return
+            }
+            if completion?.verified == true {
+                self.personaInquiryId = inquiryId
+                self.identityVerifiedViaGovId = true
+            } else {
+                // The Persona flow finished but the backend didn't confirm verification (declined
+                // or still pending). Tell the applicant so they can retry or enter an SSN instead.
+                FrameToastCenter.shared.show("We couldn't verify your identity. Please try again or enter your Social Security Number.")
+            }
+        } catch let error {
+            self.personaService = nil
+            print(error)
+        }
+    }
+
+    /// Clears the government-ID verified state so the applicant can re-enter an SSN or re-run
+    /// verification. Restores the SSN row and the "I don't have a social security number" button.
+    func resetIdentityVerification() {
+        identityVerifiedViaGovId = false
+        personaInquiryId = nil
     }
 
     // Start 3DS process with select payment method

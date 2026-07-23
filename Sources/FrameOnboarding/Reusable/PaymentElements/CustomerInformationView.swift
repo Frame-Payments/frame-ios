@@ -18,6 +18,11 @@ public struct CustomerInformationView: View {
     /// The view model that owns the customer identity state and field-level validation.
     @ObservedObject var viewModel: CustomerInformationViewModel
 
+    /// The onboarding container view model, when this view is embedded in an onboarding flow.
+    /// Its presence (and a KYC capability) gates the no-SSN government-ID verification button and
+    /// carries the resulting verified state.
+    @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
+
     @State private var birthYear: String = ""
     @State private var birthMonth: String = ""
     @State private var birthDay: String = ""
@@ -28,12 +33,23 @@ public struct CustomerInformationView: View {
     ///
     /// - Parameters:
     ///   - viewModel: The view model that owns and validates the customer identity state.
+    ///   - onboardingContainerViewModel: The onboarding container view model driving the no-SSN
+    ///     government-ID verification flow and holding its verified state.
     ///   - headerTitle: The bold label displayed above the name/email/phone fields.
     ///     Defaults to `"Customer Information"`.
-    public init(viewModel: CustomerInformationViewModel,
-                headerTitle: String = "Customer Information") {
+    init(viewModel: CustomerInformationViewModel,
+         onboardingContainerViewModel: OnboardingContainerViewModel,
+         headerTitle: String = "Customer Information") {
         self.viewModel = viewModel
+        self.onboardingContainerViewModel = onboardingContainerViewModel
         self._headerTitle = State(initialValue: headerTitle)
+    }
+
+    /// Whether the current onboarding flow requires KYC (which is what surfaces the SSN row and,
+    /// with it, the no-SSN government-ID verification affordance).
+    private var requiresKYC: Bool {
+        let caps = onboardingContainerViewModel.requiredCapabilities
+        return caps.contains(.kyc) || caps.contains(.kycPrefill)
     }
 
     /// The root view hierarchy that renders all customer-information input sections.
@@ -76,10 +92,27 @@ public struct CustomerInformationView: View {
                 }
                 .padding(.horizontal)
             birthdayView
-            socialSecurityView
+            if onboardingContainerViewModel.identityVerifiedViaGovId {
+                governmentIdVerifiedView
+            } else {
+                socialSecurityView
+                if requiresKYC {
+                    noSSNButton
+                }
+            }
         }
         .onAppear {
             seedBirthComponentsFromStoredValue()
+            // Keep the info view model's SSN-skip flag in sync with any already-verified state.
+            viewModel.identityVerifiedViaGovId = onboardingContainerViewModel.identityVerifiedViaGovId
+        }
+        .onChange(of: onboardingContainerViewModel.identityVerifiedViaGovId) { _, verified in
+            viewModel.identityVerifiedViaGovId = verified
+            if verified {
+                // Clear any stale SSN error and value so nothing leaks into submit.
+                viewModel.errors[.ssn] = nil
+                viewModel.identity.ssn = ""
+            }
         }
         .onChange(of: birthYear) { _, _ in
             viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
@@ -191,20 +224,67 @@ public struct CustomerInformationView: View {
             }
             .padding(.horizontal)
     }
+
+    /// Secondary text-style button offering the no-SSN government-ID verification path. Shown
+    /// directly under the SSN row while KYC is required and the applicant has not yet verified.
+    @ViewBuilder
+    var noSSNButton: some View {
+        ContinueButton(buttonText: "I don't have a social security number",
+                       style: .secondary,
+                       isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+            guard let presenter = UIApplication.shared.topViewController else { return }
+            Task {
+                await onboardingContainerViewModel.verifyIdentityWithoutSsn(from: presenter)
+            }
+        }
+    }
+
+    /// Confirmation row shown in place of the SSN input and no-SSN button once the applicant has
+    /// verified their identity with a government ID.
+    @ViewBuilder
+    var governmentIdVerifiedView: some View {
+        Text("Social Security Number")
+            .bold()
+            .font(theme.fonts.label)
+            .padding([.horizontal, .top])
+        RoundedRectangle(cornerRadius: theme.radii.medium)
+            .fill(theme.colors.surface)
+            .stroke(theme.colors.surfaceStroke)
+            .frame(height: 50.0)
+            .overlay {
+                HStack {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundColor(theme.colors.textPrimary)
+                    Text("Verified with government ID.")
+                        .font(theme.fonts.label)
+                        .foregroundColor(theme.colors.textPrimary)
+                    Spacer()
+                    Button("Use SSN instead") {
+                        onboardingContainerViewModel.resetIdentityVerification()
+                    }
+                    .font(theme.fonts.caption)
+                    .foregroundColor(theme.colors.textSecondary)
+                }
+                .padding(.horizontal)
+            }
+            .padding(.horizontal)
+    }
 }
 
 #Preview {
     @Previewable @StateObject var vm = CustomerInformationViewModel()
+    @Previewable @StateObject var containerVM = OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill])
     ScrollView {
-        CustomerInformationView(viewModel: vm)
+        CustomerInformationView(viewModel: vm, onboardingContainerViewModel: containerVM)
         Button("Validate") { _ = vm.validate() }
     }
 }
 
 #Preview("Dark") {
     @Previewable @StateObject var vm = CustomerInformationViewModel()
+    @Previewable @StateObject var containerVM = OnboardingContainerViewModel(accountId: "", requiredCapabilities: [.kycPrefill])
     ScrollView {
-        CustomerInformationView(viewModel: vm)
+        CustomerInformationView(viewModel: vm, onboardingContainerViewModel: containerVM)
         Button("Validate") { _ = vm.validate() }
     }
     .preferredColorScheme(.dark)

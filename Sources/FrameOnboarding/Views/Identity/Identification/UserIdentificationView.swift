@@ -280,7 +280,8 @@ struct UserIdentificationView: View {
                 self.identitySteps = .phoneAuth
             }
             ScrollView {
-                CustomerInformationView(viewModel: customerInfoVM)
+                CustomerInformationView(viewModel: customerInfoVM,
+                                        onboardingContainerViewModel: onboardingContainerViewModel)
                 BillingAddressDetailView(viewModel: personalAddressVM,
                                          headerTitle: "Current Address")
                 KeyboardSpacing()

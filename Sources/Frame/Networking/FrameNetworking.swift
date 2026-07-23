@@ -157,6 +157,12 @@ public class FrameNetworking: ObservableObject {
         onboardingSessionToken = nil
     }
 
+    /// Whether an onboarding session (`onb_sess_…`) is currently active. Lets the onboarding flow
+    /// avoid re-minting a session when the host already supplied one via ``OnboardingContainerView``.
+    public var hasActiveOnboardingSession: Bool {
+        onboardingSessionToken != nil
+    }
+
     /// Resolves the Bearer token for a request based on its ``FrameAuthMode``.
     ///
     /// While an onboarding session is active (see ``beginOnboardingSession(clientSecret:)``), the
@@ -169,17 +175,26 @@ public class FrameNetworking: ObservableObject {
             return token
         }
 
-        // During onboarding, every request is authenticated by the onboarding-session token.
+        // An explicit publishable-key request also wins over the onboarding session: endpoints like
+        // terms_of_service and device_attestation are merchant-level (not account-scoped) and the
+        // backend only accepts a pk_ there — sending the onb_sess_ token would be rejected with
+        // "Client secret is not permitted for this endpoint." Callers opt in via `auth: .publishable`.
+        if case .publishable = auth {
+            if apiPublishableKey.isEmpty {
+                warnOnce(&hasMissingPublishableKeyWarned,
+                         "⚠️ Frame: a client-safe request was made but no publishable key (pk_) is configured. Call initialize(publishableKey:) first.")
+            }
+            return apiPublishableKey
+        }
+
+        // During onboarding, every other request is authenticated by the onboarding-session token.
         if let onboardingSessionToken {
             return onboardingSessionToken
         }
 
         switch auth {
         case .publishable:
-            if apiPublishableKey.isEmpty {
-                warnOnce(&hasMissingPublishableKeyWarned,
-                         "⚠️ Frame: a client-safe request was made but no publishable key (pk_) is configured. Call initialize(publishableKey:) first.")
-            }
+            // Handled by the early return above; unreachable here.
             return apiPublishableKey
         case .secret:
             // A secret key actually leaving the device on a live request is the most actionable
@@ -240,6 +255,9 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
         if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        if let acceptHeader = endpoint.acceptHeader {
+            urlRequest.setValue(acceptHeader, forHTTPHeaderField: "Accept")
         }
 
         urlRequest.httpBody = requestBody
@@ -347,6 +365,9 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpMethod = endpoint.httpMethod.rawValue
         if endpoint.httpMethod == .POST || endpoint.httpMethod == .PATCH {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        if let acceptHeader = endpoint.acceptHeader {
+            urlRequest.setValue(acceptHeader, forHTTPHeaderField: "Accept")
         }
 
         urlRequest.httpBody = requestBody

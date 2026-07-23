@@ -18,12 +18,34 @@ protocol OnboardingSessionsProtocol {
 
 /// Creates onboarding sessions in the Frame SDK.
 ///
-/// - Warning: Creating an onboarding session is a **server-only** operation. It authenticates with
-///   your secret key (`sk_`), which must never ship inside an app binary. This API is provided so
-///   the example app can mint a session token for end-to-end testing — it is **not** the intended
-///   production path. Production integrations mint the `onb_sess_…` token from their backend
-///   (`POST /v1/onboarding_sessions`) and hand it to ``OnboardingContainerView`` as its `clientSecret`.
+/// - Note: `POST /v1/onboarding_sessions` accepts a **publishable key** (`pk_`), so the onboarding
+///   flow can mint its own account-scoped session on-device without a secret key — see
+///   ``createOnboardingSessionWithPublishableKey(request:)``. The public
+///   ``createOnboardingSession(request:)`` methods below default to the configured key (typically
+///   `sk_` in the example app) and remain for backward compatibility; production integrations that
+///   mint from their own backend hand the resulting `onb_sess_…` to ``OnboardingContainerView`` as
+///   its `clientSecret`.
 public class OnboardingSessionsAPI: OnboardingSessionsProtocol, @unchecked Sendable {
+
+    /// Mints an onboarding session using the SDK's **publishable key** (`pk_`), the client-safe
+    /// credential accepted by `POST /v1/onboarding_sessions`. The onboarding flow calls this to
+    /// bind itself to a freshly-created account so subsequent requests (e.g. IDV) authenticate as
+    /// the session rather than falling back to the configured key. Not deprecated — unlike the
+    /// public `createOnboardingSession(request:)`, this never sends a secret key.
+    ///
+    /// - Parameter request: The request body specifying the account and onboarding steps.
+    /// - Returns: A tuple containing the decoded onboarding session and any networking error encountered.
+    public static func createOnboardingSessionWithPublishableKey(request: OnboardingSessionRequest.CreateOnboardingSessionRequest) async throws -> (OnboardingSessionResponses.OnboardingSession?, NetworkingError?) {
+        let endpoint = OnboardingSessionEndpoints.createOnboardingSession
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(OnboardingSessionResponses.OnboardingSession.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
 
     //MARK: Methods using async/await
 

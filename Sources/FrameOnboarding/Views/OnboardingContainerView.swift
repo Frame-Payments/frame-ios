@@ -172,10 +172,6 @@ public struct OnboardingContainerView: View {
             // lifetime of the flow, so calls authenticate per-account instead of with a secret key.
             if let onboardingClientSecret {
                 FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
-            } else {
-                print("⚠️ Frame: onboarding launched without a clientSecret. Requests will fall back to the "
-                      + "configured pk_/sk_ keys, which are not scoped to a single account. Mint an onboarding-session "
-                      + "token from your backend (POST /v1/onboarding_sessions) and pass it as the clientSecret.")
             }
             if !showIntroScreen {
                 self.startedOnboarding = true
