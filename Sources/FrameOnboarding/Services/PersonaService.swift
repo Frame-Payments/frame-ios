@@ -64,9 +64,14 @@ public final class PersonaService: NSObject, @unchecked Sendable {
         }
     }
 
-    private func release() {
+    /// Reads and clears the one-time resume, then releases the retained inquiry. Must run on the
+    /// main actor — `inquiry` and `once` are only ever set on the main actor in ``start(from:)``.
+    @MainActor
+    private func consumeResume() -> PersonaOneTimeResume? {
+        let resume = once
         inquiry = nil
         once = nil
+        return resume
     }
 }
 
@@ -76,6 +81,10 @@ extension PersonaService: InquiryDelegate {
     /// Called by the Persona SDK when the user finishes the inquiry flow. Resumes with
     /// ``PersonaInquiryOutcome/completed(inquiryId:status:)``.
     ///
+    /// The Persona SDK invokes its delegate on the main thread; `MainActor.assumeIsolated` makes
+    /// that guarantee explicit so the mutable `inquiry`/`once` state is touched only on the main
+    /// actor. `PersonaOneTimeResume` additionally guards against a double-resume.
+    ///
     /// - Important: `status` is best-effort and NOT authoritative for verification; confirm with
     ///   the Frame backend before treating the applicant as verified.
     /// - Parameters:
@@ -83,9 +92,9 @@ extension PersonaService: InquiryDelegate {
     ///   - status: Persona's best-effort client-side status string.
     ///   - fields: Field values collected during the inquiry.
     public func inquiryComplete(inquiryId: String, status: String, fields: [String: InquiryField]) {
-        let resume = once
-        release()
-        resume?.resume(with: .success(.completed(inquiryId: inquiryId, status: status)))
+        MainActor.assumeIsolated {
+            consumeResume()?.resume(with: .success(.completed(inquiryId: inquiryId, status: status)))
+        }
     }
 
     /// Called by the Persona SDK when the user cancels the inquiry. Resumes with
@@ -94,17 +103,17 @@ extension PersonaService: InquiryDelegate {
     ///   - inquiryId: The canceled inquiry's identifier, if one had been created.
     ///   - sessionToken: The session token for the canceled inquiry, if any.
     public func inquiryCanceled(inquiryId: String?, sessionToken: String?) {
-        let resume = once
-        release()
-        resume?.resume(with: .success(.canceled(inquiryId: inquiryId)))
+        MainActor.assumeIsolated {
+            consumeResume()?.resume(with: .success(.canceled(inquiryId: inquiryId)))
+        }
     }
 
     /// Called by the Persona SDK when the inquiry errors. Resumes by throwing `error`.
     /// - Parameter error: The error reported by the Persona SDK.
     public func inquiryError(_ error: Error) {
-        let resume = once
-        release()
-        resume?.resume(with: .failure(error))
+        MainActor.assumeIsolated {
+            consumeResume()?.resume(with: .failure(error))
+        }
     }
 }
 

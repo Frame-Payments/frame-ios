@@ -500,10 +500,13 @@ class OnboardingContainerViewModel: ObservableObject {
         defer { endAction() }
 
         do {
-            // 1. Server pre-creates the Persona inquiry and returns its id.
+            // 1. Server pre-creates the Persona inquiry and returns its id. On error, surface the
+            //    toast and stop — don't launch Persona against a possibly-invalid inquiry.
             let (session, sessionError) = try await IdentityVerificationAPI.createSession()
-            reportError(sessionError)
-            guard let inquiryId = session?.inquiryId else { return }
+            guard sessionError == nil, let inquiryId = session?.inquiryId else {
+                reportError(sessionError)
+                return
+            }
 
             // 2. Launch the Persona SDK against the pre-created inquiry.
             let service = PersonaService(inquiryId: inquiryId)
@@ -518,15 +521,29 @@ class OnboardingContainerViewModel: ObservableObject {
             //    error response decodes to nil (endpoint may not exist yet, FRA-5363); treat that
             //    as pending rather than verified.
             let (completion, completeError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
-            reportError(completeError)
+            guard completeError == nil else {
+                reportError(completeError)
+                return
+            }
             if completion?.verified == true {
                 self.personaInquiryId = inquiryId
                 self.identityVerifiedViaGovId = true
+            } else {
+                // The Persona flow finished but the backend didn't confirm verification (declined
+                // or still pending). Tell the applicant so they can retry or enter an SSN instead.
+                FrameToastCenter.shared.show("We couldn't verify your identity. Please try again or enter your Social Security Number.")
             }
         } catch let error {
             self.personaService = nil
             print(error)
         }
+    }
+
+    /// Clears the government-ID verified state so the applicant can re-enter an SSN or re-run
+    /// verification. Restores the SSN row and the "I don't have a social security number" button.
+    func resetIdentityVerification() {
+        identityVerifiedViaGovId = false
+        personaInquiryId = nil
     }
 
     // Start 3DS process with select payment method

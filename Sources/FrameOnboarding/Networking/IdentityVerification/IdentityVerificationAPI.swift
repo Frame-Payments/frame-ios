@@ -46,6 +46,10 @@ public final class IdentityVerificationAPI: IdentityVerificationProtocol, @unche
     /// the Persona client callbacks are best-effort only. A non-JSON or error response decodes to
     /// `nil`, which callers should treat as "pending / not yet verified" rather than a failure.
     ///
+    /// - Important: The returned `NetworkingError` and `IDVCompleteResponse` are independent — a
+    ///   response body may decode even on an error status. Callers must check the error first and
+    ///   only trust `verified` when the error is `nil` (see ``OnboardingContainerViewModel``).
+    ///
     /// - Parameter inquiryId: The Persona inquiry identifier returned by ``createSession()``.
     /// - Returns: A tuple containing the decoded ``IDVCompleteResponse`` on success, or a ``NetworkingError`` on failure.
     static func complete(inquiryId: String) async throws -> (IDVCompleteResponse?, NetworkingError?) {

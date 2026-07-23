@@ -60,8 +60,9 @@ struct AddPayoutMethodView: View {
             VStack(alignment: .leading, spacing: 16) {
                 ContinueButton(buttonText: "Connect Bank Account",
                                isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+                    guard let presenter = UIApplication.shared.topViewController else { return }
                     Task {
-                        await onboardingContainerViewModel.openPlaidLink(from: topViewController()) {
+                        await onboardingContainerViewModel.openPlaidLink(from: presenter) {
                             self.dismiss()
                         }
                     }
@@ -98,18 +99,6 @@ struct AddPayoutMethodView: View {
                 }
             }
         }
-    }
-
-    private func topViewController() -> UIViewController {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let root = windowScene.windows.first?.rootViewController else {
-            return UIViewController()
-        }
-        var top = root
-        while let presented = top.presentedViewController {
-            top = presented
-        }
-        return top
     }
 }
 

@@ -232,7 +232,7 @@ public struct CustomerInformationView: View {
         ContinueButton(buttonText: "I don't have a social security number",
                        style: .secondary,
                        isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
-            let presenter = topViewController()
+            guard let presenter = UIApplication.shared.topViewController else { return }
             Task {
                 await onboardingContainerViewModel.verifyIdentityWithoutSsn(from: presenter)
             }
@@ -259,23 +259,15 @@ public struct CustomerInformationView: View {
                         .font(theme.fonts.label)
                         .foregroundColor(theme.colors.textPrimary)
                     Spacer()
+                    Button("Use SSN instead") {
+                        onboardingContainerViewModel.resetIdentityVerification()
+                    }
+                    .font(theme.fonts.caption)
+                    .foregroundColor(theme.colors.textSecondary)
                 }
                 .padding(.horizontal)
             }
             .padding(.horizontal)
-    }
-
-    /// Returns the top-most presented view controller, used to present the Persona SDK UI.
-    private func topViewController() -> UIViewController {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let root = windowScene.windows.first?.rootViewController else {
-            return UIViewController()
-        }
-        var top = root
-        while let presented = top.presentedViewController {
-            top = presented
-        }
-        return top
     }
 }
 
