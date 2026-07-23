@@ -536,6 +536,18 @@ class OnboardingContainerViewModel: ObservableObject {
                 return
             }
 
+            // 1a. Pre-existing accounts may already have an approved inquiry. An approved inquiry is
+            //     terminal — the Persona SDK can't open a session on it and errors out. Ask the
+            //     backend first (it reads status from Persona's API, which works on terminal
+            //     inquiries); if already verified, skip Persona entirely. A nil/false result means
+            //     not-yet-verified, so fall through and run the Persona flow as normal.
+            let (existing, existingError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
+            if existingError == nil, existing?.verified == true {
+                self.personaInquiryId = inquiryId
+                self.identityVerifiedViaGovId = true
+                return
+            }
+
             // 2. Launch the Persona SDK against the pre-created inquiry.
             let service = PersonaService(inquiryId: inquiryId)
             self.personaService = service
