@@ -221,6 +221,16 @@ public struct OnboardingContainerView: View {
         }
         .frameToastOverlay()
         .onDisappear {
+            // A UIKit SDK presenting over the container (Persona's government-ID capture,
+            // Plaid Link) covers this view and fires .onDisappear even though onboarding is
+            // still active. Treating that as a dismissal ends the flow mid-verification —
+            // and for hosts that pass an onResult (the React Native bridge), the spurious
+            // .cancelled also tears the sheet down while the other SDK is still on screen.
+            //
+            // Those flows all run inside beginAction()/endAction(), so isPerformingAction
+            // distinguishes "covered by a child flow" from "the user actually dismissed us".
+            guard !onboardingContainerViewModel.isPerformingAction else { return }
+
             // End the onboarding session so later SDK calls revert to pk_/sk_ authentication.
             // Only clear it when this view actually began one, so a legacy (clientSecret == nil)
             // container dismissing doesn't wipe a session another flow may have started.
