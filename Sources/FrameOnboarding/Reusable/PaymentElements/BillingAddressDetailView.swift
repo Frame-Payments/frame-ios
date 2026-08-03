@@ -65,22 +65,26 @@ public struct BillingAddressDetailView: View {
                         ValidatedTextField(prompt: "Address Line 1",
                                            text: $viewModel.address.addressLine1.orEmpty,
                                            error: viewModel.errorBinding(.line1),
+                                           textContentType: .streetAddressLine1,
                                            inlineError: true)
                         Divider()
                         ValidatedTextField(prompt: "Address Line 2",
                                            text: $viewModel.address.addressLine2.orEmpty,
                                            error: .constant(nil),
+                                           textContentType: .streetAddressLine2,
                                            inlineError: true)
                         Divider()
                         HStack {
                             ValidatedTextField(prompt: "City",
                                                text: $viewModel.address.city.orEmpty,
                                                error: viewModel.errorBinding(.city),
+                                               textContentType: .addressCity,
                                                inlineError: true)
                             Divider()
                             ValidatedTextField(prompt: format.stateLabel,
                                                text: $viewModel.address.state.orEmpty,
                                                error: viewModel.errorBinding(.state),
+                                               textContentType: .addressState,
                                                characterLimit: format.stateMaxLength,
                                                inlineError: true)
                         }
@@ -90,6 +94,7 @@ public struct BillingAddressDetailView: View {
                                            text: $viewModel.address.postalCode,
                                            error: viewModel.errorBinding(.postal),
                                            keyboardType: format.postalKeyboard,
+                                           textContentType: .postalCode,
                                            characterLimit: allowsInternational ? nil : 5,
                                            inlineError: true)
                         if allowsInternational {

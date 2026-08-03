@@ -226,6 +226,7 @@ struct UserIdentificationView: View {
                                                text: $onboardingContainerViewModel.authBirthMonth,
                                                error: onboardingContainerViewModel.errorBinding(.authBirthMonth),
                                                keyboardType: .numberPad,
+                                               textContentType: .birthdateMonth,
                                                characterLimit: 2,
                                                compactError: true)
                             Divider()
@@ -233,6 +234,7 @@ struct UserIdentificationView: View {
                                                text: $onboardingContainerViewModel.authBirthDay,
                                                error: onboardingContainerViewModel.errorBinding(.authBirthDay),
                                                keyboardType: .numberPad,
+                                               textContentType: .birthdateDay,
                                                characterLimit: 2,
                                                compactError: true)
                             Divider()
@@ -240,6 +242,7 @@ struct UserIdentificationView: View {
                                                text: $onboardingContainerViewModel.authBirthYear,
                                                error: onboardingContainerViewModel.errorBinding(.authBirthYear),
                                                keyboardType: .numberPad,
+                                               textContentType: .birthdateYear,
                                                characterLimit: 4,
                                                compactError: true)
                         }

@@ -69,11 +69,13 @@ public struct CustomerInformationView: View {
                             ValidatedTextField(prompt: "First Name",
                                                text: $viewModel.identity.firstName,
                                                error: viewModel.errorBinding(.firstName),
+                                               textContentType: .givenName,
                                                inlineError: true)
                             Divider()
                             ValidatedTextField(prompt: "Last Name",
                                                text: $viewModel.identity.lastName,
                                                error: viewModel.errorBinding(.lastName),
+                                               textContentType: .familyName,
                                                inlineError: true)
                         }
                         .frame(height: 49.0)
@@ -82,6 +84,7 @@ public struct CustomerInformationView: View {
                                            text: $viewModel.identity.email,
                                            error: viewModel.errorBinding(.email),
                                            keyboardType: .emailAddress,
+                                           textContentType: .emailAddress,
                                            inlineError: true)
                         Divider()
                         PhoneNumberTextField(prompt: "Phone Number",
@@ -170,6 +173,7 @@ public struct CustomerInformationView: View {
                                        text: $birthMonth,
                                        error: viewModel.errorBinding(.birthMonth),
                                        keyboardType: .numberPad,
+                                       textContentType: .birthdateMonth,
                                        characterLimit: 2,
                                        compactError: true)
                     Divider()
@@ -177,6 +181,7 @@ public struct CustomerInformationView: View {
                                        text: $birthDay,
                                        error: viewModel.errorBinding(.birthDay),
                                        keyboardType: .numberPad,
+                                       textContentType: .birthdateDay,
                                        characterLimit: 2,
                                        compactError: true)
                     Divider()
@@ -184,6 +189,7 @@ public struct CustomerInformationView: View {
                                        text: $birthYear,
                                        error: viewModel.errorBinding(.birthYear),
                                        keyboardType: .numberPad,
+                                       textContentType: .birthdateYear,
                                        characterLimit: 4,
                                        compactError: true)
                 }
