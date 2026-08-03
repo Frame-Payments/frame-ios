@@ -19,11 +19,6 @@ import XCTest
 
 /// A `URLSessionProtocol` mock that records the most recent request so tests can inspect
 /// the `Authorization` header the SDK produced.
-///
-/// `initialize()` spawns background requests (Sonar session, device attestation, Evervault
-/// config) that flow through this mock concurrently with the request under test, so all
-/// mutable state is guarded by a lock — an unsynchronized `Array.append` here can drop the
-/// test's own request under CI load and fail the assertion with a `nil` header.
 final class HeaderCapturingAsyncSession: URLSessionProtocol, @unchecked Sendable {
     private let lock = NSLock()
     private var _requests: [URLRequest] = []
