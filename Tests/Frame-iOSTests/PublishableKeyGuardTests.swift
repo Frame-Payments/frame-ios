@@ -19,20 +19,39 @@ import XCTest
 
 /// A `URLSessionProtocol` mock that records the most recent request so tests can inspect
 /// the `Authorization` header the SDK produced.
+///
+/// `initialize()` spawns background requests (Sonar session, device attestation, Evervault
+/// config) that flow through this mock concurrently with the request under test, so all
+/// mutable state is guarded by a lock — an unsynchronized `Array.append` here can drop the
+/// test's own request under CI load and fail the assertion with a `nil` header.
 final class HeaderCapturingAsyncSession: URLSessionProtocol, @unchecked Sendable {
-    private(set) var requests: [URLRequest] = []
-    var data: Data?
-    var response: URLResponse?
+    private let lock = NSLock()
+    private var _requests: [URLRequest] = []
+    private var _data: Data?
+    private var _response: URLResponse?
+
+    var requests: [URLRequest] { lock.withLock { _requests } }
+    var data: Data? {
+        get { lock.withLock { _data } }
+        set { lock.withLock { _data = newValue } }
+    }
+    var response: URLResponse? {
+        get { lock.withLock { _response } }
+        set { lock.withLock { _response = newValue } }
+    }
 
     init(data: Data? = Data("{}".utf8),
          response: URLResponse? = HTTPURLResponse(url: URL(string: "https://api.framepayments.com")!,
                                                   statusCode: 200, httpVersion: nil, headerFields: nil)) {
-        self.data = data
-        self.response = response
+        self._data = data
+        self._response = response
     }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-        requests.append(request)
+        let (data, response): (Data?, URLResponse?) = lock.withLock {
+            _requests.append(request)
+            return (_data, _response)
+        }
         guard let data, let response else { throw URLError(.badServerResponse) }
         return (data, response)
     }
