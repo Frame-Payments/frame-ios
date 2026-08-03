@@ -251,12 +251,14 @@ public struct FrameCheckoutView: View {
         VStack(spacing: 0) {
             ValidatedTextField(prompt: "Customer Name",
                                text: $checkoutViewModel.customerName,
-                               error: errorBinding(.name))
+                               error: errorBinding(.name),
+                               textContentType: .name)
             Divider()
             ValidatedTextField(prompt: "Customer Email",
                                text: $checkoutViewModel.customerEmail,
                                error: errorBinding(.email),
-                               keyboardType: .emailAddress)
+                               keyboardType: .emailAddress,
+                               textContentType: .emailAddress)
         }
         .background(
             RoundedRectangle(cornerRadius: theme.radii.medium)
@@ -277,19 +279,23 @@ public struct FrameCheckoutView: View {
         VStack(spacing: 0) {
             ValidatedTextField(prompt: "Address Line 1",
                                text: $checkoutViewModel.customerAddressLine1,
-                               error: errorBinding(.addressLine1))
+                               error: errorBinding(.addressLine1),
+                               textContentType: .streetAddressLine1)
             Divider()
             ValidatedTextField(prompt: "Address Line 2",
                                text: $checkoutViewModel.customerAddressLine2,
-                               error: .constant(nil))
+                               error: .constant(nil),
+                               textContentType: .streetAddressLine2)
             Divider()
             HStack(spacing: 0) {
                 ValidatedTextField(prompt: "City",
                                    text: $checkoutViewModel.customerCity,
-                                   error: errorBinding(.city))
+                                   error: errorBinding(.city),
+                                   textContentType: .addressCity)
                 ValidatedTextField(prompt: "State",
                                    text: $checkoutViewModel.customerState,
                                    error: errorBinding(.state),
+                                   textContentType: .addressState,
                                    characterLimit: 2)
             }
             Divider()
@@ -318,6 +324,7 @@ public struct FrameCheckoutView: View {
                                text: $checkoutViewModel.customerZipCode,
                                error: errorBinding(.zip),
                                keyboardType: .numberPad,
+                               textContentType: .postalCode,
                                characterLimit: 5)
         }
         .background(

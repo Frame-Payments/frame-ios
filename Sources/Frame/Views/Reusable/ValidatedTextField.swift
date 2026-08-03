@@ -19,6 +19,7 @@ public struct ValidatedTextField: View {
     @Binding var error: String?
 
     private var keyboardType: UIKeyboardType
+    private var textContentType: UITextContentType?
     private var characterLimit: Int?
     private var compactError: Bool
     private var errorSpacing: CGFloat
@@ -31,6 +32,7 @@ public struct ValidatedTextField: View {
     ///   - text: Two-way binding to the current field value.
     ///   - error: Two-way binding to an optional validation error message; the field clears this automatically when the user types.
     ///   - keyboardType: The keyboard style to present. Defaults to `.default`.
+    ///   - textContentType: Semantic hint used by the system to offer QuickType/Contacts autofill (e.g. `.postalCode`). Pass `nil` to disable.
     ///   - characterLimit: Maximum number of characters allowed. Input beyond this limit is silently truncated. Pass `nil` for no limit.
     ///   - compactError: When `true`, the error label is suppressed and no extra vertical space is reserved for it.
     ///   - inlineError: When `true`, the error label is placed to the right of the field in a horizontal stack rather than below it.
@@ -39,6 +41,7 @@ public struct ValidatedTextField: View {
                 text: Binding<String>,
                 error: Binding<String?>,
                 keyboardType: UIKeyboardType = .default,
+                textContentType: UITextContentType? = nil,
                 characterLimit: Int? = nil,
                 compactError: Bool = false,
                 inlineError: Bool = false,
@@ -47,6 +50,7 @@ public struct ValidatedTextField: View {
         self._text = text
         self._error = error
         self.keyboardType = keyboardType
+        self.textContentType = textContentType
         self.characterLimit = characterLimit
         self.compactError = compactError
         self.inlineError = inlineError
@@ -61,6 +65,7 @@ public struct ValidatedTextField: View {
                     TextField("", text: $text, prompt: Text(prompt))
                         .font(theme.fonts.body)
                         .keyboardType(keyboardType)
+                        .textContentType(textContentType)
                         .frame(height: 49.0)
                         .padding(.horizontal)
                         .onChange(of: text) { _, newValue in
@@ -80,6 +85,7 @@ public struct ValidatedTextField: View {
                 TextField("", text: $text, prompt: Text(prompt))
                     .font(theme.fonts.body)
                     .keyboardType(keyboardType)
+                    .textContentType(textContentType)
                     .frame(height: 49.0)
                     .padding(.horizontal)
                     .onChange(of: text) { _, newValue in
