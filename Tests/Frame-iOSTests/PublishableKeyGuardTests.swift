@@ -20,19 +20,33 @@ import XCTest
 /// A `URLSessionProtocol` mock that records the most recent request so tests can inspect
 /// the `Authorization` header the SDK produced.
 final class HeaderCapturingAsyncSession: URLSessionProtocol, @unchecked Sendable {
-    private(set) var requests: [URLRequest] = []
-    var data: Data?
-    var response: URLResponse?
+    private let lock = NSLock()
+    private var _requests: [URLRequest] = []
+    private var _data: Data?
+    private var _response: URLResponse?
+
+    var requests: [URLRequest] { lock.withLock { _requests } }
+    var data: Data? {
+        get { lock.withLock { _data } }
+        set { lock.withLock { _data = newValue } }
+    }
+    var response: URLResponse? {
+        get { lock.withLock { _response } }
+        set { lock.withLock { _response = newValue } }
+    }
 
     init(data: Data? = Data("{}".utf8),
          response: URLResponse? = HTTPURLResponse(url: URL(string: "https://api.framepayments.com")!,
                                                   statusCode: 200, httpVersion: nil, headerFields: nil)) {
-        self.data = data
-        self.response = response
+        self._data = data
+        self._response = response
     }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-        requests.append(request)
+        let (data, response): (Data?, URLResponse?) = lock.withLock {
+            _requests.append(request)
+            return (_data, _response)
+        }
         guard let data, let response else { throw URLError(.badServerResponse) }
         return (data, response)
     }
