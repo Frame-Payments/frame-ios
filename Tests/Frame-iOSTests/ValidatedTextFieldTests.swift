@@ -35,9 +35,6 @@ final class ValidatedTextFieldTests: XCTestCase {
         XCTAssertEqual(storedTextContentType(from: field), .addressState)
     }
 
-    // SwiftUI doesn't expose applied modifier values, so this reads the
-    // stored property directly. Contract: the init argument reaches the
-    // property that `body` hands to `.textContentType(_:)`.
     private func storedTextContentType(from field: ValidatedTextField) -> UITextContentType? {
         Mirror(reflecting: field).descendant("textContentType") as? UITextContentType
     }
