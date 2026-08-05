@@ -14,6 +14,7 @@ protocol ConfigurationProtocol {
     static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?
     static func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?
     static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?
+    static func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?
 }
 
 /// Keys used to identify configuration entries stored in the keychain.
@@ -24,6 +25,7 @@ enum ConfigurationKeys: String {
     case fingerprint
     /// Key for the Sift fraud-detection configuration.
     case sift
+    case legal
 }
 
 /// Manages SDK configuration resources, including fetching and caching third-party service
@@ -81,6 +83,17 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         }
     }
     
+    public static func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse? {
+        let endpoint = ConfigurationEndpoints.getLegalConfiguration
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetLegalConfigurationResponse.self, from: data) {
+            ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.legal.rawValue, value: decodedResponse)
+            return decodedResponse
+        } else {
+            return nil
+        }
+    }
+
     /// Encodes a `Codable` value and writes (or updates) it in the system keychain under the given key.
     ///
     /// - Parameters:

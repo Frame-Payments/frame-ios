@@ -91,6 +91,7 @@ public class FrameNetworking: ObservableObject {
         Task {
             await SiftManager.initializeSift()
             await SessionManager.initializeSession()
+            await LegalConfiguration.prefetch()
             _ = try? await DeviceAttestationManager.shared.attestDevice()
         }
 

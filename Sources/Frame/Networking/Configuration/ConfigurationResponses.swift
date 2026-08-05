@@ -47,4 +47,18 @@ public class ConfigurationResponses {
             case beaconKey = "beacon_key"
         }
     }
+
+    public struct GetLegalConfigurationResponse: Codable {
+        let privacyUrl: String?
+        let termsUrl: String?
+        let platformAgreementUrl: String?
+        let cbcTermsAndConditions: String?
+
+        enum CodingKeys: String, CodingKey {
+            case privacyUrl = "privacy_url"
+            case termsUrl = "terms_url"
+            case platformAgreementUrl = "platform_agreement_url"
+            case cbcTermsAndConditions = "cbc_terms_and_conditions"
+        }
+    }
 }

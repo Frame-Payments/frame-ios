@@ -16,10 +16,6 @@ import Frame
 public struct TermsOfServiceView: View {
     @Environment(\.frameTheme) private var theme
 
-    // Public configurable URLs (default to placeholders if not provided)
-    @State private var privacyPolicyURL: URL = URL(string: "https://framepayments.com/legal/privacy")!
-    @State private var termsOfServiceURL: URL = URL(string: "https://framepayments.com/legal/terms")!
-
     /// The horizontal alignment applied to the consent text and its containing frame.
     public var alignment: Alignment = .center
     /// When `true`, the view is wrapped in a rounded-rectangle surface with a stroke border.
@@ -30,20 +26,16 @@ public struct TermsOfServiceView: View {
         let linkColor = UIColor(theme.colors.primaryButton)
 
         var result = AttributedString("By clicking continue, you agree to the terms of Frame's ")
-        // Append Privacy Policy link
         var privacy = AttributedString("Privacy Policy")
-        privacy.link = privacyPolicyURL
+        privacy.link = LegalConfiguration.privacyURL
         privacy.font = linkFont
         privacy.foregroundColor = linkColor
         result.append(privacy)
 
-        // Append connector text
-        let andText = AttributedString(" and ")
-        result.append(andText)
+        result.append(AttributedString(" and "))
 
-        // Append Terms of Service link
         var terms = AttributedString("Terms of Service")
-        terms.link = termsOfServiceURL
+        terms.link = LegalConfiguration.termsURL
         terms.font = linkFont
         terms.foregroundColor = linkColor
         result.append(terms)
