@@ -10,7 +10,7 @@ public enum LegalConfiguration {
     private static let fallbackPrivacyURL = URL(string: "https://framepayments.com/legal/privacy")!
     private static let fallbackTermsURL = URL(string: "https://framepayments.com/legal/terms")!
     private static let fallbackPlatformAgreementURL = URL(string: "https://framepayments.com/legal/platform-agreement")!
-    private static let fallbackCBCTermsURL = URL(string: "https://framepayments.com/legal/cbc-terms")!
+    private static let fallbackCBCTermsURL = URL(string: "https://framepayments.com/legal/cbc-terms-and-conditions")!
 
     static func prefetch() async {
         _ = try? await ConfigurationAPI.getLegalConfiguration()
