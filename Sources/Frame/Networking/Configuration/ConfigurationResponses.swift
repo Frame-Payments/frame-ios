@@ -48,6 +48,8 @@ public class ConfigurationResponses {
         }
     }
 
+    /// Decoded response containing Frame's legal document URLs (Privacy Policy, Terms of Service,
+    /// Platform Agreement, and Card-Based Cash Terms & Conditions) returned by the configuration endpoint.
     public struct GetLegalConfigurationResponse: Codable {
         let privacyUrl: String?
         let termsUrl: String?
