@@ -17,8 +17,8 @@ public struct TermsOfServiceView: View {
     @Environment(\.frameTheme) private var theme
 
     // Public configurable URLs (default to placeholders if not provided)
-    @State private var privacyPolicyURL: URL = URL(string: "https://framepayments.com/privacy")!
-    @State private var termsOfServiceURL: URL = URL(string: "https://framepayments.com/terms")!
+    @State private var privacyPolicyURL: URL = URL(string: "https://framepayments.com/legal/privacy")!
+    @State private var termsOfServiceURL: URL = URL(string: "https://framepayments.com/legal/terms")!
 
     /// The horizontal alignment applied to the consent text and its containing frame.
     public var alignment: Alignment = .center
