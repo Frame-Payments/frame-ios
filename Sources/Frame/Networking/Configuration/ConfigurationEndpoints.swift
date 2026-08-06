@@ -12,6 +12,7 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
     case getEvervaultConfiguration
     case getFingerprintConfiguration
     case getSiftConfiguration
+    case getLegalConfiguration
 
     var endpointURL: String {
         switch self {
@@ -21,6 +22,8 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
             return "/v1/config/fingerprint"
         case .getSiftConfiguration:
             return "/v1/config/sift"
+        case .getLegalConfiguration:
+            return "/v1/config/legal"
         }
     }
     

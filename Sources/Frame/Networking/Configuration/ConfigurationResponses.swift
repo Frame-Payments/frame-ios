@@ -47,4 +47,20 @@ public class ConfigurationResponses {
             case beaconKey = "beacon_key"
         }
     }
+
+    /// Decoded response containing Frame's legal document URLs (Privacy Policy, Terms of Service,
+    /// Platform Agreement, and Card-Based Cash Terms & Conditions) returned by the configuration endpoint.
+    public struct GetLegalConfigurationResponse: Codable {
+        let privacyUrl: String?
+        let termsUrl: String?
+        let platformAgreementUrl: String?
+        let cbcTermsAndConditions: String?
+
+        enum CodingKeys: String, CodingKey {
+            case privacyUrl = "privacy_url"
+            case termsUrl = "terms_url"
+            case platformAgreementUrl = "platform_agreement_url"
+            case cbcTermsAndConditions = "cbc_terms_and_conditions"
+        }
+    }
 }
