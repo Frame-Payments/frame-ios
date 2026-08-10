@@ -622,6 +622,7 @@ Each capability maps to one or more onboarding steps. Duplicate steps are automa
 |---|---|---|
 | `.kyc` | Personal Information | Name, email, phone, DOB, SSN, address |
 | `.kycPrefill` | Personal Information | Same as above, with Prove prefill |
+| `.idv` | Personal Information | Government-issued photo ID, verified via Persona after the form is submitted | Upload Documents | Government ID + selfie |
 | `.ageVerification` | Personal Information | Date of birth |
 | `.phoneVerification` | Personal Information | Phone number + OTP verification |
 | `.creatorShield` | Personal Information | Full identity details |
@@ -633,7 +634,6 @@ Each capability maps to one or more onboarding steps. Duplicate steps are automa
 | `.bankAccountSend` | Confirm Payout Method | Bank account for payouts |
 | `.bankAccountReceive` | Confirm Payout Method | Bank account for deposits |
 | `.geoCompliance` | Geolocation Verification | Location + VPN detection |
-| *(any other capability)* | Upload Documents | Government ID + selfie |
 
 ### Onboarding Steps
 

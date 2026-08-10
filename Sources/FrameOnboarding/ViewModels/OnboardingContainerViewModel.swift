@@ -101,6 +101,17 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
             reportError(error)
+
+            // A previously completed government-ID verification leaves the idv capability active.
+            // Seed the session flag so the applicant isn't asked to verify a second time. Read
+            // before the profile guard below: capabilities aren't PII-gated, but `profile` is
+            // withheld unless the request carries a secret key or a matching onboarding session,
+            // so a legacy publishable-key host would otherwise never reach this.
+            if account?.capabilities?.contains(where: { $0.name == FrameObjects.Capabilities.idv.rawValue
+                                                        && $0.status == "active" }) == true {
+                self.identityVerifiedViaGovId = true
+            }
+
             guard let profile = account?.profile?.individual else { return }
             let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
                                                              state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
@@ -113,7 +124,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                  ssn: profile.ssnLastFour ?? "",
                                                                                                  address: profileAddress)
             self.existingAccountHasTOS = account?.termsOfService?.acceptedAt != nil
-            
+
             guard updateCapabilies else { return }
             if let capabilities = account?.capabilities {
                 let accountCapabilities = capabilities.compactMap({ FrameObjects.Capabilities(rawValue: $0.name) })
@@ -137,9 +148,11 @@ class OnboardingContainerViewModel: ObservableObject {
         // Check to see which capabilites are completed, skip any that are not needed.
         accountCapabilities.forEach { capability in
             let requiredCapability = FrameObjects.Capabilities(rawValue: capability.name)
-            if capability.currentlyDue?.isEmpty == true {
-                self.requiredCapabilities.removeAll(where: { $0 == requiredCapability })
-            }
+            guard capability.currentlyDue?.isEmpty == true else { return }
+            // idv's requirement is event-driven and declares no field keys, so its currently_due is
+            // empty even before verification happens. Status is the only signal that it's satisfied.
+            if requiredCapability == .idv, capability.status != "active" { return }
+            self.requiredCapabilities.removeAll(where: { $0 == requiredCapability })
         }
         self.updateOnboardingFlow()
     }
@@ -176,8 +189,9 @@ class OnboardingContainerViewModel: ObservableObject {
     }
 
     // Create new individual account if no ID was previously provided to start onboarding.
-    func createIndividualAccount() async {
-        guard beginAction() else { return }
+    /// - Returns: The created account, or `nil` when the request failed.
+    func createIndividualAccount() async -> FrameObjects.Account? {
+        guard beginAction() else { return nil }
         defer { endAction() }
         do {
             let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
@@ -194,12 +208,14 @@ class OnboardingContainerViewModel: ObservableObject {
             let (account, error) = try await AccountsAPI.createAccount(request: request)
             reportError(error)
 
-            guard let account else { return }
+            guard let account else { return nil }
             self.accountId = account.id
             await beginOnboardingSessionIfNeeded()
+            return account
         } catch let error {
             print(error)
         }
+        return nil
     }
 
     func createEmptyIndividualAccount(phoneNumber: String, dateOfBirth: String) async {
@@ -228,9 +244,10 @@ class OnboardingContainerViewModel: ObservableObject {
     func createNewBusinessAccount() async { }
 
     // Update individual account if ID was provided at the start of onboarding.
-    func updateExistingIndividualAccount() async {
-        guard let accountId else { return }
-        guard beginAction() else { return }
+    /// - Returns: The updated account, or `nil` when the request failed.
+    func updateExistingIndividualAccount() async -> FrameObjects.Account? {
+        guard let accountId else { return nil }
+        guard beginAction() else { return nil }
         defer { endAction() }
 
         do {
@@ -245,10 +262,13 @@ class OnboardingContainerViewModel: ObservableObject {
             let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
-            _ = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
+            let (account, error) = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
+            reportError(error)
+            return account
         } catch let error {
             print(error)
         }
+        return nil
     }
 
     func generateTermsOfServiceToken() async {
@@ -514,6 +534,37 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
 
+    /// Submits the personal-information step, running government-ID verification first when the
+    /// `idv` capability requires it.
+    ///
+    /// `idv` declares no field keys, so a pending verification never shows up in `currently_due` —
+    /// the capability being required is itself the signal that Persona must run. Verification is
+    /// skipped when the applicant already verified this session or on a previous visit (see
+    /// `checkExistingAccount`, which seeds `identityVerifiedViaGovId` from an active idv capability).
+    ///
+    /// - Parameter viewController: The view controller to present the Persona UI from.
+    /// - Returns: `true` when the step is complete and the flow may advance.
+    func submitPersonalInformation(from viewController: UIViewController) async -> Bool {
+        let account = accountId == nil
+            ? await createIndividualAccount()
+            : await updateExistingIndividualAccount()
+
+        // Submission failed — the create/update path already surfaced a toast. Stay on the step
+        // rather than advancing past data the API never accepted.
+        guard account != nil else { return false }
+
+        guard requiredCapabilities.contains(.idv), !identityVerifiedViaGovId else { return true }
+
+        // Persona runs under its own beginAction() guard, which the submission above has released.
+        // Awaited back to back on the main actor so `isPerformingAction` is never observably false
+        // while Persona covers the container — see the cancel guard in OnboardingContainerView's
+        // .onDisappear.
+        await verifyIdentityWithoutSsn(from: viewController)
+
+        // Cancel, decline, pending, and error all leave the flag false and have already toasted.
+        return identityVerifiedViaGovId
+    }
+
     /// No-SSN identity verification: create a Persona inquiry server-side, present the Persona SDK
     /// against it, then confirm the result with the Frame backend.
     ///
@@ -554,8 +605,13 @@ class OnboardingContainerViewModel: ObservableObject {
             let outcome = try await service.start(from: viewController)
             self.personaService = nil
 
-            // A cancel is a normal, non-error exit — leave the applicant un-verified.
-            guard case .completed = outcome else { return }
+            // A cancel is a normal, non-error exit — leave the applicant un-verified. Every other
+            // exit from this method toasts, so say something here too: when verification is
+            // required, a silent return leaves the Continue button looking dead.
+            guard case .completed = outcome else {
+                FrameToastCenter.shared.show("Identity verification was cancelled.")
+                return
+            }
 
             // 3. Confirm with the backend — the authoritative verification result. A non-JSON or
             //    error response decodes to nil (endpoint may not exist yet, FRA-5363); treat that
@@ -576,6 +632,9 @@ class OnboardingContainerViewModel: ObservableObject {
         } catch let error {
             self.personaService = nil
             print(error)
+            // A throw here (Persona SDK failure, transport error) is otherwise invisible. When
+            // verification gates the step, the applicant needs to know why they can't continue.
+            FrameToastCenter.shared.show("We couldn't verify your identity. Please try again or enter your Social Security Number.")
         }
     }
 

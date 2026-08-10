@@ -45,10 +45,13 @@ public struct CustomerInformationView: View {
         self._headerTitle = State(initialValue: headerTitle)
     }
 
-    /// Whether the current onboarding flow requires KYC (which is what surfaces the SSN row and,
-    /// with it, the no-SSN government-ID verification affordance).
+    /// Whether to surface the no-SSN government-ID verification affordance: KYC is required and
+    /// `idv` isn't already verifying automatically.
     private var requiresKYC: Bool {
         let caps = onboardingContainerViewModel.requiredCapabilities
+        // With idv required, verification runs automatically after Continue, so the manual
+        // opt-out is redundant. The SSN row itself stays — kyc may be required alongside idv.
+        guard !caps.contains(.idv) else { return false }
         return caps.contains(.kyc) || caps.contains(.kycPrefill)
     }
 
