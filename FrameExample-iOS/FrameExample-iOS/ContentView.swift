@@ -21,6 +21,9 @@ struct ContentView: View {
     @Environment(\.frameTheme) var theme
 
     @State var showCheckoutView: Bool = false
+    @State var showAddPaymentMethodView: Bool = false
+    @State var showAddBankAccountView: Bool = false
+    
     @State var showCustomersView: Bool = false
     @State var showPaymentMethodsView: Bool = false
     @State var showSubscriptionsView: Bool = false
@@ -31,7 +34,7 @@ struct ContentView: View {
     @State var applePayResult: String? = nil
 
     // Replace with an accountID from your dashboard.
-    var accountId: String = "ENTER_AN_ACCOUNT_ID"
+    var accountId: String = "83f5c9f7-7dfe-4962-8ccd-92a0fbc1909e"
     
     var body: some View {
         VStack {
@@ -44,7 +47,10 @@ struct ContentView: View {
                 .padding()
             ScrollView {
                 cartButton
+                addPaymentMethodButton
+                addBankAccountButton
                 onboardingButton
+                
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
                     mode: .charge(amount: 35000, currency: "usd"),
@@ -121,6 +127,14 @@ struct ContentView: View {
             })
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showAddPaymentMethodView, content: {
+            FrameAddPaymentMethodView(accountId: accountId)
+                .presentationDragIndicator(.visible)
+        })
+        .sheet(isPresented: $showAddBankAccountView, content: {
+            FrameAddPayoutMethodView(accountId: accountId)
+                .presentationDragIndicator(.visible)
+        })
         .sheet(isPresented: $showCustomersView) {
             customersScrollView
                 .presentationDragIndicator(.visible)
@@ -306,6 +320,38 @@ struct ContentView: View {
             self.showCheckoutView = true
         } label: {
             Text("Show Cart/Checkout")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
+    
+    var addPaymentMethodButton: some View {
+        Button {
+            self.showAddPaymentMethodView = true
+        } label: {
+            Text("Add New Payment Method")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
+    
+    var addBankAccountButton: some View {
+        Button {
+            self.showAddBankAccountView = true
+        } label: {
+            Text("Add New Bank Account")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
