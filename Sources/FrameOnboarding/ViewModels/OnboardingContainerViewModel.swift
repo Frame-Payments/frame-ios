@@ -409,7 +409,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
     // Update an existing payment method with a billing address
     func updatePaymentMethod() async {
-        guard let paymentMethodId = selectedPayoutMethod?.id else { return }
+        guard let paymentMethodId = selectedPaymentMethod?.id else { return }
         guard beginAction() else { return }
         defer { endAction() }
 
