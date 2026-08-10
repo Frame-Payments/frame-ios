@@ -142,6 +142,33 @@ public actor SessionManager {
         keepAlive = nil
     }
 
+    /// Records a device event when the merchant presents one of the SDK's entry-point views —
+    /// onboarding, checkout, or a standalone payment element.
+    ///
+    /// Mirrors the web SDK, which writes the session once per page load: an update when one is stored
+    /// and a create when none is. A native app has no page loads, so presenting one of these views is
+    /// the closest equivalent — it is the point where the user has committed to a flow that risk
+    /// checks will score.
+    ///
+    /// Deliberately unconditional rather than gated on ``isFresh(accountId:)``: the freshness window is
+    /// an SDK-side estimate of the server's, and entering a flow is exactly when it is worth spending
+    /// a request to be certain the session carries a recent event. Failures are ignored — this is
+    /// opportunistic, and the payment path still calls ``ensureSession(accountId:)``.
+    ///
+    /// Fire-and-forget from a view's `.task`/`.onAppear`; it never blocks presentation.
+    public func refreshOnFlowEntry(accountId: String? = nil) async {
+        guard let stored = storage.get(accountId: accountId) else {
+            if let created = try? await createSession(accountId: accountId) {
+                store(created, accountId: accountId)
+            }
+            return
+        }
+
+        if let refreshed = try? await refreshSession(stored, accountId: accountId) {
+            store(refreshed, accountId: accountId)
+        }
+    }
+
     // MARK: - Private
 
     /// Starts the periodic refresh of whichever session is currently live, if it is not already

@@ -99,6 +99,9 @@ public struct FrameCartView: View {
                 .toolbar(.hidden)
             }
         }
+        // The cart is the earliest point the shopper has committed to a purchase flow. The checkout
+        // it pushes to refreshes again on its own appearance, which is a later, separate moment.
+        .refreshesSonarSession(accountId: accountId)
         .frameToastOverlay()
         .onDisappear {
             if !didFinish {

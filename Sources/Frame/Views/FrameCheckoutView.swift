@@ -95,6 +95,7 @@ public struct FrameCheckoutView: View {
         .task {
             await checkoutViewModel.loadAccountDetails()
         }
+        .refreshesSonarSession(accountId: accountId)
         .sheet(isPresented: $isShowingPicker) {
             CountryPickerSheet(
                 selectedCountry: $checkoutViewModel.customerCountry,

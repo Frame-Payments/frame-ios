@@ -232,6 +232,53 @@ final class WarmUpFreshnessTests: XCTestCase {
     }
 }
 
+// MARK: - Flow-entry refresh
+
+/// Mirrors the web SDK, which writes the session once per page load. Presenting an entry-point view is
+/// the native equivalent, and unlike the keep-alive it is deliberately not gated on freshness.
+final class FlowEntryRefreshTests: XCTestCase {
+
+    private var storage: SpySessionStorage!
+    private var manager: SessionManager!
+
+    override func setUp() {
+        super.setUp()
+        storage = SpySessionStorage()
+        manager = SessionManager(storage: storage)
+    }
+
+    /// The distinguishing behavior: entering a flow refreshes even a session that is still inside the
+    /// freshness window, because the window is only an SDK-side estimate of the server's.
+    func testRefreshesEvenWhenTheSessionIsStillFresh() async {
+        storage.sessions["\u{0}pre-account"] = "fps_fresh"
+        storage.refreshes["\u{0}pre-account"] = Date()
+
+        await manager.refreshOnFlowEntry()
+
+        // The update call fails without a network, so the point is that it was attempted at all — a
+        // freshness-gated path would have returned before touching the session.
+        XCTAssertFalse(storage.clears.contains(where: { $0 == nil }),
+                       "A fresh session must be updated in place, never cleared.")
+    }
+
+    /// An entry-point view must never throw into a SwiftUI `.task`; failures are swallowed by design.
+    func testNeverThrowsWhenTheNetworkIsUnavailable() async {
+        await manager.refreshOnFlowEntry(accountId: "acc_1")
+        await manager.refreshOnFlowEntry()
+    }
+
+    /// A per-account flow entry must not write into the pre-account slot, or the next account on the
+    /// device could adopt it.
+    func testAccountScopedEntryDoesNotTouchThePreAccountSlot() async {
+        storage.sessions["\u{0}pre-account"] = "fps_warm"
+
+        await manager.refreshOnFlowEntry(accountId: "acc_1")
+
+        XCTAssertEqual(storage.get(accountId: nil), "fps_warm")
+        XCTAssertFalse(storage.writes.contains { $0.accountId == nil })
+    }
+}
+
 // MARK: - Keep-alive lifecycle
 
 /// The keep-alive exists so the freshness window never closes while the app is open; a refresh at

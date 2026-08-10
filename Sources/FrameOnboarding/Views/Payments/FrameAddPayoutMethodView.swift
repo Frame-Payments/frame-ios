@@ -54,6 +54,10 @@ public struct FrameAddPayoutMethodView: View {
         AddPayoutMethodView(onboardingContainerViewModel: viewModel)
             .keyboardDoneToolbar()
             .frameToastOverlay()
+            // Refreshing the device session here is unrelated to the rule that a payout request must
+            // never carry `sonar_session_id`: this records a device event, it does not attach an ID to
+            // a transfer.
+            .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
                 if let onboardingClientSecret {
                     FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
