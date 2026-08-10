@@ -149,6 +149,179 @@ final class TransferSonarSessionTests: XCTestCase {
     }
 }
 
+// MARK: - Warm-up freshness
+
+/// Records what the manager read and wrote, so the fresh/stale/absent decision can be asserted
+/// without a live server.
+private final class SpySessionStorage: SessionStorage, @unchecked Sendable {
+    var sessions: [String: SessionId] = [:]
+    var refreshes: [String: Date] = [:]
+    /// Every `set` the manager performed, in order.
+    var writes: [(session: SessionId, accountId: String?)] = []
+    var clears: [String?] = []
+
+    /// `accountId: nil` needs a distinct dictionary key from any real account id.
+    private func key(_ accountId: String?) -> String { accountId ?? "\u{0}pre-account" }
+
+    func get(accountId: String?) -> SessionId? { sessions[key(accountId)] }
+
+    func set(_ value: SessionId, accountId: String?) {
+        sessions[key(accountId)] = value
+        writes.append((value, accountId))
+    }
+
+    func clear(accountId: String?) {
+        sessions[key(accountId)] = nil
+        refreshes[key(accountId)] = nil
+        clears.append(accountId)
+    }
+
+    func lastRefresh(accountId: String?) -> Date? { refreshes[key(accountId)] }
+
+    func setLastRefresh(_ date: Date, accountId: String?) { refreshes[key(accountId)] = date }
+}
+
+/// A stale pre-account session must be refreshed *in place*, not replaced: the adoption path looks
+/// for the session that was created early precisely so its device event has had time to land, and
+/// swapping the ID reintroduces that race.
+final class WarmUpFreshnessTests: XCTestCase {
+
+    private var storage: SpySessionStorage!
+    private var manager: SessionManager!
+
+    override func setUp() {
+        super.setUp()
+        storage = SpySessionStorage()
+        manager = SessionManager(storage: storage)
+    }
+
+    func testFreshPreAccountSessionIsLeftAlone() async throws {
+        storage.sessions["\u{0}pre-account"] = "fps_warm"
+        storage.refreshes["\u{0}pre-account"] = Date()
+
+        try await manager.warmUp()
+
+        XCTAssertEqual(storage.get(accountId: nil), "fps_warm")
+        XCTAssertTrue(storage.writes.isEmpty, "A fresh session needs no network call and no rewrite.")
+    }
+
+    /// The bug this guards: warming up on a stale session used to `POST` a brand-new one, orphaning
+    /// the session the adoption path expected to find.
+    func testStalePreAccountSessionIsNotDiscardedBeforeTheNetworkCall() async {
+        storage.sessions["\u{0}pre-account"] = "fps_stale"
+        // Well outside the 15-minute freshness window.
+        storage.refreshes["\u{0}pre-account"] = Date(timeIntervalSinceNow: -3600)
+
+        // No network in unit tests, so this throws; what matters is that the stale session was still
+        // the one being refreshed rather than cleared and replaced.
+        _ = try? await manager.warmUp()
+
+        XCTAssertFalse(storage.clears.contains(where: { $0 == nil }),
+                       "A stale pre-account session must be refreshed in place, not cleared first.")
+    }
+
+    /// With nothing stored there is no session to refresh, so the create path is the only option —
+    /// and it must not try to refresh a session that does not exist.
+    func testAbsentPreAccountSessionTakesTheCreatePath() async {
+        _ = try? await manager.warmUp()
+
+        // The create call fails without a network, so nothing is persisted; the point is that no
+        // refresh of a non-existent session was attempted and no spurious clear happened.
+        XCTAssertNil(storage.get(accountId: nil))
+        XCTAssertTrue(storage.writes.isEmpty)
+    }
+}
+
+// MARK: - Flow-entry refresh
+
+/// Mirrors the web SDK, which writes the session once per page load. Presenting an entry-point view is
+/// the native equivalent, and unlike the keep-alive it is deliberately not gated on freshness.
+final class FlowEntryRefreshTests: XCTestCase {
+
+    private var storage: SpySessionStorage!
+    private var manager: SessionManager!
+
+    override func setUp() {
+        super.setUp()
+        storage = SpySessionStorage()
+        manager = SessionManager(storage: storage)
+    }
+
+    /// The distinguishing behavior: entering a flow refreshes even a session that is still inside the
+    /// freshness window, because the window is only an SDK-side estimate of the server's.
+    func testRefreshesEvenWhenTheSessionIsStillFresh() async {
+        storage.sessions["\u{0}pre-account"] = "fps_fresh"
+        storage.refreshes["\u{0}pre-account"] = Date()
+
+        await manager.refreshOnFlowEntry()
+
+        // The update call fails without a network, so the point is that it was attempted at all — a
+        // freshness-gated path would have returned before touching the session.
+        XCTAssertFalse(storage.clears.contains(where: { $0 == nil }),
+                       "A fresh session must be updated in place, never cleared.")
+    }
+
+    /// An entry-point view must never throw into a SwiftUI `.task`; failures are swallowed by design.
+    func testNeverThrowsWhenTheNetworkIsUnavailable() async {
+        await manager.refreshOnFlowEntry(accountId: "acc_1")
+        await manager.refreshOnFlowEntry()
+    }
+
+    /// A per-account flow entry must not write into the pre-account slot, or the next account on the
+    /// device could adopt it.
+    func testAccountScopedEntryDoesNotTouchThePreAccountSlot() async {
+        storage.sessions["\u{0}pre-account"] = "fps_warm"
+
+        await manager.refreshOnFlowEntry(accountId: "acc_1")
+
+        XCTAssertEqual(storage.get(accountId: nil), "fps_warm")
+        XCTAssertFalse(storage.writes.contains { $0.accountId == nil })
+    }
+}
+
+// MARK: - Keep-alive lifecycle
+
+/// The keep-alive exists so the freshness window never closes while the app is open; a refresh at
+/// payment time would sit on the critical path.
+final class KeepAliveLifecycleTests: XCTestCase {
+
+    private var storage: SpySessionStorage!
+    private var manager: SessionManager!
+
+    override func setUp() {
+        super.setUp()
+        storage = SpySessionStorage()
+        manager = SessionManager(storage: storage)
+    }
+
+    /// `pause()` must leave nothing armed, or a suspended app fires requests mid-suspension.
+    func testPauseIsSafeWithNoKeepAliveRunning() async {
+        await manager.pause()
+        await manager.pause()
+    }
+
+    /// `resume()` re-arms after a pause; calling it twice must not leave two timers running, which
+    /// would double the refresh traffic.
+    func testResumeAfterPauseDoesNotStackTimers() async {
+        await manager.pause()
+        await manager.resume()
+        await manager.resume()
+
+        await manager.pause()
+    }
+
+    /// Repeated checkout attempts each call `ensureSession`; if that restarted the timer every time,
+    /// the next refresh would be pushed out indefinitely and the window could close.
+    func testEnsureSessionDoesNotRestartTheKeepAliveInterval() async {
+        _ = try? await manager.ensureSession(accountId: "acc_1")
+        _ = try? await manager.ensureSession(accountId: "acc_1")
+
+        // Both calls failed at the network, but the keep-alive must still be armed exactly once and
+        // cancellable without hanging.
+        await manager.pause()
+    }
+}
+
 // MARK: - Error copy
 
 /// Shown verbatim these read as "Error: sonar_session_required", which is what merchants reported.

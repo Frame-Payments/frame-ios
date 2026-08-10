@@ -54,6 +54,7 @@ public struct FrameAddPaymentMethodView: View {
                              onlyAddressVerification: false)
             .keyboardDoneToolbar()
             .frameToastOverlay()
+            .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
                 if let onboardingClientSecret {
                     FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)

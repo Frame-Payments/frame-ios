@@ -95,6 +95,8 @@ public class FrameNetworking: ObservableObject {
             _ = try? await DeviceAttestationManager.shared.attestDevice()
         }
 
+        observeAppLifecycleForSonarSession()
+
         if !isEvervaultConfigured {
             self.configureEvervault()
         }
@@ -239,6 +241,29 @@ public class FrameNetworking: ObservableObject {
     /// what is already persisted and will return `nil` if no session has been established yet.
     func currentSonarSessionId(accountId: String? = nil) -> String? {
         SonarSessionStorage.currentSessionId(accountId: accountId)
+    }
+
+    /// Keeps the Sonar session fresh across app lifecycle transitions.
+    ///
+    /// A backgrounded app runs no timers, so the session's freshness window can close unnoticed
+    /// while suspended; re-touching on foreground is what stops a resumed app from reaching checkout
+    /// with a dead session.
+    private func observeAppLifecycleForSonarSession() {
+        #if canImport(UIKit) && !os(watchOS)
+        let center = NotificationCenter.default
+
+        center.addObserver(forName: UIApplication.willEnterForegroundNotification,
+                           object: nil,
+                           queue: nil) { _ in
+            Task { await SessionManager.shared.resume() }
+        }
+
+        center.addObserver(forName: UIApplication.didEnterBackgroundNotification,
+                           object: nil,
+                           queue: nil) { _ in
+            Task { await SessionManager.shared.pause() }
+        }
+        #endif
     }
 
     // Async/Await

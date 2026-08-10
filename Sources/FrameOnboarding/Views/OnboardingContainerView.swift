@@ -167,6 +167,9 @@ public struct OnboardingContainerView: View {
         }
         .ignoresSafeArea()
         .keyboardDoneToolbar()
+        // Onboarding may create the account, so the event lands on the pre-account session when there
+        // is no ID yet — that session is what the adoption path later binds to the new account.
+        .refreshesSonarSession(accountId: onboardingContainerViewModel.accountId)
         .onAppear {
             // Bind every onboarding request to the onboarding-session token (onb_sess_…) for the
             // lifetime of the flow, so calls authenticate per-account instead of with a secret key.

@@ -30,13 +30,20 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     ///
     /// Only charge-backed transfers carry it: a payout has no charge to score, and the API rejects
     /// the field outright on those, so sending it would turn a working payout into a 400.
+    ///
+    /// Establishes the session rather than reading the cached identifier: a stored session whose
+    /// device event has aged out is still readable locally but no longer backs a payment, so trusting
+    /// the cache is how `sonar_session_required` reaches the shopper. This is a no-op when the
+    /// keep-alive has kept the session fresh.
     private static func withSonarSession(
         _ request: TransferRequests.CreateTransferRequest
-    ) -> TransferRequests.CreateTransferRequest {
+    ) async -> TransferRequests.CreateTransferRequest {
         guard request.sourcePaymentMethodId != nil else { return request }
 
         var updated = request
-        updated.sonarSessionId = FrameNetworking.shared.currentSonarSessionId(accountId: request.accountId)
+        // A failure here must not block the transfer: the server may still resolve the session from
+        // the account, and if it cannot, its rejection is the authoritative answer.
+        updated.sonarSessionId = try? await SessionManager.shared.ensureSession(accountId: request.accountId)
         return updated
     }
 
@@ -49,7 +56,7 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     /// - Important: Money movement is a server-only operation; this authenticates with the secret key.
     public static func createTransfer(request: TransferRequests.CreateTransferRequest) async throws -> (FrameObjects.Transfer?, NetworkingError?) {
         let endpoint = TransferEndpoints.createTransfer
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(withSonarSession(request))
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(await withSonarSession(request))
 
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         // Don't try to decode an error response as a Transfer — performDataTask
@@ -112,13 +119,17 @@ public class TransfersAPI: TransfersProtocol, @unchecked Sendable {
     /// - Important: Money movement is a server-only operation; this authenticates with the secret key.
     public static func createTransfer(request: TransferRequests.CreateTransferRequest, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void) {
         let endpoint = TransferEndpoints.createTransfer
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(withSonarSession(request))
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {
-                completionHandler(decodedResponse, error)
-            } else {
-                completionHandler(nil, error)
+        // Establishing the session is async, so this variant hops through a Task before dispatching.
+        Task {
+            let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(await withSonarSession(request))
+
+            FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+                if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Transfer.self, from: data) {
+                    completionHandler(decodedResponse, error)
+                } else {
+                    completionHandler(nil, error)
+                }
             }
         }
     }
