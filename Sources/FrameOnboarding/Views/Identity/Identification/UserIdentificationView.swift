@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import Frame
 
 enum IdentificationTypes: String, CaseIterable, Identifiable {
@@ -298,12 +299,10 @@ struct UserIdentificationView: View {
                 onboardingContainerViewModel.createdCustomerIdentity.address = personalAddressVM.address
                 onboardingContainerViewModel.phoneCountry = customerInfoVM.phoneCountry
                 Task {
-                    if onboardingContainerViewModel.accountId == nil {
-                        await onboardingContainerViewModel.createIndividualAccount()
-                    } else {
-                        await onboardingContainerViewModel.updateExistingIndividualAccount()
+                    guard let presenter = UIApplication.shared.topViewController else { return }
+                    if await onboardingContainerViewModel.submitPersonalInformation(from: presenter) {
+                        self.continueToNextStep.toggle()
                     }
-                    self.continueToNextStep.toggle()
                 }
             }
             .padding(.bottom)

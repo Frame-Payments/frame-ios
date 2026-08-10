@@ -58,7 +58,7 @@ let package = Package(
         ),
         .testTarget(
             name: "Frame-iOSTests",
-            dependencies: ["Frame"]
+            dependencies: ["Frame", "FrameOnboarding"]
         ),
     ]
 )

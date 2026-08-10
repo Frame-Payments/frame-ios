@@ -19,6 +19,11 @@ extension FrameObjects {
         /// Capability that enables KYC with pre-fill support; also enables the base `kyc` capability.
         case kycPrefill = "kyc_prefill"
 
+        /// Capability that requires government-issued photo ID verification via Persona. Individual
+        /// accounts only. When required, the applicant must complete identity verification on the
+        /// personal-information step before onboarding can advance.
+        case idv
+
         /// Capability that enables phone-number verification for an account.
         case phoneVerification = "phone_verification"
 

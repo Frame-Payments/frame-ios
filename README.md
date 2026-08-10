@@ -622,6 +622,7 @@ Each capability maps to one or more onboarding steps. Duplicate steps are automa
 |---|---|---|
 | `.kyc` | Personal Information | Name, email, phone, DOB, SSN, address |
 | `.kycPrefill` | Personal Information | Same as above, with Prove prefill |
+| `.idv` | Personal Information | Government-issued photo ID, verified via Persona after the form is submitted |
 | `.ageVerification` | Personal Information | Date of birth |
 | `.phoneVerification` | Personal Information | Phone number + OTP verification |
 | `.creatorShield` | Personal Information | Full identity details |
@@ -632,6 +633,14 @@ Each capability maps to one or more onboarding steps. Duplicate steps are automa
 | `.bankAccountVerification` | Confirm Payout Method | Bank account (ACH) setup |
 | `.bankAccountSend` | Confirm Payout Method | Bank account for payouts |
 | `.bankAccountReceive` | Confirm Payout Method | Bank account for deposits |
+| `.geoCompliance` | Personal Information | Location eligibility check |
+
+`.idv` requires the applicant to verify with a government-issued photo ID before the flow
+advances past Personal Information. Persona is presented over the form once it is submitted;
+cancelling or failing verification keeps the applicant on the step. An applicant who already
+verified — earlier in the session, or on a previous visit — is not asked again. Because
+verification runs automatically, the "I don't have a social security number" opt-out is hidden
+when `.idv` is required. Individual accounts only.
 | `.geoCompliance` | Geolocation Verification | Location + VPN detection |
 | *(any other capability)* | Upload Documents | Government ID + selfie |
 
