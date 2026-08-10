@@ -12,6 +12,7 @@ import UIKit
 class NetworkingConstants {
     /// The base URL for the Frame Payments REST API.
     static let mainAPIURL: String = "https://api.framepayments.com"
+    static let qaAPIURL: String = "https://api.qa.framepayments.com"
 }
 
 /// Selects which credential authenticates a Frame API request.
