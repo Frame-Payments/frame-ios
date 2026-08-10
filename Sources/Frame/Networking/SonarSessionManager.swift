@@ -31,12 +31,27 @@ public actor SessionManager {
     /// late fails the payment.
     private static let refreshInterval: TimeInterval = 15 * 60
 
+    /// How often the keep-alive re-touches the live session. Deliberately shorter than
+    /// ``refreshInterval`` so a refresh always lands before the window closes, rather than the
+    /// window expiring and the refresh falling onto the payment's critical path.
+    private static let keepAliveInterval: TimeInterval = 10 * 60
+
     /// A payment must not be held up indefinitely by the fingerprinting SDK.
     private static let visitorIdTimeout: TimeInterval = 5
 
     private let storage: SessionStorage
 
     private var inFlight: [String: Task<SessionId, Error>] = [:]
+
+    /// The account whose session the keep-alive should re-touch. `nil` means no account is known
+    /// yet, so the pre-account warm-up session is the live one.
+    ///
+    /// This is what stops the keep-alive from `POST`ing a fresh orphan over an adopted session:
+    /// once an account is known, refreshes go out as an update and preserve the account binding.
+    private var activeAccountId: String?
+
+    /// The running keep-alive. Held so foreground/background transitions can restart and cancel it.
+    private var keepAlive: Task<Void, Never>?
 
     /// Creates a session manager backed by the given storage.
     ///
@@ -55,6 +70,11 @@ public actor SessionManager {
     /// - Throws: ``SessionManagerError`` if no session could be established.
     @discardableResult
     public func ensureSession(accountId: String) async throws -> SessionId {
+        // From here on the keep-alive refreshes this account's session rather than the
+        // pre-account one.
+        activeAccountId = accountId
+        startKeepAlive()
+
         if let existing = storage.get(accountId: accountId), isFresh(accountId: accountId) {
             return existing
         }
@@ -79,17 +99,96 @@ public actor SessionManager {
     /// the account, and is left to retry and report any failure here.
     public static func initializeSession() async {
         try? await shared.warmUp()
+        await shared.startKeepAlive()
     }
 
-    /// Creates a pre-account session if none is stored. See ``initializeSession()``.
+    /// Brings the pre-account session into the freshness window, creating one only when none exists.
+    ///
+    /// The three cases are distinct and the difference matters:
+    /// - **Fresh** — nothing to do.
+    /// - **Stale** — refreshed *in place*, keeping the same session ID so the new device event
+    ///   accumulates against the session the adoption path will look for. Replacing it with a new
+    ///   session here would reintroduce the event-landing race that creating early exists to avoid.
+    /// - **Absent** — created.
+    ///
+    /// See ``initializeSession()``.
     func warmUp() async throws {
-        /// Commented this out to force creating a new sonar session each time they open the app
-//        guard storage.get(accountId: nil) == nil else { return }
+        if storage.get(accountId: nil) != nil, isFresh(accountId: nil) { return }
+
+        if let stale = storage.get(accountId: nil) {
+            let refreshed = try await refreshSession(stale, accountId: nil)
+            store(refreshed, accountId: nil)
+            return
+        }
+
         let session = try await createSession(accountId: nil)
         store(session, accountId: nil)
     }
 
+    /// Re-touches the live session and restarts the keep-alive after the app returns to the
+    /// foreground.
+    ///
+    /// Backgrounding is the most common way a session goes stale — timers do not fire while
+    /// suspended, so the window can close with nothing to notice.
+    public func resume() async {
+        await touchActiveSession()
+        startKeepAlive()
+    }
+
+    /// Stops the keep-alive while the app is backgrounded, so it neither burns cycles nor fires
+    /// requests that would be suspended mid-flight.
+    public func pause() {
+        keepAlive?.cancel()
+        keepAlive = nil
+    }
+
     // MARK: - Private
+
+    /// Starts the periodic refresh of whichever session is currently live, if it is not already
+    /// running.
+    ///
+    /// Idempotent by design: this is called from every ``ensureSession(accountId:)``, and cancelling
+    /// and recreating the task each time would restart the interval, so a user retrying checkout
+    /// could push the next refresh out indefinitely. The tick reads ``activeAccountId`` when it
+    /// fires, so an already-running timer picks up a newly adopted account without a restart.
+    private func startKeepAlive() {
+        guard keepAlive == nil else { return }
+
+        keepAlive = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(Self.keepAliveInterval * 1_000_000_000))
+                if Task.isCancelled { return }
+                guard let self else { return }
+                await self.touchActiveSession()
+            }
+        }
+    }
+
+    /// Refreshes the live session: the adopted account session when one is known, otherwise the
+    /// pre-account warm-up session.
+    ///
+    /// Failures are swallowed deliberately — this runs in the background, and a missed keep-alive is
+    /// recovered by ``ensureSession(accountId:)`` on the payment path.
+    private func touchActiveSession() async {
+        guard let accountId = activeAccountId else {
+            try? await warmUp()
+            return
+        }
+
+        // Join an in-flight establish rather than issuing a competing one — a keep-alive tick can
+        // land while checkout is already establishing the same session.
+        if let running = inFlight[accountId] {
+            _ = try? await running.value
+            return
+        }
+
+        let task = Task<SessionId, Error> {
+            try await establishSession(accountId: accountId)
+        }
+        inFlight[accountId] = task
+        defer { inFlight[accountId] = nil }
+        _ = try? await task.value
+    }
 
     private func isFresh(accountId: String?) -> Bool {
         guard let last = storage.lastRefresh(accountId: accountId) else { return false }
@@ -129,7 +228,10 @@ public actor SessionManager {
 
     /// Updates an existing session, associating it with `accountId` and recording a new device event
     /// server-side — the latter is what returns the session to the freshness window.
-    private func refreshSession(_ session: SessionId, accountId: String) async throws -> SessionId {
+    ///
+    /// A `nil` `accountId` refreshes the pre-account session in place, keeping the same session ID so
+    /// the device event accumulates against it rather than against a fresh orphan.
+    private func refreshSession(_ session: SessionId, accountId: String?) async throws -> SessionId {
         let body = SessionRequestBody(fingerprintVisitorId: try await visitorId(), accountId: accountId)
         do {
             return try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
