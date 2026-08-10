@@ -34,7 +34,7 @@ struct ContentView: View {
     @State var applePayResult: String? = nil
 
     // Replace with an accountID from your dashboard.
-    var accountId: String = "83f5c9f7-7dfe-4962-8ccd-92a0fbc1909e"
+    var accountId: String = "ENTER_AN_ACCOUNT_ID"
     
     var body: some View {
         VStack {
