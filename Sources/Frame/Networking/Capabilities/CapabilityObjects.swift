@@ -64,6 +64,13 @@ extension FrameObjects {
         // View - Upload Documents
     }
 
+    /// Requirement keys that can appear in a capability's `currently_due`.
+    public enum CapabilityRequirementKey {
+        /// Government-ID verification, required by whichever capability lists it rather than by a
+        /// standalone `idv` capability.
+        public static let identityDocument = "individual.identity_document"
+    }
+
     /// Describes a single requirement that must be satisfied in order to enable a capability.
     public struct CapabilityRequirement: Codable, Sendable, Equatable {
         /// Unique identifier for this capability requirement.

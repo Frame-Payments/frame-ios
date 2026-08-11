@@ -70,8 +70,17 @@ class OnboardingContainerViewModel: ObservableObject {
     /// (the no-SSN path). While `true`, the SSN input and the "I don't have a social security
     /// number" button are hidden, SSN validation is skipped, and no SSN is sent to the API.
     @Published var identityVerifiedViaGovId: Bool = false
+    /// Set to `true` when a capability lists `individual.identity_document` as due — a step-up on an
+    /// account that carries no `idv` capability.
+    @Published var identityDocumentRequired: Bool = false
     /// The Persona inquiry id used for the successful government-ID verification, if any.
     @Published var personaInquiryId: String?
+
+    /// Either signal alone requires Persona: the merchant asked for `idv`, or the backend stepped
+    /// this account up via `currently_due`.
+    var governmentIdRequired: Bool {
+        requiredCapabilities.contains(.idv) || identityDocumentRequired
+    }
 
     private var plaidHandler: Handler?
     private var personaService: PersonaService?
@@ -112,6 +121,12 @@ class OnboardingContainerViewModel: ObservableObject {
                 self.identityVerifiedViaGovId = true
             }
 
+            // Seeded here too, not just in `updateCapabilitiesBasedOnCompletion` — that runs only
+            // when the caller passes `updateCapabilies: true`.
+            if let capabilities = account?.capabilities {
+                self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
+            }
+
             guard let profile = account?.profile?.individual else { return }
             let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
                                                              state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
@@ -144,7 +159,17 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
+    /// Scans every capability, not just `kyc` — a payout-only account gets the same key on
+    /// `bank_account_receive`.
+    static func requiresIdentityDocument(_ capabilities: [FrameObjects.Capability]) -> Bool {
+        capabilities.contains { capability in
+            capability.currentlyDue?.contains(FrameObjects.CapabilityRequirementKey.identityDocument) == true
+        }
+    }
+
     func updateCapabilitiesBasedOnCompletion(accountCapabilities: [FrameObjects.Capability]) {
+        self.identityDocumentRequired = Self.requiresIdentityDocument(accountCapabilities)
+
         // Check to see which capabilites are completed, skip any that are not needed.
         accountCapabilities.forEach { capability in
             let requiredCapability = FrameObjects.Capabilities(rawValue: capability.name)
@@ -535,12 +560,10 @@ class OnboardingContainerViewModel: ObservableObject {
     }
 
     /// Submits the personal-information step, running government-ID verification first when the
-    /// `idv` capability requires it.
+    /// account requires it.
     ///
-    /// `idv` declares no field keys, so a pending verification never shows up in `currently_due` —
-    /// the capability being required is itself the signal that Persona must run. Verification is
-    /// skipped when the applicant already verified this session or on a previous visit (see
-    /// `checkExistingAccount`, which seeds `identityVerifiedViaGovId` from an active idv capability).
+    /// See `governmentIdRequired` for what makes it required. Skipped when the applicant already
+    /// verified this session or on a previous visit.
     ///
     /// - Parameter viewController: The view controller to present the Persona UI from.
     /// - Returns: `true` when the step is complete and the flow may advance.
@@ -553,7 +576,7 @@ class OnboardingContainerViewModel: ObservableObject {
         // rather than advancing past data the API never accepted.
         guard account != nil else { return false }
 
-        guard requiredCapabilities.contains(.idv), !identityVerifiedViaGovId else { return true }
+        guard governmentIdRequired, !identityVerifiedViaGovId else { return true }
 
         // Persona runs under its own beginAction() guard, which the submission above has released.
         // Awaited back to back on the main actor so `isPerformingAction` is never observably false

@@ -188,4 +188,162 @@ final class IdentityVerificationCapabilityTests: XCTestCase {
 
         XCTAssertTrue(viewModel.requiredCapabilities.contains(.kyc))
     }
+
+    // MARK: - Step-up via currently_due
+
+    /// Step-up arrives as a `currently_due` key on an existing capability, with no `idv` capability
+    /// provisioned. Missing it lets the applicant through unverified.
+    @MainActor
+    func testIdentityDocumentDueOnKycRequiresGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.identity_document"])
+        ])
+
+        XCTAssertTrue(viewModel.identityDocumentRequired)
+        XCTAssertTrue(viewModel.governmentIdRequired)
+    }
+
+    /// The scan can't be scoped to kyc.
+    @MainActor
+    func testIdentityDocumentDueOnBankAccountReceiveRequiresGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.bankAccountReceive])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "bank_account_receive",
+                       status: "pending",
+                       currentlyDue: ["individual.identity_document", "payout.method_type"])
+        ])
+
+        XCTAssertTrue(viewModel.identityDocumentRequired)
+        XCTAssertTrue(viewModel.governmentIdRequired)
+    }
+
+    /// `idv` remains an independent trigger, needing no `currently_due` key.
+    @MainActor
+    func testIdvCapabilityAloneRequiresGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.idv])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "idv", status: "pending", currentlyDue: [])
+        ])
+
+        XCTAssertFalse(viewModel.identityDocumentRequired)
+        XCTAssertTrue(viewModel.governmentIdRequired)
+    }
+
+    @MainActor
+    func testNoIdentityDocumentAndNoIdvDoesNotRequireGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.ssn_last_four"])
+        ])
+
+        XCTAssertFalse(viewModel.identityDocumentRequired)
+        XCTAssertFalse(viewModel.governmentIdRequired)
+    }
+
+    /// The flag tracks the latest payload rather than latching on.
+    @MainActor
+    func testIdentityDocumentRequirementClearsWhenNoLongerDue() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.identity_document"])
+        ])
+        XCTAssertTrue(viewModel.identityDocumentRequired)
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "active", currentlyDue: [])
+        ])
+        XCTAssertFalse(viewModel.identityDocumentRequired)
+    }
+
+    /// "Use SSN instead" must not erase a backend-declared requirement, or the submit guard would
+    /// wave the applicant through.
+    @MainActor
+    func testResetKeepsIdentityDocumentRequirement() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.identity_document"])
+        ])
+        viewModel.identityVerifiedViaGovId = true
+
+        viewModel.resetIdentityVerification()
+
+        XCTAssertFalse(viewModel.identityVerifiedViaGovId)
+        XCTAssertTrue(viewModel.governmentIdRequired)
+    }
+
+    // MARK: - SSN validation
+
+    private func identity(ssn: String) -> CustomerIdentityRequest.CreateCustomerIdentityRequest {
+        CustomerIdentityRequest.CreateCustomerIdentityRequest(
+            firstName: "Ada", lastName: "Lovelace", dateOfBirth: "1990-01-01",
+            email: "ada@example.com", phoneNumber: "+12125550123",
+            ssn: ssn, address: FrameObjects.BillingAddress(postalCode: "10001")
+        )
+    }
+
+    /// With verification pending, the SSN row is hidden — so validation must not demand one, or
+    /// Continue is dead with no visible field to fix.
+    @MainActor
+    func testSkipSSNAllowsEmptySSN() {
+        let viewModel = CustomerInformationViewModel(identity: identity(ssn: ""))
+        viewModel.skipSSN = true
+
+        XCTAssertTrue(viewModel.validate())
+        XCTAssertNil(viewModel.errors[.ssn])
+    }
+
+    @MainActor
+    func testSSNStillValidatedWhenNotSkipped() {
+        let viewModel = CustomerInformationViewModel(identity: identity(ssn: ""))
+
+        XCTAssertFalse(viewModel.validate())
+        XCTAssertNotNil(viewModel.errors[.ssn])
+    }
+
+    /// A typo here silently disables step-up.
+    func testIdentityDocumentRequirementKeyMatchesAPI() {
+        XCTAssertEqual(FrameObjects.CapabilityRequirementKey.identityDocument, "individual.identity_document")
+    }
+
+    /// The real payload from a stepped-up sandbox account.
+    @MainActor
+    func testRealStepUpPayloadRequiresGovernmentId() throws {
+        let json = """
+        [
+          {"id":"c1","object":"capability","name":"kyc_prefill","account_id":"acc_1","status":"active",
+           "currently_due":[],"created":"2026-08-11T17:04:08Z","updated":"2026-08-11T17:06:17Z"},
+          {"id":"c2","object":"capability","name":"card_send","account_id":"acc_1","status":"pending",
+           "currently_due":["source.method_type","source.card.number"],
+           "created":"2026-08-11T17:04:08Z","updated":"2026-08-11T17:04:08Z"},
+          {"id":"c3","object":"capability","name":"geo_compliance","account_id":"acc_1","status":"active",
+           "currently_due":[],"created":"2026-08-11T17:04:09Z","updated":"2026-08-11T17:04:09Z"},
+          {"id":"c4","object":"capability","name":"bank_account_receive","account_id":"acc_1","status":"pending",
+           "currently_due":["individual.identity_document","payout.method_type"],
+           "created":"2026-08-11T17:04:09Z","updated":"2026-08-11T17:04:09Z"},
+          {"id":"c5","object":"capability","name":"age_verification","account_id":"acc_1","status":"active",
+           "currently_due":[],"created":"2026-08-11T17:04:09Z","updated":"2026-08-11T17:04:32Z"},
+          {"id":"c6","object":"capability","name":"kyc","account_id":"acc_1","status":"pending",
+           "currently_due":["individual.identity_document"],
+           "created":"2026-08-11T17:04:09Z","updated":"2026-08-11T17:04:09Z"},
+          {"id":"c7","object":"capability","name":"phone_verification","account_id":"acc_1","status":"active",
+           "currently_due":[],"created":"2026-08-11T17:04:09Z","updated":"2026-08-11T17:04:32Z"}
+        ]
+        """
+
+        let capabilities = try JSONDecoder().decode([FrameObjects.Capability].self, from: Data(json.utf8))
+        XCTAssertFalse(capabilities.contains { $0.name == "idv" })
+
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_1", requiredCapabilities: [.kyc, .bankAccountReceive])
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: capabilities)
+
+        XCTAssertTrue(viewModel.governmentIdRequired)
+        XCTAssertTrue(viewModel.requiredCapabilities.contains(.kyc))
+    }
 }

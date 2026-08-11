@@ -46,12 +46,11 @@ public struct CustomerInformationView: View {
     }
 
     /// Whether to surface the no-SSN government-ID verification affordance: KYC is required and
-    /// `idv` isn't already verifying automatically.
+    /// verification isn't already running automatically.
     private var requiresKYC: Bool {
+        // Verification runs automatically after Continue, so the manual opt-out is redundant.
+        guard !onboardingContainerViewModel.governmentIdRequired else { return false }
         let caps = onboardingContainerViewModel.requiredCapabilities
-        // With idv required, verification runs automatically after Continue, so the manual
-        // opt-out is redundant. The SSN row itself stays — kyc may be required alongside idv.
-        guard !caps.contains(.idv) else { return false }
         return caps.contains(.kyc) || caps.contains(.kycPrefill)
     }
 
@@ -100,7 +99,7 @@ public struct CustomerInformationView: View {
             birthdayView
             if onboardingContainerViewModel.identityVerifiedViaGovId {
                 governmentIdVerifiedView
-            } else {
+            } else if !onboardingContainerViewModel.identityDocumentRequired {
                 socialSecurityView
                 if requiresKYC {
                     noSSNButton
@@ -110,12 +109,20 @@ public struct CustomerInformationView: View {
         .onAppear {
             seedBirthComponentsFromStoredValue()
             // Keep the info view model's SSN-skip flag in sync with any already-verified state.
-            viewModel.identityVerifiedViaGovId = onboardingContainerViewModel.identityVerifiedViaGovId
+            viewModel.skipSSN = onboardingContainerViewModel.identityVerifiedViaGovId
+                || onboardingContainerViewModel.identityDocumentRequired
         }
         .onChange(of: onboardingContainerViewModel.identityVerifiedViaGovId) { _, verified in
-            viewModel.identityVerifiedViaGovId = verified
+            viewModel.skipSSN = verified || onboardingContainerViewModel.identityDocumentRequired
             if verified {
                 // Clear any stale SSN error and value so nothing leaks into submit.
+                viewModel.errors[.ssn] = nil
+                viewModel.identity.ssn = ""
+            }
+        }
+        .onChange(of: onboardingContainerViewModel.identityDocumentRequired) { _, required in
+            viewModel.skipSSN = required || onboardingContainerViewModel.identityVerifiedViaGovId
+            if required {
                 viewModel.errors[.ssn] = nil
                 viewModel.identity.ssn = ""
             }

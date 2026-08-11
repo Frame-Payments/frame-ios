@@ -37,10 +37,10 @@ public final class CustomerInformationViewModel: ObservableObject {
     /// A map from each form field to its current validation error message, if any.
     @Published public var errors: [Field: String] = [:]
 
-    /// When `true`, the applicant verified identity with a government ID (no-SSN path), so SSN
-    /// entry is not shown and SSN validation is skipped. Kept in sync with the container view
-    /// model's `identityVerifiedViaGovId`.
-    @Published public var identityVerifiedViaGovId: Bool = false
+    /// When `true`, SSN entry is not shown and SSN validation is skipped: the applicant either
+    /// already verified with a government ID, or is required to and will be sent through Persona on
+    /// submit. Kept in sync with the container view model.
+    @Published public var skipSSN: Bool = false
 
     /// Creates a new view model with optional pre-populated identity data and phone country.
     ///
@@ -85,8 +85,7 @@ public final class CustomerInformationViewModel: ObservableObject {
             next[.birthYear] = err
         }
 
-        // Skip SSN validation when the applicant verified with a government ID (no-SSN path).
-        if !identityVerifiedViaGovId, let err = Validators.validateSSNLast4(identity.ssn) {
+        if !skipSSN, let err = Validators.validateSSNLast4(identity.ssn) {
             next[.ssn] = err
         }
 
