@@ -66,6 +66,11 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var pendingTwilioVerificationAccountId: String?
     @Published var isPerformingAction: Bool = false
 
+    /// Set when the applicant dismisses the Prove OTP sheet. The Prove SDK reports that
+    /// cancellation as an ordinary auth error, so this distinguishes "user backed out" from
+    /// "Prove failed" and keeps `sendOTPVerification` from toasting on a deliberate dismiss.
+    private var proveOTPCancelledByUser: Bool = false
+
     /// Set to `true` once the applicant has verified identity with a government ID via Persona
     /// (the no-SSN path). While `true`, the SSN input and the "I don't have a social security
     /// number" button are hidden, SSN validation is skipped, and no SSN is sent to the API.
@@ -337,49 +342,122 @@ class OnboardingContainerViewModel: ObservableObject {
         guard let accountId else { return }
 
         do {
-            let (response, error) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
-            reportError(error)
-            guard let response else { return }
+            guard let response = try await createPhoneVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth) else { return }
 
-            if let proveAuthToken = response.proveAuthToken {
-                // Prove flow: run SDK, then confirm with verificationId from create response
-                let confirmHandler: ProveConfirmHandler = { accountId, verificationId in
-                    let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId)
-                    if let networkingError { throw networkingError }
-                }
-                let proveService = ProveAuthService(accountId: accountId, verificationId: response.id, confirmHandler: confirmHandler, otpProvider: { [weak self] in
-                    await self?.requestProveOTP()
-                })
-                _ = try await proveService.authenticateWith(authToken: proveAuthToken)
-                self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
-                await checkExistingAccount()
-            } else {
+            guard let proveAuthToken = response.proveAuthToken else {
                 // Twilio flow: SMS sent, show OTP entry screen
                 pendingTwilioVerificationId = response.id
                 pendingTwilioVerificationAccountId = accountId
+                return
             }
+
+            // Prove flow: run SDK, then confirm with verificationId from create response
+            proveOTPCancelledByUser = false
+            do {
+                _ = try await runProveAuth(accountId: accountId, verificationId: response.id, authToken: proveAuthToken)
+            } catch let proveError {
+                await fallBackToTwilio(after: proveError, accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+                return
+            }
+            self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+            await checkExistingAccount()
         } catch let error {
             print(error)
+            reportError(.unknownError)
         }
     }
 
+    /// Creates a phone verification, reporting any returned error to the applicant.
+    /// - Returns: The created verification, or `nil` when the request failed.
+    private func createPhoneVerification(accountId: String, phoneNumber: String, dateOfBirth: String) async throws -> PhoneOTPVerificationCreateResponse? {
+        let (response, error) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+        reportError(error)
+        return response
+    }
+
+    /// Runs the Prove SDK against `authToken`, confirming with the backend on success.
+    private func runProveAuth(accountId: String, verificationId: String, authToken: String) async throws -> Bool {
+        let confirmHandler: ProveConfirmHandler = { accountId, verificationId in
+            let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId)
+            if let networkingError { throw networkingError }
+        }
+        let proveService = ProveAuthService(accountId: accountId, verificationId: verificationId, confirmHandler: confirmHandler, otpProvider: { [weak self] in
+            await self?.requestProveOTP()
+        })
+        return try await proveService.authenticateWith(authToken: authToken)
+    }
+
+    /// Recovers from a failed Prove attempt by creating a second verification, which the backend
+    /// routes to Twilio.
+    ///
+    /// The fallback is decided server-side at create: a recent Prove attempt on this number that
+    /// never verified sends the retry to Twilio with no `prove_auth_token`, so the recovery is
+    /// simply to create again rather than to interpret the failure. Re-creating is what the
+    /// backend's own end-to-end contract expects — create → refused confirm → create → confirm.
+    ///
+    /// A cancel is not a failure to recover from: the applicant dismissed the sheet and is
+    /// returned to the phone form, where tapping Continue starts this over.
+    private func fallBackToTwilio(after proveError: Error, accountId: String, phoneNumber: String, dateOfBirth: String) async {
+        guard !proveOTPCancelledByUser else {
+            proveOTPCancelledByUser = false
+            return
+        }
+
+        let retry = try? await createPhoneVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
+
+        // Only a Twilio verification can be confirmed with a typed code. A retry that comes back
+        // on Prove again (or not at all) has no code-entry path, so report the original failure
+        // rather than stranding the applicant on a screen that cannot succeed.
+        guard let retry, retry.proveAuthToken == nil else {
+            reportProveFailure(proveError)
+            return
+        }
+
+        pendingTwilioVerificationId = retry.id
+        pendingTwilioVerificationAccountId = accountId
+    }
+
+    /// Surfaces a failed Prove authentication to the applicant.
+    ///
+    /// Prove failure previously fell into a `print`-only `catch`, which left the screen on the
+    /// phone form with no message and no way forward but to re-tap Continue. Reached only when
+    /// the Twilio fallback could not be established, so this is the applicant's last word on the
+    /// attempt. A `NetworkingError` came from the confirm call inside ``ProveConfirmHandler`` and
+    /// already carries a server message; anything else is a Prove SDK error and gets generic copy.
+    private func reportProveFailure(_ error: Error) {
+        print(error)
+        // A Prove SDK error isn't a NetworkingError, so it falls through to the generic copy.
+        let networkingError = (error as? NetworkingError) ?? .unknownError
+        FrameToastCenter.shared.show(networkingError.toastMessage(fallback: "We couldn't verify your phone number. Please try again."))
+    }
+
     /// Confirm Twilio OTP when user submits code on SecurePMVerificationView (phone type).
-    func confirmTwilioOTP(code: String) async {
+    ///
+    /// On failure the pending verification is left intact so the applicant can retry the same
+    /// verification with a corrected code rather than being sent back to start a new one.
+    ///
+    /// - Returns: `true` when the code was accepted.
+    func confirmTwilioOTP(code: String) async -> Bool {
         guard let accountId = pendingTwilioVerificationAccountId,
-              let verificationId = pendingTwilioVerificationId else { return }
-        guard beginAction() else { return }
+              let verificationId = pendingTwilioVerificationId else { return false }
+        guard beginAction() else { return false }
         defer { endAction() }
 
         do {
             let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
-            reportError(networkingError)
-            if let networkingError { throw networkingError }
+            if let networkingError {
+                reportError(networkingError)
+                return false
+            }
             self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
             self.pendingTwilioVerificationId = nil
             self.pendingTwilioVerificationAccountId = nil
             await checkExistingAccount()
+            return true
         } catch let error {
             print(error)
+            reportError(.unknownError)
+            return false
         }
     }
     
@@ -405,6 +483,8 @@ class OnboardingContainerViewModel: ObservableObject {
 
     /// Called when user cancels the Prove OTP sheet.
     func cancelProveOTP() {
+        guard proveOTPContinuation != nil else { return }
+        proveOTPCancelledByUser = true
         proveOTPContinuation?.resume(returning: nil)
         proveOTPContinuation = nil
         showProveOTPEntry = false
