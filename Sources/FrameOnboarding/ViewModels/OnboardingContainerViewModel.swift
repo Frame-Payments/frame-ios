@@ -94,6 +94,10 @@ class OnboardingContainerViewModel: ObservableObject {
     var existingAccountHasTOS: Bool = false
     let formatter = ISO8601DateFormatter()
 
+    /// True when this flow began the active onboarding session — either from a host-supplied client
+    /// secret or a self-minted one — and is therefore responsible for ending it on completion/dismiss.
+    private(set) var ownsOnboardingSession = false
+
     init(accountId: String?,
          requiredCapabilities: [FrameObjects.Capabilities]) {
         self.accountId = accountId
@@ -208,9 +212,26 @@ class OnboardingContainerViewModel: ObservableObject {
             reportError(error)
             guard let clientSecret = session?.clientSecret else { return }
             FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
+            ownsOnboardingSession = true
         } catch let error {
             print(error)
         }
+    }
+
+    /// Binds every onboarding request to a host-supplied session token and records that this flow
+    /// owns the session, so it's ended when the flow completes or is dismissed.
+    func beginOnboardingSession(clientSecret: String) {
+        FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
+        ownsOnboardingSession = true
+    }
+
+    /// Ends the onboarding session only when this flow began it, so later SDK calls revert to
+    /// `pk_`/`sk_` authentication. Guarding on ownership keeps a container that never started a
+    /// session from wiping one another flow may own.
+    func endOnboardingSessionIfOwned() {
+        guard ownsOnboardingSession else { return }
+        FrameNetworking.shared.endOnboardingSession()
+        ownsOnboardingSession = false
     }
 
     // Create new individual account if no ID was previously provided to start onboarding.

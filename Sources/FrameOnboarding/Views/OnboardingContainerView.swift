@@ -174,7 +174,7 @@ public struct OnboardingContainerView: View {
             // Bind every onboarding request to the onboarding-session token (onb_sess_…) for the
             // lifetime of the flow, so calls authenticate per-account instead of with a secret key.
             if let onboardingClientSecret {
-                FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
+                onboardingContainerViewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
             }
             if !showIntroScreen {
                 self.startedOnboarding = true
@@ -192,12 +192,12 @@ public struct OnboardingContainerView: View {
             guard continueToNextStep else { return }
             guard onboardingContainerViewModel.onboardingFlow.last != onboardingContainerViewModel.currentStep else {
                 // Mark finished BEFORE dismiss so the cancel guard in .onDisappear doesn't fire.
-                // The selected PaymentMethod id (if any) is what callers care about — Apple Pay
-                // / card / ACH all converge here. Emit empty string for the "completed without
-                // a method selection" path (rare; covers flows where onboarding only verifies
-                // identity rather than collecting a payment method).
+                // Return the onboarded account id — that's what callers need to scope follow-up
+                // flows (e.g. checkout loads payment methods per account). Covers both the
+                // pre-existing account and the account created during onboarding. Emit empty
+                // string only if onboarding somehow finished without an account.
                 didFinish = true
-                onResult(.completed(id: onboardingContainerViewModel.selectedPaymentMethod?.id ?? ""))
+                onResult(.completed(id: onboardingContainerViewModel.accountId ?? ""))
                 self.dismiss()
                 return
             } // Complete onboarding here.
@@ -235,11 +235,10 @@ public struct OnboardingContainerView: View {
             guard !onboardingContainerViewModel.isPerformingAction else { return }
 
             // End the onboarding session so later SDK calls revert to pk_/sk_ authentication.
-            // Only clear it when this view actually began one, so a legacy (clientSecret == nil)
-            // container dismissing doesn't wipe a session another flow may have started.
-            if onboardingClientSecret != nil {
-                FrameNetworking.shared.endOnboardingSession()
-            }
+            // Covers both a host-supplied secret and a session the flow self-minted after creating
+            // the account (clientSecret == nil), which would otherwise leak into a later checkout.
+            // Ownership-gated so a container that never began one doesn't wipe another flow's session.
+            onboardingContainerViewModel.endOnboardingSessionIfOwned()
             if !didFinish {
                 didFinish = true
                 onResult(.cancelled)
