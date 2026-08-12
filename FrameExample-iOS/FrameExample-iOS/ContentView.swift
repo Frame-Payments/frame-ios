@@ -34,7 +34,7 @@ struct ContentView: View {
     @State var applePayResult: String? = nil
 
     // Replace with an accountID from your dashboard.
-    var accountId: String = "ENTER_AN_ACCOUNT_ID"
+    @State var accountId: String = "ENTER_AN_ACCOUNT_ID"
     
     var body: some View {
         VStack {
@@ -101,7 +101,16 @@ struct ContentView: View {
             // clientSecret is the onb_sess_… token minted above; the SDK binds every onboarding
             // request to it, scoping the flow to a single account.
             OnboardingContainerView(clientSecret: viewModel.onboardingClientSecret,
-                                    requiredCapabilities: [.kycPrefill, .cardSend, .geoCompliance, .bankAccountReceive, .ageVerification])
+                                    requiredCapabilities: [.kycPrefill, .geoCompliance, .ageVerification]) { result in
+                switch result {
+                case .completed(let id):
+                    accountId = id
+                case .cancelled:
+                    return
+                case .failed(let error):
+                    print(error.localizedDescription)
+                }
+            }
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(accountId: accountId,

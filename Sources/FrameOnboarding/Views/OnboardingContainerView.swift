@@ -192,12 +192,12 @@ public struct OnboardingContainerView: View {
             guard continueToNextStep else { return }
             guard onboardingContainerViewModel.onboardingFlow.last != onboardingContainerViewModel.currentStep else {
                 // Mark finished BEFORE dismiss so the cancel guard in .onDisappear doesn't fire.
-                // The selected PaymentMethod id (if any) is what callers care about — Apple Pay
-                // / card / ACH all converge here. Emit empty string for the "completed without
-                // a method selection" path (rare; covers flows where onboarding only verifies
-                // identity rather than collecting a payment method).
+                // Return the onboarded account id — that's what callers need to scope follow-up
+                // flows (e.g. checkout loads payment methods per account). Covers both the
+                // pre-existing account and the account created during onboarding. Emit empty
+                // string only if onboarding somehow finished without an account.
                 didFinish = true
-                onResult(.completed(id: onboardingContainerViewModel.selectedPaymentMethod?.id ?? ""))
+                onResult(.completed(id: onboardingContainerViewModel.accountId ?? ""))
                 self.dismiss()
                 return
             } // Complete onboarding here.
