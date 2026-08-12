@@ -100,6 +100,23 @@ final class PhoneOTPRetryTests: XCTestCase {
         XCTAssertNil(viewModel.proveUserInfo, "no code has been confirmed yet")
     }
 
+    /// `submitProveOTP` lowers `showProveOTPEntry` to dismiss the sheet *before* Prove judges the
+    /// code, so at failure time the sheet is already gone. The fallback must therefore key off
+    /// "was an OTP requested", not off the sheet being up — reading the latter would skip the
+    /// swap in exactly the case it exists for.
+    func testSheetIsAlreadyDismissedWhenProveJudgesTheSubmittedCode() async {
+        let viewModel = makeViewModel()
+
+        async let pendingCode = viewModel.requestProveOTP()
+        while !viewModel.showProveOTPEntry { await Task.yield() }
+        viewModel.submitProveOTP("123456")
+
+        let code = await pendingCode
+        XCTAssertEqual(code, "123456")
+        XCTAssertFalse(viewModel.showProveOTPEntry,
+                       "the sheet closes on submit, before Prove has accepted or rejected the code")
+    }
+
     // MARK: - Confirm
 
     /// Without a pending verification there is nothing to confirm. The view keys "advance to the

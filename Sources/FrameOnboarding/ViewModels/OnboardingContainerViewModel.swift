@@ -66,6 +66,16 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var pendingTwilioVerificationAccountId: String?
     @Published var isPerformingAction: Bool = false
 
+    /// Set when Prove fails after its OTP sheet was used and the Twilio fallback takes over. The
+    /// sheet is (re)presented as `.phone`, so the applicant keeps a code-entry screen in front of
+    /// them instead of being dropped back to the phone form.
+    @Published var proveSheetFellBackToTwilio: Bool = false
+
+    /// Set once the applicant has been asked for a Prove OTP on this attempt. `showProveOTPEntry`
+    /// cannot answer that at failure time: `submitProveOTP` lowers it to dismiss the sheet before
+    /// Prove has judged the code, so by the time the rejection arrives the sheet is already gone.
+    private var proveOTPWasRequested: Bool = false
+
     /// Set when the applicant dismisses the Prove OTP sheet. The Prove SDK reports that
     /// cancellation as an ordinary auth error, so this distinguishes "user backed out" from
     /// "Prove failed" and keeps `sendOTPVerification` from toasting on a deliberate dismiss.
@@ -353,6 +363,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             // Prove flow: run SDK, then confirm with verificationId from create response
             proveOTPCancelledByUser = false
+            proveOTPWasRequested = false
             do {
                 _ = try await runProveAuth(accountId: accountId, verificationId: response.id, authToken: proveAuthToken)
             } catch let proveError {
@@ -403,18 +414,41 @@ class OnboardingContainerViewModel: ObservableObject {
             return
         }
 
+        // An applicant who was asked for a Prove code is looking at a code-entry screen (or just
+        // watched it dismiss on submit). Keeping them on one is what makes this read as "that
+        // code failed, here's a new one" rather than as the screen disappearing on them.
+        let applicantWasEnteringACode = proveOTPWasRequested
         let retry = try? await createPhoneVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
 
         // Only a Twilio verification can be confirmed with a typed code. A retry that comes back
         // on Prove again (or not at all) has no code-entry path, so report the original failure
         // rather than stranding the applicant on a screen that cannot succeed.
         guard let retry, retry.proveAuthToken == nil else {
+            dismissProveOTPSheet()
             reportProveFailure(proveError)
             return
         }
 
         pendingTwilioVerificationId = retry.id
         pendingTwilioVerificationAccountId = accountId
+
+        // Re-present the sheet as Twilio entry for an applicant already mid-code. One who never
+        // saw it (silent Prove auth) has no sheet to keep, and reaches the same code screen via
+        // the phone form's existing `pendingTwilioVerificationId` branch.
+        if applicantWasEnteringACode {
+            proveSheetFellBackToTwilio = true
+            showProveOTPEntry = true
+        }
+
+        FrameToastCenter.shared.show("Phone verification service failed. We've sent a second code — please try again.")
+    }
+
+    /// Closes the Prove OTP sheet without resuming a continuation — the flow, not the applicant,
+    /// is ending the Prove attempt. ``cancelProveOTP`` is the applicant-driven counterpart, and
+    /// the one that must resume the continuation the Prove SDK is waiting on.
+    func dismissProveOTPSheet() {
+        showProveOTPEntry = false
+        proveSheetFellBackToTwilio = false
     }
 
     /// Surfaces a failed Prove authentication to the applicant.
@@ -468,6 +502,7 @@ class OnboardingContainerViewModel: ObservableObject {
         endAction()
         let code = await withCheckedContinuation { continuation in
             self.proveOTPContinuation = continuation
+            self.proveOTPWasRequested = true
             self.showProveOTPEntry = true
         }
         _ = beginAction()

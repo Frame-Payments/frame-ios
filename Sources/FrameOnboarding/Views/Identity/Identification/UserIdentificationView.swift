@@ -48,6 +48,10 @@ struct UserIdentificationView: View {
 
     @State private var returnToPhoneNumberEntry: Bool = false
     @State private var continueToCustomerInfoStep: Bool = false
+    /// Set by the Prove OTP sheet once it has fallen back to Twilio and the typed code verified.
+    @State private var proveSheetVerified: Bool = false
+    /// Set when the fallback sheet's back button asks to close it.
+    @State private var proveSheetDismissed: Bool = false
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
@@ -132,12 +136,40 @@ struct UserIdentificationView: View {
         }
         .sheet(isPresented: Binding(
             get: { onboardingContainerViewModel.showProveOTPEntry },
-            set: { if !$0 { onboardingContainerViewModel.cancelProveOTP() } }
+            set: { presented in
+                guard !presented else { return }
+                // After the Twilio fallback the Prove SDK is no longer waiting on anything, so a
+                // swipe-down closes the sheet rather than cancelling a continuation that's gone.
+                if onboardingContainerViewModel.proveSheetFellBackToTwilio {
+                    onboardingContainerViewModel.dismissProveOTPSheet()
+                } else {
+                    onboardingContainerViewModel.cancelProveOTP()
+                }
+            }
         )) {
-            SecurePMVerificationView(type: .proveOtp,
+            // Prove can fail while this sheet is up; the fallback keeps it presented and swaps it
+            // to Twilio entry so the applicant keeps a code screen instead of watching one vanish.
+            SecurePMVerificationView(type: onboardingContainerViewModel.proveSheetFellBackToTwilio ? .phone : .proveOtp,
                                     onboardingContainerViewModel: onboardingContainerViewModel,
-                                    continueToNextStep: .constant(false),
-                                    returnToPreviousStep: .constant(false))
+                                    continueToNextStep: $proveSheetVerified,
+                                    returnToPreviousStep: $proveSheetDismissed)
+        }
+        .onChange(of: proveSheetDismissed) { _, dismissed in
+            // `.phone`'s back button routes through returnToPreviousStep; in the fallback sheet
+            // that means "close me", leaving the applicant on the phone form to start over.
+            if dismissed {
+                onboardingContainerViewModel.dismissProveOTPSheet()
+                self.proveSheetDismissed = false
+            }
+        }
+        .onChange(of: proveSheetVerified) { _, verified in
+            // The Twilio code entered in the fallback sheet was accepted — close the sheet and
+            // continue from the step the phone form would have advanced to.
+            if verified {
+                onboardingContainerViewModel.dismissProveOTPSheet()
+                self.proveSheetVerified = false
+                self.identitySteps = .information
+            }
         }
     }
     

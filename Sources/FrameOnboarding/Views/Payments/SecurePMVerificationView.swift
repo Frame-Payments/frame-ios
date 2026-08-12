@@ -119,6 +119,12 @@ struct SecurePMVerificationView: View {
 
             Spacer()
         }
+        .onChange(of: type) { _, _ in
+            // This view is reused in place when the Prove sheet falls back to Twilio. The digit
+            // boxes are @State and survive that swap, so the dead Prove code has to be cleared or
+            // the applicant would be looking at it with the Continue button already enabled.
+            clearEnteredCode()
+        }
     }
     
     var codeContainerStack: some View {
