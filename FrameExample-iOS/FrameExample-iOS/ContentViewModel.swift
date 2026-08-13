@@ -241,4 +241,24 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
             print(error.localizedDescription)
         }
     }
+    
+    func createEmptyIndividualAccount(capabilities: [FrameObjects.Capabilities]) async -> String? {
+        // Note: callers (e.g. sendOTPVerification) already hold the action guard. Don't double-guard.
+        do {
+            let individualAccount = AccountRequest.CreateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: "", lastName: ""),
+                                                                           email: "newaccount@gmail.com",
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: "", countryCode: ""),
+                                                                           address: nil,
+                                                                           birthdate: nil,
+                                                                           ssn: nil)
+            let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
+            let request = AccountRequest.CreateAccountRequest(accountType: .individual, profile: profile, capabilities: capabilities)
+            let (account, _) = try await AccountsAPI.createAccount(request: request)
+            guard let account else { return nil }
+            return account.id
+        } catch let error {
+            print(error)
+            return nil
+        }
+    }
 }

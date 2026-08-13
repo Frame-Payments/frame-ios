@@ -99,15 +99,15 @@ extension FrameObjects {
     /// A phone number with its associated country dialing code.
     public struct AccountPhoneNumber: Codable, Sendable, Equatable {
         /// Local phone number, without the country code.
-        public let number: String
+        public let number: String?
         /// ISO 3166-1 alpha-2 country code (e.g., "US").
-        public let countryCode: String
+        public let countryCode: String?
 
         /// Creates a phone number value.
         /// - Parameters:
         ///   - number: Local phone number digits.
         ///   - countryCode: ISO 3166-1 alpha-2 country code.
-        public init(number: String, countryCode: String) {
+        public init(number: String?, countryCode: String?) {
             self.number = number
             self.countryCode = countryCode
         }

@@ -178,6 +178,11 @@ public class FrameNetworking: ObservableObject {
             return token
         }
 
+        // During onboarding, every other request is authenticated by the onboarding-session token.
+        if let onboardingSessionToken {
+            return onboardingSessionToken
+        }
+        
         // An explicit publishable-key request also wins over the onboarding session: endpoints like
         // terms_of_service and device_attestation are merchant-level (not account-scoped) and the
         // backend only accepts a pk_ there — sending the onb_sess_ token would be rejected with
@@ -189,12 +194,7 @@ public class FrameNetworking: ObservableObject {
             }
             return apiPublishableKey
         }
-
-        // During onboarding, every other request is authenticated by the onboarding-session token.
-        if let onboardingSessionToken {
-            return onboardingSessionToken
-        }
-
+        
         switch auth {
         case .publishable:
             // Handled by the early return above; unreachable here.

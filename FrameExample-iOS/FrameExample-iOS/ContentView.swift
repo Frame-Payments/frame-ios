@@ -35,6 +35,7 @@ struct ContentView: View {
 
     // Replace with an accountID from your dashboard.
     @State var accountId: String = "ENTER_AN_ACCOUNT_ID"
+    let requiredCapabilities: [FrameObjects.Capabilities] = [.kycPrefill, .geoCompliance, .ageVerification]
     
     var body: some View {
         VStack {
@@ -101,7 +102,8 @@ struct ContentView: View {
             // clientSecret is the onb_sess_… token minted above; the SDK binds every onboarding
             // request to it, scoping the flow to a single account.
             OnboardingContainerView(clientSecret: viewModel.onboardingClientSecret,
-                                    requiredCapabilities: [.kycPrefill, .geoCompliance, .ageVerification]) { result in
+                                    accountId: accountId,
+                                    requiredCapabilities: requiredCapabilities) { result in
                 switch result {
                 case .completed(let id):
                     accountId = id
@@ -308,8 +310,14 @@ struct ContentView: View {
             // presenting the flow, then launch. Production apps mint this token on their backend
             // (POST /v1/onboarding_sessions) and pass it in as the clientSecret — see ContentViewModel.
             Task {
-                await viewModel.mintOnboardingClientSecret(accountId: accountId)
-                self.showOnboardingSheet = true
+                if UUID(uuidString: accountId) == nil  {
+                    self.accountId = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    await viewModel.mintOnboardingClientSecret(accountId: accountId)
+                    self.showOnboardingSheet = true
+                } else {
+                    await viewModel.mintOnboardingClientSecret(accountId: accountId)
+                    self.showOnboardingSheet = true
+                }
             }
         } label: {
             Text("Show Onboarding Flow")
