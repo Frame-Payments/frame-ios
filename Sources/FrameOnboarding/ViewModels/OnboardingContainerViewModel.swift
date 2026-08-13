@@ -708,6 +708,10 @@ class OnboardingContainerViewModel: ObservableObject {
             ? await createIndividualAccount()
             : await updateExistingIndividualAccount()
 
+        if let capabilities = account?.capabilities {
+            self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
+        }
+
         // Submission failed — the create/update path already surfaced a toast. Stay on the step
         // rather than advancing past data the API never accepted.
         guard account != nil else { return false }
