@@ -15,11 +15,17 @@ public struct PhoneOTPVerificationCreateResponse: Codable {
     public let type: String
     /// Current status of the verification session.
     public let status: String
+    /// The provider handling this verification — `prove`, `twilio`, or `sandbox`.
+    ///
+    /// Authoritative for which path to run. The backend routes a retry to `twilio` when a
+    /// recent Prove attempt on the same number never verified, so re-creating after a Prove
+    /// failure is what moves the applicant onto the code-entry path.
+    public let provider: String?
     /// Prove auth token associated with the session, if available.
     public let proveAuthToken: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, type, status
+        case id, type, status, provider
         case proveAuthToken = "prove_auth_token"
     }
 }

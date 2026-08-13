@@ -92,9 +92,11 @@ struct SecurePMVerificationView: View {
 //                        await onboardingContainerViewModel.retrieve3DSChallenge(verificationId: enteredCode)
                         self.continueToNextStep = true
                     case .phone:
-                        await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode)
-                        if onboardingContainerViewModel.proveUserInfo != nil {
+                        if await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode) {
                             self.continueToNextStep = true
+                        } else {
+                            // The toast explains why; clear the boxes so the code can be retyped.
+                            clearEnteredCode()
                         }
                     case .proveOtp:
                         onboardingContainerViewModel.submitProveOTP(enteredCode)
@@ -116,6 +118,12 @@ struct SecurePMVerificationView: View {
             }
 
             Spacer()
+        }
+        .onChange(of: type) { _, _ in
+            // This view is reused in place when the Prove sheet falls back to Twilio. The digit
+            // boxes are @State and survive that swap, so the dead Prove code has to be cleared or
+            // the applicant would be looking at it with the Continue button already enabled.
+            clearEnteredCode()
         }
     }
     
@@ -189,6 +197,19 @@ struct SecurePMVerificationView: View {
             }
     }
     
+    /// Empties every digit box and returns focus to the first one, so a rejected code can be
+    /// retyped without the applicant having to clear six fields by hand.
+    func clearEnteredCode() {
+        codeInputOne = ""
+        codeInputTwo = ""
+        codeInputThree = ""
+        codeInputFour = ""
+        codeInputFive = ""
+        codeInputSix = ""
+        updateMainCodeInput()
+        focusedField = 0
+    }
+
     func updateMainCodeInput() {
         self.enteredCode = codeInputOne + codeInputTwo + codeInputThree + codeInputFour + codeInputFive + codeInputSix
         self.codeInput = enteredCode.count == codeCount
