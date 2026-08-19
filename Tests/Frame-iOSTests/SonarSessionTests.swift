@@ -32,6 +32,201 @@ final class SessionRequestBodyTests: XCTestCase {
         XCTAssertEqual(json["fingerprint_visitor_id"] as? String, "visitor_1")
         XCTAssertNil(json["account_id"])
     }
+
+    /// The pair travels together: the sealed result is what an activated environment
+    /// identifies by, and the visitor id is what every environment before it used.
+    func testEncodesSealedResultAlongsideVisitorId() throws {
+        let json = try encode(SessionRequestBody(fingerprintVisitorId: "visitor_1",
+                                                 accountId: "acc_1",
+                                                 sealedResult: "c2VhbGVk"))
+
+        XCTAssertEqual(json["fingerprint_visitor_id"] as? String, "visitor_1")
+        XCTAssertEqual(json["account_id"] as? String, "acc_1")
+        XCTAssertEqual(json["sealed_result"] as? String, "c2VhbGVk")
+    }
+
+    /// `sealed_result: null` is not the same request as one that omits the key — the
+    /// server branches on `.present?`, so a null would still have to be the legacy path
+    /// but says something different about what the client tried to do.
+    func testOmitsSealedResultWhenFingerprintServedNone() throws {
+        let json = try encode(SessionRequestBody(fingerprintVisitorId: "visitor_1"))
+
+        XCTAssertNil(json["sealed_result"])
+        XCTAssertFalse(json.keys.contains("sealed_result"))
+    }
+
+    /// The post-activation shape: Fingerprint withholds the visitor id and the sealed
+    /// result carries identity on its own. The body still has to encode.
+    func testEncodesSealedResultWithWithheldVisitorId() throws {
+        let identification = FingerprintIdentification(visitorId: "", sealedResult: "c2VhbGVk")
+        let json = try encode(SessionRequestBody(identification: identification, accountId: "acc_1"))
+
+        XCTAssertEqual(json["fingerprint_visitor_id"] as? String, "")
+        XCTAssertEqual(json["sealed_result"] as? String, "c2VhbGVk")
+    }
+}
+
+// MARK: - Sealed identification on the wire
+
+/// What the session endpoints actually receive on each side of the sealed environment
+/// being activated. The dual-path requirement lives or dies here.
+final class SealedSessionRequestTests: XCTestCase {
+
+    private var storage: SpySessionStorage!
+    private var manager: SessionManager!
+    private var originalSession: URLSessionProtocol!
+    private var network: BodyCapturingStub!
+
+    override func setUp() {
+        super.setUp()
+        storage = SpySessionStorage()
+        manager = SessionManager(storage: storage)
+        originalSession = FrameNetworking.shared.asyncURLSession
+        network = BodyCapturingStub()
+        FrameNetworking.shared.asyncURLSession = network
+        FingerprintManager.resetForTesting()
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = originalSession
+        FingerprintManager.resetForTesting()
+        super.tearDown()
+    }
+
+    private func createBody(for identification: FingerprintIdentification) async throws -> [String: Any] {
+        FingerprintManager.identificationOverride = { identification }
+        _ = try? await manager.ensureSession(accountId: "acc_1")
+        return try XCTUnwrap(network.lastSessionBody)
+    }
+
+    /// Pre-activation: Fingerprint serves both, and both go out. Sending only the sealed
+    /// result here would leave an unactivated environment with nothing to identify by.
+    func testSendsBothWhenFingerprintServesBoth() async throws {
+        let body = try await createBody(for: FingerprintIdentification(visitorId: "visitor_1",
+                                                                       sealedResult: "c2VhbGVk"))
+
+        XCTAssertEqual(body["fingerprint_visitor_id"] as? String, "visitor_1")
+        XCTAssertEqual(body["sealed_result"] as? String, "c2VhbGVk")
+    }
+
+    /// Post-activation: the visitor id is withheld and the sealed result carries identity
+    /// alone. This is the case that used to throw before the session was ever created.
+    func testCreatesSessionWhenOnlyTheSealedResultIsServed() async throws {
+        let body = try await createBody(for: FingerprintIdentification(visitorId: "",
+                                                                       sealedResult: "c2VhbGVk"))
+
+        XCTAssertEqual(body["sealed_result"] as? String, "c2VhbGVk")
+        XCTAssertNotNil(network.lastSessionBody, "an activated environment must still open a session")
+    }
+
+    /// The shipping case: sealing is off, so the request is exactly what it is today.
+    func testLegacyPathIsUnchangedWhenNothingIsSealed() async throws {
+        let body = try await createBody(for: FingerprintIdentification(visitorId: "visitor_1",
+                                                                       sealedResult: nil))
+
+        XCTAssertEqual(body["fingerprint_visitor_id"] as? String, "visitor_1")
+        XCTAssertFalse(body.keys.contains("sealed_result"))
+    }
+
+    /// A sealed result is minted per request, never held: the API rejects one stamped more
+    /// than ten minutes from now, so a session touched later must carry a newer payload.
+    func testEachTouchMintsAFreshSealedResult() async throws {
+        var served = 0
+        FingerprintManager.identificationOverride = {
+            served += 1
+            return FingerprintIdentification(visitorId: "visitor_1", sealedResult: "sealed_\(served)")
+        }
+
+        _ = try? await manager.ensureSession(accountId: "acc_1")
+        await manager.refreshOnFlowEntry(accountId: "acc_1")
+
+        XCTAssertGreaterThan(served, 1, "a second touch must ask Fingerprint again, not replay")
+        XCTAssertEqual(network.sessionBodies.last?["sealed_result"] as? String, "sealed_\(served)")
+    }
+}
+
+// MARK: - Identification usability
+
+/// An empty visitor id stopped being a failure when environments began withholding it.
+/// What makes an identification unusable now is having neither half.
+final class FingerprintIdentificationTests: XCTestCase {
+
+    func testVisitorIdAloneIsUsable() {
+        XCTAssertTrue(FingerprintIdentification(visitorId: "visitor_1", sealedResult: nil).isUsable)
+    }
+
+    func testSealedResultAloneIsUsable() {
+        XCTAssertTrue(FingerprintIdentification(visitorId: "", sealedResult: "c2VhbGVk").isUsable)
+    }
+
+    func testNeitherHalfIsUnusable() {
+        XCTAssertFalse(FingerprintIdentification(visitorId: "", sealedResult: nil).isUsable)
+    }
+}
+
+// MARK: - Fingerprint configuration
+
+/// The configuration endpoint answers an unrecognised capability with the legacy key and
+/// HTTP 200, so "the fetch succeeded" proves nothing. The stamp is the only evidence of
+/// which regime the key belongs to.
+final class FingerprintConfigurationResponseTests: XCTestCase {
+
+    private func decode(_ json: String) throws -> ConfigurationResponses.GetFingerprintConfigurationResponse {
+        try JSONDecoder().decode(ConfigurationResponses.GetFingerprintConfigurationResponse.self,
+                                 from: XCTUnwrap(json.data(using: .utf8)))
+    }
+
+    func testDecodesTheEnvironmentStamp() throws {
+        let config = try decode(#"{"api_key":"pk_1","region":"us","environment":"sealed"}"#)
+
+        XCTAssertEqual(config.apiKey, "pk_1")
+        XCTAssertEqual(config.region, "us")
+        XCTAssertTrue(config.isSealed)
+    }
+
+    func testLegacyStampIsNotSealed() throws {
+        XCTAssertFalse(try decode(#"{"api_key":"pk_1","region":"us","environment":"legacy"}"#).isSealed)
+    }
+
+    /// A response predating the stamp decodes rather than throwing, but carries no
+    /// stamp — which is what sends a cached copy back to the network instead of being
+    /// trusted, since nothing about it says which key it holds.
+    func testMissingStampDecodesButIsNotTrusted() throws {
+        let config = try decode(#"{"api_key":"pk_1","region":"us"}"#)
+
+        XCTAssertEqual(config.apiKey, "pk_1")
+        XCTAssertFalse(config.isSealed)
+        XCTAssertFalse(config.hasEnvironmentStamp)
+    }
+
+    /// A legacy stamp is still a stamp. A rollback serves legacy keys deliberately, and
+    /// a cached one is what keeps that build working offline — discarding it would leave
+    /// the device with no credentials at all.
+    func testLegacyStampIsStillTrustedForCaching() throws {
+        let config = try decode(#"{"api_key":"pk_1","region":"us","environment":"legacy"}"#)
+
+        XCTAssertFalse(config.isSealed)
+        XCTAssertTrue(config.hasEnvironmentStamp)
+    }
+}
+
+// MARK: - Capability declaration
+
+/// A capability the server does not recognise is not an error: it returns the legacy key
+/// and HTTP 200. So the exact header name and value are load-bearing.
+final class FingerprintCapabilityHeaderTests: XCTestCase {
+
+    func testFingerprintConfigDeclaresSealedCapability() {
+        let headers = ConfigurationEndpoints.getFingerprintConfiguration.additionalHeaders
+
+        XCTAssertEqual(headers["X-Frame-Sonar"], "sealed")
+    }
+
+    func testOtherConfigEndpointsDeclareNothing() {
+        XCTAssertTrue(ConfigurationEndpoints.getSiftConfiguration.additionalHeaders.isEmpty)
+        XCTAssertTrue(ConfigurationEndpoints.getLegalConfiguration.additionalHeaders.isEmpty)
+        XCTAssertTrue(ConfigurationEndpoints.getEvervaultConfiguration.additionalHeaders.isEmpty)
+    }
 }
 
 // MARK: - Per-account storage
@@ -153,6 +348,68 @@ final class TransferSonarSessionTests: XCTestCase {
 
 /// Records what the manager read and wrote, so the fresh/stale/absent decision can be asserted
 /// without a live server.
+/// Records the request paths the manager produced, serving Fingerprint configuration and
+/// failing everything else.
+///
+/// These tests assert which session endpoint was reached, so identification has to get far
+/// enough to build a request — a stub that fails the config fetch too stops the manager
+/// before it ever calls one. Recording the path is what replaced inferring it from a throw
+/// that no longer happens now that Fingerprint can identify without a visitor id.
+private final class RecordingSessionStub: URLSessionProtocol, @unchecked Sendable {
+    private(set) var requestedPaths: [String] = []
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let path = request.url?.path ?? ""
+        requestedPaths.append(path)
+
+        guard path == "/v1/config/fingerprint" else {
+            throw URLError(.notConnectedToInternet)
+        }
+
+        let body = Data(#"{"api_key":"pk_test","region":"us","environment":"sealed"}"#.utf8)
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return (body, response)
+    }
+}
+
+/// Serves Fingerprint configuration and a session id, recording the session request bodies.
+private final class BodyCapturingStub: URLSessionProtocol, @unchecked Sendable {
+    private(set) var sessionBodies: [[String: Any]] = []
+
+    var lastSessionBody: [String: Any]? { sessionBodies.last }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let path = request.url?.path ?? ""
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+
+        if path == "/v1/config/fingerprint" {
+            return (Data(#"{"api_key":"pk_test","region":"us","environment":"sealed"}"#.utf8), response)
+        }
+
+        // URLRequest moves a body set on the request into httpBodyStream once it is sent.
+        if let body = request.httpBody ?? request.httpBodyStream.map(Self.drain),
+           let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any] {
+            sessionBodies.append(json)
+        }
+
+        return (Data(#"{"sonar_session_id":"fps_test_1"}"#.utf8), response)
+    }
+
+    private static func drain(_ stream: InputStream) -> Data {
+        stream.open()
+        defer { stream.close() }
+        var data = Data()
+        let size = 4096
+        var buffer = [UInt8](repeating: 0, count: size)
+        while stream.hasBytesAvailable {
+            let read = stream.read(&buffer, maxLength: size)
+            if read <= 0 { break }
+            data.append(buffer, count: read)
+        }
+        return data
+    }
+}
+
 private final class SpySessionStorage: SessionStorage, @unchecked Sendable {
     var sessions: [String: SessionId] = [:]
     var refreshes: [String: Date] = [:]
@@ -188,11 +445,33 @@ final class WarmUpFreshnessTests: XCTestCase {
 
     private var storage: SpySessionStorage!
     private var manager: SessionManager!
+    private var originalSession: URLSessionProtocol!
+    private var network: RecordingSessionStub!
 
     override func setUp() {
         super.setUp()
         storage = SpySessionStorage()
         manager = SessionManager(storage: storage)
+        // These assert on which path was taken, not on a response, so the request is
+        // stubbed to fail. Left to a live network the outcome depends on whether
+        // Fingerprint answered — which it now can without a visitor id, so the throw
+        // these once relied on no longer happens.
+        originalSession = FrameNetworking.shared.asyncURLSession
+        network = RecordingSessionStub()
+        FrameNetworking.shared.asyncURLSession = network
+        // Fingerprint cannot identify anything without a real key and a live service, so
+        // it is stood in for. These tests are about what the manager does with an
+        // identification, not about obtaining one.
+        FingerprintManager.resetForTesting()
+        FingerprintManager.identificationOverride = {
+            FingerprintIdentification(visitorId: "visitor_test", sealedResult: nil)
+        }
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = originalSession
+        FingerprintManager.resetForTesting()
+        super.tearDown()
     }
 
     func testFreshPreAccountSessionIsLeftAlone() async throws {
@@ -212,12 +491,14 @@ final class WarmUpFreshnessTests: XCTestCase {
         // Well outside the 15-minute freshness window.
         storage.refreshes["\u{0}pre-account"] = Date(timeIntervalSinceNow: -3600)
 
-        // No network in unit tests, so this throws; what matters is that the stale session was still
-        // the one being refreshed rather than cleared and replaced.
+        // The update fails, and a failed update legitimately clears and recreates — so a
+        // clear on its own proves nothing. What this guards is that the stale session was
+        // the one carried to the update endpoint, rather than abandoned for a fresh POST.
         _ = try? await manager.warmUp()
 
-        XCTAssertFalse(storage.clears.contains(where: { $0 == nil }),
-                       "A stale pre-account session must be refreshed in place, not cleared first.")
+        XCTAssertTrue(network.requestedPaths.contains("/v1/charge_sessions/fps_stale"),
+                      "A stale pre-account session must be refreshed in place, not replaced. "
+                      + "Requested: \(network.requestedPaths)")
     }
 
     /// With nothing stored there is no session to refresh, so the create path is the only option —
@@ -240,11 +521,33 @@ final class FlowEntryRefreshTests: XCTestCase {
 
     private var storage: SpySessionStorage!
     private var manager: SessionManager!
+    private var originalSession: URLSessionProtocol!
+    private var network: RecordingSessionStub!
 
     override func setUp() {
         super.setUp()
         storage = SpySessionStorage()
         manager = SessionManager(storage: storage)
+        // These assert on which path was taken, not on a response, so the request is
+        // stubbed to fail. Left to a live network the outcome depends on whether
+        // Fingerprint answered — which it now can without a visitor id, so the throw
+        // these once relied on no longer happens.
+        originalSession = FrameNetworking.shared.asyncURLSession
+        network = RecordingSessionStub()
+        FrameNetworking.shared.asyncURLSession = network
+        // Fingerprint cannot identify anything without a real key and a live service, so
+        // it is stood in for. These tests are about what the manager does with an
+        // identification, not about obtaining one.
+        FingerprintManager.resetForTesting()
+        FingerprintManager.identificationOverride = {
+            FingerprintIdentification(visitorId: "visitor_test", sealedResult: nil)
+        }
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = originalSession
+        FingerprintManager.resetForTesting()
+        super.tearDown()
     }
 
     /// The distinguishing behavior: entering a flow refreshes even a session that is still inside the
@@ -255,10 +558,11 @@ final class FlowEntryRefreshTests: XCTestCase {
 
         await manager.refreshOnFlowEntry()
 
-        // The update call fails without a network, so the point is that it was attempted at all — a
-        // freshness-gated path would have returned before touching the session.
-        XCTAssertFalse(storage.clears.contains(where: { $0 == nil }),
-                       "A fresh session must be updated in place, never cleared.")
+        // The point is that the update was attempted at all — a freshness-gated path would
+        // have returned without touching the session.
+        XCTAssertTrue(network.requestedPaths.contains("/v1/charge_sessions/fps_fresh"),
+                      "Entering a flow must refresh even a session inside the freshness window. "
+                      + "Requested: \(network.requestedPaths)")
     }
 
     /// An entry-point view must never throw into a SwiftUI `.task`; failures are swallowed by design.
@@ -287,11 +591,33 @@ final class KeepAliveLifecycleTests: XCTestCase {
 
     private var storage: SpySessionStorage!
     private var manager: SessionManager!
+    private var originalSession: URLSessionProtocol!
+    private var network: RecordingSessionStub!
 
     override func setUp() {
         super.setUp()
         storage = SpySessionStorage()
         manager = SessionManager(storage: storage)
+        // These assert on which path was taken, not on a response, so the request is
+        // stubbed to fail. Left to a live network the outcome depends on whether
+        // Fingerprint answered — which it now can without a visitor id, so the throw
+        // these once relied on no longer happens.
+        originalSession = FrameNetworking.shared.asyncURLSession
+        network = RecordingSessionStub()
+        FrameNetworking.shared.asyncURLSession = network
+        // Fingerprint cannot identify anything without a real key and a live service, so
+        // it is stood in for. These tests are about what the manager does with an
+        // identification, not about obtaining one.
+        FingerprintManager.resetForTesting()
+        FingerprintManager.identificationOverride = {
+            FingerprintIdentification(visitorId: "visitor_test", sealedResult: nil)
+        }
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = originalSession
+        FingerprintManager.resetForTesting()
+        super.tearDown()
     }
 
     /// `pause()` must leave nothing armed, or a suspended app fires requests mid-suspension.

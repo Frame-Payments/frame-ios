@@ -4,7 +4,11 @@ import Foundation
 
 /// Failures raised while establishing a Sonar fraud-detection session.
 public enum SessionManagerError: Error, Equatable {
-    /// Fingerprint could not identify the device, so no session can be created.
+    /// Fingerprint returned neither a visitor id nor a sealed result, so no session can be created.
+    ///
+    /// - Note: Named for the visitor id alone because it predates sealed results and
+    ///   is public API. An activated environment withholds the visitor id normally,
+    ///   which on its own is not this error.
     case missingVisitorId
 
     /// The session create or update request failed.
@@ -34,6 +38,11 @@ public actor SessionManager {
     /// How often the keep-alive re-touches the live session. Deliberately shorter than
     /// ``refreshInterval`` so a refresh always lands before the window closes, rather than the
     /// window expiring and the refresh falling onto the payment's critical path.
+    ///
+    /// - Note: This is unrelated to the ten-minute window the server applies to a
+    ///   sealed result's own timestamp, despite the matching duration. Each touch
+    ///   mints a new identification, so the payload it sends is seconds old however
+    ///   long this interval is.
     private static let keepAliveInterval: TimeInterval = 10 * 60
 
     /// A payment must not be held up indefinitely by the fingerprinting SDK.
@@ -249,7 +258,7 @@ public actor SessionManager {
     }
 
     private func createSession(accountId: String?) async throws -> SessionId {
-        let body = SessionRequestBody(fingerprintVisitorId: try await visitorId(), accountId: accountId)
+        let body = SessionRequestBody(identification: try await identification(), accountId: accountId)
         return try await perform(endpoint: SonarSessionEndpoints.create, body: body)
     }
 
@@ -259,7 +268,7 @@ public actor SessionManager {
     /// A `nil` `accountId` refreshes the pre-account session in place, keeping the same session ID so
     /// the device event accumulates against it rather than against a fresh orphan.
     private func refreshSession(_ session: SessionId, accountId: String?) async throws -> SessionId {
-        let body = SessionRequestBody(fingerprintVisitorId: try await visitorId(), accountId: accountId)
+        let body = SessionRequestBody(identification: try await identification(), accountId: accountId)
         do {
             return try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
         } catch SessionManagerError.requestFailed {
@@ -283,10 +292,22 @@ public actor SessionManager {
         }
     }
 
-    private func visitorId() async throws -> String {
-        guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout), !id.isEmpty else {
+    /// Mints a fresh Fingerprint identification for a single request.
+    ///
+    /// Called again for every create, refresh and keep-alive touch rather than
+    /// held: a sealed result carries its own timestamp and the server rejects one
+    /// stamped more than ten minutes from now in either direction, so a reused
+    /// payload is a rejected payload — sharpest on a device that suspends and
+    /// resumes hours later.
+    ///
+    /// An empty visitor id is not a failure on its own. An activated Fingerprint
+    /// environment withholds it by design and identifies by sealed result instead,
+    /// so this only throws when neither is present.
+    private func identification() async throws -> FingerprintIdentification {
+        guard let identification = try? await FingerprintManager.identify(timeout: Self.visitorIdTimeout),
+              identification.isUsable else {
             throw SessionManagerError.missingVisitorId
         }
-        return id
+        return identification
     }
 }
