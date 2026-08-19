@@ -267,10 +267,16 @@ public class FrameNetworking: ObservableObject {
     }
 
     /// Applies the headers every Frame API request carries: the credential, the
-    /// platform, and the caller's IP when one is available.
+    /// platform, this SDK's version, and the caller's IP when one is available.
+    ///
+    /// The `User-Agent` stays the bare platform token. The API matches it exactly in
+    /// places — Sift's platform detector anchors on `/\AiOS\z/` — so a version
+    /// appended here would reclassify native traffic as a browser and quietly change
+    /// the fraud signals we send. The version travels in its own header instead.
     private func applySharedHeaders(to urlRequest: inout URLRequest, auth: FrameAuthMode) {
         urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
+        urlRequest.setValue(FrameSDK.version, forHTTPHeaderField: FrameSDK.versionHeader)
         if let ipAddress = SiftManager.getIPAddress() {
             urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
         }
