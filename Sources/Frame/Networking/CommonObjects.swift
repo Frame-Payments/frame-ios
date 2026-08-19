@@ -111,12 +111,20 @@ public protocol FrameNetworkingEndpoints {
     /// Endpoints that must negotiate a specific response representation (e.g. an endpoint that
     /// returns HTML by default but supports a JSON variant) can override this to request it.
     var acceptHeader: String? { get }
+
+    /// Additional request headers this endpoint requires. Defaults to empty.
+    ///
+    /// Set on the request after the shared headers, so an endpoint can also override one.
+    var additionalHeaders: [String: String] { get }
 }
 
 /// Default implementations for optional ``FrameNetworkingEndpoints`` requirements.
 public extension FrameNetworkingEndpoints {
     /// Default: no explicit `Accept` header. Endpoints override only when they need one.
     var acceptHeader: String? { nil }
+
+    /// Default: no extra headers. Endpoints override only when they need them.
+    var additionalHeaders: [String: String] { [:] }
 }
 
 /// An abstraction over `URLSession` used to enable testing of network calls.

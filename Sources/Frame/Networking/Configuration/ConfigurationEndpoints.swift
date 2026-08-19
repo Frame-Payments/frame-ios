@@ -40,4 +40,16 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
     var queryItems: [URLQueryItem]? {
         return nil
     }
+
+    var additionalHeaders: [String: String] {
+        switch self {
+        case .getFingerprintConfiguration:
+            // Declares what this build can handle, not which release it is: the API
+            // reads this to decide which Fingerprint environment's key to serve.
+            // Saying nothing keeps the legacy key, which is what older builds get.
+            return [FingerprintCapability.header: FingerprintCapability.sealed]
+        default:
+            return [:]
+        }
+    }
 }
