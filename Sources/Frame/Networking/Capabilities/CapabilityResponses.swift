@@ -12,6 +12,6 @@ public class CapabilityResponses {
     /// Response returned when listing the capabilities available to the merchant.
     public struct ListCapabilitiesResponse: Codable {
         /// The array of capability objects returned by the API, or `nil` if none are present.
-        public let data: [FrameObjects.Capability]?
+        @Lenient public private(set) var data: [FrameObjects.Capability]?
     }
 }

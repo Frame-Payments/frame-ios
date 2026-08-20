@@ -41,21 +41,21 @@ extension FrameObjects {
     /// Personal and document data extracted from a customer's submitted identification.
     public struct IdentificationData: Codable, Sendable, Equatable {
         /// The customer's first name as it appears on their ID.
-        public let firstName: String?
+        @Lenient public private(set) var firstName: String?
         /// The customer's last name as it appears on their ID.
-        public let lastName: String?
+        @Lenient public private(set) var lastName: String?
         /// The customer's middle name as it appears on their ID, if present.
-        public let middleName: String?
+        @Lenient public private(set) var middleName: String?
         /// The customer's date of birth in ISO 8601 format.
-        public let dateOfBirth: String?
+        @Lenient public private(set) var dateOfBirth: String?
         /// The driver's license or ID document number.
-        public let licenseNumber: String?
+        @Lenient public private(set) var licenseNumber: String?
         /// The US state that issued the identification document.
-        public let state: String?
+        @Lenient public private(set) var state: String?
         /// The expiration date of the identification document.
-        public let expirationDate: String?
+        @Lenient public private(set) var expirationDate: String?
         /// The address printed on the identification document.
-        public let address: String?
+        @Lenient public private(set) var address: String?
 
         enum CodingKeys: String, CodingKey {
             case firstName = "first_name"
@@ -94,31 +94,31 @@ extension FrameObjects {
         /// The current verification status of the identity record.
         public let status: CustomerIdentityStatus
         /// A URL the customer can visit to complete the identity verification flow.
-        public let verificationURL: String?
+        @Lenient public private(set) var verificationURL: String?
         /// The API object type string, typically `"customer_identity"`.
-        public let object: String?
+        @Lenient public private(set) var object: String?
         /// Unix timestamp (seconds) when this record was created.
         public let created: Int
         /// Unix timestamp (seconds) when this record was last updated.
         public let updated: Int
         /// Unix timestamp (seconds) when the record entered the `pending` state, if applicable.
-        public let pending: Int?
+        @Lenient public private(set) var pending: Int?
         /// Unix timestamp (seconds) when the record was successfully verified, if applicable.
-        public let verified: Int?
+        @Lenient public private(set) var verified: Int?
         /// Unix timestamp (seconds) when the record entered the `failed` state, if applicable.
-        public let failed: Int?
+        @Lenient public private(set) var failed: Int?
         /// The document images that have been attached to this verification session.
-        public let documents: IdentificationDocuments?
+        @Lenient public private(set) var documents: IdentificationDocuments?
         /// The third-party identity verification provider used for this record.
-        public let provider: String?
+        @Lenient public private(set) var provider: String?
         /// A reference identifier from the verification provider for this record.
-        public let providerReference: String?
+        @Lenient public private(set) var providerReference: String?
         /// Personal and document data extracted by the verification provider.
-        public let extractedData: IdentificationData?
+        @Lenient public private(set) var extractedData: IdentificationData?
         /// Results of the automated checks run against the submitted documents.
-        public let verificationChecks: VerificationChecks?
+        @Lenient public private(set) var verificationChecks: VerificationChecks?
         /// The customer associated with this identity verification record.
-        public let customer: Customer?
+        @Lenient public private(set) var customer: Customer?
 
         /// Creates a new `CustomerIdentity` instance with the supplied field values.
         /// - Parameters:

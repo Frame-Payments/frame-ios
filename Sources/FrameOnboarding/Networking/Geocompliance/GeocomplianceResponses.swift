@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Frame
 
 /// Response model namespace for Geofences API calls.
 ///
@@ -23,11 +24,11 @@ public struct GeoComplianceStatusResponse: Codable {
     /// The overall compliance status for the evaluated session.
     public let status: GeoComplianceStatus
     /// The reason the session was blocked, if applicable.
-    public let reason: GeoComplianceBlockReason?
+    @Lenient public private(set) var reason: GeoComplianceBlockReason?
     /// A summary of the geofence that was matched during evaluation, if any.
-    public let geofence: GeoComplianceGeofenceSummary?
+    @Lenient public private(set) var geofence: GeoComplianceGeofenceSummary?
     /// The Sonar session identifier associated with this compliance check.
-    public let sonarSessionId: String?
+    @Lenient public private(set) var sonarSessionId: String?
     /// Unix timestamp (in seconds) at which the compliance check was performed.
     public let evaluatedAt: Int
 

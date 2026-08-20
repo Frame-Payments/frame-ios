@@ -12,17 +12,17 @@ public class ProductResponses {
     /// Paginated response returned when listing all products.
     public struct ListProductsResponse: Codable {
         /// Pagination and request metadata.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of products returned by the request.
-        public let data: [FrameObjects.Product]?
+        @Lenient public private(set) var data: [FrameObjects.Product]?
     }
 
     /// Response returned when searching for products by query.
     public struct SearchProductResponse: Codable {
         /// Pagination and request metadata.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of products matching the search criteria.
-        public let products: [FrameObjects.Product]?
+        @Lenient public private(set) var products: [FrameObjects.Product]?
     }
 
     /// Response returned when a product is successfully deleted.

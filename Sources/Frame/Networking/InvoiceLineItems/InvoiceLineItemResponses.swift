@@ -10,7 +10,7 @@ public class InvoiceLineItemResponses {
     /// The paginated list of invoice line items returned by the List Line Items endpoint.
     public struct ListLineItemsResponse: Codable {
         /// The array of invoice line items returned by the request.
-        public let data: [FrameObjects.InvoiceLineItem]?
+        @Lenient public private(set) var data: [FrameObjects.InvoiceLineItem]?
     }
 
     /// The confirmation payload returned when a line item is deleted.

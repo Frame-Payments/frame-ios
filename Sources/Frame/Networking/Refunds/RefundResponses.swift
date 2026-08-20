@@ -12,8 +12,8 @@ public class RefundResponses {
     /// Paginated response returned when listing refunds.
     public struct ListRefundsResponse: Codable {
         /// Pagination and request metadata for the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of refund objects returned by the API.
-        public let data: [FrameObjects.Refund]?
+        @Lenient public private(set) var data: [FrameObjects.Refund]?
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Frame
 
 /// Represents the lifecycle state of a 3D Secure verification attempt.
 enum VerificationStatus: String, Codable {
@@ -32,11 +33,11 @@ struct ThreeDSecureVerification: Codable {
     /// Indicates whether this object exists in live mode (`true`) or test mode (`false`).
     let livemode: Bool
     /// Current status of the verification attempt.
-    let status: VerificationStatus?
+    @Lenient private(set) var status: VerificationStatus?
     /// URL to which the cardholder is redirected to complete the 3DS challenge.
     let challengeURL: String
     /// Unix timestamp (seconds) when the verification was completed, if applicable.
-    let completed: Int?
+    @Lenient private(set) var completed: Int?
     /// Unix timestamp (seconds) when the verification was created.
     let created: Int
     /// Unix timestamp (seconds) when the verification was last updated.
@@ -58,7 +59,7 @@ struct ThreeDSecureVerificationError: Codable {
         /// Human-readable description of the error.
         let message: String
         /// Identifier of a pre-existing payment intent, if the failure is due to a duplicate.
-        let existingIntentId: String?
+        @Lenient private(set) var existingIntentId: String?
 
         enum CodingKeys: String, CodingKey {
             case type, message

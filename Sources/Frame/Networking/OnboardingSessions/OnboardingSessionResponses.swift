@@ -13,23 +13,23 @@ public class OnboardingSessionResponses {
     /// The onboarding session returned by `POST /v1/onboarding_sessions`.
     public struct OnboardingSession: Codable {
         /// The unique identifier of the onboarding session.
-        public let id: String?
+        @Lenient public private(set) var id: String?
         /// The account the session onboards.
-        public let accountId: String?
+        @Lenient public private(set) var accountId: String?
         /// The onboarding-session token (`onb_sess_…`) passed to ``OnboardingContainerView`` as its `clientSecret`.
-        public let clientSecret: String?
+        @Lenient public private(set) var clientSecret: String?
         /// Where the account holder is redirected after completion, if provided.
-        public let returnUrl: String?
+        @Lenient public private(set) var returnUrl: String?
         /// The ordered onboarding steps for the session.
-        public let steps: [String]?
+        @Lenient public private(set) var steps: [String]?
         /// The object type. Always `"onboarding_session"`.
-        public let object: String?
+        @Lenient public private(set) var object: String?
         /// The Unix timestamp at which the session token expires.
-        public let expiresAt: Int?
+        @Lenient public private(set) var expiresAt: Int?
         /// `true` for live-mode sessions, `false` in sandbox.
-        public let livemode: Bool?
+        @Lenient public private(set) var livemode: Bool?
         /// The hosted redirect URL for the account holder.
-        public let url: String?
+        @Lenient public private(set) var url: String?
 
         enum CodingKeys: String, CodingKey {
             case id

@@ -28,33 +28,33 @@ extension FrameObjects {
         /// Unique identifier for the phase.
         public var id: String
         /// The zero-based position of this phase in the overall phase sequence.
-        public var ordinal: Int?
+        @Lenient public var ordinal: Int?
         /// Human-readable name for the phase.
-        public var name: String?
+        @Lenient public var name: String?
         /// How the phase price is determined (static or relative).
-        public var pricingType: PhasePricingType?
+        @Lenient public var pricingType: PhasePricingType?
         /// Whether the phase is finite or runs indefinitely.
-        public var durationType: PhaseDurationType?
+        @Lenient public var durationType: PhaseDurationType?
         /// Billing amount for the phase in the smallest currency unit (e.g., cents).
-        public var amount: Int?
+        @Lenient public var amount: Int?
         /// ISO 4217 currency code for the phase amount.
-        public var currency: String?
+        @Lenient public var currency: String?
         /// Optional discount applied to the phase price, expressed as a percentage.
-        public var discountPercentage: Float?
+        @Lenient public var discountPercentage: Float?
         /// Number of billing periods this phase lasts (relevant when `durationType` is `.finite`).
-        public var periodCount: Int?
+        @Lenient public var periodCount: Int?
         /// Billing interval unit (e.g., `"month"`, `"year"`).
-        public var interval: String?
+        @Lenient public var interval: String?
         /// Number of interval units between each billing cycle.
-        public var intervalCount: Int?
+        @Lenient public var intervalCount: Int?
         /// Whether the phase is active in live mode; `false` indicates test mode.
-        public var livemode: Bool?
+        @Lenient public var livemode: Bool?
         /// Unix timestamp (seconds) when the phase was created.
-        public var created: Int?
+        @Lenient public var created: Int?
         /// Unix timestamp (seconds) when the phase was last updated.
-        public var updated: Int?
+        @Lenient public var updated: Int?
         /// API object type identifier returned by the server.
-        public var object: String?
+        @Lenient public var object: String?
 
         /// Creates a new `SubscriptionPhase` with all available fields.
         /// - Parameters:

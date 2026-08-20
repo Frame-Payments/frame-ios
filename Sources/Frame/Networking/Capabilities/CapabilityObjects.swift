@@ -86,7 +86,7 @@ extension FrameObjects {
         public let status: String
 
         /// Optional source that surfaced this requirement, if applicable.
-        public let source: String?
+        @Lenient public private(set) var source: String?
 
         enum CodingKeys: String, CodingKey {
             case id, object, type, status, source
@@ -111,10 +111,10 @@ extension FrameObjects {
         public let status: String
 
         /// Reason the capability is disabled, if applicable.
-        public let disabledReason: String?
+        @Lenient public private(set) var disabledReason: String?
 
         /// List of requirement keys that are currently outstanding and must be resolved.
-        public let currentlyDue: [String]?
+        @Lenient public private(set) var currentlyDue: [String]?
 
         /// ISO 8601 timestamp indicating when the capability was created.
         public let created: String
@@ -123,7 +123,7 @@ extension FrameObjects {
         public let updated: String
 
         /// Whether the capability is currently disabled.
-        public let disabled: Bool?
+        @Lenient public private(set) var disabled: Bool?
 
         enum CodingKeys: String, CodingKey {
             case id, object, name, status
