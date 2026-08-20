@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Frame
 
 /// Response model returned when a phone OTP verification session is created.
 public struct PhoneOTPVerificationCreateResponse: Codable {
@@ -20,9 +21,9 @@ public struct PhoneOTPVerificationCreateResponse: Codable {
     /// Authoritative for which path to run. The backend routes a retry to `twilio` when a
     /// recent Prove attempt on the same number never verified, so re-creating after a Prove
     /// failure is what moves the applicant onto the code-entry path.
-    public let provider: String?
+    @Lenient public private(set) var provider: String?
     /// Prove auth token associated with the session, if available.
-    public let proveAuthToken: String?
+    @Lenient public private(set) var proveAuthToken: String?
 
     enum CodingKeys: String, CodingKey {
         case id, type, status, provider
@@ -37,7 +38,7 @@ public struct PhoneOTPVerificationConfirmResponse: Codable {
     /// Current status of the confirmed verification session.
     public let status: String
     /// Status of any prefill data associated with the session, if available.
-    public let prefillStatus: String?
+    @Lenient public private(set) var prefillStatus: String?
 
     /// Creates a new ``PhoneOTPVerificationConfirmResponse``.
     /// - Parameters:

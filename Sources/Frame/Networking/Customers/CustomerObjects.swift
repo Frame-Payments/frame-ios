@@ -22,33 +22,33 @@ extension FrameObjects {
         /// Unique identifier for the customer.
         public let id: String
         /// Unix timestamp (seconds) when the customer was created.
-        public let created: Int?
+        @Lenient public private(set) var created: Int?
         /// Shipping address associated with the customer.
-        public var shippingAddress: BillingAddress?
+        @Lenient public var shippingAddress: BillingAddress?
         /// Unix timestamp (seconds) when the customer was last updated.
-        public let updated: Int?
+        @Lenient public private(set) var updated: Int?
         /// Indicates whether the customer exists in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
         /// Full name of the customer.
         public var name: String
         /// Phone number of the customer.
-        public var phone: String?
+        @Lenient public var phone: String?
         /// Email address of the customer.
-        public var email: String?
+        @Lenient public var email: String?
         /// Date of birth of the customer, formatted as a string (e.g. `"YYYY-MM-DD"`).
-        public var dateOfBirth: String?
+        @Lenient public var dateOfBirth: String?
         /// Optional free-text description for internal notes about the customer.
-        public var description: String?
+        @Lenient public var description: String?
         /// The API object type identifier returned by the server (typically `"customer"`).
-        public let object: String?
+        @Lenient public private(set) var object: String?
         /// Billing address associated with the customer.
-        public var billingAddress: BillingAddress?
+        @Lenient public var billingAddress: BillingAddress?
         /// Payment methods on file for the customer.
-        public var paymentMethods: [PaymentMethod]?
+        @Lenient public var paymentMethods: [PaymentMethod]?
         /// Current status of the customer account.
-        public var status: CustomerStatus?
+        @Lenient public var status: CustomerStatus?
         /// Arbitrary key-value metadata attached to the customer.
-        public let metadata: [String: String]?
+        @Lenient public private(set) var metadata: [String: String]?
 
         /// Creates a new `Customer` instance.
         ///

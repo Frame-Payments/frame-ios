@@ -32,61 +32,61 @@ extension FrameObjects {
         public let id: String
 
         /// The object type identifier returned by the Frame API, typically `"transfer"`.
-        public let object: String?
+        @Lenient public private(set) var object: String?
 
         /// Current lifecycle status of the transfer.
-        public let status: TransferStatus?
+        @Lenient public private(set) var status: TransferStatus?
 
         /// Transfer amount in the smallest currency unit (e.g. cents for USD).
         public let amount: Int
 
         /// ISO 4217 currency code for the transfer (e.g. `"usd"`).
-        public let currency: String?
+        @Lenient public private(set) var currency: String?
 
         /// Fee retained by the platform, in the smallest currency unit.
-        public let platformFee: Int?
+        @Lenient public private(set) var platformFee: Int?
 
         /// Fee retained by Frame, in the smallest currency unit.
-        public let frameFee: Int?
+        @Lenient public private(set) var frameFee: Int?
 
         /// Sum of all fees applied to the transfer, in the smallest currency unit.
-        public let totalFees: Int?
+        @Lenient public private(set) var totalFees: Int?
 
         /// Total amount before fees are deducted, in the smallest currency unit.
-        public let grossAmount: Int?
+        @Lenient public private(set) var grossAmount: Int?
 
         /// Amount received after all fees are deducted, in the smallest currency unit.
-        public let netAmount: Int?
+        @Lenient public private(set) var netAmount: Int?
 
         /// Human-readable description of the transfer.
-        public let description: String?
+        @Lenient public private(set) var description: String?
 
         /// Machine-readable reason the transfer failed, if applicable.
-        public let failureReason: String?
+        @Lenient public private(set) var failureReason: String?
 
         /// Identifier of the charge intent that initiated this transfer.
-        public let chargeIntent: String?
+        @Lenient public private(set) var chargeIntent: String?
 
         /// Identifier of the payout associated with this transfer.
-        public let payout: String?
+        @Lenient public private(set) var payout: String?
 
         /// Identifier of the billing agreement linked to this transfer.
-        public let billingAgreement: String?
+        @Lenient public private(set) var billingAgreement: String?
 
         /// Payment method from which funds were drawn.
-        public let sourcePaymentMethod: FrameObjects.PaymentMethod?
+        @Lenient public private(set) var sourcePaymentMethod: FrameObjects.PaymentMethod?
 
         /// Payment method to which funds were sent.
-        public let destinationPaymentMethod: FrameObjects.PaymentMethod?
+        @Lenient public private(set) var destinationPaymentMethod: FrameObjects.PaymentMethod?
 
         /// Arbitrary key-value pairs attached to the transfer for application use.
-        public let metadata: [String: String]?
+        @Lenient public private(set) var metadata: [String: String]?
 
         /// Whether this transfer was created in live mode (`true`) or test mode (`false`).
-        public let livemode: Bool?
+        @Lenient public private(set) var livemode: Bool?
 
         /// Unix timestamp (seconds since epoch) when the transfer was created.
-        public let created: Int?
+        @Lenient public private(set) var created: Int?
 
         /// Creates a new `Transfer` model with the provided field values.
         ///

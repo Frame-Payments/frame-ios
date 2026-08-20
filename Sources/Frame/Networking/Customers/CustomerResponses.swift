@@ -12,9 +12,9 @@ public class CustomerResponses {
     /// Paginated response returned when listing customers.
     public struct ListCustomersResponse: Codable {
         /// Pagination and request metadata associated with the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of customer objects returned by the request.
-        public let data: [FrameObjects.Customer]?
+        @Lenient public private(set) var data: [FrameObjects.Customer]?
     }
 
     /// Response returned after successfully deleting a customer.

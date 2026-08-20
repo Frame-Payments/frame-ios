@@ -43,23 +43,23 @@ extension FrameObjects {
         /// The three-letter ISO 4217 currency code for the charge.
         public let currency: String
         /// The most recent charge attempt associated with this intent, if any.
-        public let latestCharge: LatestCharge?
+        @Lenient public private(set) var latestCharge: LatestCharge?
         /// The customer associated with this charge intent, if any.
-        public let customer: FrameObjects.Customer?
+        @Lenient public private(set) var customer: FrameObjects.Customer?
         /// The account associated with this charge intent, if any.
-        public let account: FrameObjects.Account?
+        @Lenient public private(set) var account: FrameObjects.Account?
         /// The payment method used for this charge intent, if any.
-        public let paymentMethod: FrameObjects.PaymentMethod?
+        @Lenient public private(set) var paymentMethod: FrameObjects.PaymentMethod?
         /// The shipping address associated with this charge intent, if any.
-        public let shipping: FrameObjects.BillingAddress?
+        @Lenient public private(set) var shipping: FrameObjects.BillingAddress?
         /// The current status of the charge intent.
         public let status: FrameObjects.ChargeIntentStatus
         /// An optional human-readable description for the charge intent.
-        public let description: String?
+        @Lenient public private(set) var description: String?
         /// Specifies whether the charge is captured automatically or manually.
         public let authorizationMode: FrameObjects.AuthorizationMode
         /// A human-readable explanation of why the charge failed, if applicable.
-        public let failureDescription: String?
+        @Lenient public private(set) var failureDescription: String?
         /// The object type identifier returned by the API.
         public let object: String
         /// The charge amount in the smallest currency unit (e.g., cents).
@@ -67,7 +67,7 @@ extension FrameObjects {
         /// Unix timestamp (seconds) when the charge intent was created.
         public let created: Int
         /// Unix timestamp (seconds) when the charge intent was last updated, if available.
-        public let updated: Int?
+        @Lenient public private(set) var updated: Int?
         /// Indicates whether the charge intent was created in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
 
@@ -143,19 +143,19 @@ extension FrameObjects {
         /// Whether the charge has been refunded.
         public let refunded: Bool
         /// A human-readable message explaining a charge failure, if applicable.
-        public let failureMessage: String?
+        @Lenient public private(set) var failureMessage: String?
         /// An optional human-readable description for the charge.
-        public let description: String?
+        @Lenient public private(set) var description: String?
         /// The current status of the charge.
-        public let status: FrameObjects.ChargeIntentStatus?
+        @Lenient public private(set) var status: FrameObjects.ChargeIntentStatus?
         /// Details about the payment method used for this charge, if available.
-        public let paymentMethodDetails: FrameObjects.PaymentMethod?
+        @Lenient public private(set) var paymentMethodDetails: FrameObjects.PaymentMethod?
         /// The identifier of the customer associated with this charge, if any.
-        public let customer: String?
+        @Lenient public private(set) var customer: String?
         /// The identifier of the account associated with this charge, if any.
-        public let account: String?
+        @Lenient public private(set) var account: String?
         /// The identifier of the payment method used, if any.
-        public let paymentMethod: String?
+        @Lenient public private(set) var paymentMethod: String?
         /// The charge amount in the smallest currency unit (e.g., cents).
         public let amount: Int
 

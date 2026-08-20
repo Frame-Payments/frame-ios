@@ -11,31 +11,31 @@ extension FrameObjects {
         /// Unique identifier for the subscription.
         public let id: String
         /// An optional human-readable description of the subscription.
-        public let description: String?
+        @Lenient public private(set) var description: String?
         /// Unix timestamp (seconds) marking the start of the current billing period.
-        public let currentPeriodStart: Int?
+        @Lenient public private(set) var currentPeriodStart: Int?
         /// Unix timestamp (seconds) marking the end of the current billing period.
-        public let currentPeriodEnd: Int?
+        @Lenient public private(set) var currentPeriodEnd: Int?
         /// Whether the subscription exists in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
         /// The plan that governs the subscription's billing interval and amount.
-        public let plan: SubscriptionPlan?
+        @Lenient public private(set) var plan: SubscriptionPlan?
         /// Three-letter ISO 4217 currency code for the subscription charges.
-        public let currency: String?
+        @Lenient public private(set) var currency: String?
         /// Current status of the subscription (e.g., `"active"`, `"canceled"`, `"past_due"`).
-        public let status: String?
+        @Lenient public private(set) var status: String?
         /// Number of units of the plan included in this subscription.
         public let quantity: Int
         /// Identifier of the customer who owns the subscription.
-        public let customer: String?
+        @Lenient public private(set) var customer: String?
         /// Identifier of the default payment method used for recurring charges.
-        public let defaultPaymentMethod: String?
+        @Lenient public private(set) var defaultPaymentMethod: String?
         /// The Frame object type string, typically `"subscription"`.
-        public let object: String?
+        @Lenient public private(set) var object: String?
         /// Unix timestamp (seconds) when the subscription was created.
         public let created: Int
         /// Unix timestamp (seconds) when the subscription started billing.
-        public let startDate: Int?
+        @Lenient public private(set) var startDate: Int?
 
         /// Creates a new `Subscription` instance.
         ///
@@ -86,15 +86,15 @@ extension FrameObjects {
         /// Unique identifier for the plan.
         public let id: String
         /// Billing interval for the plan (e.g., `"month"`, `"year"`).
-        public let interval: String?
+        @Lenient public private(set) var interval: String?
         /// Identifier of the product this plan belongs to.
-        public let product: String?
+        @Lenient public private(set) var product: String?
         /// Charge amount per billing cycle, in the smallest currency unit (e.g., cents).
         public let amount: Int
         /// Three-letter ISO 4217 currency code for the plan's charges.
-        public let currency: String?
+        @Lenient public private(set) var currency: String?
         /// The Frame object type string, typically `"plan"`.
-        public let object: String?
+        @Lenient public private(set) var object: String?
         /// Whether the plan is currently available for new subscriptions.
         public let active: Bool
         /// Unix timestamp (seconds) when the plan was created.

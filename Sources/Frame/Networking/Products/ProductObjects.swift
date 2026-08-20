@@ -17,11 +17,11 @@ extension FrameObjects {
         /// Indicates whether the product exists in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
         /// URL of the product's image, if available.
-        public let image: String?
+        @Lenient public private(set) var image: String?
         /// Human-readable description of the product.
         public let productDescription: String
         /// URL of the product's marketing page, if available.
-        public let url: String?
+        @Lenient public private(set) var url: String?
         /// Indicates whether the product can be physically shipped.
         public let shippable: Bool
         /// Indicates whether the product is currently available for purchase.
@@ -29,7 +29,7 @@ extension FrameObjects {
         /// The default price of the product in the smallest currency unit (e.g. cents).
         public let defaultPrice: Int
         /// Arbitrary key-value metadata attached to the product, if any.
-        public let metadata: [String: String]?
+        @Lenient public private(set) var metadata: [String: String]?
         /// The API object type identifier (always `"product"`).
         public let object: String
         /// Unix timestamp of when the product was created.
