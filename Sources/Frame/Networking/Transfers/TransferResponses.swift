@@ -12,8 +12,8 @@ public class TransferResponses {
     /// Paginated response returned when listing transfers.
     public struct ListTransfersResponse: Codable {
         /// Pagination metadata for the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of transfer objects returned by the API.
-        public let data: [FrameObjects.Transfer]?
+        @Lenient public private(set) var data: [FrameObjects.Transfer]?
     }
 }

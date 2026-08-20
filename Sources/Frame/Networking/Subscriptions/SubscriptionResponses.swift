@@ -10,8 +10,8 @@ public class SubscriptionResponses {
     /// Decoded response returned when listing subscriptions.
     public struct ListSubscriptionsResponse: Codable {
         /// Pagination and request metadata associated with the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of subscription objects returned by the API.
-        public let data: [FrameObjects.Subscription]?
+        @Lenient public private(set) var data: [FrameObjects.Subscription]?
     }
 }

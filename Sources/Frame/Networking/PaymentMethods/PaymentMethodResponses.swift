@@ -10,8 +10,8 @@ public class PaymentMethodResponses {
     /// Decoded response returned by the list payment methods endpoint.
     public struct ListPaymentMethodsResponse: Codable {
         /// Pagination and request metadata accompanying the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of payment methods returned by the API.
-        public let data: [FrameObjects.PaymentMethod]?
+        @Lenient public private(set) var data: [FrameObjects.PaymentMethod]?
     }
 }

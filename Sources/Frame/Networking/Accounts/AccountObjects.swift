@@ -32,11 +32,11 @@ extension FrameObjects {
     /// Records acceptance of the Frame terms of service for an account.
     public struct AccountTermsOfService: Codable, Equatable, Sendable {
         /// Unique token identifying the version of the terms that was accepted.
-        public var token: String?
+        @Lenient public var token: String?
         /// IP address from which the terms were accepted.
-        public var ipAddress: String?
+        @Lenient public var ipAddress: String?
         /// ISO 8601 timestamp indicating when the terms were accepted.
-        public var acceptedAt: String?
+        @Lenient public var acceptedAt: String?
 
         /// Creates a terms-of-service acceptance record.
         /// - Parameters:
@@ -59,13 +59,13 @@ extension FrameObjects {
     /// Name components for an individual associated with an account.
     public struct AccountNameInfo: Codable, Sendable, Equatable {
         /// Given name of the individual. Required when creating an account.
-        public let firstName: String?
+        @Lenient public private(set) var firstName: String?
         /// Middle name of the individual.
-        public let middleName: String?
+        @Lenient public private(set) var middleName: String?
         /// Family name of the individual. Required when creating an account.
-        public let lastName: String?
+        @Lenient public private(set) var lastName: String?
         /// Name suffix (e.g., Jr., Sr., III).
-        public let suffix: String?
+        @Lenient public private(set) var suffix: String?
 
         /// Creates a name info value.
         /// - Parameters:
@@ -91,17 +91,17 @@ extension FrameObjects {
     /// Container for the account's detailed profile, holding either business or individual sub-profile data.
     public struct AccountProfile: Codable, Sendable, Equatable {
         /// Business-specific profile details, present when `accountType` is `.business`.
-        public let business: BusinessAccount?
+        @Lenient public private(set) var business: BusinessAccount?
         /// Individual-specific profile details, present when `accountType` is `.individual`.
-        public let individual: IndividualAccount?
+        @Lenient public private(set) var individual: IndividualAccount?
     }
 
     /// A phone number with its associated country dialing code.
     public struct AccountPhoneNumber: Codable, Sendable, Equatable {
         /// Local phone number, without the country code.
-        public let number: String?
+        @Lenient public private(set) var number: String?
         /// ISO 3166-1 alpha-2 country code (e.g., "US").
-        public let countryCode: String?
+        @Lenient public private(set) var countryCode: String?
 
         /// Creates a phone number value.
         /// - Parameters:
@@ -123,25 +123,25 @@ extension FrameObjects {
         /// Full legal name of the business.
         public let legalBusinessName: String
         /// Trade name or DBA name, if different from the legal name.
-        public var doingBusinessAs: String?
+        @Lenient public var doingBusinessAs: String?
         /// Classification of the business structure (e.g., "llc", "corporation").
         public let businessType: String
         /// Primary contact email address for the business.
         public let email: String
         /// Public-facing website URL of the business.
-        public var website: String?
+        @Lenient public var website: String?
         /// Short description of the business and its products or services.
-        public var description: String?
+        @Lenient public var description: String?
         /// Last four digits of the business's Employer Identification Number.
-        public var einLastFour: String?
+        @Lenient public var einLastFour: String?
         /// Merchant Category Code that classifies the business's primary activity.
-        public var mcc: String?
+        @Lenient public var mcc: String?
         /// North American Industry Classification System code for the business.
-        public var naics: String?
+        @Lenient public var naics: String?
         /// Physical or mailing address of the business.
-        public var address: AccountBillingAddress?
+        @Lenient public var address: AccountBillingAddress?
         /// Primary contact phone number for the business.
-        public var phone: AccountPhoneNumber?
+        @Lenient public var phone: AccountPhoneNumber?
 
         /// Creates a business account profile.
         /// - Parameters:
@@ -182,21 +182,21 @@ extension FrameObjects {
     /// Profile data specific to an individual account holder.
     public struct IndividualAccount: Codable, Sendable, Equatable {
         /// Legal name of the individual.
-        public let name: FrameObjects.AccountNameInfo?
+        @Lenient public private(set) var name: FrameObjects.AccountNameInfo?
         /// Contact email address of the individual.
-        public let email: String?
+        @Lenient public private(set) var email: String?
         /// Last four digits of the individual's Social Security Number.
-        public let ssnLastFour: String?
+        @Lenient public private(set) var ssnLastFour: String?
         /// Structured phone number for the individual.
-        public let phone: FrameObjects.AccountPhoneNumber?
+        @Lenient public private(set) var phone: FrameObjects.AccountPhoneNumber?
         /// Raw phone number string, used when `phone` is not present.
-        public let phoneNumber: String?
+        @Lenient public private(set) var phoneNumber: String?
         /// Country dialing code associated with `phoneNumber`.
-        public let phoneCountryCode: String?
+        @Lenient public private(set) var phoneCountryCode: String?
         /// Billing address of the individual.
-        public let address: FrameObjects.BillingAddress?
+        @Lenient public private(set) var address: FrameObjects.BillingAddress?
         /// Date of birth in YYYY-MM-DD format.
-        public let birthdate: String?
+        @Lenient public private(set) var birthdate: String?
 
         /// - Note: `CodingKeys` is public to allow external decoders to reference key names if needed.
         public enum CodingKeys: String, CodingKey {
@@ -210,17 +210,17 @@ extension FrameObjects {
     /// A billing or mailing address associated with an account.
     public struct AccountBillingAddress: Codable, Sendable, Equatable {
         /// City or locality.
-        public var city: String?
+        @Lenient public var city: String?
         /// ISO 3166-1 alpha-2 country code (e.g., "US").
-        public var country: String?
+        @Lenient public var country: String?
         /// State, province, or region.
-        public var state: String?
+        @Lenient public var state: String?
         /// Postal or ZIP code.
         public var postalCode: String
         /// Primary street address line.
-        public var addressLine1: String?
+        @Lenient public var addressLine1: String?
         /// Secondary address line (suite, apartment, etc.).
-        public var addressLine2: String?
+        @Lenient public var addressLine2: String?
 
         /// Creates an account billing address.
         /// - Parameters:
@@ -293,17 +293,17 @@ extension FrameObjects {
         /// Current lifecycle status of the account.
         public let accountStatus: AccountStatus
         /// Optional caller-supplied identifier for cross-referencing with external systems.
-        public let externalId: String?
+        @Lenient public private(set) var externalId: String?
         /// Arbitrary key-value pairs for storing additional information.
-        public let metadata: [String: String]?
+        @Lenient public private(set) var metadata: [String: String]?
         /// Terms-of-service acceptance record for the account.
-        public var termsOfService: AccountTermsOfService?
+        @Lenient public var termsOfService: AccountTermsOfService?
         /// Detailed profile information for the account holder.
-        public let profile: AccountProfile?
+        @Lenient public private(set) var profile: AccountProfile?
         /// Payment capabilities that have been enabled for this account.
-        public let capabilities: [Capability]?
+        @Lenient public private(set) var capabilities: [Capability]?
         /// Onboarding or compliance steps associated with the account.
-        public let steps: [AccountStep]?
+        @Lenient public private(set) var steps: [AccountStep]?
         /// Unix timestamp (seconds) when the account was created.
         public let created: Int
         /// Unix timestamp (seconds) when the account was last updated.

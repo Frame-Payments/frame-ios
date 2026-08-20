@@ -12,9 +12,9 @@ public class AccountResponses {
     /// Paginated response returned when listing accounts.
     public struct ListAccountsResponse: Codable {
         /// Pagination and request metadata for the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of accounts returned by the request.
-        public let data: [FrameObjects.Account]?
+        @Lenient public private(set) var data: [FrameObjects.Account]?
     }
 
     /// Response returned when creating a Plaid Link token.

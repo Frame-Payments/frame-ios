@@ -12,8 +12,8 @@ public class ChargeIntentResponses {
     /// Paginated response returned when listing charge intents.
     public struct ListChargeIntentsResponse: Codable {
         /// Pagination metadata for the response.
-        public let meta: FrameMetadata?
+        @Lenient public private(set) var meta: FrameMetadata?
         /// The array of charge intent objects returned by the API.
-        public let data: [FrameObjects.ChargeIntent]?
+        @Lenient public private(set) var data: [FrameObjects.ChargeIntent]?
     }
 }

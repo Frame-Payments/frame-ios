@@ -13,23 +13,23 @@ extension FrameObjects {
         /// Unique identifier for the refund.
         public let id: String
         /// Total amount captured on the original charge, in the smallest currency unit.
-        public let amountCaptured: Int?
+        @Lenient public private(set) var amountCaptured: Int?
         /// Amount refunded, in the smallest currency unit.
-        public let amountRefunded: Int?
+        @Lenient public private(set) var amountRefunded: Int?
         /// Identifier of the charge this refund is applied to.
-        public let charge: String?
+        @Lenient public private(set) var charge: String?
         /// Three-letter ISO currency code for the refund amount.
-        public let currency: String?
+        @Lenient public private(set) var currency: String?
         /// Human-readable description of the refund.
-        public let description: String?
+        @Lenient public private(set) var description: String?
         /// Identifier of the charge intent associated with this refund.
-        public let chargeIntent: String?
+        @Lenient public private(set) var chargeIntent: String?
         /// Current status of the refund (e.g., `"succeeded"`, `"pending"`, `"failed"`).
-        public let status: String?
+        @Lenient public private(set) var status: String?
         /// Reason the refund failed, if applicable.
-        public let failureReason: String?
+        @Lenient public private(set) var failureReason: String?
         /// Object type identifier returned by the Frame API.
-        public let object: String?
+        @Lenient public private(set) var object: String?
         /// Unix timestamp (seconds) when the refund was created.
         public let created: Int
         /// Unix timestamp (seconds) when the refund was last updated.

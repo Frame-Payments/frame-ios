@@ -12,9 +12,9 @@ public class ConfigurationResponses {
     /// Decoded response containing Evervault app and team identifiers returned by the configuration endpoint.
     public struct GetEvervaultConfigurationResponse: Codable {
         /// The Evervault application identifier.
-        let appId: String?
+        @Lenient private(set) var appId: String?
         /// The Evervault team identifier.
-        let teamId: String?
+        @Lenient private(set) var teamId: String?
 
         enum CodingKeys: String, CodingKey {
             case appId = "app_id"
@@ -25,9 +25,9 @@ public class ConfigurationResponses {
     /// Decoded response containing the Fingerprint public API key and region returned by the configuration endpoint.
     public struct GetFingerprintConfigurationResponse: Codable {
         /// The Fingerprint public API key.
-        let apiKey: String?
+        @Lenient private(set) var apiKey: String?
         /// The Fingerprint region associated with the API key (e.g. "us", "eu", "ap").
-        let region: String?
+        @Lenient private(set) var region: String?
 
         enum CodingKeys: String, CodingKey {
             case apiKey = "api_key"
@@ -38,9 +38,9 @@ public class ConfigurationResponses {
     /// Decoded response containing Sift account and beacon key identifiers returned by the configuration endpoint.
     public struct GetSiftConfigurationResponse: Codable {
         /// The Sift account identifier.
-        let accountId: String?
+        @Lenient private(set) var accountId: String?
         /// The Sift beacon key used to initialise the Sift SDK.
-        let beaconKey: String?
+        @Lenient private(set) var beaconKey: String?
 
         enum CodingKeys: String, CodingKey {
             case accountId = "account_id"
@@ -51,10 +51,10 @@ public class ConfigurationResponses {
     /// Decoded response containing Frame's legal document URLs (Privacy Policy, Terms of Service,
     /// Platform Agreement, and Card-Based Cash Terms & Conditions) returned by the configuration endpoint.
     public struct GetLegalConfigurationResponse: Codable {
-        let privacyUrl: String?
-        let termsUrl: String?
-        let platformAgreementUrl: String?
-        let cbcTermsAndConditions: String?
+        @Lenient private(set) var privacyUrl: String?
+        @Lenient private(set) var termsUrl: String?
+        @Lenient private(set) var platformAgreementUrl: String?
+        @Lenient private(set) var cbcTermsAndConditions: String?
 
         enum CodingKeys: String, CodingKey {
             case privacyUrl = "privacy_url"

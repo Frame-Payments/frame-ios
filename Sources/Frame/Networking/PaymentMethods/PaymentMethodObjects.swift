@@ -39,9 +39,9 @@ public class FrameObjects {
         /// Unique identifier for the payment method.
         public let id: String
         /// The identifier of the customer this payment method belongs to, if any.
-        public var customerId: String?
+        @Lenient public var customerId: String?
         /// Billing address associated with the payment method.
-        public var billing: BillingAddress?
+        @Lenient public var billing: BillingAddress?
         /// The funding instrument type (card or ACH) of this payment method.
         public let type: PaymentRequestType
         /// The object type string returned by the Frame API (e.g. `"payment_method"`).
@@ -53,9 +53,9 @@ public class FrameObjects {
         /// Whether the payment method was created in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
         /// Card details, present when `type` is `.card`.
-        public var card: PaymentCard?
+        @Lenient public var card: PaymentCard?
         /// Bank account details, present when `type` is `.ach`.
-        public var ach: BankAccount?
+        @Lenient public var ach: BankAccount?
         /// Current lifecycle status of the payment method.
         public let status: PaymentMethodStatus
 
@@ -96,17 +96,17 @@ public class FrameObjects {
     /// A postal billing address associated with a payment method.
     public struct BillingAddress: Codable, Sendable, Equatable {
         /// City portion of the billing address.
-        public var city: String?
+        @Lenient public var city: String?
         /// ISO 3166-1 alpha-2 country code (e.g. `"US"`).
-        public var country: String?
+        @Lenient public var country: String?
         /// State or province of the billing address.
-        public var state: String?
+        @Lenient public var state: String?
         /// Postal or ZIP code of the billing address.
         public var postalCode: String
         /// Primary street address line.
-        public var addressLine1: String?
+        @Lenient public var addressLine1: String?
         /// Secondary street address line (suite, apartment, etc.).
-        public var addressLine2: String?
+        @Lenient public var addressLine2: String?
 
         /// Creates a ``BillingAddress``.
         ///
@@ -139,21 +139,21 @@ public class FrameObjects {
         /// Card network brand (e.g. `"visa"`, `"mastercard"`).
         public let brand: String
         /// Two-digit expiration month string (e.g. `"01"`).
-        public let expirationMonth: String?
+        @Lenient public private(set) var expirationMonth: String?
         /// Four-digit expiration year string (e.g. `"2027"`).
-        public let expirationYear: String?
+        @Lenient public private(set) var expirationYear: String?
         /// Name of the card-issuing bank or institution.
-        public let issuer: String?
+        @Lenient public private(set) var issuer: String?
         /// ISO 4217 currency code associated with the card.
-        public let currency: String?
+        @Lenient public private(set) var currency: String?
         /// Market segment classification for the card (e.g. `"consumer"`, `"commercial"`).
-        public let segment: String?
+        @Lenient public private(set) var segment: String?
         /// Funding type of the card (e.g. `"credit"`, `"debit"`, `"prepaid"`).
-        public let type: String?
+        @Lenient public private(set) var type: String?
         /// The last four digits of the card number.
         public let lastFourDigits: String
         /// Digital wallet information, if the card is tokenised in a wallet.
-        public let wallet: Wallet?
+        @Lenient public private(set) var wallet: Wallet?
 
         /// Creates a ``PaymentCard``.
         ///
@@ -193,7 +193,7 @@ public class FrameObjects {
         /// The type of digital wallet (e.g. Apple Pay or Google Pay).
         public let type: WalletType
         /// A dynamic last-four-digit string provided by the wallet network, if available.
-        public let dynamicLast4: String?
+        @Lenient public private(set) var dynamicLast4: String?
 
         /// Creates a ``Wallet``.
         ///
@@ -222,15 +222,15 @@ public class FrameObjects {
     /// Details about a bank account used for ACH payments.
     public struct BankAccount: Codable, Sendable, Equatable {
         /// Whether the account is a checking or savings account.
-        public var accountType: FrameObjects.PaymentAccountType?
+        @Lenient public var accountType: FrameObjects.PaymentAccountType?
         /// Full bank account number (present only when explicitly returned by the API).
-        public var accountNumber: String?
+        @Lenient public var accountNumber: String?
         /// ABA routing number for the bank.
-        public var routingNumber: String?
+        @Lenient public var routingNumber: String?
         /// Name of the bank or financial institution.
-        public var bankName: String?
+        @Lenient public var bankName: String?
         /// Last four digits of the bank account number.
-        public var lastFour: String?
+        @Lenient public var lastFour: String?
 
         /// Creates a ``BankAccount``.
         ///

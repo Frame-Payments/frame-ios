@@ -40,31 +40,31 @@ extension FrameObjects {
         /// A single line item on an invoice, representing a quantity of a product.
         public struct InvoiceLineItem: Codable, Sendable, Identifiable, Equatable {
             /// The API object type identifier for this line item.
-            public let object: String?
+            @Lenient public private(set) var object: String?
             /// The unique identifier for this line item.
-            public let id: String?
+            @Lenient public private(set) var id: String?
             /// The number of units of the product included in this line item.
-            public let quantity: Int?
+            @Lenient public private(set) var quantity: Int?
             /// The product associated with this line item.
-            public let product: InvoiceProduct?
+            @Lenient public private(set) var product: InvoiceProduct?
         }
 
         /// A product referenced by an invoice line item.
         public struct InvoiceProduct: Codable, Sendable, Identifiable, Equatable {
             /// The API object type identifier for this product.
-            public let object: String?
+            @Lenient public private(set) var object: String?
             /// The unique identifier for this product.
-            public let id: String?
+            @Lenient public private(set) var id: String?
             /// The human-readable name of the product.
-            public let name: String?
+            @Lenient public private(set) var name: String?
             /// The unit price of the product in the smallest currency unit (e.g., cents).
-            public let price: Int?
+            @Lenient public private(set) var price: Int?
         }
 
         /// The unique identifier for this invoice.
         public let id: String
         /// The customer to whom this invoice is addressed.
-        public var customer: Customer?
+        @Lenient public var customer: Customer?
         /// The API object type identifier for this invoice.
         public let object: String
         /// The total amount due in the smallest currency unit (e.g., cents).
@@ -86,9 +86,9 @@ extension FrameObjects {
         /// Indicates whether this invoice was created in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
         /// Arbitrary key-value pairs for storing additional structured information on the invoice.
-        public let metadata: [String: String]?
+        @Lenient public private(set) var metadata: [String: String]?
         /// The line items that make up the invoice.
-        public var lineItems: [InvoiceLineItem]?
+        @Lenient public var lineItems: [InvoiceLineItem]?
         /// The Unix timestamp (seconds) at which the invoice was created.
         public let created: Int
         /// The Unix timestamp (seconds) at which the invoice was last updated.

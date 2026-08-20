@@ -11,15 +11,15 @@ public class SubscriptionPhasesResponses {
     /// Decoded response returned when listing the phases of a subscription.
     public struct ListSubscriptionPhasesResponse: Codable {
         /// Metadata associated with the list response, including the parent subscription identifier.
-        public let meta: SubscriptionPhaseMeta?
+        @Lenient public private(set) var meta: SubscriptionPhaseMeta?
         /// The subscription phases returned by the API.
-        public let phases: [FrameObjects.SubscriptionPhase]?
+        @Lenient public private(set) var phases: [FrameObjects.SubscriptionPhase]?
     }
 
     /// Metadata accompanying a subscription-phases list response.
     public struct SubscriptionPhaseMeta: Codable {
         /// The identifier of the subscription these phases belong to.
-        public let subscriptionId: String?
+        @Lenient public private(set) var subscriptionId: String?
 
         /// Maps Swift property names to their JSON key equivalents.
         public enum CodingKeys: String, CodingKey {

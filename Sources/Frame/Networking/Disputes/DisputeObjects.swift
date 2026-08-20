@@ -63,13 +63,13 @@ extension FrameObjects {
         /// Disputed amount in the smallest currency unit (e.g. cents).
         public let amount: Int
         /// Identifier of the charge associated with this dispute.
-        public var charge: String?
+        @Lenient public var charge: String?
         /// Three-letter ISO 4217 currency code for the disputed amount.
         public let currency: String
         /// Evidence submitted to contest the dispute, if any.
-        public var evidence: DisputeEvidence?
+        @Lenient public var evidence: DisputeEvidence?
         /// Identifier of the payment intent associated with the disputed charge, if applicable.
-        public var chargeIntent: String?
+        @Lenient public var chargeIntent: String?
         /// The reason the dispute was opened.
         public let reason: DisputeReason
         /// The current status of the dispute.
@@ -121,33 +121,33 @@ extension FrameObjects {
     /// Supporting evidence provided by the merchant to contest a dispute.
     public struct DisputeEvidence: Codable, Equatable, Sendable {
         /// Log or narrative describing customer access activity relevant to the dispute.
-        public var evidenceAccessActivityLog: String?
+        @Lenient public var evidenceAccessActivityLog: String?
         /// Billing address on file for the customer at the time of the transaction.
-        public var evidenceBillingAddress: String?
+        @Lenient public var evidenceBillingAddress: String?
         /// A copy of or reference to the merchant's cancellation policy.
-        public var evidenceCancellationPolicy: String?
+        @Lenient public var evidenceCancellationPolicy: String?
         /// Explanation of how and when the cancellation policy was disclosed to the customer.
-        public var evidenceCancellationPolicyDisclosure: String?
+        @Lenient public var evidenceCancellationPolicyDisclosure: String?
         /// Merchant's rebuttal to the customer's cancellation claim.
-        public var evidenceCancellationRebuttal: String?
+        @Lenient public var evidenceCancellationRebuttal: String?
         /// Email address of the customer at the time of purchase.
-        public var evidenceCustomerEmailAddress: String?
+        @Lenient public var evidenceCustomerEmailAddress: String?
         /// Full name of the customer as provided during purchase.
-        public var evidenceCustomerName: String?
+        @Lenient public var evidenceCustomerName: String?
         /// IP address from which the customer completed the purchase.
-        public var evidenceCustomerPurchaseIP: String?
+        @Lenient public var evidenceCustomerPurchaseIP: String?
         /// Explanation of why the disputed charge is not a duplicate.
-        public var evidenceDuplicateChargeExplanation: String?
+        @Lenient public var evidenceDuplicateChargeExplanation: String?
         /// Identifier of the original charge that the disputed charge allegedly duplicates.
-        public var evidenceDuplicateChargeId: String?
+        @Lenient public var evidenceDuplicateChargeId: String?
         /// Description of the product or service that was sold.
-        public var evidenceProductDescription: String?
+        @Lenient public var evidenceProductDescription: String?
         /// Explanation of how and when the refund policy was disclosed to the customer.
-        public var evidenceRefundPolicyDisclosure: String?
+        @Lenient public var evidenceRefundPolicyDisclosure: String?
         /// Shipping or delivery tracking number for the order.
-        public var evidenceShippingTrackingNumber: String?
+        @Lenient public var evidenceShippingTrackingNumber: String?
         /// Any additional free-form text evidence not covered by other fields.
-        public var evidenceUncategorizedText: String?
+        @Lenient public var evidenceUncategorizedText: String?
 
         /// Creates a new ``DisputeEvidence`` instance with all fields optional.
         /// - Parameters:
