@@ -257,3 +257,47 @@ final class NetworkingErrorAssertionRejectionTests: XCTestCase {
         XCTAssertFalse(NetworkingError.invalidURL.isAssertionRejection)
     }
 }
+
+// MARK: - Request headers
+
+/// The SDK reported no version at all until now, so a build in the field could not be
+/// told from any other. It reports one in its own header — deliberately not in the
+/// User-Agent, which the API matches exactly in places.
+final class RequestHeaderTests: XCTestCase {
+
+    private func performAndCaptureRequest() {
+        MockURLProtocol.lastRequest = nil
+        MockURLProtocol.mockData = Data()
+        MockURLProtocol.mockResponse = HTTPURLResponse(url: URL(string: "https://api.framepayments.com")!,
+                                                       statusCode: 200,
+                                                       httpVersion: nil,
+                                                       headerFields: nil)
+        MockURLProtocol.mockError = nil
+
+        let networking = FrameNetworking.shared
+        networking.urlSession = makeMockURLSession()
+        let endpoint = MockFrameEndpoints(endpointURL: "/v1/customers", httpMethod: .GET, queryItems: nil)
+
+        let expectation = self.expectation(description: "Completion handler called")
+        networking.performDataTask(endpoint: endpoint) { _, _, _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+    }
+
+    func testReportsTheSDKVersionInItsOwnHeader() throws {
+        performAndCaptureRequest()
+
+        let version = MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Frame-SDK-Version")
+        XCTAssertEqual(version, FrameSDK.version)
+    }
+
+    /// The API matches the User-Agent exactly in places — Sift's platform detector
+    /// anchors on `/\AiOS\z/`, and a versioned value there would fall through to the
+    /// browser branch, changing the fraud signals sent for every native request. The
+    /// version has its own header precisely so this one can stay bare.
+    func testUserAgentStaysTheBarePlatformToken() throws {
+        performAndCaptureRequest()
+
+        let userAgent = try XCTUnwrap(MockURLProtocol.lastRequest?.value(forHTTPHeaderField: "User-Agent"))
+        XCTAssertEqual(userAgent, "iOS")
+    }
+}

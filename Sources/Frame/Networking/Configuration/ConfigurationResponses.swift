@@ -22,16 +22,33 @@ public class ConfigurationResponses {
         }
     }
 
-    /// Decoded response containing the Fingerprint public API key and region returned by the configuration endpoint.
+    /// Decoded response containing the Fingerprint credentials returned by the configuration endpoint.
+    ///
+    /// The three fields are one credential, not three settings. A key only works in
+    /// the region it was minted for, and `environment` names the regime that key
+    /// belongs to — so they are cached and read as a unit, never merged field by
+    /// field against an older copy.
     public struct GetFingerprintConfigurationResponse: Codable {
         /// The Fingerprint public API key.
         @Lenient private(set) var apiKey: String?
         /// The Fingerprint region associated with the API key (e.g. "us", "eu", "ap").
-        @Lenient private(set) var region: String?
+         @Lenient private(set) var region: String?
+        /// The Fingerprint environment the key belongs to (`"sealed"` or `"legacy"`).
+         @Lenient private(set) var environment: String?
+
+        /// Whether the served credentials belong to the sealed environment.
+        var isSealed: Bool { environment == FingerprintCapability.sealed }
+
+        /// Whether the response names the environment its key belongs to.
+        ///
+        /// A cached copy without one was written before this build began declaring a
+        /// capability, so nothing about it says which regime its key is from.
+        var hasEnvironmentStamp: Bool { !(environment ?? "").isEmpty }
 
         enum CodingKeys: String, CodingKey {
             case apiKey = "api_key"
             case region
+            case environment
         }
     }
 
