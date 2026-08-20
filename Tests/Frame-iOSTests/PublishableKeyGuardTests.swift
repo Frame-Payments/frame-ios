@@ -123,24 +123,28 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer ci_abc_secret_xyz")
     }
 
-    /// While an onboarding session is active, a `.secret`-tagged request carries the
-    /// onboarding-session token, scoping the flow to one account. An explicit `.publishable`
-    /// request, however, wins over the session: merchant-level publishable-only endpoints
-    /// (terms_of_service, device_attestation, …) reject the onb_sess_ token, so the pk_ must be
-    /// used even mid-session. Precedence: clientSecret > publishable > session > secret.
-    func testOnboardingSessionOverridesSecretButNotExplicitPublishable() async throws {
+    /// While an onboarding session is active, its token authenticates every request — including
+    /// one explicitly tagged `.publishable`. Account-scoped reads like `getAccountWith` are
+    /// `.publishable` but need the session token, because the backend withholds `profile` unless
+    /// the request carries a secret key or a matching onboarding session.
+    /// Precedence: clientSecret > session > publishable > secret.
+    func testOnboardingSessionOverridesPublishableAndSecret() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()
         FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_live_token")
         defer { FrameNetworking.shared.endOnboardingSession() }
 
-        // An explicit publishable-key request bypasses the session.
+        // A `.publishable` request is scoped to the session, so account-scoped reads keep `profile`.
         _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer onb_sess_live_token")
 
-        // A `.secret`-tagged (default) request is still scoped to the session token.
+        // A `.secret`-tagged (default) request is likewise scoped to the session token.
         _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .secret)
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer onb_sess_live_token")
+
+        // A per-object client secret still outranks the session.
+        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret("ci_abc_secret_xyz"))
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer ci_abc_secret_xyz")
     }
 
     /// Ending the onboarding session restores normal credential resolution: a `.publishable`

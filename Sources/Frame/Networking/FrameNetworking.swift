@@ -183,10 +183,10 @@ public class FrameNetworking: ObservableObject {
             return onboardingSessionToken
         }
         
-        // An explicit publishable-key request also wins over the onboarding session: endpoints like
-        // terms_of_service and device_attestation are merchant-level (not account-scoped) and the
-        // backend only accepts a pk_ there — sending the onb_sess_ token would be rejected with
-        // "Client secret is not permitted for this endpoint." Callers opt in via `auth: .publishable`.
+        // Outside an onboarding session, `.publishable` sends the pk_: merchant-level endpoints
+        // (terms_of_service, device_attestation, …) are not account-scoped and only accept a pk_.
+        // Mid-session the check above wins instead, because account-scoped reads tagged
+        // `.publishable` (e.g. getAccountWith) need the session token to receive `profile`.
         if case .publishable = auth {
             if apiPublishableKey.isEmpty {
                 warnOnce(&hasMissingPublishableKeyWarned,
