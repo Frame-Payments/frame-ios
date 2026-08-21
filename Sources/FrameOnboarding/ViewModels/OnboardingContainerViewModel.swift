@@ -46,7 +46,6 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []
     @Published var payoutMethods: [FrameObjects.PaymentMethod] = []
-    @Published var paymentMethodVerification: ThreeDSecureVerification?
     @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var filesToUpload: [FileUpload] = []
     @Published var ipAddress: String?
@@ -806,60 +805,6 @@ class OnboardingContainerViewModel: ObservableObject {
     func resetIdentityVerification() {
         identityVerifiedViaGovId = false
         personaInquiryId = nil
-    }
-
-    // Start 3DS process with select payment method
-    func start3DSecureProcess() async {
-        guard let paymentMethodId = selectedPaymentMethod?.id else { return }
-        guard beginAction() else { return }
-        defer { endAction() }
-
-        let request = ThreeDSecureRequests.CreateThreeDSecureVerification(paymentMethodId: paymentMethodId)
-
-        do {
-            let (verification, verificationError, _) = try await ThreeDSecureVerificationsAPI.create3DSecureVerification(request: request)
-            if let verification {
-                paymentMethodVerification = verification
-            } else if let verificationError, let verificationId = verificationError.error.existingIntentId {
-                await retrieveExistingThreeDSecureVerification(verificationId: verificationId)
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-
-    /// Direct retrieval used both when re-entering an in-flight 3DS verification (without the
-    /// outer action guard) and as the body of `retrieve3DSChallenge` (with the guard).
-    private func retrieveExistingThreeDSecureVerification(verificationId: String) async {
-        do {
-            let (verification, _) = try await ThreeDSecureVerificationsAPI.retrieve3DSecureVerification(verificationId: verificationId)
-            if let verification {
-                paymentMethodVerification = verification
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-
-    func retrieve3DSChallenge(verificationId: String) async {
-        guard beginAction() else { return }
-        defer { endAction() }
-        await retrieveExistingThreeDSecureVerification(verificationId: verificationId)
-    }
-
-    // Resend 3DS code to customer
-    func resend3DSChallenge() async {
-        guard beginAction() else { return }
-        defer { endAction() }
-
-        do {
-            let (verification, _) = try await ThreeDSecureVerificationsAPI.resend3DSecureVerification(verificationId: paymentMethodVerification?.id ?? "")
-            if let verification {
-                self.paymentMethodVerification = verification
-            }
-        } catch let error {
-            print(error)
-        }
     }
 
     func createCustomerIdentity() async {

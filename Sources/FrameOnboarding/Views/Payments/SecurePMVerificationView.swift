@@ -187,15 +187,6 @@ struct SecurePMVerificationView: View {
         self.codeInput = enteredCode.count == codeCount
     }
     
-    func replace(myString: String, _ index: Int, _ newChar: Character) -> String {
-        var chars = Array(myString) // gets an array of characters
-        if index >= 0 && index < chars.count {
-            chars[index] = newChar
-            return String(chars)
-        }
-        return myString
-    }
-
 }
 
 #Preview {

@@ -28,8 +28,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         // grant full merchant privileges and must not ship in an app binary — serve sk_ from your
         // backend. This example sets a secret key only to exercise the legacy server-side demo
         // calls below; production apps should omit it.
-        FrameNetworking.shared.initialize(publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
-                                          secretKey: "ENTER_SECRET_KEY_HERE",
+        FrameNetworking.shared.initialize(publishableKey: "pk_sandbox_YLkjssgv9FMYKnfs3sfuTLQa",
+                                          secretKey: "sk_sandbox_UgLVWB47FrscWdjEvtGvZkm3",
 //                                          theme: FrameTheme(
 //                                              colors: .init(primaryButton: .purple, error: .orange),
 //                                              fonts: .init(title: .custom("Avenir-Black", size: 28)),
