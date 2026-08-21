@@ -259,7 +259,41 @@ class FrameCheckoutViewModel: ObservableObject {
 
         let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
         if let transferError { throw transferError }
-        return transfer
+        guard let transfer else { return nil }
+
+        guard transfer.status == .requiresThreeDSecure else { return transfer }
+        return try await completeThreeDSecure(for: transfer)
+    }
+
+    /// Runs the 3D Secure challenge for a transfer the API held back, and reports the charge's
+    /// real outcome.
+    ///
+    /// `isPerformingAction` stays set by the caller for the whole run, including the polling
+    /// window, so the pay button cannot be tapped a second time mid-challenge.
+    ///
+    /// - Parameter transfer: A transfer whose status is
+    ///   ``FrameObjects/TransferStatus/requiresThreeDSecure``.
+    /// - Returns: The transfer, once the charge has authenticated.
+    /// - Throws: ``FrameChargeIntentError`` when the challenge cannot run or the charge's status
+    ///   cannot be read, or ``FrameCheckoutError`` when the charge is declined or unresolved.
+    private func completeThreeDSecure(for transfer: FrameObjects.Transfer) async throws -> FrameObjects.Transfer {
+        guard let clientSecret = transfer.clientSecret else {
+            throw FrameCheckoutError.threeDSecureUnavailable
+        }
+
+        let confirmation = ChargeIntentConfirmation(
+            challengePresenter: FrameThreeDSecureChallengePresenter()
+        )
+
+        switch try await confirmation.confirm(clientSecret: clientSecret) {
+        case .succeeded:
+            return transfer
+        case .failed(_, let reason):
+            throw FrameCheckoutError.declined(message: reason?.message)
+        case .timedOut:
+            // The charge may still settle, so this is not reported as a decline.
+            throw FrameCheckoutError.unresolved
+        }
     }
 
     /// Tokenises the card data entered by the user and creates a card payment method on the given account.

@@ -70,6 +70,15 @@ final class HeaderCapturingAsyncSession: URLSessionProtocol, @unchecked Sendable
     func sentRequest(toPath path: String) -> Bool {
         requests.contains { $0.url?.absoluteString.contains(path) == true }
     }
+
+    /// The decoded JSON body of the most recent request whose path contains `path`.
+    func jsonBody(forPath path: String) -> [String: Any]? {
+        guard let body = requests.last(where: { $0.url?.absoluteString.contains(path) == true })?.httpBody,
+              let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any] else {
+            return nil
+        }
+        return object
+    }
 }
 
 final class PublishableKeyGuardTests: XCTestCase {
@@ -200,18 +209,34 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_oops")
     }
 
-    /// `confirmChargeIntent` sends the provided charge-intent client_secret as the Bearer token,
-    /// not the publishable or secret key.
-    func testConfirmChargeIntentSendsClientSecretAsBearer() async throws {
+    /// The API treats a Bearer token as a client secret only for `onb_sess_` prefixes, so a
+    /// `ci_` secret in that header 401s. `use_frame_sdk` must accompany it in the body.
+    func testConfirmChargeIntentSendsClientSecretInBodyWithPublishableKey() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()
         session.data = Data("{}".utf8)
 
-        _ = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "ci_123", clientSecret: "ci_123_secret_abc")
+        _ = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "123", clientSecret: "ci_123_secret_abc")
 
         // Filter by path: initialize() spawns background pk_ requests (Evervault/attestation).
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/charge_intents/ci_123/confirm"),
-                       "Bearer ci_123_secret_abc")
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/charge_intents/123/confirm"),
+                       "Bearer pk_test_123")
+
+        let body = session.jsonBody(forPath: "/v1/charge_intents/123/confirm")
+        XCTAssertEqual(body?["client_secret"] as? String, "ci_123_secret_abc")
+        XCTAssertEqual(body?["use_frame_sdk"] as? Bool, true)
+    }
+
+    /// `show` allows publishable callers and validates no client secret.
+    func testGetChargeIntentUsesPublishableKey() async throws {
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
+        let session = makeSession()
+        session.data = Data("{}".utf8)
+
+        _ = try? await ChargeIntentsAPI.getChargeIntent(intentId: "123", clientSecret: "ci_123_secret_abc")
+
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/charge_intents/123"),
+                       "Bearer pk_test_123")
     }
 
     /// An empty client_secret short-circuits (no request is made) rather than sending `Bearer `.

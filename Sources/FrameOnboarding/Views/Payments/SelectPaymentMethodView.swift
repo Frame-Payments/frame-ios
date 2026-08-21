@@ -10,20 +10,13 @@ import EvervaultInputs
 import Frame
 
 struct SelectPaymentMethodView: View {
-    enum ConfirmPaymentMethodSteps {
-        case selectPayment
-        case verifyPayment
-    }
-    
     @Environment(\.frameTheme) private var theme
     @StateObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
     @State private var canCustomerContinue: Bool = false
-    @State private var currentPaymentStep: ConfirmPaymentMethodSteps = .selectPayment
     @State private var showAddPaymentMethod: Bool = false
     @State private var onlyAddressVerification: Bool = false
     @State private var paymentVerified: Bool = false
-    @State private var returnToSelectPayment: Bool = false
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
@@ -32,20 +25,12 @@ struct SelectPaymentMethodView: View {
     
     var body: some View {
         NavigationStack {
-            switch currentPaymentStep {
-            case .selectPayment:
-                selectPaymentView
-                    .navigationDestination(isPresented: $showAddPaymentMethod) {
-                        AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
-                                             onlyAddressVerification: onlyAddressVerification)
-                            .navigationBarBackButtonHidden()
-                    }
-            case .verifyPayment:
-                SecurePMVerificationView(type: .threeDS,
-                                         onboardingContainerViewModel: onboardingContainerViewModel,
-                                         continueToNextStep: $paymentVerified,
-                                         returnToPreviousStep: $returnToSelectPayment)
-            }
+            selectPaymentView
+                .navigationDestination(isPresented: $showAddPaymentMethod) {
+                    AddPaymentMethodView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                         onlyAddressVerification: onlyAddressVerification)
+                        .navigationBarBackButtonHidden()
+                }
         }
         .onAppear {
             Task {
@@ -59,12 +44,6 @@ struct SelectPaymentMethodView: View {
             guard paymentVerified else { return }
             self.continueToNextStep = true
         })
-        .onChange(of: returnToSelectPayment) { oldValue, newValue in
-            guard returnToSelectPayment else { return }
-            
-            self.currentPaymentStep = .selectPayment
-            self.returnToSelectPayment = false
-        }
     }
     
     var selectPaymentView: some View {
@@ -81,14 +60,7 @@ struct SelectPaymentMethodView: View {
                     } else {
                         self.paymentVerified = true
                     }
-                    
-                    //TODO: Check if `card_verification` is active on the capabilities, start 3DS flow
-//                    if onboardingContainerViewModel.requiredCapabilities.contains(.cardVerification) {
-//                        await onboardingContainerViewModel.start3DSecureProcess()
-//                        self.currentPaymentStep = .verifyPayment
-//                    } else {
-//                        self.paymentVerified = true
-//                    }
+
                 }
             }
             .padding(.bottom)

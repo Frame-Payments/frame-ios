@@ -8,11 +8,12 @@
 import SwiftUI
 import Frame
 
+/// 3D Secure is deliberately absent: an issuer code must never pass through the app, so that
+/// challenge is presented in a web view by `FrameThreeDSecureChallengePresenter`.
 enum CodeVerificationType {
-    case threeDS
     case phone
     case proveOtp
-    
+
     var codeCount: Int {
         return 6
     }
@@ -26,7 +27,6 @@ struct SecurePMVerificationView: View {
     
     @State private var codeInput: Bool = false
     @State private var enteredCode: String = ""
-    @State private var codeResent: Bool = false
     
     @State private var codeInputOne: String = ""
     @State private var codeInputTwo: String = ""
@@ -50,21 +50,11 @@ struct SecurePMVerificationView: View {
     }
     
     private var headerTitle: String {
-        switch type {
-        case .threeDS:
-            return "Verify Your Card"
-        case .phone, .proveOtp:
-            return "Enter Verification Code"
-        }
+        return "Enter Verification Code"
     }
 
     private var bodyText: String {
-        switch type {
-        case .threeDS:
-            return "We've sent a security code to your bank registered phone number ending in *"
-        case .phone, .proveOtp:
-            return "We've sent a verification code to your phone. Enter it below."
-        }
+        return "We've sent a verification code to your phone. Enter it below."
     }
 
     var body: some View {
@@ -73,7 +63,7 @@ struct SecurePMVerificationView: View {
                 switch type {
                 case .proveOtp:
                     onboardingContainerViewModel.cancelProveOTP()
-                case .threeDS, .phone:
+                case .phone:
                     self.returnToPreviousStep = true
                 }
             }
@@ -87,10 +77,6 @@ struct SecurePMVerificationView: View {
                            isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 Task {
                     switch type {
-                    case .threeDS:
-                        //TODO: Submit 3DS verification code to backend.
-//                        await onboardingContainerViewModel.retrieve3DSChallenge(verificationId: enteredCode)
-                        self.continueToNextStep = true
                     case .phone:
                         if await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode) {
                             self.continueToNextStep = true
@@ -103,20 +89,6 @@ struct SecurePMVerificationView: View {
                     }
                 }
             }
-            if type == .threeDS {
-                Button {
-                    Task {
-                        await onboardingContainerViewModel.resend3DSChallenge()
-                        self.codeResent = true
-                    }
-                } label: {
-                    Text("Resend Code")
-                        .bold()
-                        .foregroundColor(theme.colors.textPrimary)
-                }
-                .disabled(codeResent)
-            }
-
             Spacer()
         }
         .onChange(of: type) { _, _ in
@@ -215,15 +187,6 @@ struct SecurePMVerificationView: View {
         self.codeInput = enteredCode.count == codeCount
     }
     
-    func replace(myString: String, _ index: Int, _ newChar: Character) -> String {
-        var chars = Array(myString) // gets an array of characters
-        if index >= 0 && index < chars.count {
-            chars[index] = newChar
-            return String(chars)
-        }
-        return myString
-    }
-
 }
 
 #Preview {

@@ -13,6 +13,46 @@ import Foundation
 /// or capturing charge intents are nested inside this class.
 public class ChargeIntentsRequests {
 
+    /// Options for confirming a charge intent from the app.
+    public struct ConfirmChargeIntentOptions: Sendable {
+        /// A saved payment method (`pm_…`) to charge instead of the intent's own.
+        public let paymentMethod: String?
+        /// A shipping address to record against the charge.
+        public let shipping: FrameObjects.BillingAddress?
+
+        /// Creates confirmation options.
+        public init(paymentMethod: String? = nil, shipping: FrameObjects.BillingAddress? = nil) {
+            self.paymentMethod = paymentMethod
+            self.shipping = shipping
+        }
+    }
+
+    /// Request body for confirming a charge intent with a publishable key.
+    ///
+    /// The secret travels in the body, not the `Authorization` header: the API authenticates
+    /// with the publishable key, then matches `client_secret` against the intent. It rejects a
+    /// publishable-key confirmation missing either that or `use_frame_sdk`.
+    struct ConfirmChargeIntentRequest: Encodable, Sendable {
+        let clientSecret: String
+        /// Required by the API for publishable-key confirmations.
+        let useFrameSDK: Bool = true
+        let paymentMethod: String?
+        let shipping: FrameObjects.BillingAddress?
+
+        init(clientSecret: String, options: ConfirmChargeIntentOptions? = nil) {
+            self.clientSecret = clientSecret
+            self.paymentMethod = options?.paymentMethod
+            self.shipping = options?.shipping
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case shipping
+            case clientSecret = "client_secret"
+            case useFrameSDK = "use_frame_sdk"
+            case paymentMethod = "payment_method"
+        }
+    }
+
     /// Request body for creating a new charge intent.
     public struct CreateChargeIntentRequest: Encodable {
         /// The charge amount in the smallest currency unit (e.g. cents).
