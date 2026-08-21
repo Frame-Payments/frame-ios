@@ -71,7 +71,7 @@ final class HeaderCapturingAsyncSession: URLSessionProtocol, @unchecked Sendable
         requests.contains { $0.url?.absoluteString.contains(path) == true }
     }
 
-    /// The decoded JSON body of the most recent request whose URL path contains `path`.
+    /// The decoded JSON body of the most recent request whose path contains `path`.
     func jsonBody(forPath path: String) -> [String: Any]? {
         guard let body = requests.last(where: { $0.url?.absoluteString.contains(path) == true })?.httpBody,
               let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any] else {
@@ -209,12 +209,8 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_oops")
     }
 
-    /// `confirmChargeIntent` authenticates with the publishable key and carries the client
-    /// secret in the request body.
-    ///
-    /// The API only treats a Bearer token as a client secret for onboarding sessions
-    /// (`onb_sess_…`); a `ci_` secret in that header falls through to API-key lookup and 401s.
-    /// `use_frame_sdk` must accompany it or the API rejects the confirmation.
+    /// The API treats a Bearer token as a client secret only for `onb_sess_` prefixes, so a
+    /// `ci_` secret in that header 401s. `use_frame_sdk` must accompany it in the body.
     func testConfirmChargeIntentSendsClientSecretInBodyWithPublishableKey() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()
@@ -231,8 +227,7 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(body?["use_frame_sdk"] as? Bool, true)
     }
 
-    /// Retrieving an intent while polling authenticates with the publishable key: the API allows
-    /// `show` for publishable callers and does not validate a client secret on it.
+    /// `show` allows publishable callers and validates no client secret.
     func testGetChargeIntentUsesPublishableKey() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
         let session = makeSession()

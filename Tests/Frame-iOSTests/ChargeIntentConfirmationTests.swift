@@ -6,14 +6,14 @@
 import XCTest
 @testable import Frame
 
-/// Records how a challenge was driven and reports a scripted outcome.
+/// Reports scripted outcomes and records how the challenge was driven.
 private final class StubChallengePresenter: FrameThreeDSecureChallengePresenting, @unchecked Sendable {
     private let lock = NSLock()
     private var _presentCount = 0
     private var _lastSource: String?
     private let results: [FrameThreeDSecureChallengeResult]
 
-    /// - Parameter results: One result per presentation, in order. The last repeats if needed.
+    /// One result per presentation, in order; the last repeats.
     init(results: [FrameThreeDSecureChallengeResult]) {
         self.results = results
     }
@@ -32,8 +32,7 @@ private final class StubChallengePresenter: FrameThreeDSecureChallengePresenting
     }
 }
 
-/// Counts polling reads and the waits between them, so the timing contract is assertable
-/// without spending real seconds.
+/// Counts reads and waits, so the timing contract is assertable without real seconds.
 private final class PollRecorder: @unchecked Sendable {
     private let lock = NSLock()
     private var _loadCount = 0
@@ -75,8 +74,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
 
     // MARK: - Client secret parsing
 
-    /// The resource id is the bare UUID: the `ci_` prefix and `_secret_…` suffix belong to the
-    /// secret, and a URL built from the unstripped string 404s.
+    /// A URL built from the unstripped secret 404s.
     func testClientSecretYieldsBareChargeIntentID() throws {
         let parsed = try ChargeIntentClientSecret(Self.secret)
 
@@ -86,13 +84,13 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(parsed.value, Self.secret)
     }
 
-    /// A secret with no `_secret_` marker is treated as the id alone, matching the browser SDK.
+    /// Matches the browser SDK: no marker means the whole string is the id.
     func testClientSecretWithoutMarkerUsesWholeString() throws {
         let parsed = try ChargeIntentClientSecret("ci_\(Self.intentUUID)")
         XCTAssertEqual(parsed.chargeIntentID, Self.intentUUID)
     }
 
-    /// A mistyped or wrong-resource secret fails at the call site, not as a confusing 401 later.
+    /// A wrong-resource secret fails here, not as a confusing 401 later.
     func testNonChargeIntentSecretIsRejected() {
         for bad in ["pm_123_secret_x", "", "ci_", "secret_only"] {
             XCTAssertThrowsError(try ChargeIntentClientSecret(bad)) { error in
@@ -120,7 +118,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
 
     // MARK: - Terminal statuses short-circuit
 
-    /// A charge that settles on confirm resolves immediately, with no polling at all.
+    /// A charge that settles on confirm never polls.
     func testSucceededOnConfirmSkipsPolling() async throws {
         let recorder = PollRecorder()
         let confirmation = ChargeIntentConfirmation(
@@ -139,8 +137,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertTrue(recorder.sleeps.isEmpty)
     }
 
-    /// `requires_capture` is terminal, not pending. Treating it as pending would make
-    /// authorize-only merchants appear to time out.
+    /// Treating `requires_capture` as pending would make authorize-only merchants time out.
     func testRequiresCaptureIsTerminalSuccess() async throws {
         let recorder = PollRecorder()
         let confirmation = ChargeIntentConfirmation(
@@ -155,7 +152,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.loadCount, 0, "requires_capture must not be polled")
     }
 
-    /// A terminal failure carries the decline reason from `latest_charge`.
+    /// The decline reason comes from `latest_charge`.
     func testFailedConfirmCarriesDeclineReason() async throws {
         let charge = try JSONDecoder().decode(FrameObjects.LatestCharge.self, from: Data("""
         {
@@ -181,8 +178,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(reason?.message, "Your card was declined.")
     }
 
-    /// A terminal `failed` with no `latest_charge` is a real API response: the outcome is a
-    /// failure with no machine-readable reason, not a crash and not a success.
+    /// A terminal `failed` with no `latest_charge` is a real response, not a crash.
     func testFailedWithoutLatestChargeHasNoReason() async throws {
         let confirmation = ChargeIntentConfirmation(
             challengePresenter: nil,
@@ -198,7 +194,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
 
     // MARK: - 3D Secure challenge
 
-    /// A completed challenge is only a UI signal; the verdict still comes from the API.
+    /// A completed challenge is a UI signal; the verdict comes from the API.
     func testCompletedChallengeThenPollsForVerdict() async throws {
         let presenter = StubChallengePresenter(results: [.completed])
         let recorder = PollRecorder()
@@ -219,8 +215,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.loadCount, 1)
     }
 
-    /// A failed challenge polls exactly like a completed one — the cardholder failing the
-    /// challenge is not itself the payment verdict.
+    /// A failed challenge polls like a completed one: it is not itself the verdict.
     func testFailedChallengeAlsoPolls() async throws {
         let presenter = StubChallengePresenter(results: [.failed])
         let recorder = PollRecorder()
@@ -240,8 +235,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.loadCount, 1, "a failed challenge must still be polled")
     }
 
-    /// A challenge that could not load never ran, which is a thrown error and distinct from
-    /// the cardholder failing one that did.
+    /// A challenge that never ran throws, unlike one the cardholder failed.
     func testUnavailableChallengeThrowsWithoutPolling() async {
         let presenter = StubChallengePresenter(results: [.unavailable])
         let recorder = PollRecorder()
@@ -261,8 +255,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.loadCount, 0)
     }
 
-    /// `requires_3d_secure` without a challenge session is unactionable, and is reported as
-    /// such rather than presenting an empty challenge.
+    /// `requires_3d_secure` with no session is unactionable rather than an empty challenge.
     func testRequiresThreeDSecureWithoutChallengeThrows() async {
         let presenter = StubChallengePresenter(results: [.completed])
         let confirmation = ChargeIntentConfirmation(
@@ -280,18 +273,16 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(presenter.presentCount, 0)
     }
 
-    /// Both halves are required to present a challenge: the status alone can be set without a
-    /// challenge session having been produced.
+    /// The status alone can be set without a challenge session having been produced.
     func testRequiresThreeDSecureChallengeNeedsBothStatusAndAction() {
         XCTAssertTrue(intent(status: .requiresThreeDSecure, nextAction: threeDSecureAction).requiresThreeDSecureChallenge)
         XCTAssertFalse(intent(status: .requiresThreeDSecure).requiresThreeDSecureChallenge)
         XCTAssertFalse(intent(status: .pending, nextAction: threeDSecureAction).requiresThreeDSecureChallenge)
     }
 
-    /// A presenter that fires twice must not resume the caller twice — a continuation resumed
-    /// twice traps, and a redirect racing a dismissal during teardown is exactly that case.
+    /// A continuation resumed twice traps; a redirect racing a dismissal is that case.
     func testDoubleReportedChallengeResolvesOnce() async throws {
-        /// Reports two outcomes for one presentation, as a racing teardown would.
+        /// Reports twice, as a racing teardown would.
         final class DoubleReportingPresenter: FrameThreeDSecureChallengePresenting, @unchecked Sendable {
             func presentChallenge(_ challenge: FrameObjects.UseFrameSDK,
                                   for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult {
@@ -320,7 +311,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.loadCount, 1, "the challenge must drive exactly one polling run")
     }
 
-    /// A zero attempt budget must still perform one read rather than trapping on an empty range.
+    /// A zero budget must still read once rather than trap on an empty range.
     func testZeroAttemptBudgetStillReadsOnce() async throws {
         let recorder = PollRecorder()
         let confirmation = ChargeIntentConfirmation(
@@ -341,8 +332,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
 
     // MARK: - Polling
 
-    /// The lead-in delay comes before the first read, and every non-terminal read is followed
-    /// by one, so the budget spans the full wall-clock window rather than burning instantly.
+    /// The lead-in precedes the first read, so the budget spans the full window.
     func testPollingSleepsBeforeFirstReadAndBetweenReads() async throws {
         let recorder = PollRecorder()
         let confirmation = ChargeIntentConfirmation(
@@ -350,7 +340,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
             polling: .init(maxAttempts: 3, interval: .seconds(1)),
             confirmIntent: { _, _ in self.intent(status: .pending) },
             loadIntent: { _, _ in
-                // Terminal only on the second read, so one inter-read delay is observable.
+                // Terminal on the second read, so one inter-read delay is observable.
                 recorder.recordLoad() == 2 ? self.intent(status: .succeeded) : self.intent(status: .pending)
             },
             sleep: { recorder.recordSleep($0) })
@@ -363,8 +353,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
                        "one lead-in delay plus one after the non-terminal read")
     }
 
-    /// Exhausting the budget on non-terminal statuses is *returned*, not thrown: the charge may
-    /// still settle, so the caller should re-check rather than treat it as a failure.
+    /// Exhausting the budget is returned, not thrown: the charge may still settle.
     func testExhaustedBudgetReturnsTimedOut() async throws {
         let recorder = PollRecorder()
         let confirmation = ChargeIntentConfirmation(
@@ -385,8 +374,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.sleeps.count, 11)
     }
 
-    /// A failing read consumes an attempt and still waits: fast-retrying a transient 5xx would
-    /// burn the whole budget in milliseconds.
+    /// A failing read consumes an attempt and waits, so a 5xx cannot burn the budget instantly.
     func testFailingReadsConsumeTheBudgetThenThrow() async {
         struct ServerError: Error {}
         let recorder = PollRecorder()
@@ -411,8 +399,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(recorder.sleeps.count, 10)
     }
 
-    /// A read that recovers before the budget runs out resolves normally: earlier failures are
-    /// retried rather than being fatal.
+    /// Earlier failures are retried rather than fatal.
     func testTransientReadFailureIsRetried() async throws {
         struct ServerError: Error {}
         let recorder = PollRecorder()
@@ -434,8 +421,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
 
     // MARK: - Decoding
 
-    /// An unknown status must not fail the whole object: `status` is non-optional, so a state
-    /// added server-side would otherwise make the intent undecodable.
+    /// `status` is non-optional, so an unknown state would otherwise fail the whole object.
     func testUnknownStatusDecodesToUnknownRatherThanFailing() throws {
         let json = Data("""
         {
@@ -451,7 +437,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertFalse(decoded.status.isTerminal)
     }
 
-    /// `next_action` decodes into the two fields the API actually serialises.
+    /// The two fields the API actually serialises.
     func testNextActionDecodes() throws {
         let json = Data("""
         {
@@ -474,7 +460,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertTrue(decoded.requiresThreeDSecureChallenge)
     }
 
-    /// A transfer exposes the wrapped charge intent's secret, which is what drives confirmation.
+    /// The wrapped intent's secret is what drives confirmation.
     func testTransferDecodesClientSecretAndThreeDSecureStatus() throws {
         let json = Data("""
         {
@@ -493,7 +479,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
 }
 
 
-/// Resumes a continuation at most once, mirroring the presenter's own guard.
+/// Mirrors the presenter's once-only guard.
 private final class OnceBox: @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: CheckedContinuation<FrameThreeDSecureChallengeResult, Never>?

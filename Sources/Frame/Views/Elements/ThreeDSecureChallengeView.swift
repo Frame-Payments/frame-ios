@@ -9,21 +9,17 @@ import WebKit
 
 /// Hosts an issuer-controlled 3D Secure challenge.
 ///
-/// The challenge page is served by the card network's directory server, and the code the
-/// cardholder enters is never exposed to this app — that is the point of loading it in a web
-/// view rather than collecting the digits natively. Nothing here reads, stores, or forwards
-/// the page's contents.
-///
-/// The view reports only that the challenge finished. Whether the charge succeeded is decided
-/// by the Frame API, which the caller polls afterwards.
+/// The page is served by the card network, so the code the cardholder enters never reaches
+/// this app — the reason for a web view rather than native digit fields. The view reports only
+/// that the challenge finished; the Frame API decides whether the charge succeeded.
 struct ThreeDSecureChallengeView: UIViewRepresentable {
     /// The issuer challenge page to load.
     let challengeURL: URL
     /// The redirect that signals the challenge is over.
     let returnURLPrefix: String
-    /// Called once, when the challenge page redirects to ``returnURLPrefix``.
+    /// Called once, when the page redirects to ``returnURLPrefix``.
     let onFinish: () -> Void
-    /// Called if the challenge page itself fails to load.
+    /// Called if the page fails to load.
     let onLoadFailure: (Error) -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -31,7 +27,7 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> WKWebView {
-        // A non-persistent store keeps issuer cookies out of the host app's shared storage.
+        // Keeps issuer cookies out of the host app's shared storage.
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
 
@@ -45,13 +41,12 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
         context.coordinator.update(returnURLPrefix: returnURLPrefix, onFinish: onFinish, onLoadFailure: onLoadFailure)
     }
 
-    /// Watches for the challenge's terminal redirect and reports it exactly once.
+    /// Watches for the terminal redirect and reports it exactly once.
     final class Coordinator: NSObject, WKNavigationDelegate {
         private var returnURLPrefix: String
         private var onFinish: () -> Void
         private var onLoadFailure: (Error) -> Void
-        /// Guards against a second report: a redirect and a load failure can both arrive during
-        /// teardown, and the caller's continuation must be resumed only once.
+        /// A redirect and a load failure can both arrive during teardown.
         private var hasReported = false
 
         init(returnURLPrefix: String, onFinish: @escaping () -> Void, onLoadFailure: @escaping (Error) -> Void) {

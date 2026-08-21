@@ -11,8 +11,7 @@ extension FrameObjects {
     /// Represents the lifecycle state of a transfer within the Frame platform.
     ///
     /// Mirrors the charge-intent state machine, since a card transfer wraps a charge intent.
-    /// An unrecognised value decodes to ``unknown`` rather than failing the surrounding
-    /// ``Transfer``, so a state added server-side cannot break an already-shipped app.
+    /// An unrecognised value decodes to ``unknown`` rather than failing the ``Transfer``.
     public enum TransferStatus: String, Codable, Sendable {
         /// The transfer has been created but not yet processed.
         case pending
@@ -67,7 +66,6 @@ extension FrameObjects {
         case blocked
 
         /// Creates a status from its API string, mapping anything unrecognised to ``unknown``.
-        /// - Parameter decoder: The decoder positioned at the status value.
         public init(from decoder: Decoder) throws {
             let raw = try decoder.singleValueContainer().decode(String.self)
             self = TransferStatus(rawValue: raw) ?? .unknown
@@ -138,10 +136,7 @@ extension FrameObjects {
 
         /// The wrapped charge intent's `client_secret` (`ci_<id>_secret_…`), when one exists.
         ///
-        /// Authorizes confirming this one charge from the app — a credential, not an identifier.
-        /// Never log, persist, or send it to analytics. Pass it to
-        /// ``ChargeIntentsAPI/confirmChargeIntent(clientSecret:options:)`` to complete a transfer
-        /// whose status is ``FrameObjects/TransferStatus/requiresThreeDSecure``.
+        /// Authorizes confirming this one charge: never log, persist, or send it to analytics.
         @Lenient public private(set) var clientSecret: String?
 
         /// Creates a new `Transfer` model with the provided field values.

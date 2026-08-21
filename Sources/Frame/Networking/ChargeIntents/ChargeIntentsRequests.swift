@@ -15,15 +15,12 @@ public class ChargeIntentsRequests {
 
     /// Options for confirming a charge intent from the app.
     public struct ConfirmChargeIntentOptions: Sendable {
-        /// Confirm using an already-saved payment method (`pm_…`) instead of the intent's own.
+        /// A saved payment method (`pm_…`) to charge instead of the intent's own.
         public let paymentMethod: String?
         /// A shipping address to record against the charge.
         public let shipping: FrameObjects.BillingAddress?
 
         /// Creates confirmation options.
-        /// - Parameters:
-        ///   - paymentMethod: A saved payment method id to charge instead of the intent's own.
-        ///   - shipping: A shipping address to record against the charge.
         public init(paymentMethod: String? = nil, shipping: FrameObjects.BillingAddress? = nil) {
             self.paymentMethod = paymentMethod
             self.shipping = shipping
@@ -32,18 +29,14 @@ public class ChargeIntentsRequests {
 
     /// Request body for confirming a charge intent with a publishable key.
     ///
-    /// The client secret travels in the body, not the `Authorization` header: the API
-    /// authenticates the request with the publishable key and then matches `client_secret`
-    /// against the intent. `use_frame_sdk` is required alongside it — the API rejects a
-    /// publishable-key confirmation that omits either.
+    /// The secret travels in the body, not the `Authorization` header: the API authenticates
+    /// with the publishable key, then matches `client_secret` against the intent. It rejects a
+    /// publishable-key confirmation missing either that or `use_frame_sdk`.
     struct ConfirmChargeIntentRequest: Encodable, Sendable {
-        /// The charge intent's `client_secret`, exactly as issued.
         let clientSecret: String
-        /// Always `true`; required by the API for publishable-key confirmations.
+        /// Required by the API for publishable-key confirmations.
         let useFrameSDK: Bool = true
-        /// A saved payment method to charge instead of the intent's own.
         let paymentMethod: String?
-        /// A shipping address to record against the charge.
         let shipping: FrameObjects.BillingAddress?
 
         init(clientSecret: String, options: ConfirmChargeIntentOptions? = nil) {

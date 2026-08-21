@@ -8,11 +8,8 @@
 import SwiftUI
 import Frame
 
-/// The kinds of one-time code this view collects.
-///
-/// 3D Secure is deliberately absent. An issuer 3DS code must never pass through the app —
-/// that challenge is presented in a web view by `FrameThreeDSecureChallengePresenter`, which
-/// leaves the code between the cardholder and their issuer.
+/// 3D Secure is deliberately absent: an issuer code must never pass through the app, so that
+/// challenge is presented in a web view by `FrameThreeDSecureChallengePresenter`.
 enum CodeVerificationType {
     case phone
     case proveOtp

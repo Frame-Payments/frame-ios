@@ -18,10 +18,8 @@ extension FrameObjects {
 
     /// Represents the lifecycle status of a charge intent.
     ///
-    /// Mirrors the API's charge-intent state machine. An unrecognised value decodes to
-    /// ``unknown`` rather than failing the surrounding ``ChargeIntent``, so a state added
-    /// server-side cannot break an already-shipped app; check ``isTerminal`` instead of
-    /// matching every case exhaustively.
+    /// An unrecognised value decodes to ``unknown`` rather than failing the surrounding
+    /// ``ChargeIntent``, so a state added server-side cannot break a shipped app.
     public enum ChargeIntentStatus: String, Codable, Sendable {
         /// The charge intent was canceled before completion.
         case canceled
@@ -63,17 +61,14 @@ extension FrameObjects {
         case unknown
 
         /// Creates a status from its API string, mapping anything unrecognised to ``unknown``.
-        /// - Parameter decoder: The decoder positioned at the status value.
         public init(from decoder: Decoder) throws {
             let raw = try decoder.singleValueContainer().decode(String.self)
             self = ChargeIntentStatus(rawValue: raw) ?? .unknown
         }
 
-        /// Whether the charge intent has reached a state that will not change on its own.
+        /// Whether the status will not change on its own, so polling should stop.
         ///
-        /// Polling should stop here. ``requiresCapture`` counts as terminal: the charge is
-        /// authorized and only a merchant-initiated capture moves it on, so an authorize-only
-        /// merchant would otherwise appear to time out.
+        /// ``requiresCapture`` counts as terminal, or authorize-only merchants appear to hang.
         public var isTerminal: Bool {
             switch self {
             case .succeeded, .requiresCapture, .failed:
@@ -87,10 +82,8 @@ extension FrameObjects {
         }
     }
 
-    /// The follow-up action a client must take before a charge intent can reach a terminal state.
-    ///
-    /// Present on a ``ChargeIntent`` only while its status is
-    /// ``ChargeIntentStatus/requiresThreeDSecure``.
+    /// The follow-up action required before a charge intent can settle. Present only while the
+    /// status is ``ChargeIntentStatus/requiresThreeDSecure``.
     public struct NextAction: Codable, Sendable, Equatable {
         /// The kind of action required. Currently only `"use_frame_sdk"`.
         public let type: String
@@ -98,9 +91,6 @@ extension FrameObjects {
         @Lenient public private(set) var useFrameSDK: UseFrameSDK?
 
         /// Creates a next-action descriptor.
-        /// - Parameters:
-        ///   - type: The kind of action required.
-        ///   - useFrameSDK: The 3D Secure challenge parameters, if applicable.
         public init(type: String, useFrameSDK: UseFrameSDK? = nil) {
             self.type = type
             self.useFrameSDK = useFrameSDK
@@ -113,22 +103,18 @@ extension FrameObjects {
         }
     }
 
-    /// Parameters identifying a 3D Secure challenge session to be completed by the client.
+    /// A 3D Secure challenge session for the client to complete.
     ///
-    /// The API serialises only these two fields. In particular there is no server-transaction
-    /// identifier, despite the browser SDK's types suggesting one.
+    /// The API serialises only these two fields — there is no server-transaction identifier,
+    /// despite the browser SDK's types suggesting one.
     public struct UseFrameSDK: Codable, Sendable, Equatable {
-        /// The opaque 3D Secure session identifier the challenge is driven from.
-        ///
-        /// A credential for one challenge, not an identifier: never log or persist it.
+        /// The opaque session identifier the challenge is driven from. A credential for one
+        /// challenge: never log or persist it.
         public let source: String
         /// The card network's directory server for this challenge (e.g. `"visa"`).
         @Lenient public private(set) var directoryServerName: String?
 
         /// Creates a 3D Secure challenge descriptor.
-        /// - Parameters:
-        ///   - source: The opaque 3D Secure session identifier.
-        ///   - directoryServerName: The card network's directory server name.
         public init(source: String, directoryServerName: String? = nil) {
             self.source = source
             self.directoryServerName = directoryServerName
@@ -179,11 +165,8 @@ extension FrameObjects {
         /// ``status`` is ``FrameObjects/ChargeIntentStatus/requiresThreeDSecure``.
         @Lenient public private(set) var nextAction: FrameObjects.NextAction?
 
-        /// Whether this intent is waiting on a 3D Secure challenge that the client must present.
-        ///
-        /// Both halves are required: the status alone can be set without the server having
-        /// produced a challenge session, and acting on one without the other is what produces
-        /// a challenge that never loads.
+        /// Whether a 3D Secure challenge is pending. Both halves are required: the status alone
+        /// can be set without the server having produced a challenge session.
         public var requiresThreeDSecureChallenge: Bool {
             status == .requiresThreeDSecure && nextAction?.useFrameSDK != nil
         }
