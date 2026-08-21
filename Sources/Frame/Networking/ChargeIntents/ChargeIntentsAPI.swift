@@ -98,8 +98,10 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     public static func confirmChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?) {
         guard !intentId.isEmpty, !clientSecret.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.confirmChargeIntent(intentId: intentId)
+        let body = ChargeIntentsRequests.ConfirmChargeIntentRequest(clientSecret: clientSecret)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(body)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret))
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
 //            SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
             return (decodedResponse, error)
@@ -153,7 +155,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         guard !intentId.isEmpty, !clientSecret.isEmpty else { return (nil, nil) }
         let endpoint = ChargeIntentEndpoints.getChargeIntent(intentId: intentId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret))
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -251,8 +253,10 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
     public static func confirmChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void) {
         guard !intentId.isEmpty, !clientSecret.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = ChargeIntentEndpoints.confirmChargeIntent(intentId: intentId)
+        let body = ChargeIntentsRequests.ConfirmChargeIntentRequest(clientSecret: clientSecret)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(body)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret)) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
 //                SiftManager.addNewSiftEvent(transactionType: .authorize, eventId: decodedResponse.id)
                 completionHandler(decodedResponse, error)
@@ -309,7 +313,7 @@ public class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable {
         guard !intentId.isEmpty, !clientSecret.isEmpty else { return completionHandler(nil, nil) }
         let endpoint = ChargeIntentEndpoints.getChargeIntent(intentId: intentId)
 
-        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(clientSecret)) { data, response, error in
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.ChargeIntent.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {

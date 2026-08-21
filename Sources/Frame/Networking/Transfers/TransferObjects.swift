@@ -9,21 +9,69 @@ import Foundation
 
 extension FrameObjects {
     /// Represents the lifecycle state of a transfer within the Frame platform.
+    ///
+    /// Mirrors the charge-intent state machine, since a card transfer wraps a charge intent.
+    /// An unrecognised value decodes to ``unknown`` rather than failing the surrounding
+    /// ``Transfer``, so a state added server-side cannot break an already-shipped app.
     public enum TransferStatus: String, Codable, Sendable {
         /// The transfer has been created but not yet processed.
         case pending
+        /// The transfer is incomplete and requires additional action.
+        case incomplete
+        /// The transfer needs an account or customer before it can proceed.
+        case requiresAccountOrCustomer = "requires_account_or_customer"
+        /// The transfer needs a payment method before it can proceed.
+        case requiresPaymentMethod = "requires_payment_method"
+        /// The transfer is waiting to be confirmed.
+        case requiresConfirmation = "requires_confirmation"
+        /// A 3D Secure challenge is required to authenticate the cardholder.
+        case requiresThreeDSecure = "requires_3d_secure"
+        /// The transfer is authorized and awaiting a merchant-initiated capture.
+        case requiresCapture = "requires_capture"
+        /// The transfer is being processed.
+        case processing
         /// The transfer was processed successfully.
         case succeeded
-        /// The transfer has fully settled.
-        case completed
         /// The transfer could not be completed.
         case failed
-        /// The transfer was reversed after completion.
-        case reversed
+        /// The transfer expired before it could be completed.
+        case expired
         /// The transfer was canceled before processing.
         case canceled
+        /// The transfer was reversed after completion.
+        case reversed
+        /// The transfer was refunded.
+        case refunded
+        /// The transfer has been disputed by the customer.
+        case disputed
+        /// A dispute on the transfer was resolved in the merchant's favour.
+        case disputedWon = "disputed_won"
+        /// A dispute on the transfer was resolved in the customer's favour.
+        case disputedLost = "disputed_lost"
+        /// The transfer is held for manual fraud review.
+        case fraudReview = "fraud_review"
+        /// The transfer was declined by fraud screening.
+        case fraudDeclined = "fraud_declined"
+        /// A status this version of the SDK does not recognise.
+        case unknown
+
+        /// The transfer has fully settled.
+        ///
+        /// Not a status the API emits; retained so existing call sites keep compiling.
+        @available(*, deprecated, message: "Not an API status. Use `succeeded`.")
+        case completed
         /// The transfer was blocked, typically due to compliance or risk rules.
+        ///
+        /// Not a status the API emits; retained so existing call sites keep compiling.
+        @available(*, deprecated, message: "Not an API status. Use `fraudDeclined` or `failed`.")
         case blocked
+
+        /// Creates a status from its API string, mapping anything unrecognised to ``unknown``.
+        /// - Parameter decoder: The decoder positioned at the status value.
+        public init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = TransferStatus(rawValue: raw) ?? .unknown
+        }
     }
 
     /// A record of a funds movement between a source and destination payment method on the Frame platform.
@@ -88,6 +136,14 @@ extension FrameObjects {
         /// Unix timestamp (seconds since epoch) when the transfer was created.
         @Lenient public private(set) var created: Int?
 
+        /// The wrapped charge intent's `client_secret` (`ci_<id>_secret_…`), when one exists.
+        ///
+        /// Authorizes confirming this one charge from the app — a credential, not an identifier.
+        /// Never log, persist, or send it to analytics. Pass it to
+        /// ``ChargeIntentsAPI/confirmChargeIntent(clientSecret:options:)`` to complete a transfer
+        /// whose status is ``FrameObjects/TransferStatus/requiresThreeDSecure``.
+        @Lenient public private(set) var clientSecret: String?
+
         /// Creates a new `Transfer` model with the provided field values.
         ///
         /// - Parameters:
@@ -111,6 +167,7 @@ extension FrameObjects {
         ///   - metadata: Arbitrary key-value metadata.
         ///   - livemode: `true` if created in live mode.
         ///   - created: Unix timestamp of creation.
+        ///   - clientSecret: The wrapped charge intent's `client_secret`.
         public init(id: String,
                     object: String? = nil,
                     status: TransferStatus? = nil,
@@ -130,7 +187,8 @@ extension FrameObjects {
                     destinationPaymentMethod: FrameObjects.PaymentMethod? = nil,
                     metadata: [String: String]? = nil,
                     livemode: Bool? = nil,
-                    created: Int? = nil) {
+                    created: Int? = nil,
+                    clientSecret: String? = nil) {
             self.id = id
             self.object = object
             self.status = status
@@ -151,11 +209,13 @@ extension FrameObjects {
             self.metadata = metadata
             self.livemode = livemode
             self.created = created
+            self.clientSecret = clientSecret
         }
 
         /// Maps Swift property names to their snake_case JSON keys from the Frame API.
         public enum CodingKeys: String, CodingKey {
             case id, object, status, amount, currency, description, payout, metadata, livemode, created
+            case clientSecret = "client_secret"
             case platformFee = "platform_fee"
             case frameFee = "frame_fee"
             case totalFees = "total_fees"

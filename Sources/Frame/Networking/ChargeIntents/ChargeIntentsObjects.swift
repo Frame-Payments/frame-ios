@@ -17,23 +17,128 @@ extension FrameObjects {
     }
 
     /// Represents the lifecycle status of a charge intent.
+    ///
+    /// Mirrors the API's charge-intent state machine. An unrecognised value decodes to
+    /// ``unknown`` rather than failing the surrounding ``ChargeIntent``, so a state added
+    /// server-side cannot break an already-shipped app; check ``isTerminal`` instead of
+    /// matching every case exhaustively.
     public enum ChargeIntentStatus: String, Codable, Sendable {
         /// The charge intent was canceled before completion.
         case canceled
         /// The charge has been disputed by the customer.
         case disputed
+        /// A dispute on the charge was resolved in the merchant's favour.
+        case disputedWon = "disputed_won"
+        /// A dispute on the charge was resolved in the customer's favour.
+        case disputedLost = "disputed_lost"
+        /// The charge intent expired before it could be completed.
+        case expired
         /// The charge attempt failed.
         case failed
+        /// The charge was declined by fraud screening.
+        case fraudDeclined = "fraud_declined"
+        /// The charge is held for manual fraud review.
+        case fraudReview = "fraud_review"
         /// The charge intent is incomplete and requires additional action.
         case incomplete
         /// The charge intent is pending processing.
         case pending
         /// The charge has been refunded.
         case refunded
+        /// The charge intent needs an account or customer before it can proceed.
+        case requiresAccountOrCustomer = "requires_account_or_customer"
+        /// The charge is authorized and awaiting a merchant-initiated capture.
+        case requiresCapture = "requires_capture"
+        /// The charge intent is waiting to be confirmed.
+        case requiresConfirmation = "requires_confirmation"
+        /// The cardholder must complete a 3D Secure challenge before the charge can proceed.
+        case requiresPaymentMethod = "requires_payment_method"
+        /// A 3D Secure challenge is required to authenticate the cardholder.
+        case requiresThreeDSecure = "requires_3d_secure"
         /// The authorization was reversed before capture.
         case reversed
         /// The charge was successfully processed.
         case succeeded
+        /// A status this version of the SDK does not recognise.
+        case unknown
+
+        /// Creates a status from its API string, mapping anything unrecognised to ``unknown``.
+        /// - Parameter decoder: The decoder positioned at the status value.
+        public init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = ChargeIntentStatus(rawValue: raw) ?? .unknown
+        }
+
+        /// Whether the charge intent has reached a state that will not change on its own.
+        ///
+        /// Polling should stop here. ``requiresCapture`` counts as terminal: the charge is
+        /// authorized and only a merchant-initiated capture moves it on, so an authorize-only
+        /// merchant would otherwise appear to time out.
+        public var isTerminal: Bool {
+            switch self {
+            case .succeeded, .requiresCapture, .failed:
+                return true
+            case .canceled, .disputed, .disputedWon, .disputedLost, .expired, .fraudDeclined,
+                 .fraudReview, .incomplete, .pending, .refunded, .requiresAccountOrCustomer,
+                 .requiresConfirmation, .requiresPaymentMethod, .requiresThreeDSecure,
+                 .reversed, .unknown:
+                return false
+            }
+        }
+    }
+
+    /// The follow-up action a client must take before a charge intent can reach a terminal state.
+    ///
+    /// Present on a ``ChargeIntent`` only while its status is
+    /// ``ChargeIntentStatus/requiresThreeDSecure``.
+    public struct NextAction: Codable, Sendable, Equatable {
+        /// The kind of action required. Currently only `"use_frame_sdk"`.
+        public let type: String
+        /// Parameters for driving a 3D Secure challenge, when ``type`` is `"use_frame_sdk"`.
+        @Lenient public private(set) var useFrameSDK: UseFrameSDK?
+
+        /// Creates a next-action descriptor.
+        /// - Parameters:
+        ///   - type: The kind of action required.
+        ///   - useFrameSDK: The 3D Secure challenge parameters, if applicable.
+        public init(type: String, useFrameSDK: UseFrameSDK? = nil) {
+            self.type = type
+            self.useFrameSDK = useFrameSDK
+        }
+
+        /// Maps Swift property names to their JSON API key equivalents.
+        public enum CodingKeys: String, CodingKey {
+            case type
+            case useFrameSDK = "use_frame_sdk"
+        }
+    }
+
+    /// Parameters identifying a 3D Secure challenge session to be completed by the client.
+    ///
+    /// The API serialises only these two fields. In particular there is no server-transaction
+    /// identifier, despite the browser SDK's types suggesting one.
+    public struct UseFrameSDK: Codable, Sendable, Equatable {
+        /// The opaque 3D Secure session identifier the challenge is driven from.
+        ///
+        /// A credential for one challenge, not an identifier: never log or persist it.
+        public let source: String
+        /// The card network's directory server for this challenge (e.g. `"visa"`).
+        @Lenient public private(set) var directoryServerName: String?
+
+        /// Creates a 3D Secure challenge descriptor.
+        /// - Parameters:
+        ///   - source: The opaque 3D Secure session identifier.
+        ///   - directoryServerName: The card network's directory server name.
+        public init(source: String, directoryServerName: String? = nil) {
+            self.source = source
+            self.directoryServerName = directoryServerName
+        }
+
+        /// Maps Swift property names to their JSON API key equivalents.
+        public enum CodingKeys: String, CodingKey {
+            case source
+            case directoryServerName = "directory_server_name"
+        }
     }
 
     /// A charge intent representing a request to collect payment from a customer.
@@ -70,6 +175,18 @@ extension FrameObjects {
         @Lenient public private(set) var updated: Int?
         /// Indicates whether the charge intent was created in live mode (`true`) or test mode (`false`).
         public let livemode: Bool
+        /// The follow-up action required before this intent can settle, present only while
+        /// ``status`` is ``FrameObjects/ChargeIntentStatus/requiresThreeDSecure``.
+        @Lenient public private(set) var nextAction: FrameObjects.NextAction?
+
+        /// Whether this intent is waiting on a 3D Secure challenge that the client must present.
+        ///
+        /// Both halves are required: the status alone can be set without the server having
+        /// produced a challenge session, and acting on one without the other is what produces
+        /// a challenge that never loads.
+        public var requiresThreeDSecureChallenge: Bool {
+            status == .requiresThreeDSecure && nextAction?.useFrameSDK != nil
+        }
 
         /// Creates a new ``ChargeIntent`` with the supplied field values.
         /// - Parameters:
@@ -89,7 +206,8 @@ extension FrameObjects {
         ///   - created: Unix timestamp when the charge intent was created.
         ///   - updated: Unix timestamp when the charge intent was last updated, if available.
         ///   - livemode: `true` if created in live mode, `false` for test mode.
-        public init(id: String, currency: String, latestCharge: FrameObjects.LatestCharge? = nil, customer: FrameObjects.Customer? = nil, account: FrameObjects.Account? = nil, paymentMethod: FrameObjects.PaymentMethod? = nil, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String? = nil, authorizationMode: FrameObjects.AuthorizationMode, failureDescription: String? = nil, object: String, amount: Int, created: Int, updated: Int? = nil, livemode: Bool) {
+        ///   - nextAction: The follow-up action required before the intent can settle.
+        public init(id: String, currency: String, latestCharge: FrameObjects.LatestCharge? = nil, customer: FrameObjects.Customer? = nil, account: FrameObjects.Account? = nil, paymentMethod: FrameObjects.PaymentMethod? = nil, shipping: FrameObjects.BillingAddress, status: FrameObjects.ChargeIntentStatus, description: String? = nil, authorizationMode: FrameObjects.AuthorizationMode, failureDescription: String? = nil, object: String, amount: Int, created: Int, updated: Int? = nil, livemode: Bool, nextAction: FrameObjects.NextAction? = nil) {
             self.id = id
             self.currency = currency
             self.latestCharge = latestCharge
@@ -106,11 +224,13 @@ extension FrameObjects {
             self.created = created
             self.updated = updated
             self.livemode = livemode
+            self.nextAction = nextAction
         }
 
         /// Maps Swift property names to their JSON API key equivalents.
         public enum CodingKeys: String, CodingKey {
             case id, currency, customer, shipping, status, description, object, amount, created, livemode, updated, account
+            case nextAction = "next_action"
             case latestCharge = "latest_charge"
             case paymentMethod = "payment_method"
             case authorizationMode = "authorization_mode"
@@ -142,6 +262,8 @@ extension FrameObjects {
         public let chargeIntent: String
         /// Whether the charge has been refunded.
         public let refunded: Bool
+        /// A machine-readable code explaining a charge failure, if applicable (e.g. `"card_declined"`).
+        @Lenient public private(set) var failureCode: String?
         /// A human-readable message explaining a charge failure, if applicable.
         @Lenient public private(set) var failureMessage: String?
         /// An optional human-readable description for the charge.
@@ -165,6 +287,7 @@ extension FrameObjects {
             case amountCaptured = "amount_captured"
             case amountRefunded = "amount_refunded"
             case chargeIntent = "charge_intent"
+            case failureCode = "failure_code"
             case failureMessage = "failure_message"
             case paymentMethodDetails = "payment_method_details"
             case paymentMethod = "payment_method"
