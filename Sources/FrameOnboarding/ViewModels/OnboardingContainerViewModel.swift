@@ -41,6 +41,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
+    @Published var paymentMethodVerification: ThreeDSecureVerification?
     @Published var selectedPaymentMethod: FrameObjects.PaymentMethod?
     @Published var selectedPayoutMethod: FrameObjects.PaymentMethod?
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
@@ -805,6 +806,40 @@ class OnboardingContainerViewModel: ObservableObject {
     func resetIdentityVerification() {
         identityVerifiedViaGovId = false
         personaInquiryId = nil
+    }
+
+    /// Opens a 3D Secure verification for the selected card, recovering the in-flight one when
+    /// the API reports a verification already exists.
+    func start3DSecureProcess() async {
+        guard let paymentMethodId = selectedPaymentMethod?.id else { return }
+        guard beginAction() else { return }
+        defer { endAction() }
+
+        let request = ThreeDSecureRequests.CreateThreeDSecureVerification(paymentMethodId: paymentMethodId)
+
+        do {
+            let (verification, verificationError, _) = try await ThreeDSecureVerificationsAPI.create3DSecureVerification(request: request)
+            if let verification {
+                paymentMethodVerification = verification
+            } else if let verificationError, let verificationId = verificationError.error.existingIntentId {
+                await retrieveExistingThreeDSecureVerification(verificationId: verificationId)
+            }
+        } catch let error {
+            print(error)
+        }
+    }
+
+    /// Loads the current state of an in-flight verification, including the challenge URL the
+    /// cardholder is sent to.
+    private func retrieveExistingThreeDSecureVerification(verificationId: String) async {
+        do {
+            let (verification, _) = try await ThreeDSecureVerificationsAPI.retrieve3DSecureVerification(verificationId: verificationId)
+            if let verification {
+                paymentMethodVerification = verification
+            }
+        } catch let error {
+            print(error)
+        }
     }
 
     func createCustomerIdentity() async {

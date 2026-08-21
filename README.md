@@ -202,6 +202,7 @@ All API classes are stateless — call them directly without creating an instanc
 | `TermsOfServiceAPI` | Terms of service management |
 | `ConfigurationAPI` | SDK configuration |
 | `PhoneOTPVerificationAPI` | Phone number OTP verification |
+| `ThreeDSecureVerificationsAPI` | 3D Secure card-ownership verification |
 | `GeocomplianceAPI` | Location compliance checking |
 
 For full parameter documentation, see the [Frame API Docs](https://docs.framepayments.com).
@@ -625,7 +626,7 @@ Each capability maps to one or more onboarding steps. Duplicate steps are automa
 | `.ageVerification` | Personal Information | Date of birth |
 | `.phoneVerification` | Personal Information | Phone number + OTP verification |
 | `.creatorShield` | Personal Information | Full identity details |
-| `.cardVerification` | Confirm Payment Method | Card selection or addition |
+| `.cardVerification` | Confirm Payment Method | Card selection or addition, with 3DS ownership verification |
 | `.cardSend` | Confirm Payment Method | Card setup for send |
 | `.cardReceive` | Confirm Payment Method | Card setup for receive |
 | `.addressVerification` | Confirm Payment Method | Billing address only |
@@ -644,7 +645,7 @@ Collects identity details and verifies the user's phone number. Supports two pho
 #### Confirm Payment Method
 Lets the user select an existing card on file or add a new one.
 
-3D Secure is not part of this step. A card that needs authentication is challenged at charge time by `FrameCheckoutView`, which presents the issuer's page and waits for the Frame API's verdict.
+The `.cardVerification` capability verifies card ownership with 3D Secure. `ThreeDSecureVerificationsAPI` and `start3DSecureProcess()` create the verification and expose its `challenge_url`, but the flow does not yet present that challenge — see FRA-6212. Charge-time 3DS is separate and complete: `FrameCheckoutView` presents the issuer's page and waits for the Frame API's verdict.
 
 #### Confirm Payout Method
 Collects a bank account for ACH payouts, including routing number, account number, account type (checking or savings), and billing address.

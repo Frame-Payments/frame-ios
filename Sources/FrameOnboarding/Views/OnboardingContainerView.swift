@@ -42,7 +42,8 @@ extension FrameObjects.Capabilities {
            - Phone verification is almost always REQUIRED */
         case .ageVerification, .kyc, .kycPrefill, .idv, .phoneVerification, .creatorShield, .geoCompliance:
             return .personalInformation
-        /* - Address Verification adds the address section to the Add Payment method screen. */
+        /* - Card verification verifies card ownership via 3DS; the challenge is not presented yet (FRA-6212).
+           - Address Verification adds the address section to the Add Payment method screen. */
         case .cardVerification, .cardSend, .cardReceive, .addressVerification:
             return .confirmPaymentMethod
         case .bankAccountVerification, .bankAccountSend, .bankAccountReceive:
