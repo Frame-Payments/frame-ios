@@ -9,33 +9,23 @@ import UIKit
 
 /// Presents an issuer 3D Secure challenge in a modal web view.
 ///
-/// The page is built server-side and its URL already carries the redirect that marks the
-/// challenge finished; this only loads it and watches for that redirect. The one-time code
-/// stays between the cardholder and their issuer. Finishing is not the same as being charged —
-/// ``ChargeIntentConfirmation`` asks the API for the verdict.
+/// The page comes from `next_action.use_frame_sdk.challenge_url`, already carrying the redirect
+/// that marks the challenge finished; this loads it and watches for that redirect. The one-time
+/// code stays between the cardholder and their issuer. Finishing is not the same as being
+/// charged — ``ChargeIntentConfirmation`` asks the API for the verdict.
 @MainActor
 public final class FrameThreeDSecureChallengePresenter: NSObject {
-    /// Supplies the challenge page. `next_action`'s `source` is a bare session id, not a URL,
-    /// and building the page from it is a server responsibility.
-    public typealias ChallengeURLProvider = @Sendable (FrameObjects.UseFrameSDK, FrameObjects.ChargeIntent) async throws -> URL
+    /// The redirect the API builds its challenge URLs against.
+    private static let callbackPathComponent = "evervault_3ds_callbacks"
 
-    private let challengeURLProvider: ChallengeURLProvider
-    private let returnURLPrefix: String
     private weak var presentingViewController: UIViewController?
 
     /// Creates a challenge presenter.
     ///
-    /// - Parameters:
-    ///   - returnURLPrefix: The redirect marking the challenge finished. Must match the
-    ///     `redirect` the URL was built with, or the sheet never dismisses.
-    ///   - presentingViewController: Presents from here; defaults to the top-most controller.
-    ///   - challengeURLProvider: Resolves a challenge session to a loadable page.
-    public init(returnURLPrefix: String,
-                presentingViewController: UIViewController? = nil,
-                challengeURLProvider: @escaping ChallengeURLProvider) {
-        self.returnURLPrefix = returnURLPrefix
+    /// - Parameter presentingViewController: Presents from here; defaults to the top-most
+    ///   controller when `nil`.
+    public init(presentingViewController: UIViewController? = nil) {
         self.presentingViewController = presentingViewController
-        self.challengeURLProvider = challengeURLProvider
         super.init()
     }
 }
@@ -44,11 +34,7 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
     /// Presents the challenge and returns once it has finished, failed, or could not load.
     public nonisolated func presentChallenge(_ challenge: FrameObjects.UseFrameSDK,
                                              for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult {
-        let challengeURL: URL
-        do {
-            challengeURL = try await challengeURLProvider(challenge, intent)
-        } catch {
-            // No page means the challenge never ran, which is retryable.
+        guard let challengeURL = challenge.challengeURL else {
             return .unavailable
         }
 
@@ -66,7 +52,7 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
 
             let challenge = ThreeDSecureChallengeView(
                 challengeURL: challengeURL,
-                returnURLPrefix: returnURLPrefix,
+                returnURLPathComponent: Self.callbackPathComponent,
                 onFinish: { [weak host] in
                     host?.presentedViewController?.dismiss(animated: true)
                     resumeOnce.resume(with: .completed)

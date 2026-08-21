@@ -15,15 +15,15 @@ import WebKit
 struct ThreeDSecureChallengeView: UIViewRepresentable {
     /// The issuer challenge page to load.
     let challengeURL: URL
-    /// The redirect that signals the challenge is over.
-    let returnURLPrefix: String
+    /// The path component of the redirect that signals the challenge is over.
+    let returnURLPathComponent: String
     /// Called once, when the page redirects to ``returnURLPrefix``.
     let onFinish: () -> Void
     /// Called if the page fails to load.
     let onLoadFailure: (Error) -> Void
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(returnURLPrefix: returnURLPrefix, onFinish: onFinish, onLoadFailure: onLoadFailure)
+        Coordinator(returnURLPathComponent: returnURLPathComponent, onFinish: onFinish, onLoadFailure: onLoadFailure)
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -38,25 +38,25 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
-        context.coordinator.update(returnURLPrefix: returnURLPrefix, onFinish: onFinish, onLoadFailure: onLoadFailure)
+        context.coordinator.update(returnURLPathComponent: returnURLPathComponent, onFinish: onFinish, onLoadFailure: onLoadFailure)
     }
 
     /// Watches for the terminal redirect and reports it exactly once.
     final class Coordinator: NSObject, WKNavigationDelegate {
-        private var returnURLPrefix: String
+        private var returnURLPathComponent: String
         private var onFinish: () -> Void
         private var onLoadFailure: (Error) -> Void
         /// A redirect and a load failure can both arrive during teardown.
         private var hasReported = false
 
-        init(returnURLPrefix: String, onFinish: @escaping () -> Void, onLoadFailure: @escaping (Error) -> Void) {
-            self.returnURLPrefix = returnURLPrefix
+        init(returnURLPathComponent: String, onFinish: @escaping () -> Void, onLoadFailure: @escaping (Error) -> Void) {
+            self.returnURLPathComponent = returnURLPathComponent
             self.onFinish = onFinish
             self.onLoadFailure = onLoadFailure
         }
 
-        func update(returnURLPrefix: String, onFinish: @escaping () -> Void, onLoadFailure: @escaping (Error) -> Void) {
-            self.returnURLPrefix = returnURLPrefix
+        func update(returnURLPathComponent: String, onFinish: @escaping () -> Void, onLoadFailure: @escaping (Error) -> Void) {
+            self.returnURLPathComponent = returnURLPathComponent
             self.onFinish = onFinish
             self.onLoadFailure = onLoadFailure
         }
@@ -65,7 +65,7 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
                      decidePolicyFor navigationAction: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             guard let url = navigationAction.request.url?.absoluteString,
-                  url.hasPrefix(returnURLPrefix) else {
+                  url.contains(returnURLPathComponent) else {
                 return decisionHandler(.allow)
             }
 

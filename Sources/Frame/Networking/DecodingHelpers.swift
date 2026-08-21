@@ -18,6 +18,10 @@ import Foundation
 ///
 /// A missing key also yields `nil`, via the `decode(_:forKey:)` overload below.
 ///
+/// Not usable with `URL` (or any type whose `Decodable` needs more than a single value):
+/// `Value(from:)` fails for those and degrades to `nil` even for well-formed input. Wrap the
+/// raw `String` instead and convert in a computed property.
+///
 /// Encoding is transparent — the wrapped value is written exactly as the bare property would be,
 /// and `nil` is omitted rather than encoded as JSON `null`.
 @propertyWrapper

@@ -437,7 +437,7 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertFalse(decoded.status.isTerminal)
     }
 
-    /// The two fields the API actually serialises.
+    /// The API supplies the presentable page, since `source` alone is not navigable.
     func testNextActionDecodes() throws {
         let json = Data("""
         {
@@ -446,7 +446,11 @@ final class ChargeIntentConfirmationTests: XCTestCase {
           "amount": 200, "created": 0, "livemode": false,
           "next_action": {
             "type": "use_frame_sdk",
-            "use_frame_sdk": { "source": "sess_abc", "directory_server_name": "visa" }
+            "use_frame_sdk": {
+              "source": "sess_abc",
+              "directory_server_name": "visa",
+              "challenge_url": "https://3ds.evervault.com/?team=t&app=a&session=sess_abc"
+            }
           }
         }
         """.utf8)
@@ -457,6 +461,28 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(decoded.nextAction?.type, "use_frame_sdk")
         XCTAssertEqual(decoded.nextAction?.useFrameSDK?.source, "sess_abc")
         XCTAssertEqual(decoded.nextAction?.useFrameSDK?.directoryServerName, "visa")
+        XCTAssertEqual(decoded.nextAction?.useFrameSDK?.challengeURL?.host, "3ds.evervault.com")
+        XCTAssertTrue(decoded.requiresThreeDSecureChallenge)
+    }
+
+    /// An older response without `challenge_url` still decodes; the presenter reports it as
+    /// unavailable rather than the whole intent failing to parse.
+    func testNextActionWithoutChallengeURLStillDecodes() throws {
+        let json = Data("""
+        {
+          "id": "\(Self.intentUUID)", "currency": "USD", "status": "requires_3d_secure",
+          "authorization_mode": "automatic", "object": "charge_intent",
+          "amount": 200, "created": 0, "livemode": false,
+          "next_action": {
+            "type": "use_frame_sdk",
+            "use_frame_sdk": { "source": "sess_abc" }
+          }
+        }
+        """.utf8)
+
+        let decoded = try JSONDecoder().decode(FrameObjects.ChargeIntent.self, from: json)
+
+        XCTAssertNil(decoded.nextAction?.useFrameSDK?.challengeURL)
         XCTAssertTrue(decoded.requiresThreeDSecureChallenge)
     }
 

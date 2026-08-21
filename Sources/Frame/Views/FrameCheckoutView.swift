@@ -369,7 +369,8 @@ public struct FrameCheckoutView: View {
                     // Every error — server validation (card declined, "Card submitted is not a
                     // test card", insufficient funds), transport, decode — surfaces as a toast.
                     // Modal stays open so the user can fix the input and retry.
-                    let message = (error as? NetworkingError)?.toastMessage()
+                    let message = (error as? FrameCheckoutError)?.toastMessage()
+                        ?? (error as? NetworkingError)?.toastMessage()
                         ?? "Error: Something went wrong. Please try again."
                     FrameToastCenter.shared.show(message)
                 }

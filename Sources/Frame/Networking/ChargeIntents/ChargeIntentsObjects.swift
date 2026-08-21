@@ -113,17 +113,26 @@ extension FrameObjects {
         public let source: String
         /// The card network's directory server for this challenge (e.g. `"visa"`).
         @Lenient public private(set) var directoryServerName: String?
+        /// The issuer challenge page to present. Absent if the API could not build one.
+        ///
+        /// Decoded from a string rather than declared `URL`: `URL`'s own `Decodable` cannot be
+        /// driven through `@Lenient`, which would silently yield `nil` for a valid URL.
+        public var challengeURL: URL? { challengeURLString.flatMap(URL.init(string:)) }
+
+        @Lenient private var challengeURLString: String?
 
         /// Creates a 3D Secure challenge descriptor.
-        public init(source: String, directoryServerName: String? = nil) {
+        public init(source: String, directoryServerName: String? = nil, challengeURL: URL? = nil) {
             self.source = source
             self.directoryServerName = directoryServerName
+            self.challengeURLString = challengeURL?.absoluteString
         }
 
         /// Maps Swift property names to their JSON API key equivalents.
         public enum CodingKeys: String, CodingKey {
             case source
             case directoryServerName = "directory_server_name"
+            case challengeURLString = "challenge_url"
         }
     }
 
