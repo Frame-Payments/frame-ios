@@ -11,3 +11,7 @@ FrameExample-iOS/FrameExample-iOS.xcodeproj/xcuserdata/Ricky.xcuserdatad/xcdebug
 /.build
 FrameExample-iOS/.DS_Store
 /.claude
+
+# Python bytecode from scripts/
+__pycache__/
+*.pyc

@@ -1,0 +1,125 @@
+name: SDK Map
+
+# Keeps docs/SDK_MAP.md a complete, accurate inventory of the SDK's public
+# surface. The map is generated from Sources/, so it cannot drift: on a branch
+# push the workflow regenerates and commits it, and on a pull request from a
+# fork (where pushing back is not possible) it reports the diff instead.
+
+on:
+  push:
+    branches: [ main ]
+    paths: &map_paths
+      - 'Sources/**'
+      - 'docs/SDK_MAP.md'
+      - 'scripts/generate_sdk_map.py'
+      - '.github/workflows/sdk-map.yml'
+  pull_request:
+    paths: *map_paths
+  workflow_dispatch:
+
+# Two pushes in quick succession would otherwise race to commit the map.
+concurrency:
+  group: sdk-map-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Skip the run triggered by this workflow's own commit, which would
+    # otherwise regenerate an identical map and loop.
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      !contains(github.event.head_commit.message, 'docs: sync SDK map')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Check out the PR branch itself rather than the merge commit, so the
+          # regenerated map can be committed back to it.
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          # Use the default token; a PR from a fork gets a read-only one, which
+          # the "report only" path below handles.
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Regenerate SDK map
+        run: python3 scripts/generate_sdk_map.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- docs/SDK_MAP.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "✅ SDK map already up to date."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "✏️ SDK map changed:"
+            git --no-pager diff --stat -- docs/SDK_MAP.md
+          fi
+
+      # A fork PR cannot be pushed to with the default token. Rather than fail a
+      # contributor's PR for a file they are not expected to maintain by hand,
+      # surface the diff and let the push-to-main run commit it.
+      - name: Report (fork PR — cannot push)
+        if: >-
+          steps.diff.outputs.changed == 'true' &&
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "::warning::docs/SDK_MAP.md is out of date for this fork PR."
+          echo "It will be regenerated automatically once merged to main."
+          git --no-pager diff -- docs/SDK_MAP.md | head -200
+
+      - name: Commit regenerated map
+        if: >-
+          steps.diff.outputs.changed == 'true' &&
+          (github.event_name != 'pull_request' ||
+           github.event.pull_request.head.repo.full_name == github.repository)
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/SDK_MAP.md
+          # No [skip ci]: that would suppress every other workflow on this commit
+          # (tests, lint, podspec). The re-trigger is instead broken by the
+          # "Skip bot commits" guard at the top of this job -- the follow-up run
+          # starts, sees its own author, and exits immediately.
+          git commit -m "docs: sync SDK map to public API surface"
+          # Someone may have pushed while we were generating; rebase and retry
+          # rather than clobbering their commit.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "✅ Pushed regenerated SDK map."
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt); rebasing on the latest remote."
+            git pull --rebase --autostash
+          done
+          echo "❌ Could not push the regenerated map after 3 attempts."
+          exit 1
+
+      - name: Summary
+        if: always()
+        run: |
+          COUNT=$(grep -oE '\*\*[0-9]+ public symbols\*\*' docs/SDK_MAP.md \
+                  | head -1 | grep -oE '[0-9]+' || echo "?")
+          {
+            echo "### SDK Map"
+            echo ""
+            if [ "${{ steps.diff.outputs.changed }}" = "true" ]; then
+              echo "Map regenerated from \`Sources/\`."
+            else
+              echo "Map was already in sync with \`Sources/\`."
+            fi
+            echo ""
+            echo "**${COUNT}** public symbols mapped."
+          } >> "$GITHUB_STEP_SUMMARY"
