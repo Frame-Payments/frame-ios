@@ -118,6 +118,123 @@ final class ValidatorsTests: XCTestCase {
         XCTAssertNil(Validators.validatePostalCode("anything-goes", countryCode: "ZZ"))
     }
 
+    // MARK: - Subregion (state / province)
+
+    func testSubregion_US_acceptsStatesAndDC() {
+        XCTAssertNil(Validators.validateSubregion("TX", countryCode: "US"))
+        XCTAssertNil(Validators.validateSubregion("DC", countryCode: "US"))
+        XCTAssertNil(Validators.validateSubregion("tx", countryCode: "US"))
+        XCTAssertNil(Validators.validateSubregion("  TX  ", countryCode: "US"))
+    }
+
+    func testSubregion_US_acceptsInhabitedTerritories() {
+        // These are US jurisdictions and were previously rejected server-side.
+        for code in ["PR", "GU", "VI", "AS", "MP"] {
+            XCTAssertNil(Validators.validateSubregion(code, countryCode: "US"),
+                         "\(code) should be accepted for US")
+        }
+    }
+
+    func testSubregion_US_rejectsMilitaryAndOutlyingCodes() {
+        // Pinned to match the API: these are mail-routing designations, not jurisdictions.
+        for code in ["AA", "AE", "AP", "UM"] {
+            XCTAssertNotNil(Validators.validateSubregion(code, countryCode: "US"),
+                            "\(code) should be rejected for US")
+        }
+    }
+
+    func testSubregion_CA_acceptsProvinces() {
+        XCTAssertNil(Validators.validateSubregion("ON", countryCode: "CA"))
+        XCTAssertNil(Validators.validateSubregion("BC", countryCode: "CA"))
+        XCTAssertNil(Validators.validateSubregion("nu", countryCode: "CA"))
+    }
+
+    func testSubregion_CA_rejectsUSStates() {
+        // Regression for the 94 PATCH failures: a US state must not pass as a Canadian province.
+        XCTAssertNotNil(Validators.validateSubregion("TX", countryCode: "CA"))
+        XCTAssertNotNil(Validators.validateSubregion("ONT", countryCode: "CA"))
+    }
+
+    func testSubregion_US_rejectsCanadianProvinces() {
+        XCTAssertNotNil(Validators.validateSubregion("QC", countryCode: "US"))
+    }
+
+    func testSubregion_unlistedCountry_onlyRequiresPresence() {
+        // The API skips the check where it has no subregion data, so the SDK must not be stricter.
+        XCTAssertNil(Validators.validateSubregion("Greater London", countryCode: "GB"))
+        XCTAssertNil(Validators.validateSubregion("Île-de-France", countryCode: "FR"))
+        XCTAssertNotNil(Validators.validateSubregion("", countryCode: "GB"))
+    }
+
+    func testSubregion_blankCountry_fallsBackToUS() {
+        XCTAssertNil(Validators.validateSubregion("TX", countryCode: ""))
+        XCTAssertNotNil(Validators.validateSubregion("ON", countryCode: ""))
+    }
+
+    func testSubregion_errorMessageUsesCountryLabel() {
+        XCTAssertEqual(Validators.validateSubregion("", countryCode: "CA"), "Province is required")
+        XCTAssertEqual(Validators.validateSubregion("", countryCode: "GB"), "County is required")
+        XCTAssertEqual(Validators.validateSubregion("ZZ", countryCode: "CA"),
+                       "Enter a valid 2-letter province")
+    }
+
+    // MARK: - Subregion normalization
+
+    func testNormalize_upcasesForValidatedCountries() {
+        XCTAssertEqual(AddressSubregions.normalize(" on ", countryCode: "CA"), "ON")
+        XCTAssertEqual(AddressSubregions.normalize("tx", countryCode: "US"), "TX")
+    }
+
+    func testNormalize_preservesCaseForUnlistedCountries() {
+        // Upcasing a free-text region name would corrupt it.
+        XCTAssertEqual(AddressSubregions.normalize(" Île-de-France ", countryCode: "FR"),
+                       "Île-de-France")
+    }
+
+    func testSubregionCodes_coverage() {
+        XCTAssertEqual(AddressSubregions.unitedStates.count, 56)
+        XCTAssertEqual(AddressSubregions.canada.count, 13)
+        XCTAssertNil(AddressSubregions.subregions(forCountry: "GB"))
+        XCTAssertEqual(AddressSubregions.subregions(forCountry: "ca"), AddressSubregions.canada)
+    }
+
+    func testSubregionCodes_areUniqueAndTwoLetter() {
+        for list in [AddressSubregions.unitedStates, AddressSubregions.canada] {
+            let codes = list.map(\.code)
+            XCTAssertEqual(Set(codes).count, codes.count, "duplicate subregion code")
+            XCTAssertTrue(codes.allSatisfy { $0.count == 2 && $0 == $0.uppercased() })
+            XCTAssertTrue(list.allSatisfy { !$0.name.isEmpty })
+        }
+    }
+
+    func testSubregionLookup_byCode() {
+        XCTAssertEqual(AddressSubregions.subregion(forCode: "on", countryCode: "CA")?.name, "Ontario")
+        XCTAssertEqual(AddressSubregions.subregion(forCode: "PR", countryCode: "US")?.name, "Puerto Rico")
+        XCTAssertNil(AddressSubregions.subregion(forCode: "ON", countryCode: "US"))
+        XCTAssertNil(AddressSubregions.subregion(forCode: "XX", countryCode: "GB"))
+    }
+
+    // MARK: - Subregion picker seeding
+
+    /// Mirrors `SubregionPickerSheet` draft seeding: keep a valid selection, else the first row.
+    private func seededDraft(for selected: String, countryCode: String) -> String {
+        let available = AddressSubregions.subregions(forCountry: countryCode) ?? []
+        let current = selected.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        return available.contains { $0.code == current } ? current : (available.first?.code ?? "")
+    }
+
+    func testPickerSeed_keepsExistingValidSelection() {
+        XCTAssertEqual(seededDraft(for: "ON", countryCode: "CA"), "ON")
+        XCTAssertEqual(seededDraft(for: " qc ", countryCode: "CA"), "QC")
+    }
+
+    func testPickerSeed_emptyOrForeignSelection_fallsBackToFirstRow() {
+        // A wheel picker whose tag matches nothing still highlights row 0.
+        XCTAssertEqual(seededDraft(for: "", countryCode: "CA"), "AB")
+        XCTAssertEqual(seededDraft(for: "TX", countryCode: "CA"), "AB")
+        XCTAssertEqual(seededDraft(for: "", countryCode: "US"), "AL")
+    }
+
     // MARK: - SSN (last 4)
 
     func testSSN_valid() {

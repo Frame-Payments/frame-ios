@@ -22,6 +22,7 @@ public struct FrameCheckoutView: View {
     @State var useBlackButtons: Bool = true
     @State var saveCardForPayments: Bool = false
     @State private var isShowingPicker = false
+    @State private var isShowingSubregionPicker = false
     @State private var didFinish = false
 
     /// The Frame account identifier that will receive the charge.
@@ -103,6 +104,22 @@ public struct FrameCheckoutView: View {
             )
             .presentationDetents([.fraction(0.3)])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isShowingSubregionPicker) {
+            SubregionPickerSheet(
+                selectedCode: $checkoutViewModel.customerState,
+                isPresented: $isShowingSubregionPicker,
+                countryCode: checkoutViewModel.customerCountry.alpha2Code,
+                title: addressFormat.stateLabel
+            )
+            .presentationDetents([.fraction(0.4)])
+            .presentationDragIndicator(.visible)
+        }
+        .onChange(of: checkoutViewModel.customerCountry) { _, _ in
+            checkoutViewModel.clearError(.state)
+        }
+        .onChange(of: checkoutViewModel.customerState) { _, _ in
+            checkoutViewModel.clearError(.state)
         }
         .frameToastOverlay()
         .onDisappear {
@@ -269,6 +286,37 @@ public struct FrameCheckoutView: View {
         .padding(.horizontal)
     }
 
+    /// A tappable row that opens the subregion picker, used where the country's states or
+    /// provinces are an enumerated list rather than free text.
+    private var subregionDropdown: some View {
+        HStack(spacing: 4) {
+            Text(AddressSubregions.subregion(forCode: checkoutViewModel.customerState,
+                                             countryCode: checkoutViewModel.customerCountry.alpha2Code)?.name
+                 ?? addressFormat.stateLabel)
+                .font(theme.fonts.body)
+                .foregroundColor(checkoutViewModel.customerState.isEmpty
+                                 ? theme.colors.textSecondary
+                                 : theme.colors.textPrimary)
+                .lineLimit(1)
+                .padding(.horizontal)
+            if let error = checkoutViewModel.fieldErrors[.state] {
+                Text(error)
+                    .font(theme.fonts.caption)
+                    .foregroundColor(theme.colors.error)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 49.0)
+        .contentShape(Rectangle())
+        .onTapGesture { isShowingSubregionPicker = true }
+    }
+
+    /// Field labels, keyboard, and length limits for the currently selected billing country.
+    private var addressFormat: AddressFormat {
+        AddressFormat.format(forCountry: checkoutViewModel.customerCountry.alpha2Code)
+    }
+
     /// Street address, city, state, country picker, and zip code fields for billing address collection.
     @ViewBuilder
     var regionInformation: some View {
@@ -293,11 +341,15 @@ public struct FrameCheckoutView: View {
                                    text: $checkoutViewModel.customerCity,
                                    error: errorBinding(.city),
                                    textContentType: .addressCity)
-                ValidatedTextField(prompt: "State",
-                                   text: $checkoutViewModel.customerState,
-                                   error: errorBinding(.state),
-                                   textContentType: .addressState,
-                                   characterLimit: 2)
+                if AddressSubregions.subregions(forCountry: checkoutViewModel.customerCountry.alpha2Code) != nil {
+                    subregionDropdown
+                } else {
+                    ValidatedTextField(prompt: addressFormat.stateLabel,
+                                       text: $checkoutViewModel.customerState,
+                                       error: errorBinding(.state),
+                                       textContentType: .addressState,
+                                       characterLimit: addressFormat.stateMaxLength)
+                }
             }
             Divider()
             HStack {
@@ -321,12 +373,11 @@ public struct FrameCheckoutView: View {
             }
             .frame(height: 49.0)
             Divider()
-            ValidatedTextField(prompt: "Zip Code",
+            ValidatedTextField(prompt: addressFormat.postalLabel,
                                text: $checkoutViewModel.customerZipCode,
                                error: errorBinding(.zip),
-                               keyboardType: .numberPad,
-                               textContentType: .postalCode,
-                               characterLimit: 5)
+                               keyboardType: addressFormat.postalKeyboard,
+                               textContentType: .postalCode)
         }
         .background(
             RoundedRectangle(cornerRadius: theme.radii.medium)

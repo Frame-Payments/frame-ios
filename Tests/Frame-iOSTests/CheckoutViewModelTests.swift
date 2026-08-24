@@ -59,7 +59,7 @@ final class CheckoutViewModelTests: XCTestCase {
     @MainActor private func fillValidAddress(_ vm: FrameCheckoutViewModel) {
         vm.customerAddressLine1 = "123 Main St"
         vm.customerCity = "Burbank"
-        vm.customerState = "California"
+        vm.customerState = "CA"
         vm.customerCountry = AvailableCountry.defaultCountry
         vm.customerZipCode = "75115"
     }
@@ -202,6 +202,50 @@ final class CheckoutViewModelTests: XCTestCase {
         vm.customerZipCode = "1234"
         XCTAssertFalse(vm.validateAll(forSavedCard: false))
         XCTAssertNotNil(vm.fieldErrors[.zip])
+    }
+
+    @MainActor func testRequired_canadianAddress_isValid() {
+        // Regression for FRA-6135: the checkout form offers a full country picker but used to
+        // validate every address as US, so any non-US selection was unsubmittable.
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
+        fillValidCustomerInfo(vm)
+        fillValidAddress(vm)
+        vm.customerCountry = AvailableCountry(alpha2Code: "CA", displayName: "Canada")
+        vm.customerState = "ON"
+        vm.customerZipCode = "M5V 2T6"
+        XCTAssertTrue(vm.validateAll(forSavedCard: false))
+        XCTAssertNil(vm.fieldErrors[.state])
+        XCTAssertNil(vm.fieldErrors[.zip])
+    }
+
+    @MainActor func testRequired_usStateOnCanadianAddress_failsValidation() {
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
+        fillValidCustomerInfo(vm)
+        fillValidAddress(vm)
+        vm.customerCountry = AvailableCountry(alpha2Code: "CA", displayName: "Canada")
+        vm.customerState = "TX"
+        vm.customerZipCode = "M5V 2T6"
+        XCTAssertFalse(vm.validateAll(forSavedCard: false))
+        XCTAssertNotNil(vm.fieldErrors[.state])
+    }
+
+    @MainActor func testRequired_unlistedCountry_acceptsFreeTextRegion() {
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
+        fillValidCustomerInfo(vm)
+        fillValidAddress(vm)
+        vm.customerCountry = AvailableCountry(alpha2Code: "GB", displayName: "United Kingdom")
+        vm.customerState = "Greater London"
+        vm.customerZipCode = "EC1A 1BB"
+        XCTAssertTrue(vm.validateAll(forSavedCard: false))
+    }
+
+    @MainActor func testRequired_usZipPlusFour_isAccepted() {
+        // The checkout form now shares `validatePostalCode`, which accepts ZIP+4.
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
+        fillValidCustomerInfo(vm)
+        fillValidAddress(vm)
+        vm.customerZipCode = "75115-1234"
+        XCTAssertTrue(vm.validateAll(forSavedCard: false))
     }
 
     @MainActor func testClearError() {

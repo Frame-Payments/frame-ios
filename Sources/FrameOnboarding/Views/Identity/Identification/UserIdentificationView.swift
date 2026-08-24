@@ -327,6 +327,7 @@ struct UserIdentificationView: View {
                 let infoOK = customerInfoVM.validate()
                 let addressOK = personalAddressVM.validate()
                 guard infoOK, addressOK else { return }
+                personalAddressVM.normalize()
                 onboardingContainerViewModel.createdCustomerIdentity = customerInfoVM.identity
                 onboardingContainerViewModel.createdCustomerIdentity.address = personalAddressVM.address
                 onboardingContainerViewModel.phoneCountry = customerInfoVM.phoneCountry

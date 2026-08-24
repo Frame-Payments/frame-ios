@@ -202,13 +202,14 @@ class FrameCheckoutViewModel: ObservableObject {
             if let err = Validators.validateNonEmpty(customerCity, fieldName: "City") {
                 errors[.city] = err
             }
-            if let err = Validators.validateNonEmpty(customerState, fieldName: "State") {
+            let countryCode = customerCountry.alpha2Code
+            if let err = Validators.validateSubregion(customerState, countryCode: countryCode) {
                 errors[.state] = err
             }
-            if let err = Validators.validateZipUS(customerZipCode) {
+            if let err = Validators.validatePostalCode(customerZipCode, countryCode: countryCode) {
                 errors[.zip] = err
             }
-            if customerCountry.alpha2Code.isEmpty {
+            if countryCode.isEmpty {
                 errors[.country] = "Select a country"
             }
         }
@@ -308,7 +309,8 @@ class FrameCheckoutViewModel: ObservableObject {
         let billingAddress: FrameObjects.BillingAddress? = shouldValidateAddress
             ? FrameObjects.BillingAddress(city: customerCity,
                                           country: customerCountry.alpha2Code,
-                                          state: customerState,
+                                          state: AddressSubregions.normalize(customerState,
+                                                                             countryCode: customerCountry.alpha2Code),
                                           postalCode: customerZipCode,
                                           addressLine1: customerAddressLine1,
                                           addressLine2: customerAddressLine2)

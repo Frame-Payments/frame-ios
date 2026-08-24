@@ -23,6 +23,7 @@ public struct BillingAddressDetailView: View {
     @State private var selectedCountry: AvailableCountry = .defaultCountry
     @State private var countryText: String = ""
     @State private var showCountryPicker: Bool = false
+    @State private var showSubregionPicker: Bool = false
 
     /// Creates a billing-address detail view.
     ///
@@ -45,6 +46,41 @@ public struct BillingAddressDetailView: View {
             ? selectedCountry.alpha2Code
             : "US"
         return AddressFormat.format(forCountry: code)
+    }
+
+    /// The subregions the API accepts for the active country, or `nil` when it accepts free text.
+    private var subregions: [AddressSubregion]? {
+        AddressSubregions.subregions(forCountry: allowsInternational ? selectedCountry.alpha2Code : "US")
+    }
+
+    /// The display name for the currently selected subregion, or the field label when unset.
+    private var subregionText: String {
+        let code = viewModel.address.state ?? ""
+        let country = allowsInternational ? selectedCountry.alpha2Code : "US"
+        return AddressSubregions.subregion(forCode: code, countryCode: country)?.name ?? format.stateLabel
+    }
+
+    /// A tappable row that opens the subregion picker, styled to sit beside the City field.
+    private var subregionDropdown: some View {
+        HStack(spacing: 4) {
+            Text(subregionText)
+                .font(theme.fonts.body)
+                .foregroundColor((viewModel.address.state ?? "").isEmpty
+                                 ? theme.colors.textSecondary
+                                 : theme.colors.textPrimary)
+                .lineLimit(1)
+                .padding(.horizontal)
+            if let error = viewModel.errors[.state] {
+                Text(error)
+                    .font(theme.fonts.caption)
+                    .foregroundColor(theme.colors.error)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 49.0)
+        .contentShape(Rectangle())
+        .onTapGesture { showSubregionPicker = true }
     }
 
     /// The root view hierarchy for the billing-address form.
@@ -81,12 +117,16 @@ public struct BillingAddressDetailView: View {
                                                textContentType: .addressCity,
                                                inlineError: true)
                             Divider()
-                            ValidatedTextField(prompt: format.stateLabel,
-                                               text: $viewModel.address.state.orEmpty,
-                                               error: viewModel.errorBinding(.state),
-                                               textContentType: .addressState,
-                                               characterLimit: format.stateMaxLength,
-                                               inlineError: true)
+                            if subregions != nil {
+                                subregionDropdown
+                            } else {
+                                ValidatedTextField(prompt: format.stateLabel,
+                                                   text: $viewModel.address.state.orEmpty,
+                                                   error: viewModel.errorBinding(.state),
+                                                   textContentType: .addressState,
+                                                   characterLimit: format.stateMaxLength,
+                                                   inlineError: true)
+                            }
                         }
                         .frame(height: 49.0)
                         Divider()
@@ -131,6 +171,19 @@ public struct BillingAddressDetailView: View {
                 viewModel.errors[.postal] = Validators.validatePostalCode(viewModel.address.postalCode,
                                                                           countryCode: selectedCountry.alpha2Code)
             }
+        }
+        .sheet(isPresented: $showSubregionPicker) {
+            SubregionPickerSheet(
+                selectedCode: $viewModel.address.state.orEmpty,
+                isPresented: $showSubregionPicker,
+                countryCode: allowsInternational ? selectedCountry.alpha2Code : "US",
+                title: format.stateLabel
+            )
+            .presentationDetents([.fraction(0.4)])
+            .presentationDragIndicator(.visible)
+        }
+        .onChange(of: viewModel.address.state) { _, _ in
+            if viewModel.errors[.state] != nil { viewModel.errors[.state] = nil }
         }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(
