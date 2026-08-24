@@ -72,8 +72,7 @@ public final class BillingAddressViewModel: ObservableObject {
             next[.city] = err
         }
         let countryCode = (address.country ?? "US").isEmpty ? "US" : (address.country ?? "US")
-        let stateLabel = AddressFormat.format(forCountry: countryCode).stateLabel
-        if let err = Validators.validateNonEmpty(address.state ?? "", fieldName: stateLabel) {
+        if let err = Validators.validateSubregion(address.state ?? "", countryCode: countryCode) {
             next[.state] = err
         }
         switch mode {
@@ -93,6 +92,14 @@ public final class BillingAddressViewModel: ObservableObject {
 
         errors = next
         return next.isEmpty
+    }
+
+    /// Normalizes the subregion in ``address`` in place; call after ``validate()``, before submitting.
+    public func normalize() {
+        let countryCode = (address.country ?? "US").isEmpty ? "US" : (address.country ?? "US")
+        if let state = address.state {
+            address.state = AddressSubregions.normalize(state, countryCode: countryCode)
+        }
     }
 
     /// Returns a two-way binding to the error message for a specific field.

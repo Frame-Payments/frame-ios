@@ -204,6 +204,17 @@ public enum Validators {
             : nil
     }
 
+    /// Validates a state / province / region against the subregions the given country accepts.
+    public static func validateSubregion(_ value: String, countryCode: String) -> String? {
+        let label = AddressFormat.format(forCountry: countryCode).stateLabel
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "\(label) is required" }
+        guard let codes = AddressSubregions.codes(forCountry: countryCode) else { return nil }
+        return codes.contains(trimmed.uppercased())
+            ? nil
+            : "Enter a valid 2-letter \(label.lowercased())"
+    }
+
     private static let phoneUtility = PhoneNumberUtility()
 
     /// Validates that a raw phone number string is parseable as a valid number for the given region.
