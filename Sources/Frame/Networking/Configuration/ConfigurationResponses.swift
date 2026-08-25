@@ -63,4 +63,22 @@ public class ConfigurationResponses {
             case cbcTermsAndConditions = "cbc_terms_and_conditions"
         }
     }
+
+    /// Decoded response containing the search-scoped Mapbox access token used for address
+    /// autocomplete, returned by the configuration endpoint.
+    public struct GetMapboxConfigurationResponse: Codable {
+        /// The Mapbox access token, scoped to search and geocoding only.
+        @Lenient private(set) var accessToken: String?
+        /// When the token stops working, as an ISO-8601 string, or `nil` when it does not expire.
+        ///
+        /// Held as a `String` rather than a `Date`: the shared decoder uses the default
+        /// `deferredToDate` strategy, which reads a number, so an ISO-8601 string would decode
+        /// to `nil` here and read as "never expires".
+        @Lenient private(set) var expiresAt: String?
+
+        enum CodingKeys: String, CodingKey {
+            case accessToken = "access_token"
+            case expiresAt = "expires_at"
+        }
+    }
 }

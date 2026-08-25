@@ -41,6 +41,32 @@ public struct BillingAddressDetailView: View {
 
     private var allowsInternational: Bool { viewModel.mode == .international }
 
+    /// Fills the billing address fields from a picked autocomplete suggestion.
+    ///
+    /// Address line 2 is left alone: Mapbox does not reliably return apartment or unit, so
+    /// whatever the user typed there stands.
+    ///
+    /// The country is written through `selectedCountry` rather than `viewModel.address.country`,
+    /// because the view holds the picker's selection and its `onChange` is what keeps the two in
+    /// step. Writing the model directly would leave the picker showing the old country. A US-only
+    /// form ignores the country outright, and any country the picker does not offer is dropped.
+    private func apply(_ address: FrameObjects.BillingAddress) {
+        if let line1 = address.addressLine1 { viewModel.address.addressLine1 = line1 }
+        if let city = address.city { viewModel.address.city = city }
+        if let state = address.state { viewModel.address.state = state }
+        viewModel.address.postalCode = address.postalCode
+
+        if allowsInternational,
+           let code = address.country,
+           let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == code }) {
+            selectedCountry = match
+        }
+
+        for field in [BillingAddressViewModel.Field.line1, .city, .state, .postal] {
+            viewModel.errors[field] = nil
+        }
+    }
+
     private var format: AddressFormat {
         let code = allowsInternational
             ? selectedCountry.alpha2Code
@@ -98,11 +124,13 @@ public struct BillingAddressDetailView: View {
                 .frame(minHeight: allowsInternational ? 250.0 : 200.0)
                 .overlay {
                     VStack(spacing: 0) {
-                        ValidatedTextField(prompt: "Address Line 1",
-                                           text: $viewModel.address.addressLine1.orEmpty,
-                                           error: viewModel.errorBinding(.line1),
-                                           textContentType: .streetAddressLine1,
-                                           inlineError: true)
+                        AddressAutocompleteField(prompt: "Address Line 1",
+                                                 text: $viewModel.address.addressLine1.orEmpty,
+                                                 error: viewModel.errorBinding(.line1),
+                                                 countryCode: selectedCountry.alpha2Code,
+                                                 inlineError: true) { address in
+                            apply(address)
+                        }
                         Divider()
                         ValidatedTextField(prompt: "Address Line 2",
                                            text: $viewModel.address.addressLine2.orEmpty,

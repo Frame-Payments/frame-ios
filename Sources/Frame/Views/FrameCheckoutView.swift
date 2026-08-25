@@ -326,10 +326,12 @@ public struct FrameCheckoutView: View {
             .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
         VStack(spacing: 0) {
-            ValidatedTextField(prompt: "Address Line 1",
-                               text: $checkoutViewModel.customerAddressLine1,
-                               error: errorBinding(.addressLine1),
-                               textContentType: .streetAddressLine1)
+            AddressAutocompleteField(prompt: "Address Line 1",
+                                     text: $checkoutViewModel.customerAddressLine1,
+                                     error: errorBinding(.addressLine1),
+                                     countryCode: checkoutViewModel.customerCountry.alpha2Code) { address in
+                checkoutViewModel.apply(address)
+            }
             Divider()
             ValidatedTextField(prompt: "Address Line 2",
                                text: $checkoutViewModel.customerAddressLine2,

@@ -15,6 +15,7 @@ protocol ConfigurationProtocol {
     static func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?
     static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?
     static func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?
+    static func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?
 }
 
 /// Keys used to identify configuration entries stored in the keychain.
@@ -26,6 +27,8 @@ enum ConfigurationKeys: String {
     /// Key for the Sift fraud-detection configuration.
     case sift
     case legal
+    /// Key for the Mapbox address-autocomplete configuration.
+    case mapbox
 }
 
 /// Manages SDK configuration resources, including fetching and caching third-party service
@@ -88,6 +91,22 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetLegalConfigurationResponse.self, from: data) {
             ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.legal.rawValue, value: decodedResponse)
+            return decodedResponse
+        } else {
+            return nil
+        }
+    }
+
+    /// Fetches the Mapbox address-autocomplete configuration from the Frame API and caches it in the keychain.
+    ///
+    /// - Returns: A ``ConfigurationResponses/GetMapboxConfigurationResponse`` containing the
+    ///   search-scoped Mapbox access token, or `nil` if the response cannot be decoded.
+    /// - Throws: A networking error if the request fails.
+    public static func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse? {
+        let endpoint = ConfigurationEndpoints.getMapboxConfiguration
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetMapboxConfigurationResponse.self, from: data) {
+            ConfigurationAPI.saveConfigurationToKeychain(key: ConfigurationKeys.mapbox.rawValue, value: decodedResponse)
             return decodedResponse
         } else {
             return nil
