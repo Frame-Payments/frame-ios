@@ -64,6 +64,7 @@ final class AddressSearchServiceTests: XCTestCase {
         XCTAssertEqual(queryValue("access_token", in: request), "pk.test")
         XCTAssertEqual(queryValue("country", in: request), "us")
         XCTAssertEqual(queryValue("types", in: request), "address")
+        XCTAssertEqual(queryValue("limit", in: request), "3")
         XCTAssertNotNil(queryValue("session_token", in: request))
     }
 

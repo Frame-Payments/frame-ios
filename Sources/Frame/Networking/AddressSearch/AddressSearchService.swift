@@ -82,6 +82,8 @@ actor AddressSearchService {
             URLQueryItem(name: "q", value: query),
             URLQueryItem(name: "session_token", value: sessionToken),
             URLQueryItem(name: "types", value: "address"),
+            // Ask for only what the list shows rather than Mapbox's default of ten.
+            URLQueryItem(name: "limit", value: String(AddressAutocompleteController.maximumSuggestions)),
             URLQueryItem(name: "access_token", value: try await token())
         ]
         if let countryCode, !countryCode.isEmpty {

@@ -86,6 +86,10 @@ public struct FrameCheckoutView: View {
                         .padding(.bottom)
                     if addressMode != .hidden {
                         regionInformation
+                            // The address autocomplete list is drawn past this section's bounds,
+                            // and the toggle and pay button are its siblings here. Without this
+                            // they are laid out later and paint over the suggestions.
+                            .zIndex(1)
                     }
                     saveCardToggle
                 }

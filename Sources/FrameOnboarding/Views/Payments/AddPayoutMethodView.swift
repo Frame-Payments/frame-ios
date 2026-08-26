@@ -82,6 +82,10 @@ struct AddPayoutMethodView: View {
                                            dropDownText: $accountTypeString,
                                            showDropdownPicker: $showAccountTypePicker)
                     BillingAddressDetailView(viewModel: billingVM)
+                        // The autocomplete list hangs out of the address form's bounds, and the
+                        // Continue button is its sibling here. Without this the button — laid out
+                        // later — paints over the suggestions.
+                        .zIndex(1)
                     ContinueButton(buttonText: "Add Bank Account",
                                    isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                         bankVM.account.accountType = selectedAccountType

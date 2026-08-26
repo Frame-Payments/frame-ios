@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1413 public symbols** across 137 files in 2 modules.
+**1414 public symbols** across 137 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -52,11 +52,11 @@ regeneration, so architectural notes belong there.
 | Initializers | 120 |
 | Methods | 274 |
 | Properties (var) | 216 |
-| Properties (let) | 259 |
+| Properties (let) | 260 |
 | Enum cases | 218 |
-| **Total** | **1413** |
+| **Total** | **1414** |
 
-### `Frame` — 1244 public symbols
+### `Frame` — 1245 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -406,9 +406,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/AddressSearch (14)
+#### Networking/AddressSearch (15)
 
-<details><summary><code>AddressAutocompleteController.swift</code> — 9 symbols</summary>
+<details><summary><code>AddressAutocompleteController.swift</code> — 10 symbols</summary>
 
 [`Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift`](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift)
 
@@ -418,11 +418,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `AddressAutocompleteController.Sleeper` | typealias | `typealias Sleeper = @Sendable (Duration) async throws -> Void` | [16](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L16) |
 | `AddressAutocompleteController.Search` | typealias | `typealias Search = @Sendable (_ query: String, _ countryCode: String?) async throws -> [AddressSuggestion]` | [18](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L18) |
 | `AddressAutocompleteController.Retrieve` | typealias | `typealias Retrieve = @Sendable (AddressSuggestion) async throws -> FrameObjects.BillingAddress` | [20](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L20) |
-| `AddressAutocompleteController.minimumQueryLength` | let | `let minimumQueryLength = 3` | [23](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L23) |
-| `AddressAutocompleteController.init` | init | `init ( debounceInterval: Duration = .milliseconds(300), sleep: Sleeper? = nil, search: Search? = nil, retrieve: Retrieve? = nil )` | [36](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L36) |
-| `AddressAutocompleteController.queryChanged` | func | `func queryChanged(_ query: String, countryCode: String?)` | [54](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L54) |
-| `AddressAutocompleteController.select` | func | `func select(_ suggestion: AddressSuggestion) async -> FrameObjects.BillingAddress?` | [83](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L83) |
-| `AddressAutocompleteController.clear` | func | `func clear()` | [90](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L90) |
+| `AddressAutocompleteController.minimumQueryLength` | let | `let minimumQueryLength = 2` | [27](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L27) |
+| `AddressAutocompleteController.maximumSuggestions` | let | `let maximumSuggestions = 3` | [34](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L34) |
+| `AddressAutocompleteController.init` | init | `init ( debounceInterval: Duration = .milliseconds(80), sleep: Sleeper? = nil, search: Search? = nil, retrieve: Retrieve? = nil )` | [53](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L53) |
+| `AddressAutocompleteController.queryChanged` | func | `func queryChanged(_ query: String, countryCode: String?)` | [75](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L75) |
+| `AddressAutocompleteController.select` | func | `func select(_ suggestion: AddressSuggestion) async -> FrameObjects.BillingAddress?` | [116](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L116) |
+| `AddressAutocompleteController.clear` | func | `func clear()` | [126](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L126) |
 
 </details>
 
@@ -2128,12 +2129,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [356](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L356) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [358](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L358) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [360](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L360) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [363](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L363) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [365](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L365) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [370](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L370) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [360](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L360) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [362](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L362) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [364](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L364) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [367](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L367) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [369](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L369) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [374](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L374) |
 
 </details>
 
@@ -2564,7 +2565,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 |--------|------|-------------|------|
 | `BillingAddressDetailView` | struct | `struct BillingAddressDetailView: View` | [16](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L16) |
 | `BillingAddressDetailView.init` | init | `init (viewModel: BillingAddressViewModel, headerTitle: String = , showHeaderText: Bool = true)` | [34](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L34) |
-| `BillingAddressDetailView.body` | var | `var body: some View` | [113](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L113) |
+| `BillingAddressDetailView.body` | var | `var body: some View` | [123](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L123) |
 
 </details>
 

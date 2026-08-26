@@ -74,6 +74,10 @@ public struct AddressAutocompleteField: View {
                         .offset(y: 49.0)
                 }
             }
+            // The list is drawn in an overlay, which only stacks above this field — not above the
+            // form rows that follow it in the parent VStack. Lifting the whole field puts the
+            // list above those siblings, so the rows it covers do not show through it.
+            .zIndex(1)
     }
 
     private var suggestionList: some View {
@@ -103,21 +107,27 @@ public struct AddressAutocompleteField: View {
                 }
             }
         }
+        // Two layers: the theme surface is what the list should look like, and the system
+        // background behind it guarantees opacity even if a host app themes `surface` with a
+        // translucent color. Without it the form rows underneath remain legible through the list.
         .background(theme.colors.surface)
+        .background(Color(uiColor: .systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: theme.radii.medium))
         .overlay(
             RoundedRectangle(cornerRadius: theme.radii.medium)
                 .stroke(theme.colors.surfaceStroke)
         )
         .shadow(radius: 4)
-        .zIndex(1)
     }
 
     private func select(_ suggestion: AddressSuggestion) {
         Task {
             guard let address = await controller.select(suggestion) else { return }
-            onSelect(address)
+            // Drop focus before filling. `onSelect` writes line 1, and the field's own
+            // `onChange` treats a write while focused as the user typing, which restarts the
+            // search against the address that was just picked.
             isFocused = false
+            onSelect(address)
         }
     }
 }

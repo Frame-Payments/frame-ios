@@ -191,9 +191,13 @@ class FrameCheckoutViewModel: ObservableObject {
             customerCountry = match
         }
 
+        // One assignment: each subscript write on a published dictionary is its own change
+        // notification, and the form re-renders on every one of them.
+        var errors = fieldErrors
         for field in [CheckoutField.addressLine1, .city, .state, .zip, .country] {
-            fieldErrors[field] = nil
+            errors[field] = nil
         }
+        fieldErrors = errors
     }
 
     /// Run all validations, populate `fieldErrors`, and return whether the form is valid.

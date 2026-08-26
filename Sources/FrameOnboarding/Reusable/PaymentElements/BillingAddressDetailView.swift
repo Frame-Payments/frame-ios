@@ -51,10 +51,16 @@ public struct BillingAddressDetailView: View {
     /// step. Writing the model directly would leave the picker showing the old country. A US-only
     /// form ignores the country outright, and any country the picker does not offer is dropped.
     private func apply(_ address: FrameObjects.BillingAddress) {
-        if let line1 = address.addressLine1 { viewModel.address.addressLine1 = line1 }
-        if let city = address.city { viewModel.address.city = city }
-        if let state = address.state { viewModel.address.state = state }
-        viewModel.address.postalCode = address.postalCode
+        // Mutate a local copy and assign once. `viewModel.address` is a struct behind
+        // `@Published`, so writing its fields one at a time publishes a change per field and
+        // re-renders the form mid-fill; the still-focused fields then write their pre-fill values
+        // back and only line 1 survives.
+        var next = viewModel.address
+        if let line1 = address.addressLine1 { next.addressLine1 = line1 }
+        if let city = address.city { next.city = city }
+        if let state = address.state { next.state = state }
+        next.postalCode = address.postalCode
+        viewModel.address = next
 
         if allowsInternational,
            let code = address.country,
@@ -62,9 +68,13 @@ public struct BillingAddressDetailView: View {
             selectedCountry = match
         }
 
+        // One assignment, for the same reason the address is written in one: each subscript
+        // write on a published dictionary is its own change notification.
+        var errors = viewModel.errors
         for field in [BillingAddressViewModel.Field.line1, .city, .state, .postal] {
-            viewModel.errors[field] = nil
+            errors[field] = nil
         }
+        viewModel.errors = errors
     }
 
     private var format: AddressFormat {
