@@ -15,9 +15,15 @@ struct SelectPayoutMethodView: View {
 
     @State private var canCustomerContinue: Bool = false
     @State private var showAddPayoutMethod: Bool = false
-    
+
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
+
+    /// Set by standalone hosts. Nil in onboarding, which advances via ``continueToNextStep``.
+    var onElected: ((FrameObjects.PaymentMethod) -> Void)?
+
+    /// Set by standalone hosts. Nil in onboarding, which uses a back button instead of a close one.
+    var onClose: (() -> Void)?
     
     var body: some View {
         NavigationStack {
@@ -26,6 +32,13 @@ struct SelectPayoutMethodView: View {
                     AddPayoutMethodView(onboardingContainerViewModel: onboardingContainerViewModel)
                         .navigationBarBackButtonHidden()
                 }
+        }
+        .onAppear {
+            // Otherwise the list is only populated as a side effect of the card step, which an
+            // account that skips that step never runs.
+            Task {
+                await onboardingContainerViewModel.loadExistingPaymentMethods()
+            }
         }
         .onChange(of: onboardingContainerViewModel.selectedPayoutMethod) { oldValue, newValue in
             self.canCustomerContinue = newValue != nil
@@ -38,7 +51,16 @@ struct SelectPayoutMethodView: View {
             Spacer()
             ContinueButton(enabled: $canCustomerContinue) {
                 Task {
-                    self.continueToNextStep = true
+                    guard let payoutMethod = onboardingContainerViewModel.selectedPayoutMethod else { return }
+
+                    // On continue rather than on row tap, so browsing doesn't call the API per tap.
+                    guard await onboardingContainerViewModel.electPayoutMethod(payoutMethod) else { return }
+
+                    if let onElected {
+                        onElected(payoutMethod)
+                    } else {
+                        self.continueToNextStep = true
+                    }
                 }
             }
             .padding(.bottom)
@@ -47,8 +69,13 @@ struct SelectPayoutMethodView: View {
     
     var listPaymentMethodsView: some View {
         Group {
-            PageHeaderView(headerTitle: "Select A Payout Method") {
-                self.returnToPreviousStep = true
+            PageHeaderView(useCloseButton: onClose != nil,
+                           headerTitle: "Select A Payout Method") {
+                if let onClose {
+                    onClose()
+                } else {
+                    self.returnToPreviousStep = true
+                }
             }
             Text("Choose a saved payout method or add a new one to continue")
                 .fontWeight(.light)
@@ -116,8 +143,16 @@ struct SelectPayoutMethodView: View {
                     .bold()
                     .font(theme.fonts.bodySmall)
                     .padding(.bottom, 1.0)
-                Text((payoutMethod.ach?.accountType?.rawValue.capitalized ?? "") + " Account")
-                    .font(theme.fonts.caption)
+                HStack(spacing: 6.0) {
+                    Text((payoutMethod.ach?.accountType?.rawValue.capitalized ?? "") + " Account")
+                        .font(theme.fonts.caption)
+                    if onboardingContainerViewModel.primaryPayoutMethodId == payoutMethod.id {
+                        Text("Primary")
+                            .font(theme.fonts.caption)
+                            .bold()
+                            .foregroundStyle(theme.colors.textPrimary)
+                    }
+                }
             }
             Spacer()
             Image(onboardingContainerViewModel.selectedPayoutMethod == payoutMethod ? "filled-selection" : "empty-selection", bundle: FrameResources.module)

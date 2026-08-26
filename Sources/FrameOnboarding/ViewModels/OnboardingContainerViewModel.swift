@@ -47,6 +47,9 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var createdBillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: "")
     @Published var paymentMethods: [FrameObjects.PaymentMethod] = []
     @Published var payoutMethods: [FrameObjects.PaymentMethod] = []
+    /// ID of the payment method currently elected as the account's payout destination, so the
+    /// payout list can mark which row is primary.
+    @Published var primaryPayoutMethodId: String?
     @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var filesToUpload: [FileUpload] = []
     @Published var ipAddress: String?
@@ -139,6 +142,9 @@ class OnboardingContainerViewModel: ObservableObject {
                                                         && $0.status == "active" }) == true {
                 self.identityVerifiedViaGovId = true
             }
+
+            // Withheld unless the request carries a matching onboarding session or a secret key.
+            self.primaryPayoutMethodId = account?.payoutPaymentMethodId
 
             // Seeded here too, not just in `updateCapabilitiesBasedOnCompletion` — that runs only
             // when the caller passes `updateCapabilies: true`.
@@ -590,6 +596,33 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
     
+    /// Elects `payoutMethod` as the account's payout destination (its "primary" bank).
+    ///
+    /// Callers already hold `beginAction()`, so this does not re-acquire it — it is not reentrant
+    /// and would refuse.
+    ///
+    /// - Parameter payoutMethod: The ACH payment method to make primary.
+    /// - Returns: `true` when the election succeeded.
+    @discardableResult
+    func electPayoutMethod(_ payoutMethod: FrameObjects.PaymentMethod) async -> Bool {
+        guard let accountId else { return false }
+
+        do {
+            let request = AccountRequest.ElectPayoutMethodRequest(paymentMethodId: payoutMethod.id)
+            let (account, error) = try await AccountsAPI.electPayoutMethod(accountId: accountId, request: request)
+            reportError(error)
+
+            // A failure must not leave the UI showing this bank as primary.
+            guard error == nil, let account else { return false }
+
+            self.primaryPayoutMethodId = account.payoutPaymentMethodId ?? payoutMethod.id
+            return true
+        } catch let error {
+            print(error)
+            return false
+        }
+    }
+
     // Add new payout method to customer object
     func addNewPayoutMethod() async {
         guard beginAction() else { return }
@@ -608,7 +641,9 @@ class OnboardingContainerViewModel: ObservableObject {
             if let payoutMethod {
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
-                
+
+                await self.electPayoutMethod(payoutMethod)
+
                 self.clearAccountDetails()
             }
         } catch let error {
@@ -688,6 +723,7 @@ class OnboardingContainerViewModel: ObservableObject {
             if let payoutMethod {
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
+                await self.electPayoutMethod(payoutMethod)
                 self.clearAccountDetails()
             }
         } catch let error {

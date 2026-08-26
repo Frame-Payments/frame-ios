@@ -304,6 +304,8 @@ extension FrameObjects {
         @Lenient public private(set) var capabilities: [Capability]?
         /// Onboarding or compliance steps associated with the account.
         @Lenient public private(set) var steps: [AccountStep]?
+        /// ID of the payment method elected as this account's payout destination, if any.
+        @Lenient public private(set) var payoutPaymentMethodId: String?
         /// Unix timestamp (seconds) when the account was created.
         public let created: Int
         /// Unix timestamp (seconds) when the account was last updated.
@@ -323,6 +325,7 @@ extension FrameObjects {
         ///   - profile: Optional detailed profile for the account holder.
         ///   - capabilities: Optional list of enabled payment capabilities.
         ///   - steps: Optional onboarding steps for the account.
+        ///   - payoutPaymentMethodId: Optional ID of the elected payout payment method.
         ///   - created: Unix timestamp of account creation.
         ///   - updated: Unix timestamp of the last update.
         ///   - livemode: Whether the account is in live mode.
@@ -337,6 +340,7 @@ extension FrameObjects {
             profile: AccountProfile? = nil,
             capabilities: [Capability]? = nil,
             steps: [AccountStep]? = nil,
+            payoutPaymentMethodId: String? = nil,
             created: Int,
             updated: Int,
             livemode: Bool
@@ -351,6 +355,7 @@ extension FrameObjects {
             self.profile = profile
             self.capabilities = capabilities
             self.steps = steps
+            self.payoutPaymentMethodId = payoutPaymentMethodId
             self.created = created
             self.updated = updated
             self.livemode = livemode
@@ -362,6 +367,7 @@ extension FrameObjects {
             case accountStatus = "status"
             case externalId = "external_id"
             case termsOfService = "terms_of_service"
+            case payoutPaymentMethodId = "payout_payment_method_id"
         }
     }
 

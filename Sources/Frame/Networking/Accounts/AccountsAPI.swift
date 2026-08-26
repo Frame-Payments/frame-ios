@@ -20,6 +20,7 @@ protocol AccountsProtocol {
     static func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
     static func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)
     static func getPlaidLinkToken(accountId: String) async throws -> (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?)
+    static func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest) async throws -> (FrameObjects.Account?, NetworkingError?)
 
     // completionHandlers
     static func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
@@ -32,6 +33,7 @@ protocol AccountsProtocol {
     static func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
     static func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void)
+    static func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)
 }
 
 /// Manages account resources in the Frame SDK, providing methods to create, retrieve, update, delete, search, and manage accounts and their associated payment methods.
@@ -205,6 +207,29 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.unrestrictAccount(accountId: accountId)
 
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
+        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+            return (decodedResponse, error)
+        } else {
+            return (nil, error)
+        }
+    }
+
+    /// Elects one of the account's ACH payment methods as its payout destination — the bank a payout
+    /// is sent to. Only active ACH methods belonging to the account are accepted; cards are rejected.
+    ///
+    /// - Note: Requires a caller scoped to this account — an onboarding-session token
+    ///   (`onb_sess_…`, see ``FrameNetworking/beginOnboardingSession(clientSecret:)``) or a
+    ///   server-side secret key. A publishable key is rejected.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account whose payout method is being elected.
+    ///   - request: The payment method to elect.
+    /// - Returns: A tuple containing the updated ``FrameObjects/Account`` and any ``NetworkingError``.
+    public static func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest) async throws -> (FrameObjects.Account?, NetworkingError?) {
+        guard !accountId.isEmpty else { return (nil, nil) }
+        let endpoint = AccountEndpoints.electPayoutMethod(accountId: accountId)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             return (decodedResponse, error)
         } else {
@@ -405,6 +430,25 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(AccountResponses.PlaidLinkTokenResponse.self, from: data) {
+                completionHandler(decodedResponse, error)
+            } else {
+                completionHandler(nil, error)
+            }
+        }
+    }
+
+    /// Completion-handler variant of `electPayoutMethod(accountId:request:)`.
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account whose payout method is being elected.
+    ///   - request: The payment method to elect.
+    ///   - completionHandler: Called with the updated ``FrameObjects/Account`` and any ``NetworkingError``.
+    public static func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void) {
+        guard !accountId.isEmpty else { return completionHandler(nil, nil) }
+        let endpoint = AccountEndpoints.electPayoutMethod(accountId: accountId)
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
+
+        FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
+            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

@@ -22,7 +22,7 @@ struct ContentView: View {
 
     @State var showCheckoutView: Bool = false
     @State var showAddPaymentMethodView: Bool = false
-    @State var showAddBankAccountView: Bool = false
+    @State var showSelectPayoutMethodView: Bool = false
     
     @State var showCustomersView: Bool = false
     @State var showPaymentMethodsView: Bool = false
@@ -49,7 +49,7 @@ struct ContentView: View {
             ScrollView {
                 cartButton
                 addPaymentMethodButton
-                addBankAccountButton
+                selectPayoutMethodButton
                 onboardingButton
                 
                 // Apple Pay button — only visible on devices that support Apple Pay
@@ -142,8 +142,19 @@ struct ContentView: View {
             FrameAddPaymentMethodView(accountId: accountId)
                 .presentationDragIndicator(.visible)
         })
-        .sheet(isPresented: $showAddBankAccountView, content: {
-            FrameAddPayoutMethodView(accountId: accountId)
+        .sheet(isPresented: $showSelectPayoutMethodView, content: {
+            FrameSelectPayoutMethodView(accountId: accountId, onResult: { result in
+                // This screen leaves dismissal to its host, so close the sheet here.
+                self.showSelectPayoutMethodView = false
+                switch result {
+                    case .completed(let id):
+                        FrameToastCenter.shared.show("Primary payout method: \(id)")
+                    case .cancelled:
+                        FrameToastCenter.shared.show("Cancelled flow")
+                    case .failed(let error):
+                        FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                }
+            })
                 .presentationDragIndicator(.visible)
         })
         .sheet(isPresented: $showCustomersView) {
@@ -364,11 +375,11 @@ struct ContentView: View {
         .padding([.horizontal, .bottom])
     }
     
-    var addBankAccountButton: some View {
+    var selectPayoutMethodButton: some View {
         Button {
-            self.showAddBankAccountView = true
+            self.showSelectPayoutMethodView = true
         } label: {
-            Text("Add New Bank Account")
+            Text("Set Primary Payout Method")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
