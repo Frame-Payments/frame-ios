@@ -39,7 +39,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Text("Frame Payments \nSDK Playground")
+            Text("FrameOS Playground")
                 .font(.title)
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.center)
