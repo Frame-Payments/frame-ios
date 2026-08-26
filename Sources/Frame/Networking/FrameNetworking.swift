@@ -87,19 +87,20 @@ public class FrameNetworking: ObservableObject {
         self.applePayMerchantId = applePayMerchantId
         self.debugMode = debugMode
 
-        // Initializes Sift, Sonar Session, and Device Attestation when the SDK is initialized.
+        // One config fetch warms the keychain, so the consumers below hit cache instead of the network.
+        // They are independent of each other, so they run concurrently rather than serially.
         Task {
-            await SiftManager.initializeSift()
-            await SessionManager.initializeSession()
-            await LegalConfiguration.prefetch()
-            _ = try? await DeviceAttestationManager.shared.attestDevice()
+            _ = try? await ConfigurationAPI.getAllConfiguration()
+
+            async let evervault = EvervaultConfigurator.shared.ensureConfigured()
+            async let sift: Void = SiftManager.initializeSift()
+            async let session: Void = SessionManager.initializeSession()
+            async let legal: Void = LegalConfiguration.prefetch()
+            async let attestation = try? await DeviceAttestationManager.shared.attestDevice()
+            _ = await (evervault, sift, session, legal, attestation)
         }
 
         observeAppLifecycleForSonarSession()
-
-        if !isEvervaultConfigured {
-            self.configureEvervault()
-        }
 
         // Set global theme
         Task {
@@ -492,18 +493,10 @@ public class FrameNetworking: ObservableObject {
         }.resume()
     }
 
+    /// Configures Evervault without waiting for it. Callers that are about to encrypt must use
+    /// ``EvervaultConfigurator/ensureConfigured()`` instead, or they may encrypt before it is ready.
     func configureEvervault() {
-        Task {
-            if let configResponse = try? await ConfigurationAPI.getEvervaultConfiguration() {
-                Evervault.shared.configure(teamId: configResponse.teamId ?? "", appId: configResponse.appId ?? "")
-                FrameNetworking.shared.isEvervaultConfigured = true
-            } else if let data = ConfigurationAPI.retrieveFromKeychain(key: ConfigurationKeys.evervault.rawValue) {
-                if let response = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetEvervaultConfigurationResponse.self, from: data) {
-                    Evervault.shared.configure(teamId: response.teamId ?? "", appId: response.appId ?? "")
-                    FrameNetworking.shared.isEvervaultConfigured = true
-                }
-            }
-        }
+        Task { await EvervaultConfigurator.shared.ensureConfigured() }
     }
 
     private func printDataForTesting(data: Data?) {

@@ -14,6 +14,7 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
     case getSiftConfiguration
     case getLegalConfiguration
     case getMapboxConfiguration
+    case getAllConfiguration
 
     var endpointURL: String {
         switch self {
@@ -27,6 +28,8 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
             return "/v1/config/legal"
         case .getMapboxConfiguration:
             return "/v1/config/mapbox"
+        case .getAllConfiguration:
+            return "/v1/config/all"
         }
     }
     

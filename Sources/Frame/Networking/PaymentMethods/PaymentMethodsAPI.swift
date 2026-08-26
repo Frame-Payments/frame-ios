@@ -143,9 +143,9 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
 
         var encryptedRequest = request
         if encryptData {
-            // Ensure evervault is configured before continuing
-            if !FrameNetworking.shared.isEvervaultConfigured {
-                FrameNetworking.shared.configureEvervault()
+            // Awaited, so encryption cannot start before Evervault holds its credentials.
+            guard await EvervaultConfigurator.shared.ensureConfigured() else {
+                throw NetworkingError.unknownError
             }
 
             guard let encryptedCardNumber = try await Evervault.shared.encrypt(request.cardNumber) as? String,
@@ -380,9 +380,10 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
                 let endpoint = PaymentMethodEndpoints.createPaymentMethod
                 var encryptedRequest = immutableRequest
                 if encryptData {
-                    // Ensure evervault is configured before continuing
-                    if !FrameNetworking.shared.isEvervaultConfigured {
-                        FrameNetworking.shared.configureEvervault()
+                    // Awaited, so encryption cannot start before Evervault holds its credentials.
+                    guard await EvervaultConfigurator.shared.ensureConfigured() else {
+                        completionHandler(nil, nil)
+                        return
                     }
 
                     guard let encryptedCardNumber = try await Evervault.shared.encrypt(immutableRequest.cardNumber) as? String,
