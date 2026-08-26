@@ -17,7 +17,7 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
     let challengeURL: URL
     /// The path component of the redirect that signals the challenge is over.
     let returnURLPathComponent: String
-    /// Called once, when the page redirects to ``returnURLPrefix``.
+    /// Called once, when the page redirects to ``returnURLPathComponent``.
     let onFinish: () -> Void
     /// Called if the page fails to load.
     let onLoadFailure: (Error) -> Void
@@ -64,12 +64,24 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
         func webView(_ webView: WKWebView,
                      decidePolicyFor navigationAction: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            guard let url = navigationAction.request.url?.absoluteString,
-                  url.contains(returnURLPathComponent) else {
+            guard isReturn(navigationAction.request.url) else {
                 return decisionHandler(.allow)
             }
 
             // The return URL is a signal, not a page to render.
+            decisionHandler(.cancel)
+            report { $0.onFinish() }
+        }
+
+        /// The issuer redirects through a server that answers the callback with an empty 200, so
+        /// the finish can surface as a completed response rather than a navigation to cancel.
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationResponse: WKNavigationResponse,
+                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            guard isReturn(navigationResponse.response.url) else {
+                return decisionHandler(.allow)
+            }
+
             decisionHandler(.cancel)
             report { $0.onFinish() }
         }
@@ -79,7 +91,15 @@ struct ThreeDSecureChallengeView: UIViewRepresentable {
         }
 
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            // Cancelling the return navigation surfaces here as a cancellation, which is the
+            // challenge finishing rather than failing to load.
+            if (error as NSError).code == NSURLErrorCancelled { return }
             report { $0.onLoadFailure(error) }
+        }
+
+        /// Internal rather than private so the path match is testable without a live web view.
+        func isReturn(_ url: URL?) -> Bool {
+            url?.absoluteString.contains(returnURLPathComponent) ?? false
         }
 
         private func report(_ body: (Coordinator) -> Void) {

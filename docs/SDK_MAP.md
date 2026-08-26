@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1416 public symbols** across 137 files in 2 modules.
+**1417 public symbols** across 137 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -52,11 +52,11 @@ regeneration, so architectural notes belong there.
 | Initializers | 120 |
 | Methods | 275 |
 | Properties (var) | 216 |
-| Properties (let) | 260 |
+| Properties (let) | 261 |
 | Enum cases | 218 |
-| **Total** | **1416** |
+| **Total** | **1417** |
 
-### `Frame` — 1247 public symbols
+### `Frame` — 1248 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -678,20 +678,20 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `ChargeIntentsRequests.ConfirmChargeIntentOptions.paymentMethod` | let | `let paymentMethod: String?` | [19](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L19) |
 | `ChargeIntentsRequests.ConfirmChargeIntentOptions.shipping` | let | `let shipping: FrameObjects.BillingAddress?` | [21](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L21) |
 | `ChargeIntentsRequests.ConfirmChargeIntentOptions.init` | init | `init (paymentMethod: String? = nil, shipping: FrameObjects.BillingAddress? = nil)` | [24](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L24) |
-| `ChargeIntentsRequests.CreateChargeIntentRequest` | struct | `struct CreateChargeIntentRequest: Encodable` | [57](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L57) |
-| `ChargeIntentsRequests.CreateChargeIntentRequest.init` | init | `init (amount: Int, currency: String, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, …` | [101](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L101) |
-| `ChargeIntentsRequests.UpdateChargeIntentRequest` | struct | `struct UpdateChargeIntentRequest: Encodable` | [130](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L130) |
-| `ChargeIntentsRequests.UpdateChargeIntentRequest.init` | init | `init (amount: Int? = nil, currency: String? = nil, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, c…` | [161](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L161) |
-| `ChargeIntentsRequests.CaptureChargeIntentRequest` | struct | `struct CaptureChargeIntentRequest: Encodable` | [181](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L181) |
-| `ChargeIntentsRequests.CaptureChargeIntentRequest.init` | init | `init (amountCapturedCents: Int)` | [188](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L188) |
-| `ChargeIntentsRequests.CustomerData` | struct | `struct CustomerData: Encodable` | [199](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L199) |
-| `ChargeIntentsRequests.CustomerData.init` | init | `init (name: String, email: String)` | [210](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L210) |
-| `ChargeIntentsRequests.PaymentMethodType` | enum | `enum PaymentMethodType: String, Encodable` | [217](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L217) |
-| `ChargeIntentsRequests.PaymentMethodType.card` | case | `case card` | [219](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L219) |
-| `ChargeIntentsRequests.PaymentMethodData` | struct | `struct PaymentMethodData: Encodable` | [223](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L223) |
-| `ChargeIntentsRequests.PaymentMethodData.init` | init | `init (attach: Bool?, type: PaymentMethodType, cardNumber: String, expMonth: String, expYear: String, cvc: String, billing: FrameObjects.BillingAddress?)` | [249](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L249) |
-| `ChargeIntentsRequests.FraudSignals` | struct | `struct FraudSignals: Encodable` | [269](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L269) |
-| `ChargeIntentsRequests.FraudSignals.init` | init | `init (clientIp: String?)` | [276](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L276) |
+| `ChargeIntentsRequests.CreateChargeIntentRequest` | struct | `struct CreateChargeIntentRequest: Encodable` | [60](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L60) |
+| `ChargeIntentsRequests.CreateChargeIntentRequest.init` | init | `init (amount: Int, currency: String, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, …` | [104](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L104) |
+| `ChargeIntentsRequests.UpdateChargeIntentRequest` | struct | `struct UpdateChargeIntentRequest: Encodable` | [133](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L133) |
+| `ChargeIntentsRequests.UpdateChargeIntentRequest.init` | init | `init (amount: Int? = nil, currency: String? = nil, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, c…` | [164](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L164) |
+| `ChargeIntentsRequests.CaptureChargeIntentRequest` | struct | `struct CaptureChargeIntentRequest: Encodable` | [184](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L184) |
+| `ChargeIntentsRequests.CaptureChargeIntentRequest.init` | init | `init (amountCapturedCents: Int)` | [191](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L191) |
+| `ChargeIntentsRequests.CustomerData` | struct | `struct CustomerData: Encodable` | [202](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L202) |
+| `ChargeIntentsRequests.CustomerData.init` | init | `init (name: String, email: String)` | [213](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L213) |
+| `ChargeIntentsRequests.PaymentMethodType` | enum | `enum PaymentMethodType: String, Encodable` | [220](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L220) |
+| `ChargeIntentsRequests.PaymentMethodType.card` | case | `case card` | [222](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L222) |
+| `ChargeIntentsRequests.PaymentMethodData` | struct | `struct PaymentMethodData: Encodable` | [226](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L226) |
+| `ChargeIntentsRequests.PaymentMethodData.init` | init | `init (attach: Bool?, type: PaymentMethodType, cardNumber: String, expMonth: String, expYear: String, cvc: String, billing: FrameObjects.BillingAddress?)` | [252](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L252) |
+| `ChargeIntentsRequests.FraudSignals` | struct | `struct FraudSignals: Encodable` | [272](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L272) |
+| `ChargeIntentsRequests.FraudSignals.init` | init | `init (clientIp: String?)` | [279](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L279) |
 
 </details>
 
@@ -1857,7 +1857,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Transfers (47)
+#### Networking/Transfers (48)
 
 <details><summary><code>TransferObjects.swift</code> — 28 symbols</summary>
 
@@ -1896,7 +1896,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>TransferRequests.swift</code> — 10 symbols</summary>
+<details><summary><code>TransferRequests.swift</code> — 11 symbols</summary>
 
 [`Sources/Frame/Networking/Transfers/TransferRequests.swift`](../Sources/Frame/Networking/Transfers/TransferRequests.swift)
 
@@ -1911,7 +1911,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `TransferRequests.CreateTransferRequest.destinationPaymentMethodId` | let | `let destinationPaymentMethodId: String?` | [27](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L27) |
 | `TransferRequests.CreateTransferRequest.description` | let | `let description: String?` | [30](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L30) |
 | `TransferRequests.CreateTransferRequest.metadata` | let | `let metadata: [String: String]?` | [33](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L33) |
-| `TransferRequests.CreateTransferRequest.init` | init | `init (amount: Int, accountId: String, currency: String? = nil, sourcePaymentMethodId: String? = nil, destinationPaymentMethodId: String? = nil, description: St…` | [51](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L51) |
+| `TransferRequests.CreateTransferRequest.confirm` | let | `let confirm: Bool?` | [40](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L40) |
+| `TransferRequests.CreateTransferRequest.init` | init | `init (amount: Int, accountId: String, currency: String? = nil, sourcePaymentMethodId: String? = nil, destinationPaymentMethodId: String? = nil, description: St…` | [60](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L60) |
 
 </details>
 
@@ -2131,12 +2132,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [360](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L360) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [362](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L362) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [364](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L364) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [367](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L367) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [369](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L369) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [374](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L374) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [368](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L368) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [370](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L370) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [372](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L372) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [375](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L375) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [377](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L377) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [382](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L382) |
 
 </details>
 
@@ -2263,8 +2264,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameThreeDSecureChallengePresenter` | class | `class FrameThreeDSecureChallengePresenter: NSObject` | [17](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L17) |
-| `FrameThreeDSecureChallengePresenter.init` | init | `init (presentingViewController: UIViewController? = nil)` | [27](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L27) |
-| `FrameThreeDSecureChallengePresenter.presentChallenge` | func | `func presentChallenge(_ challenge: FrameObjects.UseFrameSDK, for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult` | [35](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L35) |
+| `FrameThreeDSecureChallengePresenter.init` | init | `init (presentingViewController: UIViewController? = nil)` | [31](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L31) |
+| `FrameThreeDSecureChallengePresenter.presentChallenge` | func | `func presentChallenge(_ challenge: FrameObjects.UseFrameSDK, for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult` | [39](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L39) |
 
 </details>
 

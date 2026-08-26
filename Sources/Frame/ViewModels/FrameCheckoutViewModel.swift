@@ -275,6 +275,8 @@ class FrameCheckoutViewModel: ObservableObject {
         // for one rather than racing SDK start-up.
         try await SessionManager.shared.ensureSession(accountId: accountId)
 
+        // Confirmed here rather than inline: an inline confirm rejects any charge that is not
+        // already settled, so a card the issuer wants to challenge fails before it can be.
         let request = TransferRequests.CreateTransferRequest(
             amount: amount,
             accountId: accountId,
@@ -282,25 +284,31 @@ class FrameCheckoutViewModel: ObservableObject {
             sourcePaymentMethodId: paymentMethodId,
             destinationPaymentMethodId: nil,
             description: nil,
-            metadata: nil)
+            metadata: nil,
+            confirm: false)
 
         let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
         if let transferError { throw transferError }
         guard let transfer else { return nil }
 
-        guard transfer.status == .requiresThreeDSecure else { return transfer }
+        // `requiresConfirmation` is the normal answer to a deferred-confirm transfer, and the
+        // confirm is what decides whether a challenge is needed at all.
+        guard transfer.status == .requiresConfirmation || transfer.status == .requiresThreeDSecure else {
+            return transfer
+        }
         return try await completeThreeDSecure(for: transfer)
     }
 
-    /// Runs the 3D Secure challenge for a transfer the API held back, and reports the charge's
-    /// real outcome.
+    /// Confirms a transfer the API held back, running a 3D Secure challenge if the confirm asks
+    /// for one, and reports the charge's real outcome.
     ///
     /// `isPerformingAction` stays set by the caller for the whole run, including the polling
     /// window, so the pay button cannot be tapped a second time mid-challenge.
     ///
     /// - Parameter transfer: A transfer whose status is
+    ///   ``FrameObjects/TransferStatus/requiresConfirmation`` or
     ///   ``FrameObjects/TransferStatus/requiresThreeDSecure``.
-    /// - Returns: The transfer, once the charge has authenticated.
+    /// - Returns: The transfer, once the charge has settled.
     /// - Throws: ``FrameChargeIntentError`` when the challenge cannot run or the charge's status
     ///   cannot be read, or ``FrameCheckoutError`` when the charge is declined or unresolved.
     private func completeThreeDSecure(for transfer: FrameObjects.Transfer) async throws -> FrameObjects.Transfer {

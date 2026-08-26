@@ -36,6 +36,8 @@ public class ChargeIntentsRequests {
         let clientSecret: String
         /// Required by the API for publishable-key confirmations.
         let useFrameSDK: Bool = true
+        /// Sent for parity with the browser SDK. The API does not read it today.
+        let expectedPaymentMethodType: String = "card"
         let paymentMethod: String?
         let shipping: FrameObjects.BillingAddress?
 
@@ -49,6 +51,7 @@ public class ChargeIntentsRequests {
             case shipping
             case clientSecret = "client_secret"
             case useFrameSDK = "use_frame_sdk"
+            case expectedPaymentMethodType = "expected_payment_method_type"
             case paymentMethod = "payment_method"
         }
     }

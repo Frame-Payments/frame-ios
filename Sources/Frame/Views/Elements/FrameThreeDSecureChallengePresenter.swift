@@ -16,7 +16,11 @@ import UIKit
 @MainActor
 public final class FrameThreeDSecureChallengePresenter: NSObject {
     /// The redirect the API builds its challenge URLs against.
-    private static let callbackPathComponent = "evervault_3ds_callbacks"
+    ///
+    /// Matches `GET /v1/evervault/3ds/callback/:id`, which answers an empty 200 — it is a signal
+    /// to stop, not a page. The Shopify flow uses a different path (`evervault_3ds_callbacks`)
+    /// that this must not be confused with.
+    static let callbackPathComponent = "/evervault/3ds/callback"
 
     private weak var presentingViewController: UIViewController?
 
@@ -49,16 +53,20 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
 
         return await withCheckedContinuation { continuation in
             let resumeOnce = ContinuationBox(continuation)
+            // Dismissing the challenge itself, rather than whatever the host happens to present:
+            // the host may present nothing (it is the sheet), or something else by the time the
+            // challenge ends, and either leaves the challenge on screen.
+            let dismisser = ChallengeDismisser()
 
             let challenge = ThreeDSecureChallengeView(
                 challengeURL: challengeURL,
                 returnURLPathComponent: Self.callbackPathComponent,
-                onFinish: { [weak host] in
-                    host?.presentedViewController?.dismiss(animated: true)
+                onFinish: {
+                    dismisser.dismiss()
                     resumeOnce.resume(with: .completed)
                 },
-                onLoadFailure: { [weak host] _ in
-                    host?.presentedViewController?.dismiss(animated: true)
+                onLoadFailure: { _ in
+                    dismisser.dismiss()
                     resumeOnce.resume(with: .unavailable)
                 }
             )
@@ -71,8 +79,8 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                         .ignoresSafeArea(edges: .bottom)
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") { [weak host] in
-                                    host?.presentedViewController?.dismiss(animated: true)
+                                Button("Cancel") {
+                                    dismisser.dismiss()
                                     resumeOnce.resume(with: .failed)
                                 }
                             }
@@ -80,6 +88,7 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                 }),
                 onDismiss: { resumeOnce.resume(with: .failed) }
             )
+            dismisser.controller = controller
             host.present(controller, animated: true)
         }
     }
@@ -97,6 +106,20 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
             top = presented
         }
         return top
+    }
+}
+
+/// Dismisses the challenge controller itself, once it has been presented.
+///
+/// Holds the controller weakly: `onDismiss` fires after UIKit has torn it down, and a strong
+/// reference here would outlive the sheet.
+@MainActor
+private final class ChallengeDismisser {
+    weak var controller: UIViewController?
+
+    func dismiss() {
+        guard let controller, controller.presentingViewController != nil else { return }
+        controller.dismiss(animated: true)
     }
 }
 

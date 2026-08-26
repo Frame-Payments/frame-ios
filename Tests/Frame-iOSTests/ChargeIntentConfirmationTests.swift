@@ -502,6 +502,39 @@ final class ChargeIntentConfirmationTests: XCTestCase {
         XCTAssertEqual(try ChargeIntentClientSecret(decoded.clientSecret ?? "").chargeIntentID,
                        Self.intentUUID)
     }
+
+    /// A deferred confirm is what lets the API hold the charge for a challenge; an inline one
+    /// rejects any charge that is not already settled.
+    func testCreateTransferEncodesDeferredConfirm() throws {
+        let request = TransferRequests.CreateTransferRequest(amount: 200,
+                                                             accountId: "acct_1",
+                                                             sourcePaymentMethodId: "pm_1",
+                                                             confirm: false)
+
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any])
+
+        XCTAssertEqual(json["confirm"] as? Bool, false)
+    }
+
+    /// Omitted rather than sent as null, so payouts keep the API's own default.
+    func testCreateTransferOmitsConfirmWhenUnset() throws {
+        let request = TransferRequests.CreateTransferRequest(amount: 200, accountId: "acct_1")
+
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any])
+
+        XCTAssertNil(json["confirm"])
+    }
+
+    /// The browser SDK sends all three on a publishable-key confirm.
+    func testConfirmRequestEncodesBrowserSDKFields() throws {
+        let request = ChargeIntentsRequests.ConfirmChargeIntentRequest(clientSecret: Self.secret)
+
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any])
+
+        XCTAssertEqual(json["client_secret"] as? String, Self.secret)
+        XCTAssertEqual(json["use_frame_sdk"] as? Bool, true)
+        XCTAssertEqual(json["expected_payment_method_type"] as? String, "card")
+    }
 }
 
 
