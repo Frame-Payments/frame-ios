@@ -32,6 +32,13 @@ public class TransferRequests {
         /// Arbitrary key-value metadata to attach to the transfer.
         public let metadata: [String: String]?
 
+        /// Whether the API settles the charge inline. Omitted when `nil`, leaving the API default
+        /// of `true`.
+        ///
+        /// Pass `false` for a card that may need 3D Secure: an inline confirm rejects any charge
+        /// that is not already settled, and a charge awaiting a challenge never is.
+        public let confirm: Bool?
+
         /// The Sonar session backing this transfer's risk checks.
         ///
         /// Populated by ``TransfersAPI``. Only sent on charge-backed transfers — the API rejects it
@@ -48,13 +55,16 @@ public class TransferRequests {
         ///   - destinationPaymentMethodId: The payment method to credit. Pass `nil` if not applicable.
         ///   - description: An optional human-readable description of the transfer.
         ///   - metadata: Arbitrary key-value metadata to attach to the transfer.
+        ///   - confirm: Whether the API settles the charge inline. Pass `nil` to use the API
+        ///     default, or `false` for a card that may need 3D Secure.
         public init(amount: Int,
                     accountId: String,
                     currency: String? = nil,
                     sourcePaymentMethodId: String? = nil,
                     destinationPaymentMethodId: String? = nil,
                     description: String? = nil,
-                    metadata: [String: String]? = nil) {
+                    metadata: [String: String]? = nil,
+                    confirm: Bool? = nil) {
             self.amount = amount
             self.accountId = accountId
             self.currency = currency
@@ -62,10 +72,11 @@ public class TransferRequests {
             self.destinationPaymentMethodId = destinationPaymentMethodId
             self.description = description
             self.metadata = metadata
+            self.confirm = confirm
         }
 
         enum CodingKeys: String, CodingKey {
-            case amount, currency, description, metadata
+            case amount, currency, description, metadata, confirm
             case accountId = "account_id"
             case sourcePaymentMethodId = "source_payment_method_id"
             case destinationPaymentMethodId = "destination_payment_method_id"
