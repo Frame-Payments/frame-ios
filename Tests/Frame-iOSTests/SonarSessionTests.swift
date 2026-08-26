@@ -188,11 +188,21 @@ final class WarmUpFreshnessTests: XCTestCase {
 
     private var storage: SpySessionStorage!
     private var manager: SessionManager!
+    private var savedSession: URLSessionProtocol!
 
+    /// `SessionManager` always calls through `FrameNetworking.shared`, so a request-failure mock is
+    /// installed here rather than relying on the sandbox having no real network access.
     override func setUp() {
         super.setUp()
         storage = SpySessionStorage()
         manager = SessionManager(storage: storage)
+        savedSession = FrameNetworking.shared.asyncURLSession
+        FrameNetworking.shared.asyncURLSession = MockURLAsyncSession()
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = savedSession
+        super.tearDown()
     }
 
     func testFreshPreAccountSessionIsLeftAlone() async throws {
@@ -240,11 +250,21 @@ final class FlowEntryRefreshTests: XCTestCase {
 
     private var storage: SpySessionStorage!
     private var manager: SessionManager!
+    private var savedSession: URLSessionProtocol!
 
+    /// `SessionManager` always calls through `FrameNetworking.shared`, so a request-failure mock is
+    /// installed here rather than relying on the sandbox having no real network access.
     override func setUp() {
         super.setUp()
         storage = SpySessionStorage()
         manager = SessionManager(storage: storage)
+        savedSession = FrameNetworking.shared.asyncURLSession
+        FrameNetworking.shared.asyncURLSession = MockURLAsyncSession()
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = savedSession
+        super.tearDown()
     }
 
     /// The distinguishing behavior: entering a flow refreshes even a session that is still inside the
@@ -287,11 +307,21 @@ final class KeepAliveLifecycleTests: XCTestCase {
 
     private var storage: SpySessionStorage!
     private var manager: SessionManager!
+    private var savedSession: URLSessionProtocol!
 
+    /// `SessionManager` always calls through `FrameNetworking.shared`, so a request-failure mock is
+    /// installed here rather than relying on the sandbox having no real network access.
     override func setUp() {
         super.setUp()
         storage = SpySessionStorage()
         manager = SessionManager(storage: storage)
+        savedSession = FrameNetworking.shared.asyncURLSession
+        FrameNetworking.shared.asyncURLSession = MockURLAsyncSession()
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = savedSession
+        super.tearDown()
     }
 
     /// `pause()` must leave nothing armed, or a suspended app fires requests mid-suspension.
