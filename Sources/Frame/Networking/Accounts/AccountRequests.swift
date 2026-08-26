@@ -391,4 +391,21 @@ public class AccountRequest {
             case termsOfService = "terms_of_service"
         }
     }
+
+    /// Request body for electing an account's payout method.
+    public struct ElectPayoutMethodRequest: Codable, Sendable, Equatable {
+        /// The ID of the ACH payment method to make the account's payout destination.
+        public let paymentMethodId: String
+
+        /// Creates a new payout-method election request.
+        ///
+        /// - Parameter paymentMethodId: The ID of the ACH payment method to elect.
+        public init(paymentMethodId: String) {
+            self.paymentMethodId = paymentMethodId
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case paymentMethodId = "payment_method_id"
+        }
+    }
 }
