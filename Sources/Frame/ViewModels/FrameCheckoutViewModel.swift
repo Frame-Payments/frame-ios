@@ -174,6 +174,32 @@ class FrameCheckoutViewModel: ObservableObject {
         }
     }
 
+    /// Fills the billing address fields from a picked autocomplete suggestion.
+    ///
+    /// Address line 2 is left alone: Mapbox does not reliably return apartment or unit, so
+    /// whatever the user typed there stands. The country is only taken when the suggestion names
+    /// one the picker offers, so a result cannot move the form to a country the merchant has not
+    /// enabled. Errors on the filled fields are cleared, since the values they described are gone.
+    func apply(_ address: FrameObjects.BillingAddress) {
+        if let line1 = address.addressLine1 { customerAddressLine1 = line1 }
+        if let city = address.city { customerCity = city }
+        if let state = address.state { customerState = state }
+        customerZipCode = address.postalCode
+
+        if let code = address.country,
+           let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == code }) {
+            customerCountry = match
+        }
+
+        // One assignment: each subscript write on a published dictionary is its own change
+        // notification, and the form re-renders on every one of them.
+        var errors = fieldErrors
+        for field in [CheckoutField.addressLine1, .city, .state, .zip, .country] {
+            errors[field] = nil
+        }
+        fieldErrors = errors
+    }
+
     /// Run all validations, populate `fieldErrors`, and return whether the form is valid.
     /// When `forSavedCard` is true, the new-card field is not validated.
     ///

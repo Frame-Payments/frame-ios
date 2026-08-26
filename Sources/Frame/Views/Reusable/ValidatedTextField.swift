@@ -24,6 +24,7 @@ public struct ValidatedTextField: View {
     private var compactError: Bool
     private var errorSpacing: CGFloat
     private var inlineError: Bool
+    private var focused: FocusState<Bool>.Binding?
 
     /// Creates a new `ValidatedTextField`.
     ///
@@ -37,6 +38,9 @@ public struct ValidatedTextField: View {
     ///   - compactError: When `true`, the error label is suppressed and no extra vertical space is reserved for it.
     ///   - inlineError: When `true`, the error label is placed to the right of the field in a horizontal stack rather than below it.
     ///   - errorSpacing: Points of spacing between the field and the error label (or between elements in compact/inline layouts). Defaults to `4`.
+    ///   - focused: Optional binding to the owner's focus state, so a caller that draws something
+    ///     alongside the field — an autocomplete list, for instance — can tell when it is being
+    ///     edited. Pass `nil` when focus does not matter.
     public init(prompt: String,
                 text: Binding<String>,
                 error: Binding<String?>,
@@ -45,7 +49,8 @@ public struct ValidatedTextField: View {
                 characterLimit: Int? = nil,
                 compactError: Bool = false,
                 inlineError: Bool = false,
-                errorSpacing: CGFloat = 4) {
+                errorSpacing: CGFloat = 4,
+                focused: FocusState<Bool>.Binding? = nil) {
         self.prompt = prompt
         self._text = text
         self._error = error
@@ -55,6 +60,7 @@ public struct ValidatedTextField: View {
         self.compactError = compactError
         self.inlineError = inlineError
         self.errorSpacing = errorSpacing
+        self.focused = focused
     }
 
     /// The view hierarchy that renders the text field and its optional validation error label.
@@ -74,6 +80,7 @@ public struct ValidatedTextField: View {
                             }
                             if error != nil { error = nil }
                         }
+                        .modifier(OptionalFocusModifier(focused: focused))
                     if let error, !compactError {
                         Text(error)
                             .font(theme.fonts.caption)
@@ -94,6 +101,7 @@ public struct ValidatedTextField: View {
                         }
                         if error != nil { error = nil }
                     }
+                    .modifier(OptionalFocusModifier(focused: focused))
                 if let error, !compactError {
                     Text(error)
                         .font(theme.fonts.caption)
@@ -102,6 +110,22 @@ public struct ValidatedTextField: View {
                         .padding(.bottom, errorSpacing)
                 }
             }
+        }
+    }
+}
+
+/// Applies `.focused()` only when the caller supplied a binding.
+///
+/// `.focused()` takes a non-optional binding, so the choice cannot be made inside a view builder
+/// without giving the field a different type in each branch.
+private struct OptionalFocusModifier: ViewModifier {
+    let focused: FocusState<Bool>.Binding?
+
+    func body(content: Content) -> some View {
+        if let focused {
+            content.focused(focused)
+        } else {
+            content
         }
     }
 }

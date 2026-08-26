@@ -55,6 +55,10 @@ struct AddPaymentMethodView: View {
                     }
                 }
                 BillingAddressDetailView(viewModel: billingVM)
+                    // The autocomplete list hangs out of the address form's bounds, and the
+                    // Continue button is its sibling here. Without this the button — laid out
+                    // later — paints over the suggestions.
+                    .zIndex(1)
                 walletButtonError.map {
                     Text($0)
                         .font(theme.fonts.caption)

@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1394 public symbols** across 134 files in 2 modules.
+**1414 public symbols** across 137 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
-| Classes | 73 |
-| Structs | 175 |
+| Classes | 74 |
+| Structs | 178 |
 | Enums | 60 |
 | Protocols | 5 |
 | Actors | 1 |
-| Type aliases | 5 |
-| Initializers | 117 |
-| Methods | 270 |
-| Properties (var) | 215 |
-| Properties (let) | 255 |
+| Type aliases | 8 |
+| Initializers | 120 |
+| Methods | 274 |
+| Properties (var) | 216 |
+| Properties (let) | 260 |
 | Enum cases | 218 |
-| **Total** | **1394** |
+| **Total** | **1414** |
 
-### `Frame` — 1225 public symbols
+### `Frame` — 1245 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -406,6 +406,41 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
+#### Networking/AddressSearch (15)
+
+<details><summary><code>AddressAutocompleteController.swift</code> — 10 symbols</summary>
+
+[`Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift`](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `AddressAutocompleteController` | class | `class AddressAutocompleteController: ObservableObject` | [14](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L14) |
+| `AddressAutocompleteController.Sleeper` | typealias | `typealias Sleeper = @Sendable (Duration) async throws -> Void` | [16](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L16) |
+| `AddressAutocompleteController.Search` | typealias | `typealias Search = @Sendable (_ query: String, _ countryCode: String?) async throws -> [AddressSuggestion]` | [18](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L18) |
+| `AddressAutocompleteController.Retrieve` | typealias | `typealias Retrieve = @Sendable (AddressSuggestion) async throws -> FrameObjects.BillingAddress` | [20](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L20) |
+| `AddressAutocompleteController.minimumQueryLength` | let | `let minimumQueryLength = 2` | [27](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L27) |
+| `AddressAutocompleteController.maximumSuggestions` | let | `let maximumSuggestions = 3` | [34](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L34) |
+| `AddressAutocompleteController.init` | init | `init ( debounceInterval: Duration = .milliseconds(80), sleep: Sleeper? = nil, search: Search? = nil, retrieve: Retrieve? = nil )` | [53](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L53) |
+| `AddressAutocompleteController.queryChanged` | func | `func queryChanged(_ query: String, countryCode: String?)` | [75](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L75) |
+| `AddressAutocompleteController.select` | func | `func select(_ suggestion: AddressSuggestion) async -> FrameObjects.BillingAddress?` | [116](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L116) |
+| `AddressAutocompleteController.clear` | func | `func clear()` | [126](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L126) |
+
+</details>
+
+<details><summary><code>AddressSuggestion.swift</code> — 5 symbols</summary>
+
+[`Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift`](../Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `AddressSuggestion` | struct | `struct AddressSuggestion: Identifiable, Equatable, Sendable` | [13](../Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift#L13) |
+| `AddressSuggestion.id` | let | `let id: String` | [15](../Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift#L15) |
+| `AddressSuggestion.title` | let | `let title: String` | [17](../Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift#L17) |
+| `AddressSuggestion.subtitle` | let | `let subtitle: String` | [19](../Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift#L19) |
+| `AddressSuggestion.init` | init | `init (id: String, title: String, subtitle: String)` | [21](../Sources/Frame/Networking/AddressSearch/AddressSuggestion.swift#L21) |
+
+</details>
+
 #### Networking/Capabilities (45)
 
 <details><summary><code>CapabilitiesAPI.swift</code> — 9 symbols</summary>
@@ -671,25 +706,26 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Configuration (12)
+#### Networking/Configuration (14)
 
-<details><summary><code>ConfigurationAPI.swift</code> — 7 symbols</summary>
+<details><summary><code>ConfigurationAPI.swift</code> — 8 symbols</summary>
 
 [`Sources/Frame/Networking/Configuration/ConfigurationAPI.swift`](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `ConfigurationAPI` | class | `class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable` | [33](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L33) |
-| `ConfigurationAPI.getEvervaultConfiguration` | func | `func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?` | [40](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L40) |
-| `ConfigurationAPI.getFingerprintConfiguration` | func | `func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?` | [57](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L57) |
-| `ConfigurationAPI.getSiftConfiguration` | func | `func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?` | [74](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L74) |
-| `ConfigurationAPI.getLegalConfiguration` | func | `func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?` | [86](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L86) |
-| `ConfigurationAPI.saveConfigurationToKeychain` | func | `func saveConfigurationToKeychain(key: String, value: Codable)` | [102](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L102) |
-| `ConfigurationAPI.retrieveFromKeychain` | func | `func retrieveFromKeychain(key: String) -> Data?` | [121](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L121) |
+| `ConfigurationAPI` | class | `class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable` | [36](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L36) |
+| `ConfigurationAPI.getEvervaultConfiguration` | func | `func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?` | [43](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L43) |
+| `ConfigurationAPI.getFingerprintConfiguration` | func | `func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?` | [60](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L60) |
+| `ConfigurationAPI.getSiftConfiguration` | func | `func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?` | [77](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L77) |
+| `ConfigurationAPI.getLegalConfiguration` | func | `func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?` | [89](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L89) |
+| `ConfigurationAPI.getMapboxConfiguration` | func | `func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?` | [105](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L105) |
+| `ConfigurationAPI.saveConfigurationToKeychain` | func | `func saveConfigurationToKeychain(key: String, value: Codable)` | [121](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L121) |
+| `ConfigurationAPI.retrieveFromKeychain` | func | `func retrieveFromKeychain(key: String) -> Data?` | [140](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L140) |
 
 </details>
 
-<details><summary><code>ConfigurationResponses.swift</code> — 5 symbols</summary>
+<details><summary><code>ConfigurationResponses.swift</code> — 6 symbols</summary>
 
 [`Sources/Frame/Networking/Configuration/ConfigurationResponses.swift`](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift)
 
@@ -700,6 +736,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `ConfigurationResponses.GetFingerprintConfigurationResponse` | struct | `struct GetFingerprintConfigurationResponse: Codable` | [26](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L26) |
 | `ConfigurationResponses.GetSiftConfigurationResponse` | struct | `struct GetSiftConfigurationResponse: Codable` | [39](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L39) |
 | `ConfigurationResponses.GetLegalConfigurationResponse` | struct | `struct GetLegalConfigurationResponse: Codable` | [53](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L53) |
+| `ConfigurationResponses.GetMapboxConfigurationResponse` | struct | `struct GetMapboxConfigurationResponse: Codable` | [69](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L69) |
 
 </details>
 
@@ -2092,12 +2129,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [334](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L334) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [336](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L336) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [338](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L338) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [341](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L341) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [343](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L343) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [348](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L348) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [360](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L360) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [362](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L362) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [364](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L364) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [367](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L367) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [369](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L369) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [374](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L374) |
 
 </details>
 
@@ -2229,7 +2266,19 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Views/Reusable (34)
+#### Views/Reusable (37)
+
+<details><summary><code>AddressAutocompleteField.swift</code> — 3 symbols</summary>
+
+[`Sources/Frame/Views/Reusable/AddressAutocompleteField.swift`](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `AddressAutocompleteField` | struct | `struct AddressAutocompleteField: View` | [13](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L13) |
+| `AddressAutocompleteField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, countryCode: String?, inlineError: Bool = false, controller: AddressAutocompleteControlle…` | [37](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L37) |
+| `AddressAutocompleteField.body` | var | `var body: some View` | [54](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L54) |
+
+</details>
 
 <details><summary><code>ContinueButton.swift</code> — 11 symbols</summary>
 
@@ -2321,8 +2370,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [14](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L14) |
-| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [40](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L40) |
-| `ValidatedTextField.body` | var | `var body: some View` | [61](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L61) |
+| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [44](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L44) |
+| `ValidatedTextField.body` | var | `var body: some View` | [67](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L67) |
 
 </details>
 
@@ -2516,7 +2565,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 |--------|------|-------------|------|
 | `BillingAddressDetailView` | struct | `struct BillingAddressDetailView: View` | [16](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L16) |
 | `BillingAddressDetailView.init` | init | `init (viewModel: BillingAddressViewModel, headerTitle: String = , showHeaderText: Bool = true)` | [34](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L34) |
-| `BillingAddressDetailView.body` | var | `var body: some View` | [87](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L87) |
+| `BillingAddressDetailView.body` | var | `var body: some View` | [123](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L123) |
 
 </details>
 

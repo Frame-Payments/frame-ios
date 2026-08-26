@@ -322,6 +322,10 @@ struct UserIdentificationView: View {
                                          headerTitle: "Current Address")
                 KeyboardSpacing()
             }
+            // The address form's autocomplete list is drawn past the form's own bounds. The
+            // button below is a sibling of this ScrollView, so without lifting the scroll view
+            // the button paints over the suggestions.
+            .zIndex(1)
             Spacer()
             ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 let infoOK = customerInfoVM.validate()

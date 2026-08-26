@@ -86,6 +86,10 @@ public struct FrameCheckoutView: View {
                         .padding(.bottom)
                     if addressMode != .hidden {
                         regionInformation
+                            // The address autocomplete list is drawn past this section's bounds,
+                            // and the toggle and pay button are its siblings here. Without this
+                            // they are laid out later and paint over the suggestions.
+                            .zIndex(1)
                     }
                     saveCardToggle
                 }
@@ -326,10 +330,12 @@ public struct FrameCheckoutView: View {
             .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
         VStack(spacing: 0) {
-            ValidatedTextField(prompt: "Address Line 1",
-                               text: $checkoutViewModel.customerAddressLine1,
-                               error: errorBinding(.addressLine1),
-                               textContentType: .streetAddressLine1)
+            AddressAutocompleteField(prompt: "Address Line 1",
+                                     text: $checkoutViewModel.customerAddressLine1,
+                                     error: errorBinding(.addressLine1),
+                                     countryCode: checkoutViewModel.customerCountry.alpha2Code) { address in
+                checkoutViewModel.apply(address)
+            }
             Divider()
             ValidatedTextField(prompt: "Address Line 2",
                                text: $checkoutViewModel.customerAddressLine2,

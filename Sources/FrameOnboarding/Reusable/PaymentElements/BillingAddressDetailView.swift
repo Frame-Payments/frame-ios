@@ -41,6 +41,42 @@ public struct BillingAddressDetailView: View {
 
     private var allowsInternational: Bool { viewModel.mode == .international }
 
+    /// Fills the billing address fields from a picked autocomplete suggestion.
+    ///
+    /// Address line 2 is left alone: Mapbox does not reliably return apartment or unit, so
+    /// whatever the user typed there stands.
+    ///
+    /// The country is written through `selectedCountry` rather than `viewModel.address.country`,
+    /// because the view holds the picker's selection and its `onChange` is what keeps the two in
+    /// step. Writing the model directly would leave the picker showing the old country. A US-only
+    /// form ignores the country outright, and any country the picker does not offer is dropped.
+    private func apply(_ address: FrameObjects.BillingAddress) {
+        // Mutate a local copy and assign once. `viewModel.address` is a struct behind
+        // `@Published`, so writing its fields one at a time publishes a change per field and
+        // re-renders the form mid-fill; the still-focused fields then write their pre-fill values
+        // back and only line 1 survives.
+        var next = viewModel.address
+        if let line1 = address.addressLine1 { next.addressLine1 = line1 }
+        if let city = address.city { next.city = city }
+        if let state = address.state { next.state = state }
+        next.postalCode = address.postalCode
+        viewModel.address = next
+
+        if allowsInternational,
+           let code = address.country,
+           let match = AvailableCountry.allCountries.first(where: { $0.alpha2Code == code }) {
+            selectedCountry = match
+        }
+
+        // One assignment, for the same reason the address is written in one: each subscript
+        // write on a published dictionary is its own change notification.
+        var errors = viewModel.errors
+        for field in [BillingAddressViewModel.Field.line1, .city, .state, .postal] {
+            errors[field] = nil
+        }
+        viewModel.errors = errors
+    }
+
     private var format: AddressFormat {
         let code = allowsInternational
             ? selectedCountry.alpha2Code
@@ -98,11 +134,13 @@ public struct BillingAddressDetailView: View {
                 .frame(minHeight: allowsInternational ? 250.0 : 200.0)
                 .overlay {
                     VStack(spacing: 0) {
-                        ValidatedTextField(prompt: "Address Line 1",
-                                           text: $viewModel.address.addressLine1.orEmpty,
-                                           error: viewModel.errorBinding(.line1),
-                                           textContentType: .streetAddressLine1,
-                                           inlineError: true)
+                        AddressAutocompleteField(prompt: "Address Line 1",
+                                                 text: $viewModel.address.addressLine1.orEmpty,
+                                                 error: viewModel.errorBinding(.line1),
+                                                 countryCode: selectedCountry.alpha2Code,
+                                                 inlineError: true) { address in
+                            apply(address)
+                        }
                         Divider()
                         ValidatedTextField(prompt: "Address Line 2",
                                            text: $viewModel.address.addressLine2.orEmpty,
