@@ -16,6 +16,7 @@ protocol ConfigurationProtocol {
     static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?
     static func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?
     static func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?
+    static func getAllConfiguration() async throws -> ConfigurationResponses.GetAllConfigurationResponse?
 }
 
 /// Keys used to identify configuration entries stored in the keychain.
@@ -113,42 +114,93 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         }
     }
 
-    /// Encodes a `Codable` value and writes (or updates) it in the system keychain under the given key.
+    /// Fetches every configuration block in one request and caches each present block under the same
+    /// keychain key its individual endpoint uses, turning those fetches into cache hits. An omitted
+    /// block is skipped rather than cleared, so a service that failed server-side keeps its cache.
+    ///
+    /// - Returns: A ``ConfigurationResponses/GetAllConfigurationResponse``, or `nil` if the response
+    ///   cannot be decoded.
+    /// - Throws: A networking error if the request fails.
+    public static func getAllConfiguration() async throws -> ConfigurationResponses.GetAllConfigurationResponse? {
+        let endpoint = ConfigurationEndpoints.getAllConfiguration
+        let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
+        guard let data,
+              let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetAllConfigurationResponse.self, from: data) else {
+            return nil
+        }
+
+        cache(decodedResponse.evervault, as: .evervault)
+        cache(decodedResponse.fingerprint, as: .fingerprint)
+        cache(decodedResponse.legal, as: .legal)
+        cache(decodedResponse.mapbox, as: .mapbox)
+        cache(decodedResponse.sift, as: .sift)
+
+        return decodedResponse
+    }
+
+    private static func cache(_ block: Codable?, as key: ConfigurationKeys) {
+        guard let block else { return }
+        ConfigurationAPI.saveConfigurationToKeychain(key: key.rawValue, value: block)
+    }
+
+    /// Encodes a `Codable` value and writes (or updates) it in the keychain under the given key.
     ///
     /// - Parameters:
     ///   - key: The keychain account identifier used to store the value.
     ///   - value: The `Codable` object to encode and persist.
     public static func saveConfigurationToKeychain(key: String, value: Codable) {
         guard let data = try? JSONEncoder().encode(value) else { return }
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key
-        ]
-        let attributes: [String: Any] = [kSecValueData as String: data]
-        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
-        if status == errSecItemNotFound {
-            var addQuery = query
-            addQuery[kSecValueData as String] = data
-            SecItemAdd(addQuery as CFDictionary, nil)
-        }
+        store.set(data, forKey: key)
     }
-    
+
     /// Retrieves raw data previously stored in the keychain under the given key.
     ///
     /// - Parameter key: The keychain account identifier to look up.
     /// - Returns: The stored `Data`, or `nil` if no matching entry is found.
     public static func retrieveFromKeychain(key: String) -> Data? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
+        store.data(forKey: key)
+    }
+}
+
+/// The backing store for cached configuration, so tests can swap the real keychain for an in-memory
+/// one instead of writing device-wide state that leaks between suites.
+protocol ConfigurationStore: Sendable {
+    func data(forKey key: String) -> Data?
+    func set(_ data: Data, forKey key: String)
+    func remove(forKey key: String)
+}
+
+extension ConfigurationAPI {
+    /// The active store. Tests replace this; production always uses the keychain.
+    nonisolated(unsafe) static var store: ConfigurationStore = KeychainConfigurationStore()
+}
+
+/// Stores configuration in the system keychain as a generic password per key.
+struct KeychainConfigurationStore: ConfigurationStore {
+    private func query(_ key: String) -> [String: Any] {
+        [kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: key]
+    }
+
+    func data(forKey key: String) -> Data? {
+        var query = self.query(key)
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: AnyObject?
         SecItemCopyMatching(query as CFDictionary, &result)
-        if let data = result as? Data {
-            return data
+        return result as? Data
+    }
+
+    func set(_ data: Data, forKey key: String) {
+        let query = self.query(key)
+        let attributes: [String: Any] = [kSecValueData as String: data]
+        if SecItemUpdate(query as CFDictionary, attributes as CFDictionary) == errSecItemNotFound {
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            SecItemAdd(addQuery as CFDictionary, nil)
         }
-        return nil
+    }
+
+    func remove(forKey key: String) {
+        SecItemDelete(query(key) as CFDictionary)
     }
 }

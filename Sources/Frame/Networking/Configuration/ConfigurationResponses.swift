@@ -81,4 +81,17 @@ public class ConfigurationResponses {
             case expiresAt = "expires_at"
         }
     }
+
+    /// Decoded response of `/v1/config/all`, carrying every configuration block in one payload.
+    ///
+    /// Blocks are optional because the API omits one whose service failed rather than nulling it, so
+    /// an absent block leaves the cached copy intact. Not `@Lenient`: it decodes via `Value(from:)`,
+    /// which fails for a struct in a keyed container.
+    public struct GetAllConfigurationResponse: Codable {
+        public private(set) var evervault: GetEvervaultConfigurationResponse?
+        public private(set) var fingerprint: GetFingerprintConfigurationResponse?
+        public private(set) var legal: GetLegalConfigurationResponse?
+        public private(set) var mapbox: GetMapboxConfigurationResponse?
+        public private(set) var sift: GetSiftConfigurationResponse?
+    }
 }

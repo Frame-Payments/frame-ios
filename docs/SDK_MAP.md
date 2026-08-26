@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1414 public symbols** across 137 files in 2 modules.
+**1416 public symbols** across 137 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
-| Structs | 178 |
+| Structs | 179 |
 | Enums | 60 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
 | Initializers | 120 |
-| Methods | 274 |
+| Methods | 275 |
 | Properties (var) | 216 |
 | Properties (let) | 260 |
 | Enum cases | 218 |
-| **Total** | **1414** |
+| **Total** | **1416** |
 
-### `Frame` — 1245 public symbols
+### `Frame` — 1247 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -156,14 +156,14 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking.jsonEncoder` | let | `let jsonEncoder = JSONEncoder()` | [29](../Sources/Frame/Networking/FrameNetworking.swift#L29) |
 | `FrameNetworking.jsonDecoder` | let | `let jsonDecoder = JSONDecoder()` | [31](../Sources/Frame/Networking/FrameNetworking.swift#L31) |
 | `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [73](../Sources/Frame/Networking/FrameNetworking.swift#L73) |
-| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [125](../Sources/Frame/Networking/FrameNetworking.swift#L125) |
-| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [147](../Sources/Frame/Networking/FrameNetworking.swift#L147) |
-| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [159](../Sources/Frame/Networking/FrameNetworking.swift#L159) |
-| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [165](../Sources/Frame/Networking/FrameNetworking.swift#L165) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [277](../Sources/Frame/Networking/FrameNetworking.swift#L277) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [327](../Sources/Frame/Networking/FrameNetworking.swift#L327) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [387](../Sources/Frame/Networking/FrameNetworking.swift#L387) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [440](../Sources/Frame/Networking/FrameNetworking.swift#L440) |
+| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [126](../Sources/Frame/Networking/FrameNetworking.swift#L126) |
+| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [148](../Sources/Frame/Networking/FrameNetworking.swift#L148) |
+| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [160](../Sources/Frame/Networking/FrameNetworking.swift#L160) |
+| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [166](../Sources/Frame/Networking/FrameNetworking.swift#L166) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [278](../Sources/Frame/Networking/FrameNetworking.swift#L278) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [328](../Sources/Frame/Networking/FrameNetworking.swift#L328) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [388](../Sources/Frame/Networking/FrameNetworking.swift#L388) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [441](../Sources/Frame/Networking/FrameNetworking.swift#L441) |
 
 </details>
 
@@ -706,26 +706,27 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Configuration (14)
+#### Networking/Configuration (16)
 
-<details><summary><code>ConfigurationAPI.swift</code> — 8 symbols</summary>
+<details><summary><code>ConfigurationAPI.swift</code> — 9 symbols</summary>
 
 [`Sources/Frame/Networking/Configuration/ConfigurationAPI.swift`](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `ConfigurationAPI` | class | `class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable` | [36](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L36) |
-| `ConfigurationAPI.getEvervaultConfiguration` | func | `func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?` | [43](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L43) |
-| `ConfigurationAPI.getFingerprintConfiguration` | func | `func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?` | [60](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L60) |
-| `ConfigurationAPI.getSiftConfiguration` | func | `func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?` | [77](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L77) |
-| `ConfigurationAPI.getLegalConfiguration` | func | `func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?` | [89](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L89) |
-| `ConfigurationAPI.getMapboxConfiguration` | func | `func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?` | [105](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L105) |
-| `ConfigurationAPI.saveConfigurationToKeychain` | func | `func saveConfigurationToKeychain(key: String, value: Codable)` | [121](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L121) |
-| `ConfigurationAPI.retrieveFromKeychain` | func | `func retrieveFromKeychain(key: String) -> Data?` | [140](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L140) |
+| `ConfigurationAPI` | class | `class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable` | [37](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L37) |
+| `ConfigurationAPI.getEvervaultConfiguration` | func | `func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?` | [44](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L44) |
+| `ConfigurationAPI.getFingerprintConfiguration` | func | `func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?` | [61](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L61) |
+| `ConfigurationAPI.getSiftConfiguration` | func | `func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?` | [78](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L78) |
+| `ConfigurationAPI.getLegalConfiguration` | func | `func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?` | [90](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L90) |
+| `ConfigurationAPI.getMapboxConfiguration` | func | `func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?` | [106](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L106) |
+| `ConfigurationAPI.getAllConfiguration` | func | `func getAllConfiguration() async throws -> ConfigurationResponses.GetAllConfigurationResponse?` | [124](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L124) |
+| `ConfigurationAPI.saveConfigurationToKeychain` | func | `func saveConfigurationToKeychain(key: String, value: Codable)` | [151](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L151) |
+| `ConfigurationAPI.retrieveFromKeychain` | func | `func retrieveFromKeychain(key: String) -> Data?` | [160](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L160) |
 
 </details>
 
-<details><summary><code>ConfigurationResponses.swift</code> — 6 symbols</summary>
+<details><summary><code>ConfigurationResponses.swift</code> — 7 symbols</summary>
 
 [`Sources/Frame/Networking/Configuration/ConfigurationResponses.swift`](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift)
 
@@ -737,6 +738,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `ConfigurationResponses.GetSiftConfigurationResponse` | struct | `struct GetSiftConfigurationResponse: Codable` | [39](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L39) |
 | `ConfigurationResponses.GetLegalConfigurationResponse` | struct | `struct GetLegalConfigurationResponse: Codable` | [53](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L53) |
 | `ConfigurationResponses.GetMapboxConfigurationResponse` | struct | `struct GetMapboxConfigurationResponse: Codable` | [69](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L69) |
+| `ConfigurationResponses.GetAllConfigurationResponse` | struct | `struct GetAllConfigurationResponse: Codable` | [90](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L90) |
 
 </details>
 
@@ -1424,13 +1426,13 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `PaymentMethodsAPI.getPaymentMethodsWithCustomer` | func | `func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingEr…` | [336](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L336) |
 | `PaymentMethodsAPI.getPaymentMethodsWithAccount` | func | `func getPaymentMethodsWithAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingErro…` | [354](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L354) |
 | `PaymentMethodsAPI.createCardPaymentMethod` | func | `func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (Fr…` | [375](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L375) |
-| `PaymentMethodsAPI.createACHPaymentMethod` | func | `func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, N…` | [416](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L416) |
-| `PaymentMethodsAPI.updatePaymentMethodWith` | func | `func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [435](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L435) |
-| `PaymentMethodsAPI.attachPaymentMethodWith` | func | `func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [455](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L455) |
-| `PaymentMethodsAPI.detachPaymentMethodWith` | func | `func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [474](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L474) |
-| `PaymentMethodsAPI.blockPaymentMethodWith` | func | `func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [492](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L492) |
-| `PaymentMethodsAPI.unblockPaymentMethodWith` | func | `func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [510](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L510) |
-| `PaymentMethodsAPI.connectPlaidBankAccount` | func | `func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?,…` | [527](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L527) |
+| `PaymentMethodsAPI.createACHPaymentMethod` | func | `func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, N…` | [417](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L417) |
+| `PaymentMethodsAPI.updatePaymentMethodWith` | func | `func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [436](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L436) |
+| `PaymentMethodsAPI.attachPaymentMethodWith` | func | `func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [456](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L456) |
+| `PaymentMethodsAPI.detachPaymentMethodWith` | func | `func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [475](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L475) |
+| `PaymentMethodsAPI.blockPaymentMethodWith` | func | `func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [493](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L493) |
+| `PaymentMethodsAPI.unblockPaymentMethodWith` | func | `func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [511](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L511) |
+| `PaymentMethodsAPI.connectPlaidBankAccount` | func | `func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?,…` | [528](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L528) |
 
 </details>
 
