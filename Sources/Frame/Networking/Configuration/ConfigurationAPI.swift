@@ -35,6 +35,34 @@ enum ConfigurationKeys: String {
 /// Manages SDK configuration resources, including fetching and caching third-party service
 /// credentials (Evervault, Fingerprint, Sift) from the Frame API and persisting them in the system keychain.
 public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
+    /// Blocks that ``getAllConfiguration()`` has cached during this process.
+    ///
+    /// `/v1/config/all` is fetched once from `FrameNetworking.initialize` and its payload is a
+    /// superset of the five per-block endpoints, so a getter whose block is listed here serves the
+    /// cached copy instead of repeating the request. Scoped to the process rather than the keychain's
+    /// lifetime deliberately: a launch still refetches once, so a rotated credential is picked up,
+    /// while a single launch makes one config request instead of six.
+    nonisolated(unsafe) private static var freshFromAggregate: Set<ConfigurationKeys> = []
+    private static let freshLock = NSLock()
+
+    private static func markFresh(_ key: ConfigurationKeys) {
+        freshLock.withLock { freshFromAggregate.insert(key) }
+    }
+
+    /// The cached block for `key`, but only when ``getAllConfiguration()`` wrote it this process.
+    /// Returns `nil` otherwise so the caller falls through to its own endpoint — the consumers' own
+    /// post-failure keychain fallbacks are unchanged and still cover a network-unavailable launch.
+    private static func fresh<T: Decodable>(_ type: T.Type, _ key: ConfigurationKeys) -> T? {
+        guard freshLock.withLock({ freshFromAggregate.contains(key) }),
+              let data = retrieveFromKeychain(key: key.rawValue) else { return nil }
+        return try? FrameNetworking.shared.jsonDecoder.decode(type, from: data)
+    }
+
+    /// Clears the process-lifetime freshness marks, so the next getter call hits the network again.
+    static func invalidateAggregateCache() {
+        freshLock.withLock { freshFromAggregate.removeAll() }
+    }
+
     //async/await
     /// Fetches the Evervault encryption configuration from the Frame API and caches it in the keychain.
     ///
@@ -42,6 +70,9 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     ///   Evervault app and team identifiers, or `nil` if the response cannot be decoded.
     /// - Throws: A networking error if the request fails.
     public static func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse? {
+        if let cached = fresh(ConfigurationResponses.GetEvervaultConfigurationResponse.self, .evervault) {
+            return cached
+        }
         let endpoint = ConfigurationEndpoints.getEvervaultConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetEvervaultConfigurationResponse.self, from: data) {
@@ -59,6 +90,9 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     ///   Fingerprint public API key and region, or `nil` if the response cannot be decoded.
     /// - Throws: A networking error if the request fails.
     public static func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse? {
+        if let cached = fresh(ConfigurationResponses.GetFingerprintConfigurationResponse.self, .fingerprint) {
+            return cached
+        }
         let endpoint = ConfigurationEndpoints.getFingerprintConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetFingerprintConfigurationResponse.self, from: data) {
@@ -76,6 +110,9 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     ///   Sift account identifier and beacon key, or `nil` if the response cannot be decoded.
     /// - Throws: A networking error if the request fails.
     public static func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse? {
+        if let cached = fresh(ConfigurationResponses.GetSiftConfigurationResponse.self, .sift) {
+            return cached
+        }
         let endpoint = ConfigurationEndpoints.getSiftConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetSiftConfigurationResponse.self, from: data) {
@@ -88,6 +125,9 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     }
     
     public static func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse? {
+        if let cached = fresh(ConfigurationResponses.GetLegalConfigurationResponse.self, .legal) {
+            return cached
+        }
         let endpoint = ConfigurationEndpoints.getLegalConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetLegalConfigurationResponse.self, from: data) {
@@ -104,6 +144,12 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     ///   search-scoped Mapbox access token, or `nil` if the response cannot be decoded.
     /// - Throws: A networking error if the request fails.
     public static func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse? {
+        // Mapbox is the one block with a documented expiry, so an expired cached token falls through
+        // to the network rather than being handed to the caller.
+        if let cached = fresh(ConfigurationResponses.GetMapboxConfigurationResponse.self, .mapbox),
+           !cached.hasExpired {
+            return cached
+        }
         let endpoint = ConfigurationEndpoints.getMapboxConfiguration
         let (data, _) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(ConfigurationResponses.GetMapboxConfigurationResponse.self, from: data) {
@@ -141,6 +187,7 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     private static func cache(_ block: Codable?, as key: ConfigurationKeys) {
         guard let block else { return }
         ConfigurationAPI.saveConfigurationToKeychain(key: key.rawValue, value: block)
+        markFresh(key)
     }
 
     /// Encodes a `Codable` value and writes (or updates) it in the keychain under the given key.

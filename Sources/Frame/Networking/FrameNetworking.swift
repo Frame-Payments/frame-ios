@@ -87,8 +87,10 @@ public class FrameNetworking: ObservableObject {
         self.applePayMerchantId = applePayMerchantId
         self.debugMode = debugMode
 
-        // One config fetch warms the keychain, so the consumers below hit cache instead of the network.
-        // They are independent of each other, so they run concurrently rather than serially.
+        // One /config/all fetch caches every block and marks it fresh for this process, so the five
+        // consumers below resolve from cache instead of re-requesting their own endpoints — one config
+        // request per launch, not six. They are independent, so they run concurrently.
+        // Awaited before the consumers start, otherwise they'd race it and miss the cache.
         Task {
             _ = try? await ConfigurationAPI.getAllConfiguration()
 
