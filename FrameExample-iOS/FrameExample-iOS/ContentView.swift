@@ -119,7 +119,7 @@ struct ContentView: View {
                                                       title: "Vintage Track Jacket",
                                                       amountInCents: 10000),
                                       ExampleCartItem(id: "2",
-                                                      imageURL: "https://cdn.shopify.com/s/files/1/0573/6433/files/4f311c56-b5aa-4136-89d1-c820f8494ecc_large.jpg?v=1730108286",
+                                                      imageURL: "https://hourscollection.com/cdn/shop/files/ZipHoodie-Grey-productphoto_2.png?v=1762198126&width=1080",
                                                       title: "Zip Up Hoodie",
                                                       amountInCents: 25000)],
                           shippingAmountInCents: 4000,
