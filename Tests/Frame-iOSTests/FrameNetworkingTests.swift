@@ -50,6 +50,9 @@ class MockURLAsyncSession: URLSessionProtocol {
     var data: Data?
     var response: URLResponse?
     var error: Error?
+    /// Number of requests issued through this session, so a test can assert that a call resolved
+    /// from cache rather than the network.
+    private(set) var requestCount = 0
     
     init(data: Data? = nil, response: URLResponse? = nil, error: Error? = nil) {
         self.data = data
@@ -58,6 +61,7 @@ class MockURLAsyncSession: URLSessionProtocol {
     }
     
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        requestCount += 1
         if let error = error {
             throw error
         }

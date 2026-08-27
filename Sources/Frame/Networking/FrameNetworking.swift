@@ -67,11 +67,15 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - publishableKey: Your Frame Payments publishable key (`pk_`). Used for all client-safe endpoints.
     ///   - secretKey: Optional secret key (`sk_`). Server-only; avoid shipping it in an app binary. Defaults to `nil`.
+    ///   - accountId: The Frame account this app run belongs to, if known at launch. The Sonar
+    ///     session is then created already bound to it, rather than created unscoped and bound on
+    ///     first flow entry. Either way one session covers the app run — leave `nil` if unknown.
     ///   - applePayMerchantId: Optional Apple Pay merchant identifier required to present Apple Pay sheets.
     ///   - theme: Visual theme applied to all Frame SDK UI. Defaults to ``FrameTheme/default``.
     ///   - debugMode: When `true`, request and response bodies are printed to the console. Defaults to `false`.
     public func initialize(publishableKey: String,
                            secretKey: String? = nil,
+                           accountId: String? = nil,
                            applePayMerchantId: String? = nil,
                            theme: FrameTheme = .default,
                            debugMode: Bool = false) {
@@ -87,14 +91,15 @@ public class FrameNetworking: ObservableObject {
         self.applePayMerchantId = applePayMerchantId
         self.debugMode = debugMode
 
-        // One config fetch warms the keychain, so the consumers below hit cache instead of the network.
-        // They are independent of each other, so they run concurrently rather than serially.
+        // One /config/all marks every block fresh, so the five consumers below resolve from cache
+        // instead of re-requesting: one config request per launch, not six. Awaited before they
+        // start, otherwise they race it and miss the cache. They're independent, so concurrent.
         Task {
             _ = try? await ConfigurationAPI.getAllConfiguration()
 
             async let evervault = EvervaultConfigurator.shared.ensureConfigured()
             async let sift: Void = SiftManager.initializeSift()
-            async let session: Void = SessionManager.initializeSession()
+            async let session: Void = SessionManager.initializeSession(accountId: accountId)
             async let legal: Void = LegalConfiguration.prefetch()
             async let attestation = try? await DeviceAttestationManager.shared.attestDevice()
             _ = await (evervault, sift, session, legal, attestation)

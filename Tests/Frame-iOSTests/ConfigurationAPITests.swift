@@ -29,6 +29,8 @@ final class ConfigurationAPITests: XCTestCase {
     /// expect the network to be unavailable.
     override func setUp() {
         super.setUp()
+        // Process-wide too: a prior test's /config/all would otherwise still count as fresh here.
+        ConfigurationAPI.invalidateAggregateCache()
         savedStore = ConfigurationAPI.store
         ConfigurationAPI.store = InMemoryConfigurationStore()
         savedSession = FrameNetworking.shared.asyncURLSession
@@ -36,6 +38,7 @@ final class ConfigurationAPITests: XCTestCase {
     }
 
     override func tearDown() {
+        ConfigurationAPI.invalidateAggregateCache()
         if let savedStore {
             ConfigurationAPI.store = savedStore
         }
@@ -136,6 +139,105 @@ final class ConfigurationAPITests: XCTestCase {
         let response = try await ConfigurationAPI.getAllConfiguration()
 
         XCTAssertNil(response)
+    }
+
+    // MARK: - One config request per launch (FRA-6358)
+
+    /// `/config/all` must satisfy the five per-block getters, otherwise init makes six config
+    /// requests where one suffices.
+    func testAggregateFetchSatisfiesIndividualGetters() async throws {
+        session.data = Data("""
+        {
+          "evervault": { "app_id": "app_123", "team_id": "team_123" },
+          "fingerprint": { "api_key": "fp_key", "region": "eu" },
+          "legal": { "terms_url": "https://example.com/terms" },
+          "mapbox": { "access_token": "pk.token", "expires_at": null },
+          "sift": { "account_id": "sift_acct", "beacon_key": "sift_beacon" }
+        }
+        """.utf8)
+
+        _ = try await ConfigurationAPI.getAllConfiguration()
+        let requestsAfterAggregate = session.requestCount
+
+        let evervault = try await ConfigurationAPI.getEvervaultConfiguration()
+        let fingerprint = try await ConfigurationAPI.getFingerprintConfiguration()
+        let sift = try await ConfigurationAPI.getSiftConfiguration()
+        let legal = try await ConfigurationAPI.getLegalConfiguration()
+        let mapbox = try await ConfigurationAPI.getMapboxConfiguration()
+
+        XCTAssertEqual(evervault?.appId, "app_123")
+        XCTAssertEqual(fingerprint?.apiKey, "fp_key")
+        XCTAssertEqual(sift?.beaconKey, "sift_beacon")
+        XCTAssertEqual(legal?.termsUrl, "https://example.com/terms")
+        XCTAssertEqual(mapbox?.accessToken, "pk.token")
+
+        XCTAssertEqual(session.requestCount, requestsAfterAggregate,
+                       "the five getters must resolve from the aggregate fetch, not re-request")
+    }
+
+    /// An omitted block was never marked fresh, so its getter still goes to the network — a
+    /// keychain copy from an earlier launch is not a cache hit.
+    func testOmittedBlockStillFetchesFromNetwork() async throws {
+        session.data = Data("""
+        { "sift": { "account_id": "sift_acct", "beacon_key": "sift_beacon" } }
+        """.utf8)
+        _ = try await ConfigurationAPI.getAllConfiguration()
+        let requestsAfterAggregate = session.requestCount
+
+        session.data = Data("""
+        { "app_id": "app_from_endpoint", "team_id": "team_123" }
+        """.utf8)
+        let evervault = try await ConfigurationAPI.getEvervaultConfiguration()
+
+        XCTAssertEqual(evervault?.appId, "app_from_endpoint")
+        XCTAssertEqual(session.requestCount, requestsAfterAggregate + 1)
+    }
+
+    /// Freshness is process-scoped: after invalidation (a new launch) the getter refetches, so a
+    /// rotated credential is picked up instead of being cached forever.
+    func testInvalidationRestoresNetworkFetch() async throws {
+        session.data = Data("""
+        { "sift": { "account_id": "old_acct", "beacon_key": "old_beacon" } }
+        """.utf8)
+        _ = try await ConfigurationAPI.getAllConfiguration()
+        let cachedSift = try await ConfigurationAPI.getSiftConfiguration()
+        XCTAssertEqual(cachedSift?.accountId, "old_acct")
+
+        ConfigurationAPI.invalidateAggregateCache()
+        session.data = Data("""
+        { "account_id": "rotated_acct", "beacon_key": "rotated_beacon" }
+        """.utf8)
+
+        let refetchedSift = try await ConfigurationAPI.getSiftConfiguration()
+        XCTAssertEqual(refetchedSift?.accountId, "rotated_acct")
+    }
+
+    /// An expired cached token must not be served — it would fail every address lookup this launch.
+    func testExpiredMapboxTokenIsRefetched() async throws {
+        session.data = Data("""
+        { "mapbox": { "access_token": "pk.expired", "expires_at": "2020-01-01T00:00:00Z" } }
+        """.utf8)
+        _ = try await ConfigurationAPI.getAllConfiguration()
+
+        session.data = Data("""
+        { "access_token": "pk.refreshed", "expires_at": null }
+        """.utf8)
+
+        let refreshed = try await ConfigurationAPI.getMapboxConfiguration()
+        XCTAssertEqual(refreshed?.accessToken, "pk.refreshed")
+    }
+
+    /// An unexpired token still comes from cache — the expiry check must not defeat the aggregate.
+    func testUnexpiredMapboxTokenIsServedFromCache() async throws {
+        session.data = Data("""
+        { "mapbox": { "access_token": "pk.valid", "expires_at": "2099-01-01T00:00:00Z" } }
+        """.utf8)
+        _ = try await ConfigurationAPI.getAllConfiguration()
+        let requestsAfterAggregate = session.requestCount
+
+        let valid = try await ConfigurationAPI.getMapboxConfiguration()
+        XCTAssertEqual(valid?.accessToken, "pk.valid")
+        XCTAssertEqual(session.requestCount, requestsAfterAggregate)
     }
 }
 

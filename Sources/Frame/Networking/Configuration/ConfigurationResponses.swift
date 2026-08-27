@@ -80,6 +80,14 @@ public class ConfigurationResponses {
             case accessToken = "access_token"
             case expiresAt = "expires_at"
         }
+
+        /// Whether ``expiresAt`` is in the past. `false` when absent or unparseable — an
+        /// unreadable expiry shouldn't discard a working token.
+        var hasExpired: Bool {
+            guard let expiresAt,
+                  let date = ISO8601DateFormatter().date(from: expiresAt) else { return false }
+            return date <= Date()
+        }
     }
 
     /// Decoded response of `/v1/config/all`, carrying every configuration block in one payload.

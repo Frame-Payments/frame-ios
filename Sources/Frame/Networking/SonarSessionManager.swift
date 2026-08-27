@@ -41,6 +41,10 @@ public actor SessionManager {
 
     private let storage: SessionStorage
 
+    /// Resolves the device's Fingerprint visitor ID. Injectable because every session request needs
+    /// one, so a test that can't supply it cannot reach any of the create/adopt/refresh branches.
+    private let resolveVisitorId: @Sendable () async throws -> String
+
     private var inFlight: [String: Task<SessionId, Error>] = [:]
 
     /// The account whose session the keep-alive should re-touch. `nil` means no account is known
@@ -58,6 +62,20 @@ public actor SessionManager {
     /// - Parameter storage: Where session identifiers are persisted. Defaults to `UserDefaults`.
     public init(storage: SessionStorage = UserDefaultsSessionStorage()) {
         self.storage = storage
+        self.resolveVisitorId = {
+            guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout),
+                  !id.isEmpty else {
+                throw SessionManagerError.missingVisitorId
+            }
+            return id
+        }
+    }
+
+    /// Test seam: supplies the visitor ID directly, so the create/adopt/refresh branches are
+    /// reachable without a configured Fingerprint client.
+    init(storage: SessionStorage, resolveVisitorId: @escaping @Sendable () async throws -> String) {
+        self.storage = storage
+        self.resolveVisitorId = resolveVisitorId
     }
 
     /// Returns a session for `accountId` that is fresh enough to back a payment, creating or
@@ -92,14 +110,47 @@ public actor SessionManager {
         return try await task.value
     }
 
-    /// Establishes a session at SDK start-up, before an account is known.
+    /// Establishes the one session this app run uses, at SDK start-up.
     ///
     /// The server fetches a new session's device event asynchronously, so starting early gives that
-    /// event time to land before checkout. ``ensureSession(accountId:)`` then adopts the session onto
-    /// the account, and is left to retry and report any failure here.
-    public static func initializeSession() async {
-        try? await shared.warmUp()
-        await shared.startKeepAlive()
+    /// event time to land before checkout. Runs on *every* load, not only when no session is stored:
+    /// the stored session outlives the process, so skipping the request would leave it without a
+    /// recent event. Failures are swallowed; the payment path calls ``ensureSession(accountId:)``.
+    ///
+    /// - Parameter accountId: The account the host knows at load, if any. Binds the session
+    ///   immediately, so there's no unscoped session to adopt later. Omit it when unknown — the
+    ///   adoption paths then bind it, keeping the same session ID.
+    public static func initializeSession(accountId: String? = nil) async {
+        await shared.bindSessionAtLaunch(accountId: accountId?.isEmpty == false ? accountId : nil)
+    }
+
+    /// Establishes this app run's session and records a device event against it.
+    ///
+    /// Unconditional rather than gated on ``isFresh(accountId:)``, for the same reason
+    /// ``refreshOnFlowEntry(accountId:)`` is: the session and its timestamp survive in `UserDefaults`
+    /// across relaunches, so a freshness check would make a launch inside the window record nothing.
+    ///
+    /// An existing session is always *refreshed*, never replaced, so its ID and accumulated events
+    /// survive — ``establishSession(accountId:)`` for the account-scoped cases, in place otherwise.
+    func bindSessionAtLaunch(accountId: String?) async {
+        activeAccountId = accountId
+        startKeepAlive()
+
+        guard let accountId else {
+            // Refresh in place when one exists, so the ID the adoption path will look for survives.
+            if let stored = storage.get(accountId: nil) {
+                if let refreshed = try? await refreshSession(stored, accountId: nil) {
+                    store(refreshed, accountId: nil)
+                }
+                return
+            }
+            if let created = try? await createSession(accountId: nil) {
+                store(created, accountId: nil)
+            }
+            return
+        }
+
+        _ = try? await establishSession(accountId: accountId)
     }
 
     /// Brings the pre-account session into the freshness window, creating one only when none exists.
@@ -111,7 +162,8 @@ public actor SessionManager {
     ///   session here would reintroduce the event-landing race that creating early exists to avoid.
     /// - **Absent** — created.
     ///
-    /// See ``initializeSession()``.
+    /// Freshness-gated, so this is the keep-alive's tick for the pre-account session, not the
+    /// SDK-load path — that goes through ``initializeSession(accountId:)``, which is unconditional.
     func warmUp() async throws {
         if storage.get(accountId: nil) != nil, isFresh(accountId: nil) { return }
 
@@ -158,8 +210,18 @@ public actor SessionManager {
     /// Fire-and-forget from a view's `.task`/`.onAppear`; it never blocks presentation.
     public func refreshOnFlowEntry(accountId: String? = nil) async {
         guard let stored = storage.get(accountId: accountId) else {
-            if let created = try? await createSession(accountId: accountId) {
-                store(created, accountId: accountId)
+            // Route through establishSession so the launch session is *adopted* onto the account,
+            // keeping its ID and accumulated device event. Creating a fresh one here would orphan
+            // that event on an invisible session — the race warming up early exists to avoid.
+            if let accountId, !accountId.isEmpty {
+                activeAccountId = accountId
+                startKeepAlive()
+                _ = try? await establishSession(accountId: accountId)
+                return
+            }
+
+            if let created = try? await createSession(accountId: nil) {
+                store(created, accountId: nil)
             }
             return
         }
@@ -284,9 +346,6 @@ public actor SessionManager {
     }
 
     private func visitorId() async throws -> String {
-        guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout), !id.isEmpty else {
-            throw SessionManagerError.missingVisitorId
-        }
-        return id
+        try await resolveVisitorId()
     }
 }

@@ -155,15 +155,15 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking` | class | `class FrameNetworking: ObservableObject` | [24](../Sources/Frame/Networking/FrameNetworking.swift#L24) |
 | `FrameNetworking.jsonEncoder` | let | `let jsonEncoder = JSONEncoder()` | [29](../Sources/Frame/Networking/FrameNetworking.swift#L29) |
 | `FrameNetworking.jsonDecoder` | let | `let jsonDecoder = JSONDecoder()` | [31](../Sources/Frame/Networking/FrameNetworking.swift#L31) |
-| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [73](../Sources/Frame/Networking/FrameNetworking.swift#L73) |
-| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [126](../Sources/Frame/Networking/FrameNetworking.swift#L126) |
-| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [148](../Sources/Frame/Networking/FrameNetworking.swift#L148) |
-| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [160](../Sources/Frame/Networking/FrameNetworking.swift#L160) |
-| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [166](../Sources/Frame/Networking/FrameNetworking.swift#L166) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [278](../Sources/Frame/Networking/FrameNetworking.swift#L278) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [328](../Sources/Frame/Networking/FrameNetworking.swift#L328) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [388](../Sources/Frame/Networking/FrameNetworking.swift#L388) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [441](../Sources/Frame/Networking/FrameNetworking.swift#L441) |
+| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [76](../Sources/Frame/Networking/FrameNetworking.swift#L76) |
+| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [131](../Sources/Frame/Networking/FrameNetworking.swift#L131) |
+| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [153](../Sources/Frame/Networking/FrameNetworking.swift#L153) |
+| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [165](../Sources/Frame/Networking/FrameNetworking.swift#L165) |
+| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [171](../Sources/Frame/Networking/FrameNetworking.swift#L171) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [283](../Sources/Frame/Networking/FrameNetworking.swift#L283) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [333](../Sources/Frame/Networking/FrameNetworking.swift#L333) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [393](../Sources/Frame/Networking/FrameNetworking.swift#L393) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [446](../Sources/Frame/Networking/FrameNetworking.swift#L446) |
 
 </details>
 
@@ -203,12 +203,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `SessionManagerError.requestFailed` | case | `case requestFailed(NetworkingError)` | [11](../Sources/Frame/Networking/SonarSessionManager.swift#L11) |
 | `SessionManager` | actor | `actor SessionManager` | [26](../Sources/Frame/Networking/SonarSessionManager.swift#L26) |
 | `SessionManager.shared` | let | `let shared = SessionManager()` | [28](../Sources/Frame/Networking/SonarSessionManager.swift#L28) |
-| `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [59](../Sources/Frame/Networking/SonarSessionManager.swift#L59) |
-| `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [72](../Sources/Frame/Networking/SonarSessionManager.swift#L72) |
-| `SessionManager.initializeSession` | func | `func initializeSession() async` | [100](../Sources/Frame/Networking/SonarSessionManager.swift#L100) |
-| `SessionManager.resume` | func | `func resume() async` | [133](../Sources/Frame/Networking/SonarSessionManager.swift#L133) |
-| `SessionManager.pause` | func | `func pause()` | [140](../Sources/Frame/Networking/SonarSessionManager.swift#L140) |
-| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [159](../Sources/Frame/Networking/SonarSessionManager.swift#L159) |
+| `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [63](../Sources/Frame/Networking/SonarSessionManager.swift#L63) |
+| `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [90](../Sources/Frame/Networking/SonarSessionManager.swift#L90) |
+| `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [123](../Sources/Frame/Networking/SonarSessionManager.swift#L123) |
+| `SessionManager.resume` | func | `func resume() async` | [185](../Sources/Frame/Networking/SonarSessionManager.swift#L185) |
+| `SessionManager.pause` | func | `func pause()` | [192](../Sources/Frame/Networking/SonarSessionManager.swift#L192) |
+| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [211](../Sources/Frame/Networking/SonarSessionManager.swift#L211) |
 
 </details>
 
@@ -720,14 +720,14 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `ConfigurationAPI` | class | `class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable` | [37](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L37) |
-| `ConfigurationAPI.getEvervaultConfiguration` | func | `func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?` | [44](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L44) |
-| `ConfigurationAPI.getFingerprintConfiguration` | func | `func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?` | [61](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L61) |
-| `ConfigurationAPI.getSiftConfiguration` | func | `func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?` | [78](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L78) |
-| `ConfigurationAPI.getLegalConfiguration` | func | `func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?` | [90](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L90) |
-| `ConfigurationAPI.getMapboxConfiguration` | func | `func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?` | [106](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L106) |
-| `ConfigurationAPI.getAllConfiguration` | func | `func getAllConfiguration() async throws -> ConfigurationResponses.GetAllConfigurationResponse?` | [124](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L124) |
-| `ConfigurationAPI.saveConfigurationToKeychain` | func | `func saveConfigurationToKeychain(key: String, value: Codable)` | [151](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L151) |
-| `ConfigurationAPI.retrieveFromKeychain` | func | `func retrieveFromKeychain(key: String) -> Data?` | [160](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L160) |
+| `ConfigurationAPI.getEvervaultConfiguration` | func | `func getEvervaultConfiguration() async throws -> ConfigurationResponses.GetEvervaultConfigurationResponse?` | [68](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L68) |
+| `ConfigurationAPI.getFingerprintConfiguration` | func | `func getFingerprintConfiguration() async throws -> ConfigurationResponses.GetFingerprintConfigurationResponse?` | [88](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L88) |
+| `ConfigurationAPI.getSiftConfiguration` | func | `func getSiftConfiguration() async throws -> ConfigurationResponses.GetSiftConfigurationResponse?` | [108](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L108) |
+| `ConfigurationAPI.getLegalConfiguration` | func | `func getLegalConfiguration() async throws -> ConfigurationResponses.GetLegalConfigurationResponse?` | [123](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L123) |
+| `ConfigurationAPI.getMapboxConfiguration` | func | `func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse?` | [142](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L142) |
+| `ConfigurationAPI.getAllConfiguration` | func | `func getAllConfiguration() async throws -> ConfigurationResponses.GetAllConfigurationResponse?` | [165](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L165) |
+| `ConfigurationAPI.saveConfigurationToKeychain` | func | `func saveConfigurationToKeychain(key: String, value: Codable)` | [193](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L193) |
+| `ConfigurationAPI.retrieveFromKeychain` | func | `func retrieveFromKeychain(key: String) -> Data?` | [202](../Sources/Frame/Networking/Configuration/ConfigurationAPI.swift#L202) |
 
 </details>
 
@@ -743,7 +743,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `ConfigurationResponses.GetSiftConfigurationResponse` | struct | `struct GetSiftConfigurationResponse: Codable` | [39](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L39) |
 | `ConfigurationResponses.GetLegalConfigurationResponse` | struct | `struct GetLegalConfigurationResponse: Codable` | [53](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L53) |
 | `ConfigurationResponses.GetMapboxConfigurationResponse` | struct | `struct GetMapboxConfigurationResponse: Codable` | [69](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L69) |
-| `ConfigurationResponses.GetAllConfigurationResponse` | struct | `struct GetAllConfigurationResponse: Codable` | [90](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L90) |
+| `ConfigurationResponses.GetAllConfigurationResponse` | struct | `struct GetAllConfigurationResponse: Codable` | [98](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L98) |
 
 </details>
 

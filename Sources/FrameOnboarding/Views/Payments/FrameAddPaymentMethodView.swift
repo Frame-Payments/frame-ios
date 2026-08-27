@@ -57,12 +57,15 @@ public struct FrameAddPaymentMethodView: View {
             .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
                 if let onboardingClientSecret {
-                    FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
+                    viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
                 }
             }
             .onChange(of: viewModel.selectedPaymentMethod?.id) { _, newValue in
                 guard let newValue, !didFinish else { return }
                 didFinish = true
+                // Not left to .onDisappear: the host dismisses on this callback, and an in-flight
+                // beginAction() makes the isPerformingAction guard below skip teardown.
+                viewModel.endOnboardingSessionIfOwned()
                 onResult(.completed(id: newValue))
             }
             .onDisappear {
@@ -70,10 +73,9 @@ public struct FrameAddPaymentMethodView: View {
                 // dismissing us; it runs inside beginAction()/endAction(), so this distinguishes them.
                 guard !viewModel.isPerformingAction else { return }
 
-                // Only clear a session this view began, so we don't wipe another flow's.
-                if onboardingClientSecret != nil {
-                    FrameNetworking.shared.endOnboardingSession()
-                }
+                // Ownership-gated: clears a session this view began, host-supplied or self-minted,
+                // without wiping another flow's.
+                viewModel.endOnboardingSessionIfOwned()
                 if !didFinish {
                     didFinish = true
                     onResult(.cancelled)

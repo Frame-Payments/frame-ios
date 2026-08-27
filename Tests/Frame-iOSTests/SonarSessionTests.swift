@@ -297,6 +297,125 @@ final class FlowEntryRefreshTests: XCTestCase {
         XCTAssertEqual(storage.get(accountId: nil), "fps_warm")
         XCTAssertFalse(storage.writes.contains { $0.accountId == nil })
     }
+
+    /// The orphaning bug: with a launch session stored but none for the account, flow entry used to
+    /// `POST` a fresh session, stranding the device event the launch session had been accumulating.
+    /// It must `PATCH` the stored session onto the account instead, keeping its ID.
+    func testAccountScopedEntryAdoptsTheLaunchSessionRatherThanCreatingAnother() async {
+        let recorder = RecordingSession(sessionId: "fps_launch")
+        FrameNetworking.shared.asyncURLSession = recorder
+        let manager = SessionManager(storage: storage, resolveVisitorId: { "visitor_1" })
+        storage.sessions["\u{0}pre-account"] = "fps_launch"
+
+        await manager.refreshOnFlowEntry(accountId: "acc_1")
+
+        XCTAssertEqual(recorder.paths, ["/v1/charge_sessions/fps_launch"],
+                       "Adoption must PATCH the launch session, not POST a new one.")
+        XCTAssertEqual(storage.get(accountId: "acc_1"), "fps_launch",
+                       "The account must end up on the launch session's ID.")
+        XCTAssertNil(storage.get(accountId: nil),
+                     "The unscoped slot is cleared after adoption so the next account can't reuse it.")
+    }
+}
+
+// MARK: - Launch binding
+
+/// One session per app run: the session and its timestamp outlive the process in `UserDefaults`, so a
+/// freshness-gated launch would relaunch inside the window and record no device event at all.
+final class LaunchBindingTests: XCTestCase {
+
+    private var storage: SpySessionStorage!
+    private var savedSession: URLSessionProtocol!
+    private var recorder: RecordingSession!
+    private var manager: SessionManager!
+
+    override func setUp() {
+        super.setUp()
+        storage = SpySessionStorage()
+        savedSession = FrameNetworking.shared.asyncURLSession
+        recorder = RecordingSession(sessionId: "fps_stored")
+        FrameNetworking.shared.asyncURLSession = recorder
+        // Visitor ID supplied directly: Fingerprint has no configured client in unit tests, and
+        // without one no session request is ever built.
+        manager = SessionManager(storage: storage, resolveVisitorId: { "visitor_1" })
+    }
+
+    override func tearDown() {
+        FrameNetworking.shared.asyncURLSession = savedSession
+        super.tearDown()
+    }
+
+    /// The bug this guards: a relaunch inside the 15-minute window used to return before issuing any
+    /// request, leaving the stored session without a recent device event.
+    func testRelaunchInsideTheFreshnessWindowStillTouchesTheSession() async {
+        storage.sessions["acc_1"] = "fps_stored"
+        storage.refreshes["acc_1"] = Date()
+
+        await manager.bindSessionAtLaunch(accountId: "acc_1")
+
+        XCTAssertEqual(recorder.paths, ["/v1/charge_sessions/fps_stored"],
+                       "A launch inside the freshness window must still record a device event.")
+        XCTAssertEqual(storage.get(accountId: "acc_1"), "fps_stored",
+                       "The session is refreshed in place, never replaced.")
+    }
+
+    /// The unscoped launch path refreshes in place too, so the ID the adoption path looks for
+    /// survives a relaunch.
+    func testUnscopedRelaunchRefreshesInPlace() async {
+        storage.sessions["\u{0}pre-account"] = "fps_stored"
+        storage.refreshes["\u{0}pre-account"] = Date()
+
+        await manager.bindSessionAtLaunch(accountId: nil)
+
+        XCTAssertEqual(recorder.paths, ["/v1/charge_sessions/fps_stored"])
+        XCTAssertEqual(storage.get(accountId: nil), "fps_stored")
+    }
+
+    /// With nothing stored, launch creates the session — bound to the account when one is known, so
+    /// there is no unscoped session for a later flow to adopt.
+    func testFirstLaunchWithAKnownAccountCreatesABoundSession() async {
+        await manager.bindSessionAtLaunch(accountId: "acc_1")
+
+        XCTAssertEqual(recorder.paths, ["/v1/charge_sessions"], "Nothing stored, so this is a create.")
+        XCTAssertEqual(recorder.accountIds, ["acc_1"], "The create must carry the account id.")
+        XCTAssertNil(storage.get(accountId: nil), "No unscoped session should be left behind.")
+    }
+
+    /// Launch must never throw into `initialize`'s `Task`; failures are swallowed by design.
+    func testNeverThrowsWhenTheVisitorIdIsUnavailable() async {
+        let failing = SessionManager(storage: storage,
+                                     resolveVisitorId: { throw SessionManagerError.missingVisitorId })
+
+        await failing.bindSessionAtLaunch(accountId: "acc_1")
+        await failing.bindSessionAtLaunch(accountId: nil)
+    }
+}
+
+/// Records which session endpoints were called, and answers each with a session ID so the
+/// create/adopt/refresh branches run to completion.
+private final class RecordingSession: URLSessionProtocol, @unchecked Sendable {
+    private let sessionId: String
+    private let lock = NSLock()
+    private var recordedPaths: [String] = []
+    private var recordedAccountIds: [String?] = []
+
+    var paths: [String] { lock.withLock { recordedPaths } }
+    var accountIds: [String?] { lock.withLock { recordedAccountIds } }
+
+    init(sessionId: String) {
+        self.sessionId = sessionId
+    }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let body = request.httpBody.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        lock.withLock {
+            recordedPaths.append(request.url?.path ?? "")
+            recordedAccountIds.append(body?["account_id"] as? String)
+        }
+
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return (Data(#"{ "sonar_session_id": "\#(sessionId)" }"#.utf8), response)
+    }
 }
 
 // MARK: - Keep-alive lifecycle
