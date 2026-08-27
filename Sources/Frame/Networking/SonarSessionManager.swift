@@ -92,14 +92,62 @@ public actor SessionManager {
         return try await task.value
     }
 
-    /// Establishes a session at SDK start-up, before an account is known.
+    /// Establishes the one session this app run uses, at SDK start-up.
     ///
     /// The server fetches a new session's device event asynchronously, so starting early gives that
-    /// event time to land before checkout. ``ensureSession(accountId:)`` then adopts the session onto
-    /// the account, and is left to retry and report any failure here.
-    public static func initializeSession() async {
-        try? await shared.warmUp()
-        await shared.startKeepAlive()
+    /// event time to land before checkout.
+    ///
+    /// The session is created or refreshed on **every** SDK load, not only when none is stored: the
+    /// stored session outlives the process in `UserDefaults`, so skipping the request on a relaunch
+    /// would leave the session without a recent device event.
+    ///
+    /// - Parameter accountId: The Frame account the host already knows at load, when it has one.
+    ///   Passing it binds the session to the account immediately, so there is no unscoped session for
+    ///   a later flow to adopt and no second round trip to bind it. Omit it when the account isn't
+    ///   known yet; ``ensureSession(accountId:)`` and ``refreshOnFlowEntry(accountId:)`` then adopt
+    ///   the unscoped session onto the account, keeping the same session ID.
+    ///
+    /// Failures are swallowed: this is opportunistic upkeep, and the payment path calls
+    /// ``ensureSession(accountId:)`` which retries and reports.
+    public static func initializeSession(accountId: String? = nil) async {
+        await shared.bindSessionAtLaunch(accountId: accountId?.isEmpty == false ? accountId : nil)
+    }
+
+    /// Establishes the one session this app run uses and records a device event against it.
+    ///
+    /// Binds to `accountId` when the host knows one at launch, so the session is account-scoped from
+    /// the start and no adoption step is needed later. Without one, the session is created unscoped
+    /// and a later ``ensureSession(accountId:)``/``refreshOnFlowEntry(accountId:)`` adopts it onto the
+    /// account, keeping the same ID.
+    ///
+    /// Unconditional rather than gated on ``isFresh(accountId:)``, for the same reason
+    /// ``refreshOnFlowEntry(accountId:)`` is: the stored session and its timestamp survive in
+    /// `UserDefaults` across relaunches, so a freshness check would make a launch inside the window
+    /// record no event at all. SDK load is the native equivalent of the web SDK's page load, and the
+    /// point at which it's worth one request to know the session carries a recent event.
+    ///
+    /// Either way an existing session is *refreshed*, never replaced — ``establishSession(accountId:)``
+    /// supplies the account-scoped cases, and the unscoped path refreshes in place — so the session ID
+    /// and the device events accumulated against it survive.
+    private func bindSessionAtLaunch(accountId: String?) async {
+        activeAccountId = accountId
+        startKeepAlive()
+
+        guard let accountId else {
+            // Refresh in place when one exists, so the ID the adoption path will look for survives.
+            if let stored = storage.get(accountId: nil) {
+                if let refreshed = try? await refreshSession(stored, accountId: nil) {
+                    store(refreshed, accountId: nil)
+                }
+                return
+            }
+            if let created = try? await createSession(accountId: nil) {
+                store(created, accountId: nil)
+            }
+            return
+        }
+
+        _ = try? await establishSession(accountId: accountId)
     }
 
     /// Brings the pre-account session into the freshness window, creating one only when none exists.
@@ -111,7 +159,9 @@ public actor SessionManager {
     ///   session here would reintroduce the event-landing race that creating early exists to avoid.
     /// - **Absent** — created.
     ///
-    /// See ``initializeSession()``.
+    /// Freshness-gated, so this is the keep-alive's tick for the pre-account session, not the
+    /// SDK-load path — see ``touchActiveSession()``. SDK load goes through
+    /// ``initializeSession(accountId:)``, which touches the session unconditionally.
     func warmUp() async throws {
         if storage.get(accountId: nil) != nil, isFresh(accountId: nil) { return }
 
@@ -158,8 +208,19 @@ public actor SessionManager {
     /// Fire-and-forget from a view's `.task`/`.onAppear`; it never blocks presentation.
     public func refreshOnFlowEntry(accountId: String? = nil) async {
         guard let stored = storage.get(accountId: accountId) else {
-            if let created = try? await createSession(accountId: accountId) {
-                store(created, accountId: accountId)
+            // No session for this account yet. Route through establishSession so the warm-up
+            // session is *adopted* onto the account, keeping its ID and the device event it has
+            // been accumulating since SDK load. Creating a fresh one here instead would orphan
+            // that event on an invisible session — the race warming up early exists to avoid.
+            if let accountId, !accountId.isEmpty {
+                activeAccountId = accountId
+                startKeepAlive()
+                _ = try? await establishSession(accountId: accountId)
+                return
+            }
+
+            if let created = try? await createSession(accountId: nil) {
+                store(created, accountId: nil)
             }
             return
         }

@@ -67,11 +67,18 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - publishableKey: Your Frame Payments publishable key (`pk_`). Used for all client-safe endpoints.
     ///   - secretKey: Optional secret key (`sk_`). Server-only; avoid shipping it in an app binary. Defaults to `nil`.
+    ///   - accountId: The Frame account this app run belongs to, when your app already knows it at
+    ///     launch (e.g. a signed-in user). The Sonar fraud-detection session is then created already
+    ///     bound to the account, so the SDK maintains one session for the whole app run instead of
+    ///     creating an unscoped one and binding it on first flow entry. Leave `nil` when the account
+    ///     isn't known yet — the session is created unscoped and adopted onto the account later,
+    ///     keeping the same session ID either way.
     ///   - applePayMerchantId: Optional Apple Pay merchant identifier required to present Apple Pay sheets.
     ///   - theme: Visual theme applied to all Frame SDK UI. Defaults to ``FrameTheme/default``.
     ///   - debugMode: When `true`, request and response bodies are printed to the console. Defaults to `false`.
     public func initialize(publishableKey: String,
                            secretKey: String? = nil,
+                           accountId: String? = nil,
                            applePayMerchantId: String? = nil,
                            theme: FrameTheme = .default,
                            debugMode: Bool = false) {
@@ -96,7 +103,7 @@ public class FrameNetworking: ObservableObject {
 
             async let evervault = EvervaultConfigurator.shared.ensureConfigured()
             async let sift: Void = SiftManager.initializeSift()
-            async let session: Void = SessionManager.initializeSession()
+            async let session: Void = SessionManager.initializeSession(accountId: accountId)
             async let legal: Void = LegalConfiguration.prefetch()
             async let attestation = try? await DeviceAttestationManager.shared.attestDevice()
             _ = await (evervault, sift, session, legal, attestation)

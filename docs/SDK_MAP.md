@@ -155,15 +155,15 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking` | class | `class FrameNetworking: ObservableObject` | [24](../Sources/Frame/Networking/FrameNetworking.swift#L24) |
 | `FrameNetworking.jsonEncoder` | let | `let jsonEncoder = JSONEncoder()` | [29](../Sources/Frame/Networking/FrameNetworking.swift#L29) |
 | `FrameNetworking.jsonDecoder` | let | `let jsonDecoder = JSONDecoder()` | [31](../Sources/Frame/Networking/FrameNetworking.swift#L31) |
-| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [73](../Sources/Frame/Networking/FrameNetworking.swift#L73) |
-| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [128](../Sources/Frame/Networking/FrameNetworking.swift#L128) |
-| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [150](../Sources/Frame/Networking/FrameNetworking.swift#L150) |
-| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [162](../Sources/Frame/Networking/FrameNetworking.swift#L162) |
-| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [168](../Sources/Frame/Networking/FrameNetworking.swift#L168) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [280](../Sources/Frame/Networking/FrameNetworking.swift#L280) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [330](../Sources/Frame/Networking/FrameNetworking.swift#L330) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [390](../Sources/Frame/Networking/FrameNetworking.swift#L390) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [443](../Sources/Frame/Networking/FrameNetworking.swift#L443) |
+| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [79](../Sources/Frame/Networking/FrameNetworking.swift#L79) |
+| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [135](../Sources/Frame/Networking/FrameNetworking.swift#L135) |
+| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [157](../Sources/Frame/Networking/FrameNetworking.swift#L157) |
+| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [169](../Sources/Frame/Networking/FrameNetworking.swift#L169) |
+| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [175](../Sources/Frame/Networking/FrameNetworking.swift#L175) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [287](../Sources/Frame/Networking/FrameNetworking.swift#L287) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [337](../Sources/Frame/Networking/FrameNetworking.swift#L337) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [397](../Sources/Frame/Networking/FrameNetworking.swift#L397) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [450](../Sources/Frame/Networking/FrameNetworking.swift#L450) |
 
 </details>
 
@@ -205,10 +205,10 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `SessionManager.shared` | let | `let shared = SessionManager()` | [28](../Sources/Frame/Networking/SonarSessionManager.swift#L28) |
 | `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [59](../Sources/Frame/Networking/SonarSessionManager.swift#L59) |
 | `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [72](../Sources/Frame/Networking/SonarSessionManager.swift#L72) |
-| `SessionManager.initializeSession` | func | `func initializeSession() async` | [100](../Sources/Frame/Networking/SonarSessionManager.swift#L100) |
-| `SessionManager.resume` | func | `func resume() async` | [133](../Sources/Frame/Networking/SonarSessionManager.swift#L133) |
-| `SessionManager.pause` | func | `func pause()` | [140](../Sources/Frame/Networking/SonarSessionManager.swift#L140) |
-| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [159](../Sources/Frame/Networking/SonarSessionManager.swift#L159) |
+| `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [112](../Sources/Frame/Networking/SonarSessionManager.swift#L112) |
+| `SessionManager.resume` | func | `func resume() async` | [183](../Sources/Frame/Networking/SonarSessionManager.swift#L183) |
+| `SessionManager.pause` | func | `func pause()` | [190](../Sources/Frame/Networking/SonarSessionManager.swift#L190) |
+| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [209](../Sources/Frame/Networking/SonarSessionManager.swift#L209) |
 
 </details>
 

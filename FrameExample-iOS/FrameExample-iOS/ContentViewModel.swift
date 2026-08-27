@@ -22,6 +22,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     
     // Replace with your Apple Pay merchant ID registered in your entitlements
     let applePayMerchantId: String = "merchant.com.yourapp"
+    // Replace with an accountID from your dashboard.
+    var accountId: String = "ENTER_AN_ACCOUNT_ID"
     
     init() {
         // The SDK is publishable-key first: pass your publishable key (pk_) here. Secret keys
@@ -30,6 +32,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         // calls below; production apps should omit it.
         FrameNetworking.shared.initialize(publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
                                           secretKey: "ENTER_SECRET_KEY_HERE",
+                                          accountId: accountId,
 //                                          theme: FrameTheme(
 //                                              colors: .init(primaryButton: .purple, error: .orange),
 //                                              fonts: .init(title: .custom("Avenir-Black", size: 28)),

@@ -33,8 +33,6 @@ struct ContentView: View {
     @State var showOnboardingSheet: Bool = false
     @State var applePayResult: String? = nil
 
-    // Replace with an accountID from your dashboard.
-    @State var accountId: String = "ENTER_AN_ACCOUNT_ID"
     let requiredCapabilities: [FrameObjects.Capabilities] = [.kycPrefill, .geoCompliance, .ageVerification]
     
     var body: some View {
@@ -55,7 +53,7 @@ struct ContentView: View {
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
                     mode: .charge(amount: 35000, currency: "usd"),
-                    owner: .account(accountId)
+                    owner: .account(viewModel.accountId)
                 ) { result in
                     switch result {
                     case .success(.charge(let chargeId)):
@@ -102,11 +100,11 @@ struct ContentView: View {
             // clientSecret is the onb_sess_… token minted above; the SDK binds every onboarding
             // request to it, scoping the flow to a single account.
             OnboardingContainerView(clientSecret: viewModel.onboardingClientSecret,
-                                    accountId: accountId,
+                                    accountId: viewModel.accountId,
                                     requiredCapabilities: requiredCapabilities) { result in
                 switch result {
                 case .completed(let id):
-                    accountId = id
+                    viewModel.accountId = id
                 case .cancelled:
                     return
                 case .failed(let error):
@@ -115,7 +113,7 @@ struct ContentView: View {
             }
         })
         .sheet(isPresented: $showCheckoutView) {
-            FrameCartView(accountId: accountId,
+            FrameCartView(accountId: viewModel.accountId,
                           cartItems: [ExampleCartItem(id: "1",
                                                       imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
                                                       title: "Vintage Track Jacket",
@@ -139,11 +137,11 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showAddPaymentMethodView, content: {
-            FrameAddPaymentMethodView(accountId: accountId)
+            FrameAddPaymentMethodView(accountId: viewModel.accountId)
                 .presentationDragIndicator(.visible)
         })
         .sheet(isPresented: $showSelectPayoutMethodView, content: {
-            FrameSelectPayoutMethodView(accountId: accountId, onResult: { result in
+            FrameSelectPayoutMethodView(accountId: viewModel.accountId, onResult: { result in
                 // This screen leaves dismissal to its host, so close the sheet here.
                 self.showSelectPayoutMethodView = false
                 switch result {
@@ -321,12 +319,12 @@ struct ContentView: View {
             // presenting the flow, then launch. Production apps mint this token on their backend
             // (POST /v1/onboarding_sessions) and pass it in as the clientSecret — see ContentViewModel.
             Task {
-                if UUID(uuidString: accountId) == nil  {
-                    self.accountId = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    await viewModel.mintOnboardingClientSecret(accountId: accountId)
+                if UUID(uuidString: viewModel.accountId) == nil  {
+                    viewModel.accountId = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    await viewModel.mintOnboardingClientSecret(accountId: viewModel.accountId)
                     self.showOnboardingSheet = true
                 } else {
-                    await viewModel.mintOnboardingClientSecret(accountId: accountId)
+                    await viewModel.mintOnboardingClientSecret(accountId: viewModel.accountId)
                     self.showOnboardingSheet = true
                 }
             }
