@@ -116,9 +116,8 @@ class OnboardingContainerViewModel: ObservableObject {
     /// secret or a self-minted one — and is therefore responsible for ending it on completion/dismiss.
     private(set) var ownsOnboardingSession = false
 
-    /// Set once this flow has torn its session down, so a mint that was already in flight doesn't
-    /// install a token after the fact. Without it, a self-mint that returns after the flow resolved
-    /// leaves an `onb_sess_` active with nothing left to end it — the standalone-screen leak.
+    /// Set once this flow has torn its session down, so a mint already in flight doesn't install a
+    /// token afterwards — one that lands post-teardown has nothing left to end it.
     private var hasEndedOnboardingSession = false
 
     init(accountId: String?,
@@ -257,8 +256,8 @@ class OnboardingContainerViewModel: ObservableObject {
     /// `pk_`/`sk_` authentication. Guarding on ownership keeps a container that never started a
     /// session from wiping one another flow may own.
     func endOnboardingSessionIfOwned() {
-        // Latched before the ownership guard: a mint still in flight must be refused even when this
-        // flow doesn't own a session yet, which is exactly the case that leaked.
+        // Latched before the ownership guard: an in-flight mint must be refused even when this flow
+        // doesn't own a session yet, which is the case that leaked.
         hasEndedOnboardingSession = true
         guard ownsOnboardingSession else { return }
         FrameNetworking.shared.endOnboardingSession()

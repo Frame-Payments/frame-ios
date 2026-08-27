@@ -35,13 +35,10 @@ enum ConfigurationKeys: String {
 /// Manages SDK configuration resources, including fetching and caching third-party service
 /// credentials (Evervault, Fingerprint, Sift) from the Frame API and persisting them in the system keychain.
 public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
-    /// Blocks that ``getAllConfiguration()`` has cached during this process.
+    /// Blocks ``getAllConfiguration()`` cached this process, whose getters can serve from cache.
     ///
-    /// `/v1/config/all` is fetched once from `FrameNetworking.initialize` and its payload is a
-    /// superset of the five per-block endpoints, so a getter whose block is listed here serves the
-    /// cached copy instead of repeating the request. Scoped to the process rather than the keychain's
-    /// lifetime deliberately: a launch still refetches once, so a rotated credential is picked up,
-    /// while a single launch makes one config request instead of six.
+    /// Process-scoped, not keychain-scoped: each launch still refetches once, so a rotated
+    /// credential is picked up rather than cached forever.
     nonisolated(unsafe) private static var freshFromAggregate: Set<ConfigurationKeys> = []
     private static let freshLock = NSLock()
 
@@ -49,16 +46,15 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
         freshLock.withLock { freshFromAggregate.insert(key) }
     }
 
-    /// The cached block for `key`, but only when ``getAllConfiguration()`` wrote it this process.
-    /// Returns `nil` otherwise so the caller falls through to its own endpoint — the consumers' own
-    /// post-failure keychain fallbacks are unchanged and still cover a network-unavailable launch.
+    /// The cached block for `key`, only when ``getAllConfiguration()`` wrote it this process.
+    /// `nil` otherwise, so the caller falls through to its own endpoint.
     private static func fresh<T: Decodable>(_ type: T.Type, _ key: ConfigurationKeys) -> T? {
         guard freshLock.withLock({ freshFromAggregate.contains(key) }),
               let data = retrieveFromKeychain(key: key.rawValue) else { return nil }
         return try? FrameNetworking.shared.jsonDecoder.decode(type, from: data)
     }
 
-    /// Clears the process-lifetime freshness marks, so the next getter call hits the network again.
+    /// Clears the freshness marks, so the next getter call hits the network again.
     static func invalidateAggregateCache() {
         freshLock.withLock { freshFromAggregate.removeAll() }
     }
@@ -144,8 +140,7 @@ public class ConfigurationAPI: ConfigurationProtocol, @unchecked Sendable {
     ///   search-scoped Mapbox access token, or `nil` if the response cannot be decoded.
     /// - Throws: A networking error if the request fails.
     public static func getMapboxConfiguration() async throws -> ConfigurationResponses.GetMapboxConfigurationResponse? {
-        // Mapbox is the one block with a documented expiry, so an expired cached token falls through
-        // to the network rather than being handed to the caller.
+        // Mapbox is the one block with a documented expiry; don't serve an expired token.
         if let cached = fresh(ConfigurationResponses.GetMapboxConfigurationResponse.self, .mapbox),
            !cached.hasExpired {
             return cached

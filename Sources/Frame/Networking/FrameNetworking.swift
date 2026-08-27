@@ -67,12 +67,9 @@ public class FrameNetworking: ObservableObject {
     /// - Parameters:
     ///   - publishableKey: Your Frame Payments publishable key (`pk_`). Used for all client-safe endpoints.
     ///   - secretKey: Optional secret key (`sk_`). Server-only; avoid shipping it in an app binary. Defaults to `nil`.
-    ///   - accountId: The Frame account this app run belongs to, when your app already knows it at
-    ///     launch (e.g. a signed-in user). The Sonar fraud-detection session is then created already
-    ///     bound to the account, so the SDK maintains one session for the whole app run instead of
-    ///     creating an unscoped one and binding it on first flow entry. Leave `nil` when the account
-    ///     isn't known yet — the session is created unscoped and adopted onto the account later,
-    ///     keeping the same session ID either way.
+    ///   - accountId: The Frame account this app run belongs to, if known at launch. The Sonar
+    ///     session is then created already bound to it, rather than created unscoped and bound on
+    ///     first flow entry. Either way one session covers the app run — leave `nil` if unknown.
     ///   - applePayMerchantId: Optional Apple Pay merchant identifier required to present Apple Pay sheets.
     ///   - theme: Visual theme applied to all Frame SDK UI. Defaults to ``FrameTheme/default``.
     ///   - debugMode: When `true`, request and response bodies are printed to the console. Defaults to `false`.
@@ -94,10 +91,9 @@ public class FrameNetworking: ObservableObject {
         self.applePayMerchantId = applePayMerchantId
         self.debugMode = debugMode
 
-        // One /config/all fetch caches every block and marks it fresh for this process, so the five
-        // consumers below resolve from cache instead of re-requesting their own endpoints — one config
-        // request per launch, not six. They are independent, so they run concurrently.
-        // Awaited before the consumers start, otherwise they'd race it and miss the cache.
+        // One /config/all marks every block fresh, so the five consumers below resolve from cache
+        // instead of re-requesting: one config request per launch, not six. Awaited before they
+        // start, otherwise they race it and miss the cache. They're independent, so concurrent.
         Task {
             _ = try? await ConfigurationAPI.getAllConfiguration()
 

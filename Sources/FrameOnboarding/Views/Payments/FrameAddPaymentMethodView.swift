@@ -63,9 +63,8 @@ public struct FrameAddPaymentMethodView: View {
             .onChange(of: viewModel.selectedPaymentMethod?.id) { _, newValue in
                 guard let newValue, !didFinish else { return }
                 didFinish = true
-                // End the session here rather than leaving it to .onDisappear: the host dismisses on
-                // this callback, and if the add's own beginAction() is still in flight the
-                // isPerformingAction guard below skips teardown entirely.
+                // Not left to .onDisappear: the host dismisses on this callback, and an in-flight
+                // beginAction() makes the isPerformingAction guard below skip teardown.
                 viewModel.endOnboardingSessionIfOwned()
                 onResult(.completed(id: newValue))
             }
@@ -74,8 +73,8 @@ public struct FrameAddPaymentMethodView: View {
                 // dismissing us; it runs inside beginAction()/endAction(), so this distinguishes them.
                 guard !viewModel.isPerformingAction else { return }
 
-                // Ownership-gated so we clear a session this view began — host-supplied or
-                // self-minted by the view model — without wiping another flow's.
+                // Ownership-gated: clears a session this view began, host-supplied or self-minted,
+                // without wiping another flow's.
                 viewModel.endOnboardingSessionIfOwned()
                 if !didFinish {
                     didFinish = true

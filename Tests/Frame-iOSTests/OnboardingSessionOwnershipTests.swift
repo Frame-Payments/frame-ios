@@ -56,12 +56,10 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
 
     // MARK: - Standalone add/select-method screens (FRA-6358)
 
-    /// The leak the standalone screens shipped with: presented without a `clientSecret`,
+    /// The leak the standalone screens shipped with: without a `clientSecret`,
     /// `checkExistingAccount()` mints a session internally, so a teardown gated on
-    /// `onboardingClientSecret != nil` never fired and the `onb_sess_` token outranked the `pk_` on
-    /// every later `.publishable` request — breaking checkout's 3DS confirm. Ownership must be
-    /// recorded for the self-minted session too, so the screens' `endOnboardingSessionIfOwned()`
-    /// clears it.
+    /// `onboardingClientSecret != nil` never fired and the token outranked the `pk_` on every later
+    /// `.publishable` request. The self-minted session must be owned so teardown clears it.
     func testSelfMintedSessionIsOwnedAndEnded() async throws {
         let savedSession = FrameNetworking.shared.asyncURLSession
         defer { FrameNetworking.shared.asyncURLSession = savedSession }
@@ -89,9 +87,8 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
                        "a leaked onb_sess_ outranks the pk_ on every later .publishable request")
     }
 
-    /// Teardown must not depend on `isPerformingAction` having settled. The standalone screens now
-    /// end the session in their success callback, which can run while the election's own
-    /// `beginAction()` is still in flight — the state that made `.onDisappear` return early.
+    /// Teardown must not depend on `isPerformingAction` having settled — the success callback can
+    /// run while `beginAction()` is in flight, the state that made `.onDisappear` return early.
     func testTeardownWorksWhileAnActionIsInFlight() {
         let viewModel = makeViewModel()
         viewModel.beginOnboardingSession(clientSecret: "onb_sess_live_token")
@@ -105,10 +102,9 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
         XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession)
     }
 
-    /// The narrow ordering case behind the leak: on the no-clientSecret path the screen kicks off
-    /// `checkExistingAccount()` in a Task that mints a session, and the user can resolve the screen
-    /// before that mint returns. Teardown then runs while `ownsOnboardingSession` is still false, so
-    /// the late mint would install a token with nothing left to end it.
+    /// The ordering case: `checkExistingAccount()` mints in a Task, and the user can resolve the
+    /// screen first. Teardown then runs while ownership is still false, so the late mint would
+    /// install a token with nothing left to end it.
     func testMintCompletingAfterTeardownDoesNotInstallASession() async throws {
         let savedSession = FrameNetworking.shared.asyncURLSession
         defer { FrameNetworking.shared.asyncURLSession = savedSession }

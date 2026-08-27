@@ -143,9 +143,8 @@ final class ConfigurationAPITests: XCTestCase {
 
     // MARK: - One config request per launch (FRA-6358)
 
-    /// `/config/all` at init must satisfy the five per-block getters, otherwise the SDK makes six
-    /// config requests where one suffices. Each getter is checked to serve from cache without
-    /// issuing its own request.
+    /// `/config/all` must satisfy the five per-block getters, otherwise init makes six config
+    /// requests where one suffices.
     func testAggregateFetchSatisfiesIndividualGetters() async throws {
         session.data = Data("""
         {
@@ -176,8 +175,8 @@ final class ConfigurationAPITests: XCTestCase {
                        "the five getters must resolve from the aggregate fetch, not re-request")
     }
 
-    /// A block the aggregate response omitted was never marked fresh, so its getter still goes to
-    /// the network — the keychain may hold a copy from an earlier launch, which is not a cache hit.
+    /// An omitted block was never marked fresh, so its getter still goes to the network — a
+    /// keychain copy from an earlier launch is not a cache hit.
     func testOmittedBlockStillFetchesFromNetwork() async throws {
         session.data = Data("""
         { "sift": { "account_id": "sift_acct", "beacon_key": "sift_beacon" } }
@@ -194,8 +193,8 @@ final class ConfigurationAPITests: XCTestCase {
         XCTAssertEqual(session.requestCount, requestsAfterAggregate + 1)
     }
 
-    /// Freshness is process-scoped, not keychain-scoped: after invalidation (i.e. a new launch) the
-    /// getter refetches, so a rotated credential is picked up instead of being cached forever.
+    /// Freshness is process-scoped: after invalidation (a new launch) the getter refetches, so a
+    /// rotated credential is picked up instead of being cached forever.
     func testInvalidationRestoresNetworkFetch() async throws {
         session.data = Data("""
         { "sift": { "account_id": "old_acct", "beacon_key": "old_beacon" } }
@@ -213,8 +212,7 @@ final class ConfigurationAPITests: XCTestCase {
         XCTAssertEqual(refetchedSift?.accountId, "rotated_acct")
     }
 
-    /// Mapbox is the one block with a documented expiry, so an expired cached token must not be
-    /// served — it would fail every address lookup for the rest of the launch.
+    /// An expired cached token must not be served — it would fail every address lookup this launch.
     func testExpiredMapboxTokenIsRefetched() async throws {
         session.data = Data("""
         { "mapbox": { "access_token": "pk.expired", "expires_at": "2020-01-01T00:00:00Z" } }
@@ -229,8 +227,7 @@ final class ConfigurationAPITests: XCTestCase {
         XCTAssertEqual(refreshed?.accessToken, "pk.refreshed")
     }
 
-    /// An unexpired token is still served from cache — the expiry check must not defeat the whole
-    /// point of the aggregate fetch.
+    /// An unexpired token still comes from cache — the expiry check must not defeat the aggregate.
     func testUnexpiredMapboxTokenIsServedFromCache() async throws {
         session.data = Data("""
         { "mapbox": { "access_token": "pk.valid", "expires_at": "2099-01-01T00:00:00Z" } }

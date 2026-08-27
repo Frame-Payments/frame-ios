@@ -81,8 +81,8 @@ public class ConfigurationResponses {
             case expiresAt = "expires_at"
         }
 
-        /// Whether ``expiresAt`` is in the past. `false` when the token never expires or the
-        /// timestamp can't be parsed — an unreadable expiry shouldn't discard a working token.
+        /// Whether ``expiresAt`` is in the past. `false` when absent or unparseable — an
+        /// unreadable expiry shouldn't discard a working token.
         var hasExpired: Bool {
             guard let expiresAt,
                   let date = ISO8601DateFormatter().date(from: expiresAt) else { return false }
