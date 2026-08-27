@@ -203,12 +203,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `SessionManagerError.requestFailed` | case | `case requestFailed(NetworkingError)` | [11](../Sources/Frame/Networking/SonarSessionManager.swift#L11) |
 | `SessionManager` | actor | `actor SessionManager` | [26](../Sources/Frame/Networking/SonarSessionManager.swift#L26) |
 | `SessionManager.shared` | let | `let shared = SessionManager()` | [28](../Sources/Frame/Networking/SonarSessionManager.swift#L28) |
-| `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [59](../Sources/Frame/Networking/SonarSessionManager.swift#L59) |
-| `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [72](../Sources/Frame/Networking/SonarSessionManager.swift#L72) |
-| `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [105](../Sources/Frame/Networking/SonarSessionManager.swift#L105) |
-| `SessionManager.resume` | func | `func resume() async` | [167](../Sources/Frame/Networking/SonarSessionManager.swift#L167) |
-| `SessionManager.pause` | func | `func pause()` | [174](../Sources/Frame/Networking/SonarSessionManager.swift#L174) |
-| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [193](../Sources/Frame/Networking/SonarSessionManager.swift#L193) |
+| `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [63](../Sources/Frame/Networking/SonarSessionManager.swift#L63) |
+| `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [90](../Sources/Frame/Networking/SonarSessionManager.swift#L90) |
+| `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [123](../Sources/Frame/Networking/SonarSessionManager.swift#L123) |
+| `SessionManager.resume` | func | `func resume() async` | [185](../Sources/Frame/Networking/SonarSessionManager.swift#L185) |
+| `SessionManager.pause` | func | `func pause()` | [192](../Sources/Frame/Networking/SonarSessionManager.swift#L192) |
+| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [211](../Sources/Frame/Networking/SonarSessionManager.swift#L211) |
 
 </details>
 

@@ -41,6 +41,10 @@ public actor SessionManager {
 
     private let storage: SessionStorage
 
+    /// Resolves the device's Fingerprint visitor ID. Injectable because every session request needs
+    /// one, so a test that can't supply it cannot reach any of the create/adopt/refresh branches.
+    private let resolveVisitorId: @Sendable () async throws -> String
+
     private var inFlight: [String: Task<SessionId, Error>] = [:]
 
     /// The account whose session the keep-alive should re-touch. `nil` means no account is known
@@ -58,6 +62,20 @@ public actor SessionManager {
     /// - Parameter storage: Where session identifiers are persisted. Defaults to `UserDefaults`.
     public init(storage: SessionStorage = UserDefaultsSessionStorage()) {
         self.storage = storage
+        self.resolveVisitorId = {
+            guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout),
+                  !id.isEmpty else {
+                throw SessionManagerError.missingVisitorId
+            }
+            return id
+        }
+    }
+
+    /// Test seam: supplies the visitor ID directly, so the create/adopt/refresh branches are
+    /// reachable without a configured Fingerprint client.
+    init(storage: SessionStorage, resolveVisitorId: @escaping @Sendable () async throws -> String) {
+        self.storage = storage
+        self.resolveVisitorId = resolveVisitorId
     }
 
     /// Returns a session for `accountId` that is fresh enough to back a payment, creating or
@@ -114,7 +132,7 @@ public actor SessionManager {
     ///
     /// An existing session is always *refreshed*, never replaced, so its ID and accumulated events
     /// survive — ``establishSession(accountId:)`` for the account-scoped cases, in place otherwise.
-    private func bindSessionAtLaunch(accountId: String?) async {
+    func bindSessionAtLaunch(accountId: String?) async {
         activeAccountId = accountId
         startKeepAlive()
 
@@ -328,9 +346,6 @@ public actor SessionManager {
     }
 
     private func visitorId() async throws -> String {
-        guard let id = try? await FingerprintManager.getVisitorId(timeout: Self.visitorIdTimeout), !id.isEmpty else {
-            throw SessionManagerError.missingVisitorId
-        }
-        return id
+        try await resolveVisitorId()
     }
 }
