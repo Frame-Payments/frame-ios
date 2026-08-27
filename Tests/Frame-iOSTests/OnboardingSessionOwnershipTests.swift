@@ -53,4 +53,97 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
         XCTAssertTrue(FrameNetworking.shared.hasActiveOnboardingSession,
                       "a session this flow doesn't own should be left intact")
     }
+
+    // MARK: - Standalone add/select-method screens (FRA-6358)
+
+    /// The leak the standalone screens shipped with: presented without a `clientSecret`,
+    /// `checkExistingAccount()` mints a session internally, so a teardown gated on
+    /// `onboardingClientSecret != nil` never fired and the `onb_sess_` token outranked the `pk_` on
+    /// every later `.publishable` request — breaking checkout's 3DS confirm. Ownership must be
+    /// recorded for the self-minted session too, so the screens' `endOnboardingSessionIfOwned()`
+    /// clears it.
+    func testSelfMintedSessionIsOwnedAndEnded() async throws {
+        let savedSession = FrameNetworking.shared.asyncURLSession
+        defer { FrameNetworking.shared.asyncURLSession = savedSession }
+
+        let mock = MockURLAsyncSession(
+            data: Data(#"{ "id": "onb_1", "client_secret": "onb_sess_self_minted" }"#.utf8),
+            response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/onboarding_sessions")!,
+                                      statusCode: 200, httpVersion: nil, headerFields: nil),
+            error: nil
+        )
+        FrameNetworking.shared.asyncURLSession = mock
+
+        // No clientSecret supplied — this is the publishable-key-only path the standalone screens
+        // and the RN example app take.
+        let viewModel = makeViewModel()
+        await viewModel.checkExistingAccount()
+
+        XCTAssertTrue(FrameNetworking.shared.hasActiveOnboardingSession,
+                      "checkExistingAccount() mints a session when the host supplies none")
+        XCTAssertTrue(viewModel.ownsOnboardingSession,
+                      "a self-minted session must be owned, or teardown skips it and it leaks into checkout")
+
+        viewModel.endOnboardingSessionIfOwned()
+        XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession,
+                       "a leaked onb_sess_ outranks the pk_ on every later .publishable request")
+    }
+
+    /// Teardown must not depend on `isPerformingAction` having settled. The standalone screens now
+    /// end the session in their success callback, which can run while the election's own
+    /// `beginAction()` is still in flight — the state that made `.onDisappear` return early.
+    func testTeardownWorksWhileAnActionIsInFlight() {
+        let viewModel = makeViewModel()
+        viewModel.beginOnboardingSession(clientSecret: "onb_sess_live_token")
+
+        // beginAction() is private; this is the state it sets and the state the old .onDisappear
+        // guard tripped over.
+        viewModel.isPerformingAction = true
+
+        viewModel.endOnboardingSessionIfOwned()
+
+        XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession)
+    }
+
+    /// The narrow ordering case behind the leak: on the no-clientSecret path the screen kicks off
+    /// `checkExistingAccount()` in a Task that mints a session, and the user can resolve the screen
+    /// before that mint returns. Teardown then runs while `ownsOnboardingSession` is still false, so
+    /// the late mint would install a token with nothing left to end it.
+    func testMintCompletingAfterTeardownDoesNotInstallASession() async throws {
+        let savedSession = FrameNetworking.shared.asyncURLSession
+        defer { FrameNetworking.shared.asyncURLSession = savedSession }
+
+        let mock = MockURLAsyncSession(
+            data: Data(#"{ "id": "onb_1", "client_secret": "onb_sess_late_mint" }"#.utf8),
+            response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/onboarding_sessions")!,
+                                      statusCode: 200, httpVersion: nil, headerFields: nil),
+            error: nil
+        )
+        FrameNetworking.shared.asyncURLSession = mock
+
+        let viewModel = makeViewModel()
+
+        // The screen resolved (host dismissed) before the in-flight mint came back.
+        viewModel.endOnboardingSessionIfOwned()
+        await viewModel.checkExistingAccount()
+
+        XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession,
+                       "a mint that lands after teardown has nothing left to end it and would leak")
+        XCTAssertFalse(viewModel.ownsOnboardingSession)
+    }
+
+    /// Ending twice is a no-op, so the success callback's teardown followed by `.onDisappear`'s
+    /// can't wipe a session a later flow began in between.
+    func testDoubleTeardownIsIdempotent() {
+        let viewModel = makeViewModel()
+        viewModel.beginOnboardingSession(clientSecret: "onb_sess_live_token")
+        viewModel.endOnboardingSessionIfOwned()
+
+        // A different flow starts its own session after this screen resolved.
+        FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_next_flow")
+        viewModel.endOnboardingSessionIfOwned()
+
+        XCTAssertTrue(FrameNetworking.shared.hasActiveOnboardingSession,
+                      "the second teardown must not clear a session this flow no longer owns")
+    }
 }

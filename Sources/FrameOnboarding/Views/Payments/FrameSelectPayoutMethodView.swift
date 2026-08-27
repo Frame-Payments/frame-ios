@@ -55,12 +55,18 @@ public struct FrameSelectPayoutMethodView: View {
                                onElected: { payoutMethod in
                                    guard !didFinish else { return }
                                    didFinish = true
+                                   // End the session here rather than leaving it to .onDisappear: the
+                                   // host dismisses on this callback, and if the election's own
+                                   // beginAction() is still in flight the isPerformingAction guard
+                                   // below skips teardown entirely.
+                                   viewModel.endOnboardingSessionIfOwned()
                                    onResult(.completed(id: payoutMethod.id))
                                },
                                // The host owns dismissal, as in ``FrameAddPayoutMethodView``.
                                onClose: {
                                    guard !didFinish else { return }
                                    didFinish = true
+                                   viewModel.endOnboardingSessionIfOwned()
                                    onResult(.cancelled)
                                })
             .keyboardDoneToolbar()
@@ -68,7 +74,7 @@ public struct FrameSelectPayoutMethodView: View {
             .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
                 if let onboardingClientSecret {
-                    FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
+                    viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
                 }
                 // Seeds `primaryPayoutMethodId`; onboarding gets this from its container.
                 Task { await viewModel.checkExistingAccount() }
@@ -78,10 +84,9 @@ public struct FrameSelectPayoutMethodView: View {
                 // Plaid runs inside beginAction()/endAction(), so this distinguishes them.
                 guard !viewModel.isPerformingAction else { return }
 
-                // Only clear a session this view began, so we don't wipe another flow's.
-                if onboardingClientSecret != nil {
-                    FrameNetworking.shared.endOnboardingSession()
-                }
+                // Ownership-gated so we clear a session this view began — host-supplied or
+                // self-minted by checkExistingAccount() — without wiping another flow's.
+                viewModel.endOnboardingSessionIfOwned()
                 if !didFinish {
                     didFinish = true
                     onResult(.cancelled)

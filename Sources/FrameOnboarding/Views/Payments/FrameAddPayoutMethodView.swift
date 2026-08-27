@@ -60,12 +60,16 @@ public struct FrameAddPayoutMethodView: View {
             .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
                 if let onboardingClientSecret {
-                    FrameNetworking.shared.beginOnboardingSession(clientSecret: onboardingClientSecret)
+                    viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
                 }
             }
             .onChange(of: viewModel.selectedPayoutMethod?.id) { _, newValue in
                 guard let newValue, !didFinish else { return }
                 didFinish = true
+                // End the session here rather than leaving it to .onDisappear: the host dismisses on
+                // this callback, and if the add's own beginAction() is still in flight the
+                // isPerformingAction guard below skips teardown entirely.
+                viewModel.endOnboardingSessionIfOwned()
                 onResult(.completed(id: newValue))
             }
             .onDisappear {
@@ -73,10 +77,9 @@ public struct FrameAddPayoutMethodView: View {
                 // Plaid runs inside beginAction()/endAction(), so this distinguishes them.
                 guard !viewModel.isPerformingAction else { return }
 
-                // Only clear a session this view began, so we don't wipe another flow's.
-                if onboardingClientSecret != nil {
-                    FrameNetworking.shared.endOnboardingSession()
-                }
+                // Ownership-gated so we clear a session this view began — host-supplied or
+                // self-minted by the view model — without wiping another flow's.
+                viewModel.endOnboardingSessionIfOwned()
                 if !didFinish {
                     didFinish = true
                     onResult(.cancelled)
