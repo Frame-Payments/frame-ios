@@ -18,6 +18,14 @@ public enum FrameResult {
     ///   PaymentMethod id). May be an empty string when no resource was created.
     case completed(id: String)
 
+    /// The flow ran to the end, but the applicant was not verified. Not a cancellation or an
+    /// error — every step was answered, the answer was simply no or not-yet.
+    ///
+    /// - Parameters:
+    ///   - id: The account identifier, so follow-up flows can still be scoped to it.
+    ///   - outcome: Why the flow ended unverified.
+    case finishedUnverified(id: String, outcome: OnboardingOutcome)
+
     /// The user dismissed the flow before it could finish.
     case cancelled
 

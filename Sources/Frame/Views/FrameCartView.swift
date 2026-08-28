@@ -94,6 +94,11 @@ public struct FrameCartView: View {
                         dismiss()
                     case .cancelled:
                         continueToCheckout = false
+                    // Checkout never ends unverified, but forward it rather than going silent.
+                    case .finishedUnverified(let id, let outcome):
+                        didFinish = true
+                        onResult?(.finishedUnverified(id: id, outcome: outcome))
+                        dismiss()
                     }
                 }
                 .toolbar(.hidden)
