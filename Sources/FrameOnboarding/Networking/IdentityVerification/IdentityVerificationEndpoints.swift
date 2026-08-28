@@ -40,8 +40,7 @@ enum IdentityVerificationEndpoints: FrameNetworkingEndpoints {
         case .createSession:
             return nil
         case .complete:
-            // The /idv/complete endpoint returns HTML by default; request the JSON
-            // variant explicitly (see FRA-5363).
+            // The os-host twin of this endpoint renders a Turbo Stream; ask for JSON explicitly.
             return "application/json"
         }
     }

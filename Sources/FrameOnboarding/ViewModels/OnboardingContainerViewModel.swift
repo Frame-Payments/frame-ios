@@ -14,7 +14,6 @@ import LinkKit
 
 enum OnboardingField: Hashable {
     case authPhone, authBirthMonth, authBirthDay, authBirthYear
-    case docFront, docBack, docSelfie
 
     /// Which screen / surface this field belongs to. Drives error-dictionary partitioning so
     /// validating one screen doesn't clobber errors on another.
@@ -22,14 +21,12 @@ enum OnboardingField: Hashable {
         switch self {
         case .authPhone, .authBirthMonth, .authBirthDay, .authBirthYear:
             return .phoneAuth
-        case .docFront, .docBack, .docSelfie:
-            return .docs
         }
     }
 }
 
 enum OnboardingFieldGroup {
-    case phoneAuth, docs
+    case phoneAuth
 }
 
 @MainActor
@@ -38,6 +35,10 @@ class OnboardingContainerViewModel: ObservableObject {
     @Published var progressiveSteps: [OnboardingFlow] = []
     @Published var currentStep: OnboardingFlow = .personalInformation
     @Published var requiredCapabilities: [FrameObjects.Capabilities]
+
+    /// The set the flow launched with. ``requiredCapabilities`` is drained as capabilities are
+    /// satisfied, so it cannot answer what the flow set out to do.
+    let originallyRequiredCapabilities: [FrameObjects.Capabilities]
 
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
@@ -50,8 +51,6 @@ class OnboardingContainerViewModel: ObservableObject {
     /// ID of the payment method currently elected as the account's payout destination, so the
     /// payout list can mark which row is primary.
     @Published var primaryPayoutMethodId: String?
-    @Published var customerIdentity: FrameObjects.CustomerIdentity?
-    @Published var filesToUpload: [FileUpload] = []
     @Published var ipAddress: String?
     @Published var userCoordinates: CLLocationCoordinate2D?
     @Published var termsOfServiceToken: String?
@@ -94,6 +93,12 @@ class OnboardingContainerViewModel: ObservableObject {
     /// The Persona inquiry id used for the successful government-ID verification, if any.
     @Published var personaInquiryId: String?
 
+    /// How onboarding ended. `nil` until ``resolveFinalOutcome()`` has run.
+    @Published var finalOutcome: OnboardingOutcome?
+
+    /// Whether the flow ends on the confirmation screen, so every rebuild agrees with the first.
+    var showCompletionScreen: Bool = true
+
     /// Either signal alone requires Persona: the merchant asked for `idv`, or the backend stepped
     /// this account up via `currently_due`.
     var governmentIdRequired: Bool {
@@ -124,8 +129,36 @@ class OnboardingContainerViewModel: ObservableObject {
          requiredCapabilities: [FrameObjects.Capabilities]) {
         self.accountId = accountId
         self.requiredCapabilities = requiredCapabilities
+        self.originallyRequiredCapabilities = requiredCapabilities
     }
     
+    /// Re-reads the account and resolves how onboarding actually ended. Capability status settles
+    /// asynchronously, so this re-fetches rather than trusting state read earlier in the flow.
+    ///
+    /// - Returns: The resolved outcome; ``OnboardingOutcome/pendingReview`` when the fetch fails,
+    ///   since without an answer the flow must not claim success.
+    @discardableResult
+    func resolveFinalOutcome() async -> OnboardingOutcome {
+        guard let accountId else { return .pendingReview }
+
+        do {
+            let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            if let error {
+                reportError(error)
+                return .pendingReview
+            }
+            guard let capabilities = account?.capabilities else { return .pendingReview }
+
+            let outcome = OnboardingOutcome.resolve(from: capabilities,
+                                                    required: originallyRequiredCapabilities)
+            self.finalOutcome = outcome
+            return outcome
+        } catch let error {
+            print(error)
+            return .pendingReview
+        }
+    }
+
     // Load existing account object to show on account page.
     func checkExistingAccount(updateCapabilies: Bool = false) async {
         guard let accountId else { return }
@@ -214,7 +247,10 @@ class OnboardingContainerViewModel: ObservableObject {
     func updateOnboardingFlow() {
         let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
         var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
-        onboardingArray.append(.verificationSubmitted)
+        // Ran unconditionally before, so a host that opted out got the screen back on any rebuild.
+        if showCompletionScreen {
+            onboardingArray.append(.verificationSubmitted)
+        }
         
         self.onboardingFlow = onboardingArray
         self.currentStep = onboardingArray.first ?? .personalInformation
@@ -821,9 +857,8 @@ class OnboardingContainerViewModel: ObservableObject {
                 return
             }
 
-            // 3. Confirm with the backend — the authoritative verification result. A non-JSON or
-            //    error response decodes to nil (endpoint may not exist yet, FRA-5363); treat that
-            //    as pending rather than verified.
+            // 3. Confirm with the backend — the authoritative verification result. A response that
+            //    doesn't decode leaves `verified` nil, which is treated as pending, never verified.
             let (completion, completeError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
             guard completeError == nil else {
                 reportError(completeError)
@@ -833,9 +868,9 @@ class OnboardingContainerViewModel: ObservableObject {
                 self.personaInquiryId = inquiryId
                 self.identityVerifiedViaGovId = true
             } else {
-                // The Persona flow finished but the backend didn't confirm verification (declined
-                // or still pending). Tell the applicant so they can retry or enter an SSN instead.
-                FrameToastCenter.shared.show("We couldn't verify your identity. Please try again or enter your Social Security Number.")
+                // Say which failure it was: telling a terminally-declined applicant to try again
+                // sends them round a loop that cannot succeed.
+                FrameToastCenter.shared.show(Self.idvFailureMessage(for: completion))
             }
         } catch let error {
             self.personaService = nil
@@ -843,6 +878,34 @@ class OnboardingContainerViewModel: ObservableObject {
             // A throw here (Persona SDK failure, transport error) is otherwise invisible. When
             // verification gates the step, the applicant needs to know why they can't continue.
             FrameToastCenter.shared.show("We couldn't verify your identity. Please try again or enter your Social Security Number.")
+        }
+    }
+
+    /// What to tell an applicant whose verification didn't come back verified. `category` decides;
+    /// `status` is the fallback when the KYC run has no conclusion to offer.
+    nonisolated static func idvFailureMessage(for completion: IDVCompleteResponse?) -> String {
+        switch completion?.category {
+        case "terminal":
+            return "We couldn't verify your identity. Please contact support if you think this is a mistake."
+        case "review":
+            return "Your verification is in review. We'll be in touch once it's complete."
+        case "retriable_with_new_data":
+            return "Some of your details didn't match. Please check them and try again."
+        case "step_up":
+            return "We need a government ID to finish verifying your identity."
+        case "transient":
+            return "We couldn't complete the check just now. Please try again."
+        default:
+            break
+        }
+
+        switch completion?.status {
+        case "declined", "failed":
+            return "We couldn't verify your identity. Please contact support if you think this is a mistake."
+        case "needs_review":
+            return "Your verification is in review. We'll be in touch once it's complete."
+        default:
+            return "We couldn't verify your identity. Please try again or enter your Social Security Number."
         }
     }
 
@@ -887,38 +950,6 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
 
-    func createCustomerIdentity() async {
-        guard beginAction() else { return }
-        defer { endAction() }
-
-        do {
-            let (identity, error) = try await CustomerIdentityAPI.createCustomerIdentity(request: createdCustomerIdentity)
-            reportError(error)
-            if let identity {
-                self.customerIdentity = identity
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-
-    // Upload ID and selfie documents
-    func uploadIdentificationDocuments() async {
-        guard filesToUpload.count == 3, let customerIdentityId = customerIdentity?.id else { return }
-        guard beginAction() else { return }
-        defer { endAction() }
-
-        do {
-            let (identity, error) = try await CustomerIdentityAPI.uploadIdentityDocuments(customerIdentityId: customerIdentityId, identityImages: filesToUpload)
-            reportError(error)
-            if let identity {
-                self.customerIdentity = identity
-            }
-        } catch let error {
-            print(error)
-        }
-    }
-    
     func errorBinding(_ field: OnboardingField) -> Binding<String?> {
         Binding(
             get: { [weak self] in self?.fieldErrors[field] },
@@ -955,15 +986,6 @@ class OnboardingContainerViewModel: ObservableObject {
         return applyValidation(group: .phoneAuth, errors: errors)
     }
 
-    @discardableResult
-    func validateAllDocs() -> Bool {
-        var errors: [OnboardingField: String] = [:]
-        if !filesToUpload.contains(where: { $0.fieldName == .front }) { errors[.docFront] = "Front of ID is required" }
-        if !filesToUpload.contains(where: { $0.fieldName == .back }) { errors[.docBack] = "Back of ID is required" }
-        if !filesToUpload.contains(where: { $0.fieldName == .selfie }) { errors[.docSelfie] = "Selfie is required" }
-
-        return applyValidation(group: .docs, errors: errors)
-    }
 
     func clearAccountDetails() {
         self.cardData = PaymentCardData()

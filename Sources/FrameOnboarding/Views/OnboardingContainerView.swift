@@ -19,10 +19,6 @@ public enum OnboardingFlow: Int, CaseIterable, Identifiable {
         return "\(self.rawValue)"
     }
 
-//    case countryVerification
-//    case geolocationVerification
-//    case uploadDocuments
-
     /// Collects personal-identification details and handles KYC / phone-verification flows.
     case personalInformation = 0
     /// Prompts the user to add or confirm a card payment method.
@@ -83,6 +79,8 @@ public struct OnboardingContainerView: View {
     @State private var accountLoaded: Bool = false
     /// Guards against emitting a `.cancelled` result on dismiss when the flow already completed.
     @State private var didFinish: Bool = false
+    /// Whether the end-of-flow capability check is still in flight.
+    @State private var isResolvingOutcome: Bool = false
 
     /// The onboarding-session client secret (`onb_sess_…`) that authenticates the flow, if provided.
     private let onboardingClientSecret: String?
@@ -111,6 +109,7 @@ public struct OnboardingContainerView: View {
         self.showCompletionScreen = showCompletionScreen
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId,
                                                                          requiredCapabilities: requiredCapabilities)
+        onboardingContainerViewModel.showCompletionScreen = showCompletionScreen
 
         if requiredCapabilities != [] {
             // Map capabilites to onboarding flow steps
@@ -150,15 +149,18 @@ public struct OnboardingContainerView: View {
                     UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                            continueToNextStep: $continueToNextStep,
                                            returnToPreviousStep: $returnToPreviousStep)
-                    //            case .geolocationVerification:
-                    //                GeolocationView(onboardingContainerViewModel: onboardingContainerViewModel,
-                    //                                continueToNextStep: $continueToNextStep)
-                    //            case .uploadDocuments:
-                    //                UploadIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
-                    //                                         continueToNextStep: $continueToNextStep,
-                    //                                         returnToPreviousStep: $returnToPreviousStep)
                 case .verificationSubmitted:
-                    VerificationSubmittedView(continueToNextStep: $continueToNextStep)
+                    VerificationSubmittedView(continueToNextStep: $continueToNextStep,
+                                              outcome: onboardingContainerViewModel.finalOutcome,
+                                              isResolving: isResolvingOutcome)
+                        .task {
+                            // Capability status settles after the applicant's last answer, so
+                            // resolve on arrival rather than reusing earlier state.
+                            guard onboardingContainerViewModel.finalOutcome == nil else { return }
+                            isResolvingOutcome = true
+                            await onboardingContainerViewModel.resolveFinalOutcome()
+                            isResolvingOutcome = false
+                        }
                 }
             } else {
                 onboardingIntro
@@ -192,13 +194,22 @@ public struct OnboardingContainerView: View {
             guard continueToNextStep else { return }
             guard onboardingContainerViewModel.onboardingFlow.last != onboardingContainerViewModel.currentStep else {
                 // Mark finished BEFORE dismiss so the cancel guard in .onDisappear doesn't fire.
-                // Return the onboarded account id — that's what callers need to scope follow-up
-                // flows (e.g. checkout loads payment methods per account). Covers both the
-                // pre-existing account and the account created during onboarding. Emit empty
-                // string only if onboarding somehow finished without an account.
                 didFinish = true
-                onResult(.completed(id: onboardingContainerViewModel.accountId ?? ""))
-                self.dismiss()
+
+                // Reaching the last step only means every screen was answered, so report what
+                // actually happened. Resolve here too: showCompletionScreen: false skips the screen.
+                let accountId = onboardingContainerViewModel.accountId ?? ""
+                Task {
+                    var outcome = onboardingContainerViewModel.finalOutcome
+                    if outcome == nil {
+                        outcome = await onboardingContainerViewModel.resolveFinalOutcome()
+                    }
+                    let resolved = outcome ?? .pendingReview
+                    onResult(resolved.isSuccess
+                             ? .completed(id: accountId)
+                             : .finishedUnverified(id: accountId, outcome: resolved))
+                    self.dismiss()
+                }
                 return
             } // Complete onboarding here.
             
