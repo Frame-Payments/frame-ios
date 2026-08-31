@@ -44,17 +44,25 @@ extension OnboardingOutcome {
 
     /// Resolves the final outcome from the account's capabilities.
     ///
+    /// The server provisions each required capability's dependencies alongside it, so the set to
+    /// judge is the closure of what the host asked for — the KYC verdict lands on the base `kyc`
+    /// row that `kycPrefill` drags in, never on `kycPrefill` itself.
+    ///
     /// - Parameters:
     ///   - capabilities: The capabilities returned by the account fetch.
     ///   - required: The capabilities this flow set out to satisfy; empty considers all of them.
     /// - Returns: The most demanding outcome among the outstanding capabilities.
     public static func resolve(from capabilities: [FrameObjects.Capability],
                                required: [FrameObjects.Capabilities]) -> OnboardingOutcome {
-        let requiredNames = Set(required.map { $0.rawValue })
+        let requiredNames = Set(FrameObjects.Capabilities.withDependencies(of: required).map { $0.rawValue })
         let relevant = requiredNames.isEmpty
             ? capabilities
             : capabilities.filter { requiredNames.contains($0.name) }
 
+        // A required capability missing from the response is not a failure signal. The server
+        // silently skips capabilities gated on a merchant switch that is off (`geo_compliance`,
+        // `creator_shield`), so an absent row usually means the merchant isn't entitled to it —
+        // not that the applicant fell short. Judging on what came back is the only sound read.
         let outstanding = relevant.filter { $0.isOutstanding }
         guard !outstanding.isEmpty else { return .approved }
 

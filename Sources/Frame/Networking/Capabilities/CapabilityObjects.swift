@@ -184,6 +184,38 @@ extension FrameObjects {
     }
 }
 
+extension FrameObjects.Capabilities {
+    /// Which capabilities cannot be held without which others, mirroring the server's
+    /// `Accounts::Capabilities::DependencyGraph::EDGES`.
+    ///
+    /// An edge from A to B means "A cannot be held without B": requesting A also provisions B.
+    /// The server expands every capability request through this graph, so an account holds more
+    /// capabilities than the host asked for — and the KYC verdict lands on the base `kyc` row
+    /// even when the host only requested `kycPrefill`.
+    ///
+    /// A new edge added server-side must be mirrored here.
+    private static let dependencyEdges: [FrameObjects.Capabilities: [FrameObjects.Capabilities]] = [
+        .kycPrefill: [.kyc, .phoneVerification],
+        .creatorShield: [.kyc, .ageVerification],
+        .kyc: [.phoneVerification]
+    ]
+
+    /// Everything these capabilities drag in with them, themselves included.
+    ///
+    /// Transitive: `kycPrefill` reaches `phoneVerification` only by way of `kyc`.
+    static func withDependencies(of capabilities: [FrameObjects.Capabilities]) -> Set<FrameObjects.Capabilities> {
+        var reached: Set<FrameObjects.Capabilities> = []
+        var pending = capabilities
+
+        while let capability = pending.popLast() {
+            guard reached.insert(capability).inserted else { continue }
+            pending.append(contentsOf: dependencyEdges[capability] ?? [])
+        }
+
+        return reached
+    }
+}
+
 extension FrameObjects.Capability {
     /// A commercial disable, not a verdict about the account holder.
     static let productGrantRevokedReason = "product_grant_revoked"

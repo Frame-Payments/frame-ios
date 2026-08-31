@@ -524,8 +524,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameObjects.CapabilityStatus.unknown` | case | `case unknown` | [159](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L159) |
 | `FrameObjects.CapabilityError` | struct | `struct CapabilityError: Codable, Sendable, Equatable` | [163](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L163) |
 | `FrameObjects.CapabilityError.id` | let | `let id: String` | [165](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L165) |
-| `FrameObjects.capabilityStatus` | var | `var capabilityStatus: FrameObjects.CapabilityStatus` | [192](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L192) |
-| `FrameObjects.isOutstanding` | var | `var isOutstanding: Bool` | [200](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L200) |
+| `FrameObjects.capabilityStatus` | var | `var capabilityStatus: FrameObjects.CapabilityStatus` | [224](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L224) |
+| `FrameObjects.isOutstanding` | var | `var isOutstanding: Bool` | [232](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L232) |
 
 </details>
 
@@ -2020,7 +2020,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `OnboardingOutcome.declined` | case | `case declined(message: String?)` | [19](../Sources/Frame/Public/OnboardingOutcome.swift#L19) |
 | `OnboardingOutcome.actionRequired` | case | `case actionRequired(message: String?)` | [22](../Sources/Frame/Public/OnboardingOutcome.swift#L22) |
 | `OnboardingOutcome.isSuccess` | var | `var isSuccess: Bool` | [25](../Sources/Frame/Public/OnboardingOutcome.swift#L25) |
-| `OnboardingOutcome.resolve` | func | `func resolve(from capabilities: [FrameObjects.Capability], required: [FrameObjects.Capabilities]) -> OnboardingOutcome` | [51](../Sources/Frame/Public/OnboardingOutcome.swift#L51) |
+| `OnboardingOutcome.resolve` | func | `func resolve(from capabilities: [FrameObjects.Capability], required: [FrameObjects.Capabilities]) -> OnboardingOutcome` | [55](../Sources/Frame/Public/OnboardingOutcome.swift#L55) |
 
 </details>
 

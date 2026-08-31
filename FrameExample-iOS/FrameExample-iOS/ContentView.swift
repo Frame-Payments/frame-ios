@@ -136,7 +136,10 @@ struct ContentView: View {
                     case .cancelled:
                         FrameToastCenter.shared.show("Cancelled flow")
                     case .failed(let error):
-                    FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                        FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    // Checkout never ends unverified; the cart only forwards it, so surface it.
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
                 }
             })
                 .presentationDragIndicator(.visible)
@@ -156,6 +159,9 @@ struct ContentView: View {
                         FrameToastCenter.shared.show("Cancelled flow")
                     case .failed(let error):
                         FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    // Picking a payout method never ends unverified, but don't go silent on it.
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
                 }
             })
                 .presentationDragIndicator(.visible)
