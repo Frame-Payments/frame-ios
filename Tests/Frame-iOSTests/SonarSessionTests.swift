@@ -222,6 +222,18 @@ final class FingerprintCapabilityHeaderTests: XCTestCase {
         XCTAssertEqual(headers["X-Frame-Sonar"], "sealed")
     }
 
+    /// The regression this guards: `/v1/config/all` is the only config request a normal
+    /// launch makes, and its cached fingerprint block is what every later
+    /// `getFingerprintConfiguration()` serves. Without the header here the process runs
+    /// on a legacy key, Fingerprint seals nothing, and the session posts no sealed result
+    /// — with the individual endpoint's header still passing its own test.
+    func testAggregateConfigDeclaresSealedCapability() {
+        let headers = ConfigurationEndpoints.getAllConfiguration.additionalHeaders
+
+        XCTAssertEqual(headers["X-Frame-Sonar"], "sealed",
+                       "The aggregate endpoint must declare the capability too, or the launch path never asks for a sealed key.")
+    }
+
     func testOtherConfigEndpointsDeclareNothing() {
         XCTAssertTrue(ConfigurationEndpoints.getSiftConfiguration.additionalHeaders.isEmpty)
         XCTAssertTrue(ConfigurationEndpoints.getLegalConfiguration.additionalHeaders.isEmpty)

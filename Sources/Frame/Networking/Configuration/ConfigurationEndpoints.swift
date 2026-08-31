@@ -43,10 +43,15 @@ enum ConfigurationEndpoints: FrameNetworkingEndpoints {
 
     var additionalHeaders: [String: String] {
         switch self {
-        case .getFingerprintConfiguration:
+        case .getFingerprintConfiguration, .getAllConfiguration:
             // Declares what this build can handle, not which release it is: the API
             // reads this to decide which Fingerprint environment's key to serve.
             // Saying nothing keeps the legacy key, which is what older builds get.
+            //
+            // The aggregate endpoint carries it too: it is the only config request a
+            // normal launch makes, and its cached fingerprint block is what every
+            // later `getFingerprintConfiguration()` serves. Without the header here
+            // the whole process runs on a legacy key and never asks for a sealed one.
             return [FingerprintCapability.header: FingerprintCapability.sealed]
         default:
             return [:]

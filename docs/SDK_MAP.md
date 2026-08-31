@@ -154,8 +154,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FingerprintConfiguration` | enum | `enum FingerprintConfiguration` | [17](../Sources/Frame/Networking/FingerprintManager.swift#L17) |
-| `FingerprintConfiguration.extendedResponseFormat` | var | `var extendedResponseFormat: Bool = false` | [19](../Sources/Frame/Networking/FingerprintManager.swift#L19) |
-| `FingerprintConfiguration.allowUseOfLocationData` | var | `var allowUseOfLocationData: Bool = false` | [21](../Sources/Frame/Networking/FingerprintManager.swift#L21) |
+| `FingerprintConfiguration.extendedResponseFormat` | var | `var extendedResponseFormat: Bool = false` | [22](../Sources/Frame/Networking/FingerprintManager.swift#L22) |
+| `FingerprintConfiguration.allowUseOfLocationData` | var | `var allowUseOfLocationData: Bool = false` | [24](../Sources/Frame/Networking/FingerprintManager.swift#L24) |
 
 </details>
 

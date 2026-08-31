@@ -16,6 +16,9 @@ enum FingerprintCapability {
 /// behaviour toggles are exposed here.
 public enum FingerprintConfiguration {
     /// Whether to request extended response format from Fingerprint.
+    ///
+    /// Forced on regardless of this setting when the configuration API serves a sealed
+    /// key, since the sealed result is only present on the extended response.
     public static var extendedResponseFormat: Bool = false
     /// Whether Fingerprint is permitted to use device location data when generating a fingerprint.
     public static var allowUseOfLocationData: Bool = false
@@ -90,10 +93,14 @@ enum FingerprintManager {
             return nil
         }
 
+        // A sealed result only appears on the extended response, so a sealed key forces
+        // the format on regardless of the integrator's setting. Left to the public flag
+        // — which defaults to off — `sealedResult` comes back nil for every request and
+        // the session silently posts nothing to identify the device with.
         let configuration = Configuration(
             apiKey: apiKey,
             region: region(from: configResponse.region),
-            extendedResponseFormat: FingerprintConfiguration.extendedResponseFormat,
+            extendedResponseFormat: configResponse.isSealed || FingerprintConfiguration.extendedResponseFormat,
             allowUseOfLocationData: FingerprintConfiguration.allowUseOfLocationData
         )
 
