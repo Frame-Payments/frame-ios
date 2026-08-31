@@ -272,6 +272,22 @@ public class FrameNetworking: ObservableObject {
         #endif
     }
 
+    /// Applies the headers every Frame API request carries: the credential, the
+    /// platform, this SDK's version, and the caller's IP when one is available.
+    ///
+    /// The `User-Agent` stays the bare platform token. The API matches it exactly in
+    /// places — Sift's platform detector anchors on `/\AiOS\z/` — so a version
+    /// appended here would reclassify native traffic as a browser and quietly change
+    /// the fraud signals we send. The version travels in its own header instead.
+    private func applySharedHeaders(to urlRequest: inout URLRequest, auth: FrameAuthMode) {
+        urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
+        urlRequest.setValue(FrameSDK.version, forHTTPHeaderField: FrameSDK.versionHeader)
+        if let ipAddress = SiftManager.getIPAddress() {
+            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
+        }
+    }
+
     // Async/Await
     /// Performs an authenticated HTTP data task against a Frame API endpoint.
     ///
@@ -291,17 +307,16 @@ public class FrameNetworking: ObservableObject {
         if let acceptHeader = endpoint.acceptHeader {
             urlRequest.setValue(acceptHeader, forHTTPHeaderField: "Accept")
         }
+        for (field, value) in endpoint.additionalHeaders {
+            urlRequest.setValue(value, forHTTPHeaderField: field)
+        }
 
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
 
-        urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
-        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
-        if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
-        }
+        applySharedHeaders(to: &urlRequest, auth: auth)
 
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
@@ -356,11 +371,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpBody = body
         urlRequest.setValue(multipart.contentTypeHeader, forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
-        urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
-        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
-        if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
-        }
+        applySharedHeaders(to: &urlRequest, auth: auth)
 
         do {
             let (data, response) = try await asyncURLSession.data(for: urlRequest)
@@ -401,18 +412,16 @@ public class FrameNetworking: ObservableObject {
         if let acceptHeader = endpoint.acceptHeader {
             urlRequest.setValue(acceptHeader, forHTTPHeaderField: "Accept")
         }
+        for (field, value) in endpoint.additionalHeaders {
+            urlRequest.setValue(value, forHTTPHeaderField: field)
+        }
 
         urlRequest.httpBody = requestBody
         if let queryItems = endpoint.queryItems {
             urlRequest.url?.append(queryItems: queryItems)
         }
 
-        urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
-        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
-
-        if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
-        }
+        applySharedHeaders(to: &urlRequest, auth: auth)
 
         urlSession.dataTask(with: urlRequest) { data, response, error in
             var networkingError: NetworkingError?
@@ -469,12 +478,7 @@ public class FrameNetworking: ObservableObject {
         urlRequest.httpBody = body
         urlRequest.setValue(multipart.contentTypeHeader, forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("\(body.count)", forHTTPHeaderField: "Content-Length")
-        urlRequest.setValue("Bearer \(bearerToken(for: auth))", forHTTPHeaderField: "Authorization")
-        urlRequest.setValue("iOS", forHTTPHeaderField: "User-Agent")
-
-        if let ipAddress = SiftManager.getIPAddress() {
-            urlRequest.setValue(ipAddress, forHTTPHeaderField: "ip_address")
-        }
+        applySharedHeaders(to: &urlRequest, auth: auth)
 
         urlSession.dataTask(with: urlRequest) { data, response, error in
             var networkingError: NetworkingError?

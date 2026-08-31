@@ -39,26 +39,39 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1425 public symbols** across 138 files in 2 modules.
+**1428 public symbols** across 139 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
 | Structs | 181 |
-| Enums | 60 |
+| Enums | 61 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
 | Initializers | 122 |
-| Methods | 277 |
+| Methods | 278 |
 | Properties (var) | 217 |
-| Properties (let) | 262 |
+| Properties (let) | 263 |
 | Enum cases | 218 |
-| **Total** | **1425** |
+| **Total** | **1428** |
 
-### `Frame` — 1253 public symbols
+### `Frame` — 1256 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
+
+#### (root) (2)
+
+<details><summary><code>Version.swift</code> — 2 symbols</summary>
+
+[`Sources/Frame/Version.swift`](../Sources/Frame/Version.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `FrameSDK` | enum | `enum FrameSDK` | [9](../Sources/Frame/Version.swift#L9) |
+| `FrameSDK.version` | let | `let version =` | [15](../Sources/Frame/Version.swift#L15) |
+
+</details>
 
 #### Extensions (2)
 
@@ -100,23 +113,23 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FileUpload.fieldName` | let | `let fieldName: FieldName` | [76](../Sources/Frame/Networking/CommonObjects.swift#L76) |
 | `FileUpload.init` | init | `init (image: UIImage, fieldName: FieldName)` | [89](../Sources/Frame/Networking/CommonObjects.swift#L89) |
 | `FrameNetworkingEndpoints` | protocol | `protocol FrameNetworkingEndpoints` | [99](../Sources/Frame/Networking/CommonObjects.swift#L99) |
-| `URLSessionProtocol` | protocol | `protocol URLSessionProtocol` | [126](../Sources/Frame/Networking/CommonObjects.swift#L126) |
-| `FrameResources` | enum | `enum FrameResources` | [135](../Sources/Frame/Networking/CommonObjects.swift#L135) |
-| `FrameResources.module` | var | `var module: Bundle` | [138](../Sources/Frame/Networking/CommonObjects.swift#L138) |
-| `FrameResources.module` | let | `let module: Bundle =` | [144](../Sources/Frame/Networking/CommonObjects.swift#L144) |
-| `NetworkingError` | enum | `enum NetworkingError: Error, Equatable` | [159](../Sources/Frame/Networking/CommonObjects.swift#L159) |
-| `NetworkingError.noData` | case | `case noData` | [161](../Sources/Frame/Networking/CommonObjects.swift#L161) |
-| `NetworkingError.invalidURL` | case | `case invalidURL` | [163](../Sources/Frame/Networking/CommonObjects.swift#L163) |
-| `NetworkingError.decodingFailed` | case | `case decodingFailed` | [165](../Sources/Frame/Networking/CommonObjects.swift#L165) |
-| `NetworkingError.serverError` | case | `case serverError(statusCode: Int, errorDescription: String)` | [171](../Sources/Frame/Networking/CommonObjects.swift#L171) |
-| `NetworkingError.unknownError` | case | `case unknownError` | [173](../Sources/Frame/Networking/CommonObjects.swift#L173) |
-| `NetworkingError.isAssertionRejection` | var | `var isAssertionRejection: Bool` | [179](../Sources/Frame/Networking/CommonObjects.swift#L179) |
-| `NetworkingError.isTransport` | var | `var isTransport: Bool` | [189](../Sources/Frame/Networking/CommonObjects.swift#L189) |
-| `NetworkingError.toastMessage` | func | `func toastMessage(fallback: String = ) -> String` | [200](../Sources/Frame/Networking/CommonObjects.swift#L200) |
-| `FrameMetadata` | struct | `struct FrameMetadata: Codable` | [260](../Sources/Frame/Networking/CommonObjects.swift#L260) |
-| `FrameMetadata.page` | let | `let page: Int` | [262](../Sources/Frame/Networking/CommonObjects.swift#L262) |
-| `FrameMetadata.url` | let | `let url: String` | [265](../Sources/Frame/Networking/CommonObjects.swift#L265) |
-| `FrameMetadata.hasMore` | let | `let hasMore: Bool` | [268](../Sources/Frame/Networking/CommonObjects.swift#L268) |
+| `URLSessionProtocol` | protocol | `protocol URLSessionProtocol` | [134](../Sources/Frame/Networking/CommonObjects.swift#L134) |
+| `FrameResources` | enum | `enum FrameResources` | [143](../Sources/Frame/Networking/CommonObjects.swift#L143) |
+| `FrameResources.module` | var | `var module: Bundle` | [146](../Sources/Frame/Networking/CommonObjects.swift#L146) |
+| `FrameResources.module` | let | `let module: Bundle =` | [152](../Sources/Frame/Networking/CommonObjects.swift#L152) |
+| `NetworkingError` | enum | `enum NetworkingError: Error, Equatable` | [167](../Sources/Frame/Networking/CommonObjects.swift#L167) |
+| `NetworkingError.noData` | case | `case noData` | [169](../Sources/Frame/Networking/CommonObjects.swift#L169) |
+| `NetworkingError.invalidURL` | case | `case invalidURL` | [171](../Sources/Frame/Networking/CommonObjects.swift#L171) |
+| `NetworkingError.decodingFailed` | case | `case decodingFailed` | [173](../Sources/Frame/Networking/CommonObjects.swift#L173) |
+| `NetworkingError.serverError` | case | `case serverError(statusCode: Int, errorDescription: String)` | [179](../Sources/Frame/Networking/CommonObjects.swift#L179) |
+| `NetworkingError.unknownError` | case | `case unknownError` | [181](../Sources/Frame/Networking/CommonObjects.swift#L181) |
+| `NetworkingError.isAssertionRejection` | var | `var isAssertionRejection: Bool` | [187](../Sources/Frame/Networking/CommonObjects.swift#L187) |
+| `NetworkingError.isTransport` | var | `var isTransport: Bool` | [197](../Sources/Frame/Networking/CommonObjects.swift#L197) |
+| `NetworkingError.toastMessage` | func | `func toastMessage(fallback: String = ) -> String` | [208](../Sources/Frame/Networking/CommonObjects.swift#L208) |
+| `FrameMetadata` | struct | `struct FrameMetadata: Codable` | [268](../Sources/Frame/Networking/CommonObjects.swift#L268) |
+| `FrameMetadata.page` | let | `let page: Int` | [270](../Sources/Frame/Networking/CommonObjects.swift#L270) |
+| `FrameMetadata.url` | let | `let url: String` | [273](../Sources/Frame/Networking/CommonObjects.swift#L273) |
+| `FrameMetadata.hasMore` | let | `let hasMore: Bool` | [276](../Sources/Frame/Networking/CommonObjects.swift#L276) |
 
 </details>
 
@@ -140,9 +153,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `FingerprintConfiguration` | enum | `enum FingerprintConfiguration` | [9](../Sources/Frame/Networking/FingerprintManager.swift#L9) |
-| `FingerprintConfiguration.extendedResponseFormat` | var | `var extendedResponseFormat: Bool = false` | [11](../Sources/Frame/Networking/FingerprintManager.swift#L11) |
-| `FingerprintConfiguration.allowUseOfLocationData` | var | `var allowUseOfLocationData: Bool = false` | [13](../Sources/Frame/Networking/FingerprintManager.swift#L13) |
+| `FingerprintConfiguration` | enum | `enum FingerprintConfiguration` | [17](../Sources/Frame/Networking/FingerprintManager.swift#L17) |
+| `FingerprintConfiguration.extendedResponseFormat` | var | `var extendedResponseFormat: Bool = false` | [22](../Sources/Frame/Networking/FingerprintManager.swift#L22) |
+| `FingerprintConfiguration.allowUseOfLocationData` | var | `var allowUseOfLocationData: Bool = false` | [24](../Sources/Frame/Networking/FingerprintManager.swift#L24) |
 
 </details>
 
@@ -160,10 +173,10 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [153](../Sources/Frame/Networking/FrameNetworking.swift#L153) |
 | `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [165](../Sources/Frame/Networking/FrameNetworking.swift#L165) |
 | `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [171](../Sources/Frame/Networking/FrameNetworking.swift#L171) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [283](../Sources/Frame/Networking/FrameNetworking.swift#L283) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [333](../Sources/Frame/Networking/FrameNetworking.swift#L333) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [393](../Sources/Frame/Networking/FrameNetworking.swift#L393) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [446](../Sources/Frame/Networking/FrameNetworking.swift#L446) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [299](../Sources/Frame/Networking/FrameNetworking.swift#L299) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [348](../Sources/Frame/Networking/FrameNetworking.swift#L348) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [404](../Sources/Frame/Networking/FrameNetworking.swift#L404) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [455](../Sources/Frame/Networking/FrameNetworking.swift#L455) |
 
 </details>
 
@@ -199,16 +212,16 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `SessionManagerError` | enum | `enum SessionManagerError: Error, Equatable` | [6](../Sources/Frame/Networking/SonarSessionManager.swift#L6) |
-| `SessionManagerError.missingVisitorId` | case | `case missingVisitorId` | [8](../Sources/Frame/Networking/SonarSessionManager.swift#L8) |
-| `SessionManagerError.requestFailed` | case | `case requestFailed(NetworkingError)` | [11](../Sources/Frame/Networking/SonarSessionManager.swift#L11) |
-| `SessionManager` | actor | `actor SessionManager` | [26](../Sources/Frame/Networking/SonarSessionManager.swift#L26) |
-| `SessionManager.shared` | let | `let shared = SessionManager()` | [28](../Sources/Frame/Networking/SonarSessionManager.swift#L28) |
-| `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [63](../Sources/Frame/Networking/SonarSessionManager.swift#L63) |
-| `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [90](../Sources/Frame/Networking/SonarSessionManager.swift#L90) |
-| `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [123](../Sources/Frame/Networking/SonarSessionManager.swift#L123) |
-| `SessionManager.resume` | func | `func resume() async` | [185](../Sources/Frame/Networking/SonarSessionManager.swift#L185) |
-| `SessionManager.pause` | func | `func pause()` | [192](../Sources/Frame/Networking/SonarSessionManager.swift#L192) |
-| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [211](../Sources/Frame/Networking/SonarSessionManager.swift#L211) |
+| `SessionManagerError.missingVisitorId` | case | `case missingVisitorId` | [12](../Sources/Frame/Networking/SonarSessionManager.swift#L12) |
+| `SessionManagerError.requestFailed` | case | `case requestFailed(NetworkingError)` | [15](../Sources/Frame/Networking/SonarSessionManager.swift#L15) |
+| `SessionManager` | actor | `actor SessionManager` | [30](../Sources/Frame/Networking/SonarSessionManager.swift#L30) |
+| `SessionManager.shared` | let | `let shared = SessionManager()` | [32](../Sources/Frame/Networking/SonarSessionManager.swift#L32) |
+| `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [68](../Sources/Frame/Networking/SonarSessionManager.swift#L68) |
+| `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [81](../Sources/Frame/Networking/SonarSessionManager.swift#L81) |
+| `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [114](../Sources/Frame/Networking/SonarSessionManager.swift#L114) |
+| `SessionManager.resume` | func | `func resume() async` | [176](../Sources/Frame/Networking/SonarSessionManager.swift#L176) |
+| `SessionManager.pause` | func | `func pause()` | [183](../Sources/Frame/Networking/SonarSessionManager.swift#L183) |
+| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [202](../Sources/Frame/Networking/SonarSessionManager.swift#L202) |
 
 </details>
 
@@ -739,11 +752,11 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `ConfigurationResponses` | class | `class ConfigurationResponses` | [11](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L11) |
 | `ConfigurationResponses.GetEvervaultConfigurationResponse` | struct | `struct GetEvervaultConfigurationResponse: Codable` | [13](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L13) |
-| `ConfigurationResponses.GetFingerprintConfigurationResponse` | struct | `struct GetFingerprintConfigurationResponse: Codable` | [26](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L26) |
-| `ConfigurationResponses.GetSiftConfigurationResponse` | struct | `struct GetSiftConfigurationResponse: Codable` | [39](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L39) |
-| `ConfigurationResponses.GetLegalConfigurationResponse` | struct | `struct GetLegalConfigurationResponse: Codable` | [53](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L53) |
-| `ConfigurationResponses.GetMapboxConfigurationResponse` | struct | `struct GetMapboxConfigurationResponse: Codable` | [69](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L69) |
-| `ConfigurationResponses.GetAllConfigurationResponse` | struct | `struct GetAllConfigurationResponse: Codable` | [98](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L98) |
+| `ConfigurationResponses.GetFingerprintConfigurationResponse` | struct | `struct GetFingerprintConfigurationResponse: Codable` | [31](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L31) |
+| `ConfigurationResponses.GetSiftConfigurationResponse` | struct | `struct GetSiftConfigurationResponse: Codable` | [60](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L60) |
+| `ConfigurationResponses.GetLegalConfigurationResponse` | struct | `struct GetLegalConfigurationResponse: Codable` | [74](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L74) |
+| `ConfigurationResponses.GetMapboxConfigurationResponse` | struct | `struct GetMapboxConfigurationResponse: Codable` | [90](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L90) |
+| `ConfigurationResponses.GetAllConfigurationResponse` | struct | `struct GetAllConfigurationResponse: Codable` | [119](../Sources/Frame/Networking/Configuration/ConfigurationResponses.swift#L119) |
 
 </details>
 
@@ -1617,7 +1630,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/SonarSessions (19)
+#### Networking/SonarSessions (20)
 
 <details><summary><code>SonarSessionEndpoints.swift</code> — 6 symbols</summary>
 
@@ -1653,7 +1666,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>SonarSessionRequests.swift</code> — 3 symbols</summary>
+<details><summary><code>SonarSessionRequests.swift</code> — 4 symbols</summary>
 
 [`Sources/Frame/Networking/SonarSessions/SonarSessionRequests.swift`](../Sources/Frame/Networking/SonarSessions/SonarSessionRequests.swift)
 
@@ -1662,6 +1675,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `SessionId` | typealias | `typealias SessionId = String` | [11](../Sources/Frame/Networking/SonarSessions/SonarSessionRequests.swift#L11) |
 | `SessionResponse` | struct | `struct SessionResponse: Decodable` | [14](../Sources/Frame/Networking/SonarSessions/SonarSessionRequests.swift#L14) |
 | `SessionRequestBody` | struct | `struct SessionRequestBody: Encodable` | [24](../Sources/Frame/Networking/SonarSessions/SonarSessionRequests.swift#L24) |
+| `SessionRequestBody.encode` | func | `func encode(to encoder: Encoder) throws` | [64](../Sources/Frame/Networking/SonarSessions/SonarSessionRequests.swift#L64) |
 
 </details>
 
