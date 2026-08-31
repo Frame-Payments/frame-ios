@@ -105,6 +105,11 @@ struct ContentView: View {
                 switch result {
                 case .completed(let id):
                     viewModel.accountId = id
+                // The flow ran to the end but the applicant isn't verified. Keep the account id —
+                // it's still needed to scope follow-up calls — but don't treat this as onboarded.
+                case .finishedUnverified(let id, let outcome):
+                    viewModel.accountId = id
+                    print("Onboarding finished unverified: \(outcome)")
                 case .cancelled:
                     return
                 case .failed(let error):
@@ -131,7 +136,10 @@ struct ContentView: View {
                     case .cancelled:
                         FrameToastCenter.shared.show("Cancelled flow")
                     case .failed(let error):
-                    FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                        FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    // Checkout never ends unverified; the cart only forwards it, so surface it.
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
                 }
             })
                 .presentationDragIndicator(.visible)
@@ -151,6 +159,9 @@ struct ContentView: View {
                         FrameToastCenter.shared.show("Cancelled flow")
                     case .failed(let error):
                         FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    // Picking a payout method never ends unverified, but don't go silent on it.
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
                 }
             })
                 .presentationDragIndicator(.visible)

@@ -153,6 +153,7 @@ public struct BillingAddressDetailView: View {
                                                text: $viewModel.address.city.orEmpty,
                                                error: viewModel.errorBinding(.city),
                                                textContentType: .addressCity,
+                                               inputRestriction: .textOnly,
                                                inlineError: true)
                             Divider()
                             if subregions != nil {
@@ -163,6 +164,7 @@ public struct BillingAddressDetailView: View {
                                                    error: viewModel.errorBinding(.state),
                                                    textContentType: .addressState,
                                                    characterLimit: format.stateMaxLength,
+                                                   inputRestriction: .textOnly,
                                                    inlineError: true)
                             }
                         }

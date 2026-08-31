@@ -110,8 +110,15 @@ extension FrameObjects {
         /// Current status of the capability (e.g., `"active"`, `"inactive"`, `"pending"`).
         public let status: String
 
-        /// Reason the capability is disabled, if applicable.
+        /// Reason the capability is disabled, if applicable. See ``isOutstanding``.
         @Lenient public private(set) var disabledReason: String?
+
+        /// Reason the account is ineligible to hold this capability, if applicable.
+        @Lenient public private(set) var ineligibleReason: String?
+
+        /// Why this capability has not been granted, derived from the latest concluded
+        /// identity-verification run. At most one entry, and only for `kyc` today.
+        @Lenient public private(set) var errors: [CapabilityError]?
 
         /// List of requirement keys that are currently outstanding and must be resolved.
         @Lenient public private(set) var currentlyDue: [String]?
@@ -129,8 +136,107 @@ extension FrameObjects {
             case id, object, name, status
             case accountId = "account_id"
             case disabledReason = "disabled_reason"
+            case ineligibleReason = "ineligible_reason"
             case currentlyDue = "currently_due"
-            case created, updated, disabled
+            case created, updated, disabled, errors
+        }
+    }
+
+    /// Statuses a capability can hold on an account. Mapped from the wire `String`, so a value
+    /// added server-side becomes ``unknown`` rather than breaking a shipped app.
+    public enum CapabilityStatus: String, Sendable, Equatable {
+        /// Never requested for this account.
+        case unrequested
+        /// Requested, but its requirements are not yet satisfied.
+        case pending
+        /// Granted and in effect.
+        case active
+        /// Held but switched off. ``Capability/disabledReason`` says whether that was risk-borne.
+        case disabled
+        /// The account type may not hold this capability.
+        case ineligible
+        /// A status this SDK version does not know.
+        case unknown
+    }
+
+    /// A server-derived conclusion about why a capability has not been granted.
+    public struct CapabilityError: Codable, Sendable, Equatable {
+        /// Identifier for this derived conclusion.
+        public let id: String
+
+        /// Object type identifier returned by the Frame API.
+        @Lenient public private(set) var object: String?
+
+        /// Frame's provider-neutral failure type, e.g. `identity_mismatch`, `verification_rejected`.
+        @Lenient public private(set) var code: String?
+
+        /// Display-ready explanation. Preferred over client-side copy so every Frame surface
+        /// says the same words.
+        @Lenient public private(set) var message: String?
+
+        /// The requirement this conclusion is attached to, if any.
+        @Lenient public private(set) var requirementId: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id, object, code, message
+            case requirementId = "requirement_id"
+        }
+    }
+}
+
+extension FrameObjects.Capabilities {
+    /// Which capabilities cannot be held without which others, mirroring the server's
+    /// `Accounts::Capabilities::DependencyGraph::EDGES`.
+    ///
+    /// An edge from A to B means "A cannot be held without B": requesting A also provisions B.
+    /// The server expands every capability request through this graph, so an account holds more
+    /// capabilities than the host asked for — and the KYC verdict lands on the base `kyc` row
+    /// even when the host only requested `kycPrefill`.
+    ///
+    /// A new edge added server-side must be mirrored here.
+    private static let dependencyEdges: [FrameObjects.Capabilities: [FrameObjects.Capabilities]] = [
+        .kycPrefill: [.kyc, .phoneVerification],
+        .creatorShield: [.kyc, .ageVerification],
+        .kyc: [.phoneVerification]
+    ]
+
+    /// Everything these capabilities drag in with them, themselves included.
+    ///
+    /// Transitive: `kycPrefill` reaches `phoneVerification` only by way of `kyc`.
+    static func withDependencies(of capabilities: [FrameObjects.Capabilities]) -> Set<FrameObjects.Capabilities> {
+        var reached: Set<FrameObjects.Capabilities> = []
+        var pending = capabilities
+
+        while let capability = pending.popLast() {
+            guard reached.insert(capability).inserted else { continue }
+            pending.append(contentsOf: dependencyEdges[capability] ?? [])
+        }
+
+        return reached
+    }
+}
+
+extension FrameObjects.Capability {
+    /// A commercial disable, not a verdict about the account holder.
+    static let productGrantRevokedReason = "product_grant_revoked"
+
+    /// This capability's status, degrading an unrecognized value to `unknown`.
+    public var capabilityStatus: FrameObjects.CapabilityStatus {
+        FrameObjects.CapabilityStatus(rawValue: status) ?? .unknown
+    }
+
+    /// Whether this capability still stands between the account and a successful onboarding.
+    ///
+    /// Mirrors the server's `Capability#blocks_activation?`. Reads `status`, not `currentlyDue`:
+    /// `idv` declares no field keys, so it reports nothing due even when unsatisfied.
+    public var isOutstanding: Bool {
+        switch capabilityStatus {
+        case .active, .unrequested, .ineligible:
+            return false
+        case .disabled:
+            return disabledReason != Self.productGrantRevokedReason
+        case .pending, .unknown:
+            return true
         }
     }
 }

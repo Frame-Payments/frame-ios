@@ -72,12 +72,14 @@ public struct CustomerInformationView: View {
                                                text: $viewModel.identity.firstName,
                                                error: viewModel.errorBinding(.firstName),
                                                textContentType: .givenName,
+                                               inputRestriction: .textOnly,
                                                inlineError: true)
                             Divider()
                             ValidatedTextField(prompt: "Last Name",
                                                text: $viewModel.identity.lastName,
                                                error: viewModel.errorBinding(.lastName),
                                                textContentType: .familyName,
+                                               inputRestriction: .textOnly,
                                                inlineError: true)
                         }
                         .frame(height: 49.0)

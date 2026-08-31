@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1428 public symbols** across 139 files in 2 modules.
+**1449 public symbols** across 140 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
-| Structs | 181 |
-| Enums | 61 |
+| Structs | 182 |
+| Enums | 64 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
 | Initializers | 122 |
-| Methods | 278 |
-| Properties (var) | 217 |
+| Methods | 279 |
+| Properties (var) | 220 |
 | Properties (let) | 263 |
-| Enum cases | 218 |
-| **Total** | **1428** |
+| Enum cases | 231 |
+| **Total** | **1449** |
 
-### `Frame` — 1256 public symbols
+### `Frame` — 1278 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -459,7 +459,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Capabilities (45)
+#### Networking/Capabilities (56)
 
 <details><summary><code>CapabilitiesAPI.swift</code> — 9 symbols</summary>
 
@@ -479,7 +479,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>CapabilityObjects.swift</code> — 30 symbols</summary>
+<details><summary><code>CapabilityObjects.swift</code> — 41 symbols</summary>
 
 [`Sources/Frame/Networking/Capabilities/CapabilityObjects.swift`](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift)
 
@@ -513,8 +513,19 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameObjects.Capability.name` | let | `let name: String` | [105](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L105) |
 | `FrameObjects.Capability.accountId` | let | `let accountId: String` | [108](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L108) |
 | `FrameObjects.Capability.status` | let | `let status: String` | [111](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L111) |
-| `FrameObjects.Capability.created` | let | `let created: String` | [120](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L120) |
-| `FrameObjects.Capability.updated` | let | `let updated: String` | [123](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L123) |
+| `FrameObjects.Capability.created` | let | `let created: String` | [127](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L127) |
+| `FrameObjects.Capability.updated` | let | `let updated: String` | [130](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L130) |
+| `FrameObjects.CapabilityStatus` | enum | `enum CapabilityStatus: String, Sendable, Equatable` | [147](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L147) |
+| `FrameObjects.CapabilityStatus.unrequested` | case | `case unrequested` | [149](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L149) |
+| `FrameObjects.CapabilityStatus.pending` | case | `case pending` | [151](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L151) |
+| `FrameObjects.CapabilityStatus.active` | case | `case active` | [153](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L153) |
+| `FrameObjects.CapabilityStatus.disabled` | case | `case disabled` | [155](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L155) |
+| `FrameObjects.CapabilityStatus.ineligible` | case | `case ineligible` | [157](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L157) |
+| `FrameObjects.CapabilityStatus.unknown` | case | `case unknown` | [159](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L159) |
+| `FrameObjects.CapabilityError` | struct | `struct CapabilityError: Codable, Sendable, Equatable` | [163](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L163) |
+| `FrameObjects.CapabilityError.id` | let | `let id: String` | [165](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L165) |
+| `FrameObjects.capabilityStatus` | var | `var capabilityStatus: FrameObjects.CapabilityStatus` | [224](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L224) |
+| `FrameObjects.isOutstanding` | var | `var isOutstanding: Bool` | [232](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L232) |
 
 </details>
 
@@ -1974,9 +1985,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Public (11)
+#### Public (19)
 
-<details><summary><code>FrameResults.swift</code> — 11 symbols</summary>
+<details><summary><code>FrameResults.swift</code> — 12 symbols</summary>
 
 [`Sources/Frame/Public/FrameResults.swift`](../Sources/Frame/Public/FrameResults.swift)
 
@@ -1984,15 +1995,32 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `FrameResult` | enum | `enum FrameResult` | [14](../Sources/Frame/Public/FrameResults.swift#L14) |
 | `FrameResult.completed` | case | `case completed(id: String)` | [19](../Sources/Frame/Public/FrameResults.swift#L19) |
-| `FrameResult.cancelled` | case | `case cancelled` | [22](../Sources/Frame/Public/FrameResults.swift#L22) |
-| `FrameResult.failed` | case | `case failed(Error)` | [27](../Sources/Frame/Public/FrameResults.swift#L27) |
-| `FrameCheckoutError` | enum | `enum FrameCheckoutError: Error` | [31](../Sources/Frame/Public/FrameResults.swift#L31) |
-| `FrameCheckoutError.declined` | case | `case declined(message: String?)` | [33](../Sources/Frame/Public/FrameResults.swift#L33) |
-| `FrameCheckoutError.unresolved` | case | `case unresolved` | [38](../Sources/Frame/Public/FrameResults.swift#L38) |
-| `FrameCheckoutError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable` | [41](../Sources/Frame/Public/FrameResults.swift#L41) |
-| `FrameCheckoutError.toastMessage` | func | `func toastMessage() -> String` | [44](../Sources/Frame/Public/FrameResults.swift#L44) |
-| `FrameConfigurationError` | enum | `enum FrameConfigurationError: Error` | [57](../Sources/Frame/Public/FrameResults.swift#L57) |
-| `FrameConfigurationError.applePayMerchantIdNotConfigured` | case | `case applePayMerchantIdNotConfigured` | [59](../Sources/Frame/Public/FrameResults.swift#L59) |
+| `FrameResult.finishedUnverified` | case | `case finishedUnverified(id: String, outcome: OnboardingOutcome)` | [27](../Sources/Frame/Public/FrameResults.swift#L27) |
+| `FrameResult.cancelled` | case | `case cancelled` | [30](../Sources/Frame/Public/FrameResults.swift#L30) |
+| `FrameResult.failed` | case | `case failed(Error)` | [35](../Sources/Frame/Public/FrameResults.swift#L35) |
+| `FrameCheckoutError` | enum | `enum FrameCheckoutError: Error` | [39](../Sources/Frame/Public/FrameResults.swift#L39) |
+| `FrameCheckoutError.declined` | case | `case declined(message: String?)` | [41](../Sources/Frame/Public/FrameResults.swift#L41) |
+| `FrameCheckoutError.unresolved` | case | `case unresolved` | [46](../Sources/Frame/Public/FrameResults.swift#L46) |
+| `FrameCheckoutError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable` | [49](../Sources/Frame/Public/FrameResults.swift#L49) |
+| `FrameCheckoutError.toastMessage` | func | `func toastMessage() -> String` | [52](../Sources/Frame/Public/FrameResults.swift#L52) |
+| `FrameConfigurationError` | enum | `enum FrameConfigurationError: Error` | [65](../Sources/Frame/Public/FrameResults.swift#L65) |
+| `FrameConfigurationError.applePayMerchantIdNotConfigured` | case | `case applePayMerchantIdNotConfigured` | [67](../Sources/Frame/Public/FrameResults.swift#L67) |
+
+</details>
+
+<details><summary><code>OnboardingOutcome.swift</code> — 7 symbols</summary>
+
+[`Sources/Frame/Public/OnboardingOutcome.swift`](../Sources/Frame/Public/OnboardingOutcome.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `OnboardingOutcome` | enum | `enum OnboardingOutcome: Sendable, Equatable` | [11](../Sources/Frame/Public/OnboardingOutcome.swift#L11) |
+| `OnboardingOutcome.approved` | case | `case approved` | [13](../Sources/Frame/Public/OnboardingOutcome.swift#L13) |
+| `OnboardingOutcome.pendingReview` | case | `case pendingReview` | [16](../Sources/Frame/Public/OnboardingOutcome.swift#L16) |
+| `OnboardingOutcome.declined` | case | `case declined(message: String?)` | [19](../Sources/Frame/Public/OnboardingOutcome.swift#L19) |
+| `OnboardingOutcome.actionRequired` | case | `case actionRequired(message: String?)` | [22](../Sources/Frame/Public/OnboardingOutcome.swift#L22) |
+| `OnboardingOutcome.isSuccess` | var | `var isSuccess: Bool` | [25](../Sources/Frame/Public/OnboardingOutcome.swift#L25) |
+| `OnboardingOutcome.resolve` | func | `func resolve(from capabilities: [FrameObjects.Capability], required: [FrameObjects.Capabilities]) -> OnboardingOutcome` | [55](../Sources/Frame/Public/OnboardingOutcome.swift#L55) |
 
 </details>
 
@@ -2288,7 +2316,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Views/Reusable (37)
+#### Views/Reusable (40)
 
 <details><summary><code>AddressAutocompleteField.swift</code> — 3 symbols</summary>
 
@@ -2385,15 +2413,18 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>ValidatedTextField.swift</code> — 3 symbols</summary>
+<details><summary><code>ValidatedTextField.swift</code> — 6 symbols</summary>
 
 [`Sources/Frame/Views/Reusable/ValidatedTextField.swift`](../Sources/Frame/Views/Reusable/ValidatedTextField.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [14](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L14) |
-| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [44](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L44) |
-| `ValidatedTextField.body` | var | `var body: some View` | [67](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L67) |
+| `TextFieldInputRestriction` | enum | `enum TextFieldInputRestriction` | [12](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L12) |
+| `TextFieldInputRestriction.none` | case | `case none` | [14](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L14) |
+| `TextFieldInputRestriction.textOnly` | case | `case textOnly` | [22](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L22) |
+| `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [51](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L51) |
+| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [84](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L84) |
+| `ValidatedTextField.body` | var | `var body: some View` | [109](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L109) |
 
 </details>
 
@@ -2408,7 +2439,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-### `FrameOnboarding` — 172 public symbols
+### `FrameOnboarding` — 171 public symbols
 
 Onboarding product: the capability-driven identity/payment verification flow, its screens, and the onboarding-only APIs (3DS, IDV, phone OTP, geocompliance).
 
@@ -2493,7 +2524,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-#### Networking/IdentityVerification (7)
+#### Networking/IdentityVerification (6)
 
 <details><summary><code>IdentityVerificationAPI.swift</code> — 1 symbols</summary>
 
@@ -2505,18 +2536,17 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-<details><summary><code>IdentityVerificationResponses.swift</code> — 6 symbols</summary>
+<details><summary><code>IdentityVerificationResponses.swift</code> — 5 symbols</summary>
 
 [`Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift`](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `IDVSessionResponse` | struct | `struct IDVSessionResponse: Codable, Sendable` | [14](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L14) |
-| `IDVSessionResponse.inquiryId` | let | `let inquiryId: String` | [16](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L16) |
-| `IDVSessionResponse.init` | init | `init (inquiryId: String)` | [20](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L20) |
-| `IDVCompleteResponse` | struct | `struct IDVCompleteResponse: Codable, Sendable` | [34](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L34) |
-| `IDVCompleteResponse.verified` | let | `let verified: Bool` | [36](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L36) |
-| `IDVCompleteResponse.init` | init | `init (verified: Bool)` | [40](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L40) |
+| `IDVSessionResponse` | struct | `struct IDVSessionResponse: Codable, Sendable` | [15](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L15) |
+| `IDVSessionResponse.inquiryId` | let | `let inquiryId: String` | [17](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L17) |
+| `IDVSessionResponse.init` | init | `init (inquiryId: String)` | [21](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L21) |
+| `IDVCompleteResponse` | struct | `struct IDVCompleteResponse: Codable, Sendable` | [35](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L35) |
+| `IDVCompleteResponse.init` | init | `init (verified: Bool?, status: String? = nil, failureType: String? = nil, category: String? = nil, retriable: Bool? = nil)` | [55](../Sources/FrameOnboarding/Networking/IdentityVerification/IdentityVerificationResponses.swift#L55) |
 
 </details>
 
@@ -2769,14 +2799,14 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 |--------|------|-------------|------|
 | `OnboardingFlow` | enum | `enum OnboardingFlow: Int, CaseIterable, Identifiable` | [16](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L16) |
 | `OnboardingFlow.id` | var | `var id: String` | [18](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L18) |
-| `OnboardingFlow.personalInformation` | case | `case personalInformation = 0` | [27](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L27) |
-| `OnboardingFlow.confirmPaymentMethod` | case | `case confirmPaymentMethod = 1` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
-| `OnboardingFlow.confirmBankAccount` | case | `case confirmBankAccount = 2` | [31](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L31) |
-| `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [33](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L33) |
-| `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [38](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L38) |
-| `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [62](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L62) |
-| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = true, showCompleti…` | [102](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L102) |
-| `OnboardingContainerView.body` | var | `var body: some View` | [136](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L136) |
+| `OnboardingFlow.personalInformation` | case | `case personalInformation = 0` | [23](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L23) |
+| `OnboardingFlow.confirmPaymentMethod` | case | `case confirmPaymentMethod = 1` | [25](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L25) |
+| `OnboardingFlow.confirmBankAccount` | case | `case confirmBankAccount = 2` | [27](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L27) |
+| `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
+| `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [34](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L34) |
+| `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [58](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L58) |
+| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = true, showCompleti…` | [100](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L100) |
+| `OnboardingContainerView.body` | var | `var body: some View` | [135](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L135) |
 
 </details>
 
