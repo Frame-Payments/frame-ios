@@ -5,6 +5,43 @@
 
 import SwiftUI
 
+/// Which characters a field accepts, for inputs where a whole class of input is never valid.
+///
+/// A client-side affordance, not validation: it stops obviously-wrong input before submit, and the
+/// API stays the authority on what it accepts.
+public enum TextFieldInputRestriction {
+    /// Everything is accepted.
+    case none
+
+    /// Letters, plus the punctuation that real names and place names contain — `O'Fallon`,
+    /// `Stoke-on-Trent`, `St. Louis`, `Jr.`
+    ///
+    /// "Letter" is any Unicode letter, so `José`, `Müller` and `李` pass. Names here are compared
+    /// against a government ID during KYC, so silently dropping a character an applicant's legal
+    /// name actually contains would cause a verification failure.
+    case textOnly
+
+    /// Whether this restriction admits `character`.
+    func allows(_ character: Character) -> Bool {
+        switch self {
+        case .none:
+            return true
+        case .textOnly:
+            return character.isLetter || character.isWhitespace || "-'.".contains(character)
+        }
+    }
+
+    /// `text` with every disallowed character removed.
+    func filter(_ text: String) -> String {
+        switch self {
+        case .none:
+            return text
+        case .textOnly:
+            return String(text.filter { allows($0) })
+        }
+    }
+}
+
 /// A reusable SwiftUI text field that displays an inline or stacked validation error message.
 ///
 /// `ValidatedTextField` wraps a standard `TextField` and binds to an optional error string.
@@ -21,6 +58,7 @@ public struct ValidatedTextField: View {
     private var keyboardType: UIKeyboardType
     private var textContentType: UITextContentType?
     private var characterLimit: Int?
+    private var inputRestriction: TextFieldInputRestriction
     private var compactError: Bool
     private var errorSpacing: CGFloat
     private var inlineError: Bool
@@ -35,6 +73,8 @@ public struct ValidatedTextField: View {
     ///   - keyboardType: The keyboard style to present. Defaults to `.default`.
     ///   - textContentType: Semantic hint used by the system to offer QuickType/Contacts autofill (e.g. `.postalCode`). Pass `nil` to disable.
     ///   - characterLimit: Maximum number of characters allowed. Input beyond this limit is silently truncated. Pass `nil` for no limit.
+    ///   - inputRestriction: Which characters the field accepts. Disallowed characters are stripped
+    ///     as they arrive, from typing, paste and autofill alike. Defaults to `.none`.
     ///   - compactError: When `true`, the error label is suppressed and no extra vertical space is reserved for it.
     ///   - inlineError: When `true`, the error label is placed to the right of the field in a horizontal stack rather than below it.
     ///   - errorSpacing: Points of spacing between the field and the error label (or between elements in compact/inline layouts). Defaults to `4`.
@@ -47,6 +87,7 @@ public struct ValidatedTextField: View {
                 keyboardType: UIKeyboardType = .default,
                 textContentType: UITextContentType? = nil,
                 characterLimit: Int? = nil,
+                inputRestriction: TextFieldInputRestriction = .none,
                 compactError: Bool = false,
                 inlineError: Bool = false,
                 errorSpacing: CGFloat = 4,
@@ -57,6 +98,7 @@ public struct ValidatedTextField: View {
         self.keyboardType = keyboardType
         self.textContentType = textContentType
         self.characterLimit = characterLimit
+        self.inputRestriction = inputRestriction
         self.compactError = compactError
         self.inlineError = inlineError
         self.errorSpacing = errorSpacing
@@ -75,9 +117,7 @@ public struct ValidatedTextField: View {
                         .frame(height: 49.0)
                         .padding(.horizontal)
                         .onChange(of: text) { _, newValue in
-                            if let limit = characterLimit, newValue.count > limit {
-                                text = String(newValue.prefix(limit))
-                            }
+                            applyInputRules(to: newValue)
                             if error != nil { error = nil }
                         }
                         .modifier(OptionalFocusModifier(focused: focused))
@@ -96,9 +136,7 @@ public struct ValidatedTextField: View {
                     .frame(height: 49.0)
                     .padding(.horizontal)
                     .onChange(of: text) { _, newValue in
-                        if let limit = characterLimit, newValue.count > limit {
-                            text = String(newValue.prefix(limit))
-                        }
+                        applyInputRules(to: newValue)
                         if error != nil { error = nil }
                     }
                     .modifier(OptionalFocusModifier(focused: focused))
@@ -111,6 +149,17 @@ public struct ValidatedTextField: View {
                 }
             }
         }
+    }
+
+    /// Strips disallowed characters, then truncates — in that order, so filtering can't pull a
+    /// character in from beyond the limit. Writes back only on a change, since assigning `text`
+    /// unconditionally would re-enter `.onChange`.
+    private func applyInputRules(to newValue: String) {
+        var updated = inputRestriction.filter(newValue)
+        if let limit = characterLimit, updated.count > limit {
+            updated = String(updated.prefix(limit))
+        }
+        if updated != newValue { text = updated }
     }
 }
 

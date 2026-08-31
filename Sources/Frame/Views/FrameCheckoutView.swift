@@ -274,7 +274,8 @@ public struct FrameCheckoutView: View {
             ValidatedTextField(prompt: "Customer Name",
                                text: $checkoutViewModel.customerName,
                                error: errorBinding(.name),
-                               textContentType: .name)
+                               textContentType: .name,
+                               inputRestriction: .textOnly)
             Divider()
             ValidatedTextField(prompt: "Customer Email",
                                text: $checkoutViewModel.customerEmail,
@@ -346,7 +347,8 @@ public struct FrameCheckoutView: View {
                 ValidatedTextField(prompt: "City",
                                    text: $checkoutViewModel.customerCity,
                                    error: errorBinding(.city),
-                                   textContentType: .addressCity)
+                                   textContentType: .addressCity,
+                                   inputRestriction: .textOnly)
                 if AddressSubregions.subregions(forCountry: checkoutViewModel.customerCountry.alpha2Code) != nil {
                     subregionDropdown
                 } else {
@@ -354,7 +356,8 @@ public struct FrameCheckoutView: View {
                                        text: $checkoutViewModel.customerState,
                                        error: errorBinding(.state),
                                        textContentType: .addressState,
-                                       characterLimit: addressFormat.stateMaxLength)
+                                       characterLimit: addressFormat.stateMaxLength,
+                                       inputRestriction: .textOnly)
                 }
             }
             Divider()

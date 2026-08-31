@@ -39,13 +39,13 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1446 public symbols** across 140 files in 2 modules.
+**1449 public symbols** across 140 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
 | Structs | 182 |
-| Enums | 63 |
+| Enums | 64 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
@@ -53,10 +53,10 @@ regeneration, so architectural notes belong there.
 | Methods | 279 |
 | Properties (var) | 220 |
 | Properties (let) | 263 |
-| Enum cases | 229 |
-| **Total** | **1446** |
+| Enum cases | 231 |
+| **Total** | **1449** |
 
-### `Frame` — 1275 public symbols
+### `Frame` — 1278 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -2316,7 +2316,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Views/Reusable (37)
+#### Views/Reusable (40)
 
 <details><summary><code>AddressAutocompleteField.swift</code> — 3 symbols</summary>
 
@@ -2413,15 +2413,18 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>ValidatedTextField.swift</code> — 3 symbols</summary>
+<details><summary><code>ValidatedTextField.swift</code> — 6 symbols</summary>
 
 [`Sources/Frame/Views/Reusable/ValidatedTextField.swift`](../Sources/Frame/Views/Reusable/ValidatedTextField.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [14](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L14) |
-| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [44](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L44) |
-| `ValidatedTextField.body` | var | `var body: some View` | [67](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L67) |
+| `TextFieldInputRestriction` | enum | `enum TextFieldInputRestriction` | [12](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L12) |
+| `TextFieldInputRestriction.none` | case | `case none` | [14](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L14) |
+| `TextFieldInputRestriction.textOnly` | case | `case textOnly` | [22](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L22) |
+| `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [51](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L51) |
+| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [84](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L84) |
+| `ValidatedTextField.body` | var | `var body: some View` | [109](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L109) |
 
 </details>
 
