@@ -69,6 +69,9 @@ extension FrameObjects {
         /// Government-ID verification, required by whichever capability lists it rather than by a
         /// standalone `idv` capability.
         public static let identityDocument = "individual.identity_document"
+
+        /// A KYC run rejected on complete-but-wrong details, so corrected data is the road forward.
+        public static let kyc = "individual.kyc"
     }
 
     /// Describes a single requirement that must be satisfied in order to enable a capability.
@@ -238,5 +241,21 @@ extension FrameObjects.Capability {
         case .pending, .unknown:
             return true
         }
+    }
+
+    /// Whether work listed against this capability can still move it forward — the server blanks
+    /// `currently_due` only for `ineligible`, so a disabled capability still publishes dead keys.
+    public var hasActionableRequirements: Bool {
+        switch capabilityStatus {
+        case .pending, .unknown:
+            return true
+        case .active, .unrequested, .disabled, .ineligible:
+            return false
+        }
+    }
+
+    /// Requirement keys the applicant can actually resolve. Prefer over ``currentlyDue`` when asking them to act.
+    public var actionableRequirements: [String] {
+        hasActionableRequirements ? (currentlyDue ?? []) : []
     }
 }

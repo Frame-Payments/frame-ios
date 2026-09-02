@@ -337,8 +337,16 @@ struct UserIdentificationView: View {
                 onboardingContainerViewModel.phoneCountry = customerInfoVM.phoneCountry
                 Task {
                     guard let presenter = UIApplication.shared.topViewController else { return }
-                    if await onboardingContainerViewModel.submitPersonalInformation(from: presenter) {
+                    switch await onboardingContainerViewModel.submitPersonalInformation(from: presenter) {
+                    case .advance:
                         self.continueToNextStep.toggle()
+                    case .stay:
+                        break
+                    case .blocked(let outcome):
+                        // Land on the terminal screen, or finish outright when the host has its own.
+                        if !onboardingContainerViewModel.concludeOnboarding(with: outcome) {
+                            self.continueToNextStep.toggle()
+                        }
                     }
                 }
             }

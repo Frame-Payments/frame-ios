@@ -366,4 +366,56 @@ final class OnboardingOutcomeTests: XCTestCase {
         XCTAssertFalse(OnboardingOutcome.declined(message: nil).isSuccess)
         XCTAssertFalse(OnboardingOutcome.actionRequired(message: nil).isSuccess)
     }
+
+    // MARK: - Actionable requirements [FRA-6576]
+
+    /// A pending capability's due keys are work the applicant can actually do.
+    func testPendingCapabilityRequirementsAreActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "pending",
+                                        currentlyDue: ["individual.identity_document"])
+        XCTAssertTrue(capability.hasActionableRequirements)
+        XCTAssertEqual(capability.actionableRequirements, ["individual.identity_document"])
+    }
+
+    /// A disabled capability still publishes keys, but completing them cannot grant a capability that is off.
+    func testDisabledCapabilityRequirementsAreNotActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "disabled",
+                                        currentlyDue: ["individual.identity_document"])
+        XCTAssertFalse(capability.hasActionableRequirements)
+        XCTAssertEqual(capability.actionableRequirements, [])
+    }
+
+    func testIneligibleCapabilityRequirementsAreNotActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "ineligible",
+                                        currentlyDue: ["individual.identity_document"])
+        XCTAssertFalse(capability.hasActionableRequirements)
+        XCTAssertEqual(capability.actionableRequirements, [])
+    }
+
+    /// Already granted, so nothing is owed.
+    func testActiveCapabilityRequirementsAreNotActionable() throws {
+        let capability = try capability(name: "kyc", status: "active", currentlyDue: [])
+        XCTAssertFalse(capability.hasActionableRequirements)
+    }
+
+    /// Unknown is workable — a new server status must not strip a real obligation.
+    func testUnknownStatusRequirementsStayActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "some_new_status",
+                                        currentlyDue: ["individual.identity_document"])
+        XCTAssertTrue(capability.hasActionableRequirements)
+        XCTAssertEqual(capability.actionableRequirements, ["individual.identity_document"])
+    }
+
+    /// The dead-end shape: blocks onboarding, yet nothing about it is actionable.
+    func testDisabledCapabilityIsOutstandingButNotActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "disabled",
+                                        currentlyDue: ["individual.identity_document"])
+        XCTAssertTrue(capability.isOutstanding)
+        XCTAssertFalse(capability.hasActionableRequirements)
+    }
 }
