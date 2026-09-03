@@ -205,6 +205,77 @@ final class IdentityVerificationCapabilityTests: XCTestCase {
         XCTAssertTrue(viewModel.governmentIdRequired)
     }
 
+    /// A disabled capability still publishes dead keys; treating them as work strands the applicant. [FRA-6576]
+    @MainActor
+    func testIdentityDocumentDueOnDisabledCapabilityDoesNotRequireGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "disabled", currentlyDue: ["individual.identity_document"])
+        ])
+
+        XCTAssertFalse(viewModel.identityDocumentRequired)
+        XCTAssertFalse(viewModel.governmentIdRequired)
+    }
+
+    /// Same for `ineligible` — no document the applicant supplies will grant it.
+    @MainActor
+    func testIdentityDocumentDueOnIneligibleCapabilityDoesNotRequireGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "ineligible", currentlyDue: ["individual.identity_document"])
+        ])
+
+        XCTAssertFalse(viewModel.identityDocumentRequired)
+        XCTAssertFalse(viewModel.governmentIdRequired)
+    }
+
+    /// A live capability alongside a dead one still demands the document.
+    @MainActor
+    func testIdentityDocumentDueOnLiveCapabilityStillRequiresGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "idv", status: "disabled", currentlyDue: ["individual.identity_document"]),
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.identity_document"])
+        ])
+
+        XCTAssertTrue(viewModel.identityDocumentRequired)
+        XCTAssertTrue(viewModel.governmentIdRequired)
+    }
+
+    // MARK: - Corrected KYC details (individual.kyc)
+
+    /// FRA-6552 adds `individual.kyc` for a run rejected on complete-but-wrong details. [FRA-6576]
+    @MainActor
+    func testKycOutcomeKeyDueMeansCorrectedDetailsRequired() {
+        XCTAssertTrue(OnboardingContainerViewModel.requiresCorrectedKycDetails([
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.kyc"])
+        ]))
+    }
+
+    /// It is a demand for corrected details, not for a document.
+    @MainActor
+    func testKycOutcomeKeyDoesNotRequireGovernmentId() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.kyc"])
+        ])
+
+        XCTAssertFalse(viewModel.identityDocumentRequired)
+        XCTAssertFalse(viewModel.governmentIdRequired)
+    }
+
+    /// A dead capability cannot demand corrected details either.
+    @MainActor
+    func testKycOutcomeKeyOnDisabledCapabilityIsNotActionable() {
+        XCTAssertFalse(OnboardingContainerViewModel.requiresCorrectedKycDetails([
+            capability(name: "kyc", status: "disabled", currentlyDue: ["individual.kyc"])
+        ]))
+    }
+
     /// The scan can't be scoped to kyc.
     @MainActor
     func testIdentityDocumentDueOnBankAccountReceiveRequiresGovernmentId() {
@@ -276,6 +347,109 @@ final class IdentityVerificationCapabilityTests: XCTestCase {
 
         XCTAssertFalse(viewModel.identityVerifiedViaGovId)
         XCTAssertTrue(viewModel.governmentIdRequired)
+    }
+
+    // MARK: - Concluding early on a dead end [FRA-6576]
+
+    /// A blocked applicant lands on the terminal screen instead of a step that cannot be finished.
+    @MainActor
+    func testConcludeOnboardingRoutesToTerminalScreen() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+        viewModel.onboardingFlow = [.personalInformation, .verificationSubmitted]
+        viewModel.currentStep = .personalInformation
+
+        let routed = viewModel.concludeOnboarding(with: .declined(message: "Rejected."))
+
+        XCTAssertTrue(routed)
+        XCTAssertEqual(viewModel.currentStep, .verificationSubmitted)
+        XCTAssertEqual(viewModel.onboardingFlow, [.verificationSubmitted])
+        XCTAssertEqual(viewModel.finalOutcome, .declined(message: "Rejected."))
+    }
+
+    /// The back button cannot walk them into steps that no longer lead anywhere.
+    @MainActor
+    func testConcludeOnboardingLeavesNoEarlierStepToReturnTo() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+        viewModel.onboardingFlow = [.personalInformation, .confirmBankAccount, .verificationSubmitted]
+        viewModel.currentStep = .personalInformation
+
+        viewModel.concludeOnboarding(with: .actionRequired(message: nil))
+
+        XCTAssertEqual(viewModel.onboardingFlow.first, .verificationSubmitted)
+        XCTAssertEqual(viewModel.progressiveSteps, [.verificationSubmitted])
+    }
+
+    /// A host with its own final screen records the outcome and finishes instead of rewriting the flow.
+    @MainActor
+    func testConcludeOnboardingWithoutCompletionScreenReportsOutcomeOnly() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+        viewModel.showCompletionScreen = false
+        viewModel.onboardingFlow = [.personalInformation]
+        viewModel.currentStep = .personalInformation
+
+        let routed = viewModel.concludeOnboarding(with: .declined(message: "Rejected."))
+
+        XCTAssertFalse(routed)
+        XCTAssertEqual(viewModel.finalOutcome, .declined(message: "Rejected."))
+        XCTAssertEqual(viewModel.currentStep, .personalInformation)
+    }
+
+    /// Without a completion screen the current step must become the last one, or the caller's
+    /// "finish" toggle advances a blocked applicant into the next step instead of ending the flow.
+    @MainActor
+    func testConcludeOnboardingWithoutCompletionScreenEndsMultiStepFlow() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123",
+                                                     requiredCapabilities: [.kyc, .bankAccountReceive])
+        viewModel.showCompletionScreen = false
+        viewModel.onboardingFlow = [.personalInformation, .confirmBankAccount]
+        viewModel.currentStep = .personalInformation
+
+        XCTAssertFalse(viewModel.concludeOnboarding(with: .declined(message: "Rejected.")))
+
+        XCTAssertEqual(viewModel.onboardingFlow, [.personalInformation])
+        XCTAssertEqual(viewModel.onboardingFlow.last, viewModel.currentStep)
+    }
+
+    // MARK: - SSN entry while correcting rejected details [FRA-6576]
+
+    /// A demand for corrected details must keep the SSN input on screen — the applicant cannot fix
+    /// rejected details through a field they cannot see.
+    @MainActor
+    func testCorrectedKycDetailsKeepsSSNEntryVisible() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.kyc"])
+        ])
+
+        XCTAssertTrue(viewModel.correctedKycDetailsRequired)
+        XCTAssertFalse(viewModel.skipsSSNEntry)
+    }
+
+    /// It outranks a government-ID verification: a passed document does not fix wrong details.
+    @MainActor
+    func testCorrectedKycDetailsOutranksGovernmentIdVerification() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+        viewModel.identityVerifiedViaGovId = true
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.kyc"])
+        ])
+
+        XCTAssertFalse(viewModel.skipsSSNEntry)
+    }
+
+    /// Without that demand the existing skips still hold, so this does not reopen SSN for everyone.
+    @MainActor
+    func testSSNEntryStillSkippedWhenOnlyDocumentIsDue() {
+        let viewModel = OnboardingContainerViewModel(accountId: "acc_123", requiredCapabilities: [.kyc])
+
+        viewModel.updateCapabilitiesBasedOnCompletion(accountCapabilities: [
+            capability(name: "kyc", status: "pending", currentlyDue: ["individual.identity_document"])
+        ])
+
+        XCTAssertFalse(viewModel.correctedKycDetailsRequired)
+        XCTAssertTrue(viewModel.skipsSSNEntry)
     }
 
     // MARK: - SSN validation

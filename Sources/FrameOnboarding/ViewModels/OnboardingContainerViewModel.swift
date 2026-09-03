@@ -90,6 +90,9 @@ class OnboardingContainerViewModel: ObservableObject {
     /// Set to `true` when a capability lists `individual.identity_document` as due — a step-up on an
     /// account that carries no `idv` capability.
     @Published var identityDocumentRequired: Bool = false
+    /// Set to `true` when a capability lists `individual.kyc` as due — details were rejected while
+    /// complete (FRA-6552), so the applicant must be able to correct them.
+    @Published var correctedKycDetailsRequired: Bool = false
     /// The Persona inquiry id used for the successful government-ID verification, if any.
     @Published var personaInquiryId: String?
 
@@ -98,6 +101,12 @@ class OnboardingContainerViewModel: ObservableObject {
 
     /// Whether the flow ends on the confirmation screen, so every rebuild agrees with the first.
     var showCompletionScreen: Bool = true
+
+    /// Whether the SSN input is hidden. A demand for corrected details outranks both signals — the
+    /// applicant cannot fix rejected details through a field they cannot see.
+    var skipsSSNEntry: Bool {
+        !correctedKycDetailsRequired && (identityVerifiedViaGovId || identityDocumentRequired)
+    }
 
     /// Either signal alone requires Persona: the merchant asked for `idv`, or the backend stepped
     /// this account up via `currently_due`.
@@ -132,6 +141,18 @@ class OnboardingContainerViewModel: ObservableObject {
         self.originallyRequiredCapabilities = requiredCapabilities
     }
     
+    /// How a step ended — a step that cannot be completed is distinct from one that merely failed.
+    enum StepResult: Equatable {
+        /// The step is done; move to the next one.
+        case advance
+
+        /// Did not complete, but retrying here is still worthwhile. The failing path already toasted.
+        case stay
+
+        /// No road forward remains: end onboarding on the terminal screen showing this outcome.
+        case blocked(OnboardingOutcome)
+    }
+
     /// Re-reads the account and resolves how onboarding actually ended. Capability status settles
     /// asynchronously, so this re-fetches rather than trusting state read earlier in the flow.
     ///
@@ -187,6 +208,7 @@ class OnboardingContainerViewModel: ObservableObject {
             // when the caller passes `updateCapabilies: true`.
             if let capabilities = account?.capabilities {
                 self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
+                self.correctedKycDetailsRequired = Self.requiresCorrectedKycDetails(capabilities)
             }
 
             guard let profile = account?.profile?.individual else { return }
@@ -222,15 +244,23 @@ class OnboardingContainerViewModel: ObservableObject {
     }
     
     /// Scans every capability, not just `kyc` — a payout-only account gets the same key on
-    /// `bank_account_receive`.
+    /// `bank_account_receive`. Reads actionable keys only, so a dead capability cannot demand a document.
     static func requiresIdentityDocument(_ capabilities: [FrameObjects.Capability]) -> Bool {
         capabilities.contains { capability in
-            capability.currentlyDue?.contains(FrameObjects.CapabilityRequirementKey.identityDocument) == true
+            capability.actionableRequirements.contains(FrameObjects.CapabilityRequirementKey.identityDocument)
+        }
+    }
+
+    /// Whether a KYC run was rejected on complete-but-wrong details, surfaced as `individual.kyc` (FRA-6552).
+    static func requiresCorrectedKycDetails(_ capabilities: [FrameObjects.Capability]) -> Bool {
+        capabilities.contains { capability in
+            capability.actionableRequirements.contains(FrameObjects.CapabilityRequirementKey.kyc)
         }
     }
 
     func updateCapabilitiesBasedOnCompletion(accountCapabilities: [FrameObjects.Capability]) {
         self.identityDocumentRequired = Self.requiresIdentityDocument(accountCapabilities)
+        self.correctedKycDetailsRequired = Self.requiresCorrectedKycDetails(accountCapabilities)
 
         // Check to see which capabilites are completed, skip any that are not needed.
         accountCapabilities.forEach { capability in
@@ -313,7 +343,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                                   countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssn: identityVerifiedViaGovId ? nil : createdCustomerIdentity.ssn)
+                                                                           ssn: skipsSSNEntry ? nil : createdCustomerIdentity.ssn)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
             let profile = AccountRequest.CreateAccountProfile(business: nil, individual: individualAccount)
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
@@ -370,7 +400,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                                                                   countryCode: phoneCountry.dialCode),
                                                                            address: createdCustomerIdentity.address,
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
-                                                                           ssnLastFour: identityVerifiedViaGovId ? nil : createdCustomerIdentity.ssn)
+                                                                           ssnLastFour: skipsSSNEntry ? nil : createdCustomerIdentity.ssn)
             let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
             let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
@@ -783,21 +813,26 @@ class OnboardingContainerViewModel: ObservableObject {
     /// verified this session or on a previous visit.
     ///
     /// - Parameter viewController: The view controller to present the Persona UI from.
-    /// - Returns: `true` when the step is complete and the flow may advance.
-    func submitPersonalInformation(from viewController: UIViewController) async -> Bool {
+    /// - Returns: How the step ended — see ``StepResult``.
+    func submitPersonalInformation(from viewController: UIViewController) async -> StepResult {
         let account = accountId == nil
             ? await createIndividualAccount()
             : await updateExistingIndividualAccount()
 
         if let capabilities = account?.capabilities {
             self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
+            self.correctedKycDetailsRequired = Self.requiresCorrectedKycDetails(capabilities)
         }
 
         // Submission failed — the create/update path already surfaced a toast. Stay on the step
         // rather than advancing past data the API never accepted.
-        guard account != nil else { return false }
+        guard let account else { return .stay }
 
-        guard governmentIdRequired, !identityVerifiedViaGovId else { return true }
+        // Nothing left that the applicant can act on — Persona would launch against a capability
+        // that cannot be granted, so the Continue button would never do anything.
+        if let blocked = blockedOutcome(for: account) { return .blocked(blocked) }
+
+        guard governmentIdRequired, !identityVerifiedViaGovId else { return .advance }
 
         // Persona runs under its own beginAction() guard, which the submission above has released.
         // Awaited back to back on the main actor so `isPerformingAction` is never observably false
@@ -806,7 +841,46 @@ class OnboardingContainerViewModel: ObservableObject {
         await verifyIdentityWithoutSsn(from: viewController)
 
         // Cancel, decline, pending, and error all leave the flag false and have already toasted.
-        return identityVerifiedViaGovId
+        return identityVerifiedViaGovId ? .advance : .stay
+    }
+
+    /// Ends onboarding early, truncating the flow to the step it now ends on so the container's
+    /// "is this the last step" check completes rather than advancing into steps that lead nowhere.
+    /// - Returns: `true` when the terminal screen is showing; `false` when the host takes its own,
+    ///   leaving the caller to finish the flow.
+    @discardableResult
+    func concludeOnboarding(with outcome: OnboardingOutcome) -> Bool {
+        self.finalOutcome = outcome
+
+        // Without a completion screen there is nothing to land on, so end the flow on the step the
+        // applicant is already looking at — the caller then finishes it.
+        let finalStep: OnboardingFlow = showCompletionScreen ? .verificationSubmitted : currentStep
+        self.onboardingFlow = [finalStep]
+        self.progressiveSteps = [finalStep]
+        self.currentStep = finalStep
+        return showCompletionScreen
+    }
+
+    /// The outcome to end on when this account has no road left, or `nil` while one remains — a dead
+    /// end is a capability that still blocks onboarding but lists no work the applicant can do.
+    private func blockedOutcome(for account: FrameObjects.Account) -> OnboardingOutcome? {
+        guard let capabilities = account.capabilities else { return nil }
+
+        // Nothing outstanding is success or a verdict still settling — both belong to the end-of-flow resolve.
+        let outstanding = capabilities.filter { $0.isOutstanding }
+        guard !outstanding.isEmpty else { return nil }
+        guard outstanding.allSatisfy({ !$0.hasActionableRequirements }) else { return nil }
+
+
+        // An in-flight run also reports nothing due, so conclude only on a stated verdict.
+        let outcome = OnboardingOutcome.resolve(from: capabilities, required: originallyRequiredCapabilities)
+        switch outcome {
+        case .declined, .actionRequired:
+            self.finalOutcome = outcome
+            return outcome
+        case .approved, .pendingReview:
+            return nil
+        }
     }
 
     /// No-SSN identity verification: create a Persona inquiry server-side, present the Persona SDK

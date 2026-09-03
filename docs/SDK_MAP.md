@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1449 public symbols** across 140 files in 2 modules.
+**1452 public symbols** across 140 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -51,12 +51,12 @@ regeneration, so architectural notes belong there.
 | Type aliases | 8 |
 | Initializers | 122 |
 | Methods | 279 |
-| Properties (var) | 220 |
-| Properties (let) | 263 |
+| Properties (var) | 222 |
+| Properties (let) | 264 |
 | Enum cases | 231 |
-| **Total** | **1449** |
+| **Total** | **1452** |
 
-### `Frame` — 1278 public symbols
+### `Frame` — 1281 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -459,7 +459,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Capabilities (56)
+#### Networking/Capabilities (59)
 
 <details><summary><code>CapabilitiesAPI.swift</code> — 9 symbols</summary>
 
@@ -479,7 +479,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>CapabilityObjects.swift</code> — 41 symbols</summary>
+<details><summary><code>CapabilityObjects.swift</code> — 44 symbols</summary>
 
 [`Sources/Frame/Networking/Capabilities/CapabilityObjects.swift`](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift)
 
@@ -502,30 +502,33 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameObjects.Capabilities.geoCompliance` | case | `case geoCompliance =` | [62](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L62) |
 | `FrameObjects.CapabilityRequirementKey` | enum | `enum CapabilityRequirementKey` | [68](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L68) |
 | `FrameObjects.CapabilityRequirementKey.identityDocument` | let | `let identityDocument =` | [71](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L71) |
-| `FrameObjects.CapabilityRequirement` | struct | `struct CapabilityRequirement: Codable, Sendable, Equatable` | [75](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L75) |
-| `FrameObjects.CapabilityRequirement.id` | let | `let id: String` | [77](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L77) |
-| `FrameObjects.CapabilityRequirement.object` | let | `let object: String` | [80](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L80) |
-| `FrameObjects.CapabilityRequirement.type` | let | `let type: String` | [83](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L83) |
-| `FrameObjects.CapabilityRequirement.status` | let | `let status: String` | [86](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L86) |
-| `FrameObjects.Capability` | struct | `struct Capability: Codable, Sendable, Equatable` | [97](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L97) |
-| `FrameObjects.Capability.id` | let | `let id: String` | [99](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L99) |
-| `FrameObjects.Capability.object` | let | `let object: String` | [102](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L102) |
-| `FrameObjects.Capability.name` | let | `let name: String` | [105](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L105) |
-| `FrameObjects.Capability.accountId` | let | `let accountId: String` | [108](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L108) |
-| `FrameObjects.Capability.status` | let | `let status: String` | [111](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L111) |
-| `FrameObjects.Capability.created` | let | `let created: String` | [127](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L127) |
-| `FrameObjects.Capability.updated` | let | `let updated: String` | [130](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L130) |
-| `FrameObjects.CapabilityStatus` | enum | `enum CapabilityStatus: String, Sendable, Equatable` | [147](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L147) |
-| `FrameObjects.CapabilityStatus.unrequested` | case | `case unrequested` | [149](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L149) |
-| `FrameObjects.CapabilityStatus.pending` | case | `case pending` | [151](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L151) |
-| `FrameObjects.CapabilityStatus.active` | case | `case active` | [153](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L153) |
-| `FrameObjects.CapabilityStatus.disabled` | case | `case disabled` | [155](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L155) |
-| `FrameObjects.CapabilityStatus.ineligible` | case | `case ineligible` | [157](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L157) |
-| `FrameObjects.CapabilityStatus.unknown` | case | `case unknown` | [159](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L159) |
-| `FrameObjects.CapabilityError` | struct | `struct CapabilityError: Codable, Sendable, Equatable` | [163](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L163) |
-| `FrameObjects.CapabilityError.id` | let | `let id: String` | [165](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L165) |
-| `FrameObjects.capabilityStatus` | var | `var capabilityStatus: FrameObjects.CapabilityStatus` | [224](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L224) |
-| `FrameObjects.isOutstanding` | var | `var isOutstanding: Bool` | [232](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L232) |
+| `FrameObjects.CapabilityRequirementKey.kyc` | let | `let kyc =` | [74](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L74) |
+| `FrameObjects.CapabilityRequirement` | struct | `struct CapabilityRequirement: Codable, Sendable, Equatable` | [78](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L78) |
+| `FrameObjects.CapabilityRequirement.id` | let | `let id: String` | [80](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L80) |
+| `FrameObjects.CapabilityRequirement.object` | let | `let object: String` | [83](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L83) |
+| `FrameObjects.CapabilityRequirement.type` | let | `let type: String` | [86](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L86) |
+| `FrameObjects.CapabilityRequirement.status` | let | `let status: String` | [89](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L89) |
+| `FrameObjects.Capability` | struct | `struct Capability: Codable, Sendable, Equatable` | [100](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L100) |
+| `FrameObjects.Capability.id` | let | `let id: String` | [102](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L102) |
+| `FrameObjects.Capability.object` | let | `let object: String` | [105](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L105) |
+| `FrameObjects.Capability.name` | let | `let name: String` | [108](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L108) |
+| `FrameObjects.Capability.accountId` | let | `let accountId: String` | [111](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L111) |
+| `FrameObjects.Capability.status` | let | `let status: String` | [114](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L114) |
+| `FrameObjects.Capability.created` | let | `let created: String` | [130](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L130) |
+| `FrameObjects.Capability.updated` | let | `let updated: String` | [133](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L133) |
+| `FrameObjects.CapabilityStatus` | enum | `enum CapabilityStatus: String, Sendable, Equatable` | [150](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L150) |
+| `FrameObjects.CapabilityStatus.unrequested` | case | `case unrequested` | [152](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L152) |
+| `FrameObjects.CapabilityStatus.pending` | case | `case pending` | [154](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L154) |
+| `FrameObjects.CapabilityStatus.active` | case | `case active` | [156](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L156) |
+| `FrameObjects.CapabilityStatus.disabled` | case | `case disabled` | [158](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L158) |
+| `FrameObjects.CapabilityStatus.ineligible` | case | `case ineligible` | [160](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L160) |
+| `FrameObjects.CapabilityStatus.unknown` | case | `case unknown` | [162](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L162) |
+| `FrameObjects.CapabilityError` | struct | `struct CapabilityError: Codable, Sendable, Equatable` | [166](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L166) |
+| `FrameObjects.CapabilityError.id` | let | `let id: String` | [168](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L168) |
+| `FrameObjects.capabilityStatus` | var | `var capabilityStatus: FrameObjects.CapabilityStatus` | [227](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L227) |
+| `FrameObjects.isOutstanding` | var | `var isOutstanding: Bool` | [235](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L235) |
+| `FrameObjects.hasActionableRequirements` | var | `var hasActionableRequirements: Bool` | [248](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L248) |
+| `FrameObjects.actionableRequirements` | var | `var actionableRequirements: [String]` | [258](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L258) |
 
 </details>
 
