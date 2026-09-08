@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1452 public symbols** across 140 files in 2 modules.
+**1453 public symbols** across 140 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -51,12 +51,12 @@ regeneration, so architectural notes belong there.
 | Type aliases | 8 |
 | Initializers | 122 |
 | Methods | 279 |
-| Properties (var) | 222 |
+| Properties (var) | 223 |
 | Properties (let) | 264 |
 | Enum cases | 231 |
-| **Total** | **1452** |
+| **Total** | **1453** |
 
-### `Frame` — 1281 public symbols
+### `Frame` — 1282 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -459,7 +459,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Capabilities (59)
+#### Networking/Capabilities (60)
 
 <details><summary><code>CapabilitiesAPI.swift</code> — 9 symbols</summary>
 
@@ -479,7 +479,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>CapabilityObjects.swift</code> — 44 symbols</summary>
+<details><summary><code>CapabilityObjects.swift</code> — 45 symbols</summary>
 
 [`Sources/Frame/Networking/Capabilities/CapabilityObjects.swift`](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift)
 
@@ -527,8 +527,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameObjects.CapabilityError.id` | let | `let id: String` | [168](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L168) |
 | `FrameObjects.capabilityStatus` | var | `var capabilityStatus: FrameObjects.CapabilityStatus` | [227](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L227) |
 | `FrameObjects.isOutstanding` | var | `var isOutstanding: Bool` | [235](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L235) |
-| `FrameObjects.hasActionableRequirements` | var | `var hasActionableRequirements: Bool` | [248](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L248) |
-| `FrameObjects.actionableRequirements` | var | `var actionableRequirements: [String]` | [258](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L258) |
+| `FrameObjects.hasActionableRequirements` | var | `var hasActionableRequirements: Bool` | [250](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L250) |
+| `FrameObjects.hasTerminalError` | var | `var hasTerminalError: Bool` | [261](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L261) |
+| `FrameObjects.actionableRequirements` | var | `var actionableRequirements: [String]` | [266](../Sources/Frame/Networking/Capabilities/CapabilityObjects.swift#L266) |
 
 </details>
 
