@@ -245,13 +245,21 @@ extension FrameObjects.Capability {
 
     /// Whether work listed against this capability can still move it forward — the server blanks
     /// `currently_due` only for `ineligible`, so a disabled capability still publishes dead keys.
+    /// A terminal conclusion also ends actionability: the server now leaves a rejected
+    /// capability `pending`, and no field the applicant fills can change a terminal verdict.
     public var hasActionableRequirements: Bool {
         switch capabilityStatus {
         case .pending, .unknown:
-            return true
+            return !hasTerminalError
         case .active, .unrequested, .disabled, .ineligible:
             return false
         }
+    }
+
+    /// Whether the latest conclusion on this capability is one no retry can change,
+    /// mirroring the server's terminal failure category.
+    public var hasTerminalError: Bool {
+        errors?.contains { $0.code == "verification_rejected" } ?? false
     }
 
     /// Requirement keys the applicant can actually resolve. Prefer over ``currentlyDue`` when asking them to act.

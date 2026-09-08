@@ -387,6 +387,26 @@ final class OnboardingOutcomeTests: XCTestCase {
         XCTAssertEqual(capability.actionableRequirements, [])
     }
 
+    /// A terminal conclusion ends actionability even while the capability stays pending —
+    /// the server no longer disables on rejection, and no field can change a terminal verdict.
+    func testPendingCapabilityWithTerminalErrorIsNotActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "pending",
+                                        currentlyDue: ["individual.identity_document"],
+                                        errors: [error(code: "verification_rejected")])
+        XCTAssertFalse(capability.hasActionableRequirements)
+        XCTAssertEqual(capability.actionableRequirements, [])
+    }
+
+    /// A non-terminal conclusion keeps the door open: new data is exactly the remedy.
+    func testPendingCapabilityWithRetriableErrorStaysActionable() throws {
+        let capability = try capability(name: "kyc",
+                                        status: "pending",
+                                        currentlyDue: ["individual.identity_document"],
+                                        errors: [error(code: "identity_mismatch")])
+        XCTAssertTrue(capability.hasActionableRequirements)
+    }
+
     func testIneligibleCapabilityRequirementsAreNotActionable() throws {
         let capability = try capability(name: "kyc",
                                         status: "ineligible",
