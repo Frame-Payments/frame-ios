@@ -12,7 +12,7 @@ public enum FrameSDK {
     /// SPM exposes no version metadata to the code it builds, and the podspecs are
     /// Ruby, so this constant cannot be derived — it is hand-kept in sync with the
     /// git tag cut for the release (see `RELEASING.md`).
-    public static let version = "4.4.0"
+    public static let version = "4.5.0"
 
     /// The header naming this SDK build, sent on every Frame API request.
     ///
