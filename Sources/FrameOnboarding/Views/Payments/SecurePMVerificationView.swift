@@ -67,6 +67,11 @@ struct SecurePMVerificationView: View {
                     self.returnToPreviousStep = true
                 }
             }
+            .onAppear {
+                if type == .phone {
+                    AccountEventEmitter.emit(name: "phone_code_entry_started", screen: "PhoneVerification")
+                }
+            }
             Text(bodyText)
                 .fontWeight(type == .proveOtp ? .regular : .light)
                 .font(theme.fonts.bodySmall)

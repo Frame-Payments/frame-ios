@@ -182,9 +182,27 @@ public class DeviceAttestationManager: ObservableObject {
     /// - Returns: The attested key ID stored in the Keychain.
     /// - Throws: ``DeviceAttestationError`` if any step in the flow fails.
     public func attestDevice() async throws -> String {
+        do {
+            return try await attestDeviceUninstrumented()
+        } catch DeviceAttestationError.notSupported {
+            AccountEventEmitter.emit(name: "attestation_not_supported", screen: "ApplePay",
+                                     detail: "simulator or unsupported OS version")
+            throw DeviceAttestationError.notSupported
+        } catch {
+            let attestationError = error as? DeviceAttestationError
+            AccountEventEmitter.emit(name: "attestation_failed",
+                                     screen: "ApplePay",
+                                     detail: attestationError?.debugDescription ?? "\(error)")
+            throw error
+        }
+    }
+
+    private func attestDeviceUninstrumented() async throws -> String {
         if let existingKeyId = attestedKeyId {
             return existingKeyId
         }
+
+        AccountEventEmitter.emit(name: "attestation_started", screen: "ApplePay")
 
         guard isSupported else {
             throw DeviceAttestationError.notSupported
@@ -236,6 +254,7 @@ public class DeviceAttestationManager: ObservableObject {
         // 5. Promote the pending key to attested
         promoteKeyId(keyId)
         await MainActor.run { isDeviceAttested = true }
+        AccountEventEmitter.emit(name: "attestation_completed", screen: "ApplePay", detail: "one-time per device")
         return keyId
     }
 
@@ -255,8 +274,16 @@ public class DeviceAttestationManager: ObservableObject {
             // guesses wrong. Bounded to a single retry: `assertOnce` is called directly, never
             // through this method, so the recovery path cannot recurse.
             guard case .assertionFailed = error else { throw error }
+            // Reaching here means the stored key was rejected outright — possibly because
+            // `AppAttestEnvironment.current`'s provisioning-profile heuristic guessed wrong for
+            // this build. Worth surfacing even though the retry below recovers automatically.
+            AccountEventEmitter.emit(name: "attestation_reset_and_retry",
+                                     screen: "ApplePay",
+                                     detail: error.debugDescription)
             resetAttestation()
             _ = try await attestDevice()
+            AccountEventEmitter.emit(name: "attestation_assertion_retried", screen: "ApplePay",
+                                     detail: "per-payment assertion, distinct from the one-time attestation above")
             return try await assertOnce(paymentData: paymentData)
         }
     }

@@ -137,6 +137,7 @@ public actor SessionManager {
             }
             if let created = try? await createSession(accountId: nil) {
                 store(created, accountId: nil)
+                AccountEventEmitter.emit(name: "fraud_session_started", screen: "Checkout")
             }
             return
         }
@@ -166,6 +167,7 @@ public actor SessionManager {
 
         let session = try await createSession(accountId: nil)
         store(session, accountId: nil)
+        AccountEventEmitter.emit(name: "fraud_session_started", screen: "Checkout")
     }
 
     /// Re-touches the live session and restarts the keep-alive after the app returns to the
@@ -293,11 +295,14 @@ public actor SessionManager {
             // Leaving the legacy slot readable would let the next account on this device adopt the
             // same session.
             storage.clear(accountId: nil)
+            AccountEventEmitter.emit(name: "fraud_session_adopted", screen: "Checkout",
+                                     detail: "pre-account anonymous session migrated to account-scoped")
             return adopted
         }
 
         let created = try await createSession(accountId: accountId)
         store(created, accountId: accountId)
+        AccountEventEmitter.emit(name: "fraud_session_started", screen: "Checkout")
         return created
     }
 
@@ -314,25 +319,38 @@ public actor SessionManager {
     private func refreshSession(_ session: SessionId, accountId: String?) async throws -> SessionId {
         let body = SessionRequestBody(identification: try await identification(), accountId: accountId)
         do {
-            return try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
+            let refreshed = try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
+            AccountEventEmitter.emit(name: "fraud_session_refreshed", screen: "Checkout")
+            return refreshed
         } catch SessionManagerError.requestFailed {
             // The server no longer recognises this session, so replace it rather than fail the payment.
             storage.clear(accountId: accountId)
-            return try await createSession(accountId: accountId)
+            let recreated = try await createSession(accountId: accountId)
+            AccountEventEmitter.emit(name: "fraud_session_recreated", screen: "Checkout",
+                                     detail: "refresh failed, fell back to creating fresh — self-healing, not a hard failure")
+            return recreated
         }
     }
 
     private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
-        let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishable)
-
-        if let error { throw SessionManagerError.requestFailed(error) }
-        guard let data else { throw SessionManagerError.requestFailed(.noData) }
-
         do {
-            return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
+            let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
+            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishable)
+
+            if let error { throw SessionManagerError.requestFailed(error) }
+            guard let data else { throw SessionManagerError.requestFailed(.noData) }
+
+            do {
+                return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
+            } catch {
+                throw SessionManagerError.requestFailed(.decodingFailed)
+            }
         } catch {
-            throw SessionManagerError.requestFailed(.decodingFailed)
+            // Failures here are swallowed by every caller (the payment path independently calls
+            // ensureSession(accountId:)) — this is the one place to surface them without disturbing
+            // that swallow.
+            AccountEventEmitter.emit(name: "sonar_session_failed", screen: "Checkout", detail: "\(error)")
+            throw error
         }
     }
 

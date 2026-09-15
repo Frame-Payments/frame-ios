@@ -39,15 +39,20 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
     public nonisolated func presentChallenge(_ challenge: FrameObjects.UseFrameSDK,
                                              for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult {
         guard let challengeURL = challenge.challengeURL else {
+            AccountEventEmitter.emit(name: "step_up_challenge_unavailable", screen: "PaymentSheet",
+                                     detail: "challenge page never loaded")
             return .unavailable
         }
 
+        AccountEventEmitter.emit(name: "step_up_challenge_started", screen: "PaymentSheet", detail: "3DS")
         return await present(challengeURL: challengeURL)
     }
 
     @MainActor
     private func present(challengeURL: URL) async -> FrameThreeDSecureChallengeResult {
         guard let host = presentingViewController ?? Self.topMostViewController() else {
+            AccountEventEmitter.emit(name: "step_up_challenge_unavailable", screen: "PaymentSheet",
+                                     detail: "challenge page never loaded")
             return .unavailable
         }
 
@@ -63,11 +68,17 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                 returnURLPathComponent: Self.callbackPathComponent,
                 onFinish: {
                     dismisser.dismiss()
-                    resumeOnce.resume(with: .completed)
+                    if resumeOnce.resume(with: .completed) {
+                        AccountEventEmitter.emit(name: "step_up_challenge_completed", screen: "PaymentSheet",
+                                                 detail: "cardholder finished the UI — not itself a verdict")
+                    }
                 },
                 onLoadFailure: { _ in
                     dismisser.dismiss()
-                    resumeOnce.resume(with: .unavailable)
+                    if resumeOnce.resume(with: .unavailable) {
+                        AccountEventEmitter.emit(name: "step_up_challenge_unavailable", screen: "PaymentSheet",
+                                                 detail: "challenge page never loaded")
+                    }
                 }
             )
 
@@ -81,12 +92,20 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                             ToolbarItem(placement: .cancellationAction) {
                                 Button("Cancel") {
                                     dismisser.dismiss()
-                                    resumeOnce.resume(with: .failed)
+                                    if resumeOnce.resume(with: .failed) {
+                                        AccountEventEmitter.emit(name: "step_up_challenge_abandoned", screen: "PaymentSheet",
+                                                                 detail: "cardholder cancelled/dismissed")
+                                    }
                                 }
                             }
                         }
                 }),
-                onDismiss: { resumeOnce.resume(with: .failed) }
+                onDismiss: {
+                    if resumeOnce.resume(with: .failed) {
+                        AccountEventEmitter.emit(name: "step_up_challenge_abandoned", screen: "PaymentSheet",
+                                                 detail: "cardholder cancelled/dismissed")
+                    }
+                }
             )
             dismisser.controller = controller
             host.present(controller, animated: true)
@@ -133,12 +152,15 @@ private final class ContinuationBox: @unchecked Sendable {
         self.continuation = continuation
     }
 
-    func resume(with result: FrameThreeDSecureChallengeResult) {
+    /// - Returns: `true` if this call was the one that resumed the continuation.
+    @discardableResult
+    func resume(with result: FrameThreeDSecureChallengeResult) -> Bool {
         let claimed: CheckedContinuation<FrameThreeDSecureChallengeResult, Never>? = lock.withLock {
             defer { continuation = nil }
             return continuation
         }
         claimed?.resume(returning: result)
+        return claimed != nil
     }
 }
 

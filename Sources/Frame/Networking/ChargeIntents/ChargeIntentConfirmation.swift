@@ -143,6 +143,9 @@ public struct ChargeIntentConfirmation: Sendable {
         }
 
         // Returned rather than thrown — the charge may still settle, so the caller re-checks.
+        AccountEventEmitter.emit(name: "charge_intent_confirmation_polling_exhausted",
+                                 screen: "Checkout",
+                                 detail: "exhausted \(polling.maxAttempts) attempts at \(polling.interval) apart")
         return .timedOut
     }
 }

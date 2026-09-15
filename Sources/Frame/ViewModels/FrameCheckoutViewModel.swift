@@ -86,6 +86,7 @@ class FrameCheckoutViewModel: ObservableObject {
 
     /// Fetches the account profile to pre-fill name and e-mail, then loads saved payment methods.
     func loadAccountDetails() async {
+        AccountEventEmitter.emit(name: "checkout_started", screen: "PaymentSheet")
         guard let accountId, !accountId.isEmpty else {
             self.didLoadAccountPaymentMethods = true
             return
@@ -241,6 +242,10 @@ class FrameCheckoutViewModel: ObservableObject {
         }
 
         fieldErrors = errors
+        if !errors.isEmpty {
+            AccountEventEmitter.emit(name: "checkout_validation_failed", screen: "PaymentSheet",
+                                     detail: errors.keys.map { "\($0)" }.joined(separator: ", "))
+        }
         return errors.isEmpty
     }
 
@@ -257,17 +262,24 @@ class FrameCheckoutViewModel: ObservableObject {
         isPerformingAction = true
         defer { isPerformingAction = false }
 
+        AccountEventEmitter.emit(name: "checkout_payment_started", screen: "PaymentSheet", detail: "pay button tapped")
+
         var paymentMethodId: String?
 
         let usingSavedCard = selectedAccountPaymentOption != nil
         guard validateAll(forSavedCard: usingSavedCard) else { return nil }
 
-        if !usingSavedCard {
-            // Propagate the underlying networking error rather than swallowing into nil —
-            // the caller's `throws` contract is the right place for the UI to render this.
-            paymentMethodId = try await createPaymentMethod(accountId: accountId)
-        } else {
-            paymentMethodId = selectedAccountPaymentOption?.id
+        do {
+            if !usingSavedCard {
+                // Propagate the underlying networking error rather than swallowing into nil —
+                // the caller's `throws` contract is the right place for the UI to render this.
+                paymentMethodId = try await createPaymentMethod(accountId: accountId)
+            } else {
+                paymentMethodId = selectedAccountPaymentOption?.id
+            }
+        } catch {
+            AccountEventEmitter.emit(name: "checkout_payment_failed", screen: "PaymentSheet", detail: "\(error)")
+            throw error
         }
         guard let paymentMethodId else { return nil }
 
@@ -288,15 +300,33 @@ class FrameCheckoutViewModel: ObservableObject {
             confirm: false)
 
         let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
-        if let transferError { throw transferError }
+        if let transferError {
+            AccountEventEmitter.emit(name: "checkout_payment_failed", screen: "PaymentSheet", detail: "\(transferError)")
+            throw transferError
+        }
         guard let transfer else { return nil }
 
         // `requiresConfirmation` is the normal answer to a deferred-confirm transfer, and the
         // confirm is what decides whether a challenge is needed at all.
         guard transfer.status == .requiresConfirmation || transfer.status == .requiresThreeDSecure else {
+            AccountEventEmitter.emit(name: "checkout_payment_succeeded", screen: "PaymentSheet")
             return transfer
         }
-        return try await completeThreeDSecure(for: transfer)
+        do {
+            let confirmed = try await completeThreeDSecure(for: transfer)
+            AccountEventEmitter.emit(name: "checkout_payment_succeeded", screen: "PaymentSheet")
+            return confirmed
+        } catch let error as FrameCheckoutError {
+            if case .declined = error {
+                AccountEventEmitter.emit(name: "checkout_payment_declined", screen: "PaymentSheet", detail: error.toastMessage())
+            } else {
+                AccountEventEmitter.emit(name: "checkout_payment_failed", screen: "PaymentSheet", detail: "\(error)")
+            }
+            throw error
+        } catch {
+            AccountEventEmitter.emit(name: "checkout_payment_failed", screen: "PaymentSheet", detail: "\(error)")
+            throw error
+        }
     }
 
     /// Confirms a transfer the API held back, running a 3D Secure challenge if the confirm asks
@@ -358,7 +388,11 @@ class FrameCheckoutViewModel: ObservableObject {
                                                                           account: accountId,
                                                                           billing: billingAddress)
         let (paymentMethod, networkingError) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
-        if let networkingError { throw networkingError }
+        if let networkingError {
+            AccountEventEmitter.emit(name: "card_tokenization_failed", screen: "PaymentSheet", detail: "\(networkingError)")
+            throw networkingError
+        }
+        AccountEventEmitter.emit(name: "card_tokenized", screen: "PaymentSheet")
         return paymentMethod?.id
     }
 }

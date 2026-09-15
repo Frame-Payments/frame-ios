@@ -27,6 +27,16 @@ public enum OnboardingFlow: Int, CaseIterable, Identifiable {
     case confirmBankAccount = 2
     /// Displays a confirmation screen after all verification steps are submitted.
     case verificationSubmitted = 3
+
+    /// The `screen` wire value used when a step is the last one reached, e.g. by ``onboarding_cancelled``.
+    var accountEventScreenName: String {
+        switch self {
+        case .personalInformation: return "PersonalInformation"
+        case .confirmPaymentMethod: return "PaymentMethod"
+        case .confirmBankAccount: return "PayoutMethod"
+        case .verificationSubmitted: return "Onboarding"
+        }
+    }
 }
 
 extension FrameObjects.Capabilities {
@@ -173,6 +183,7 @@ public struct OnboardingContainerView: View {
         // is no ID yet — that session is what the adoption path later binds to the new account.
         .refreshesSonarSession(accountId: onboardingContainerViewModel.accountId)
         .onAppear {
+            AccountEventEmitter.emit(name: "onboarding_started", screen: "Onboarding")
             // Bind every onboarding request to the onboarding-session token (onb_sess_…) for the
             // lifetime of the flow, so calls authenticate per-account instead of with a secret key.
             if let onboardingClientSecret {
@@ -205,6 +216,16 @@ public struct OnboardingContainerView: View {
                         outcome = await onboardingContainerViewModel.resolveFinalOutcome()
                     }
                     let resolved = outcome ?? .pendingReview
+                    switch resolved {
+                    case .approved:
+                        AccountEventEmitter.emit(name: "onboarding_completed", screen: "Onboarding", detail: "approved")
+                    case .declined(let message):
+                        AccountEventEmitter.emit(name: "onboarding_declined", screen: "Onboarding", detail: message ?? "declined")
+                    case .actionRequired(let message):
+                        AccountEventEmitter.emit(name: "onboarding_action_required", screen: "Onboarding", detail: message ?? "action required")
+                    case .pendingReview:
+                        AccountEventEmitter.emit(name: "onboarding_needs_review", screen: "Onboarding")
+                    }
                     onResult(resolved.isSuccess
                              ? .completed(id: accountId)
                              : .finishedUnverified(id: accountId, outcome: resolved))
@@ -212,7 +233,10 @@ public struct OnboardingContainerView: View {
                 }
                 return
             } // Complete onboarding here.
-            
+
+            AccountEventEmitter.emit(name: "onboarding_step_completed",
+                                     screen: onboardingContainerViewModel.currentStep.accountEventScreenName,
+                                     detail: "\(onboardingContainerViewModel.currentStep)")
             let index: Int = (onboardingContainerViewModel.onboardingFlow.firstIndex(of: onboardingContainerViewModel.currentStep) ?? 0) + 1
             onboardingContainerViewModel.currentStep = onboardingContainerViewModel.onboardingFlow[index]
             self.continueToNextStep = false
@@ -230,6 +254,9 @@ public struct OnboardingContainerView: View {
             self.returnToPreviousStep = false
         })
         .onChange(of: onboardingContainerViewModel.currentStep) {
+            AccountEventEmitter.emit(name: "onboarding_step_viewed",
+                                     screen: onboardingContainerViewModel.currentStep.accountEventScreenName,
+                                     detail: "\(onboardingContainerViewModel.currentStep)")
             let index: Int = (onboardingContainerViewModel.onboardingFlow.firstIndex(of: onboardingContainerViewModel.currentStep) ?? 0) + 1
             onboardingContainerViewModel.progressiveSteps = Array(onboardingContainerViewModel.onboardingFlow[0..<index])
         }
@@ -252,6 +279,9 @@ public struct OnboardingContainerView: View {
             onboardingContainerViewModel.endOnboardingSessionIfOwned()
             if !didFinish {
                 didFinish = true
+                AccountEventEmitter.emit(name: "onboarding_cancelled",
+                                         screen: onboardingContainerViewModel.currentStep.accountEventScreenName,
+                                         detail: "last step reached: \(onboardingContainerViewModel.currentStep)")
                 onResult(.cancelled)
             }
         }
@@ -308,6 +338,9 @@ public struct OnboardingContainerView: View {
                 .padding(.horizontal, 24.0)
             Spacer()
             ContinueButton(enabled: $accountLoaded) {
+                AccountEventEmitter.emit(name: "onboarding_step_viewed",
+                                         screen: onboardingContainerViewModel.currentStep.accountEventScreenName,
+                                         detail: "\(onboardingContainerViewModel.currentStep)")
                 self.startedOnboarding = true
             }
             .padding(.bottom)
