@@ -182,6 +182,18 @@ public class DeviceAttestationManager: ObservableObject {
     /// - Returns: The attested key ID stored in the Keychain.
     /// - Throws: ``DeviceAttestationError`` if any step in the flow fails.
     public func attestDevice() async throws -> String {
+        do {
+            return try await attestDeviceUninstrumented()
+        } catch {
+            let attestationError = error as? DeviceAttestationError
+            AccountEventEmitter.emit(name: "attestation_failed",
+                                     screen: "ApplePay",
+                                     detail: attestationError?.debugDescription ?? "\(error)")
+            throw error
+        }
+    }
+
+    private func attestDeviceUninstrumented() async throws -> String {
         if let existingKeyId = attestedKeyId {
             return existingKeyId
         }
@@ -255,6 +267,12 @@ public class DeviceAttestationManager: ObservableObject {
             // guesses wrong. Bounded to a single retry: `assertOnce` is called directly, never
             // through this method, so the recovery path cannot recurse.
             guard case .assertionFailed = error else { throw error }
+            // Reaching here means the stored key was rejected outright — possibly because
+            // `AppAttestEnvironment.current`'s provisioning-profile heuristic guessed wrong for
+            // this build. Worth surfacing even though the retry below recovers automatically.
+            AccountEventEmitter.emit(name: "attestation_reset_and_retry",
+                                     screen: "ApplePay",
+                                     detail: error.debugDescription)
             resetAttestation()
             _ = try await attestDevice()
             return try await assertOnce(paymentData: paymentData)

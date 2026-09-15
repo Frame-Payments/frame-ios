@@ -46,6 +46,10 @@ public class FrameNetworking: ObservableObject {
     /// onboarding flow to a single account (see ``beginOnboardingSession(clientSecret:)``).
     private var onboardingSessionToken: String?
 
+    /// The end-user account this app run belongs to, if supplied to ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``.
+    /// Read by ``AccountEventEmitter`` to stamp `account_id` on emitted account events.
+    private(set) var accountId: String?
+
     var isEvervaultConfigured: Bool = false
 
     /// The active SDK-wide visual theme, applied to all Frame-rendered UI surfaces.
@@ -88,8 +92,11 @@ public class FrameNetworking: ObservableObject {
 
         self.apiPublishableKey = publishableKey
         self.apiSecretKey = secretKey ?? ""
+        self.accountId = accountId?.isEmpty == false ? accountId : nil
         self.applePayMerchantId = applePayMerchantId
         self.debugMode = debugMode
+
+        Task { await AccountEventQueue.shared.startObservingLifecycleIfNeeded() }
 
         // One /config/all marks every block fresh, so the five consumers below resolve from cache
         // instead of re-requesting: one config request per launch, not six. Awaited before they

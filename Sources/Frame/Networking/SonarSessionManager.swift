@@ -323,16 +323,24 @@ public actor SessionManager {
     }
 
     private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
-        let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishable)
-
-        if let error { throw SessionManagerError.requestFailed(error) }
-        guard let data else { throw SessionManagerError.requestFailed(.noData) }
-
         do {
-            return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
+            let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
+            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishable)
+
+            if let error { throw SessionManagerError.requestFailed(error) }
+            guard let data else { throw SessionManagerError.requestFailed(.noData) }
+
+            do {
+                return try FrameNetworking.shared.jsonDecoder.decode(SessionResponse.self, from: data).sonarSessionId
+            } catch {
+                throw SessionManagerError.requestFailed(.decodingFailed)
+            }
         } catch {
-            throw SessionManagerError.requestFailed(.decodingFailed)
+            // Failures here are swallowed by every caller (the payment path independently calls
+            // ensureSession(accountId:)) — this is the one place to surface them without disturbing
+            // that swallow.
+            AccountEventEmitter.emit(name: "sonar_session_failed", screen: "Checkout", detail: "\(error)")
+            throw error
         }
     }
 
