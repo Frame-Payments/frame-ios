@@ -168,15 +168,15 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking` | class | `class FrameNetworking: ObservableObject` | [24](../Sources/Frame/Networking/FrameNetworking.swift#L24) |
 | `FrameNetworking.jsonEncoder` | let | `let jsonEncoder = JSONEncoder()` | [29](../Sources/Frame/Networking/FrameNetworking.swift#L29) |
 | `FrameNetworking.jsonDecoder` | let | `let jsonDecoder = JSONDecoder()` | [31](../Sources/Frame/Networking/FrameNetworking.swift#L31) |
-| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [76](../Sources/Frame/Networking/FrameNetworking.swift#L76) |
-| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [131](../Sources/Frame/Networking/FrameNetworking.swift#L131) |
-| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [153](../Sources/Frame/Networking/FrameNetworking.swift#L153) |
-| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [165](../Sources/Frame/Networking/FrameNetworking.swift#L165) |
-| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [171](../Sources/Frame/Networking/FrameNetworking.swift#L171) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [299](../Sources/Frame/Networking/FrameNetworking.swift#L299) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [348](../Sources/Frame/Networking/FrameNetworking.swift#L348) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [404](../Sources/Frame/Networking/FrameNetworking.swift#L404) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [455](../Sources/Frame/Networking/FrameNetworking.swift#L455) |
+| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [80](../Sources/Frame/Networking/FrameNetworking.swift#L80) |
+| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [138](../Sources/Frame/Networking/FrameNetworking.swift#L138) |
+| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [160](../Sources/Frame/Networking/FrameNetworking.swift#L160) |
+| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [172](../Sources/Frame/Networking/FrameNetworking.swift#L172) |
+| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [178](../Sources/Frame/Networking/FrameNetworking.swift#L178) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [306](../Sources/Frame/Networking/FrameNetworking.swift#L306) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [355](../Sources/Frame/Networking/FrameNetworking.swift#L355) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [411](../Sources/Frame/Networking/FrameNetworking.swift#L411) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [462](../Sources/Frame/Networking/FrameNetworking.swift#L462) |
 
 </details>
 
@@ -970,8 +970,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `DeviceAttestationManager.isSupported` | var | `var isSupported: Bool` | [159](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L159) |
 | `DeviceAttestationManager.attestedKeyId` | var | `var attestedKeyId: String?` | [164](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L164) |
 | `DeviceAttestationManager.attestDevice` | func | `func attestDevice() async throws -> String` | [184](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L184) |
-| `DeviceAttestationManager.generateAssertionForPayment` | func | `func generateAssertionForPayment(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String)` | [248](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L248) |
-| `DeviceAttestationManager.resetAttestation` | func | `func resetAttestation()` | [294](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L294) |
+| `DeviceAttestationManager.generateAssertionForPayment` | func | `func generateAssertionForPayment(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String)` | [260](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L260) |
+| `DeviceAttestationManager.resetAttestation` | func | `func resetAttestation()` | [312](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L312) |
 
 </details>
 
