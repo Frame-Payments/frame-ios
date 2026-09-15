@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1452 public symbols** across 140 files in 2 modules.
+**1454 public symbols** across 141 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
 | Structs | 182 |
-| Enums | 64 |
+| Enums | 65 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
 | Initializers | 122 |
-| Methods | 279 |
+| Methods | 280 |
 | Properties (var) | 222 |
 | Properties (let) | 264 |
 | Enum cases | 231 |
-| **Total** | **1452** |
+| **Total** | **1454** |
 
-### `Frame` — 1281 public symbols
+### `Frame` — 1283 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -219,9 +219,22 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `SessionManager.init` | init | `init (storage: SessionStorage = UserDefaultsSessionStorage())` | [68](../Sources/Frame/Networking/SonarSessionManager.swift#L68) |
 | `SessionManager.ensureSession` | func | `func ensureSession(accountId: String) async throws -> SessionId` | [81](../Sources/Frame/Networking/SonarSessionManager.swift#L81) |
 | `SessionManager.initializeSession` | func | `func initializeSession(accountId: String? = nil) async` | [114](../Sources/Frame/Networking/SonarSessionManager.swift#L114) |
-| `SessionManager.resume` | func | `func resume() async` | [176](../Sources/Frame/Networking/SonarSessionManager.swift#L176) |
-| `SessionManager.pause` | func | `func pause()` | [183](../Sources/Frame/Networking/SonarSessionManager.swift#L183) |
-| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [202](../Sources/Frame/Networking/SonarSessionManager.swift#L202) |
+| `SessionManager.resume` | func | `func resume() async` | [178](../Sources/Frame/Networking/SonarSessionManager.swift#L178) |
+| `SessionManager.pause` | func | `func pause()` | [185](../Sources/Frame/Networking/SonarSessionManager.swift#L185) |
+| `SessionManager.refreshOnFlowEntry` | func | `func refreshOnFlowEntry(accountId: String? = nil) async` | [204](../Sources/Frame/Networking/SonarSessionManager.swift#L204) |
+
+</details>
+
+#### Networking/AccountEvents (2)
+
+<details><summary><code>AccountEventEmitter.swift</code> — 2 symbols</summary>
+
+[`Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift`](../Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `AccountEventEmitter` | enum | `enum AccountEventEmitter` | [14](../Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift#L14) |
+| `AccountEventEmitter.emit` | func | `func emit(name: String, screen: String, detail: String? = nil)` | [31](../Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift#L31) |
 
 </details>
 
@@ -970,8 +983,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `DeviceAttestationManager.isSupported` | var | `var isSupported: Bool` | [159](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L159) |
 | `DeviceAttestationManager.attestedKeyId` | var | `var attestedKeyId: String?` | [164](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L164) |
 | `DeviceAttestationManager.attestDevice` | func | `func attestDevice() async throws -> String` | [184](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L184) |
-| `DeviceAttestationManager.generateAssertionForPayment` | func | `func generateAssertionForPayment(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String)` | [260](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L260) |
-| `DeviceAttestationManager.resetAttestation` | func | `func resetAttestation()` | [312](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L312) |
+| `DeviceAttestationManager.generateAssertionForPayment` | func | `func generateAssertionForPayment(paymentData: Data) async throws -> (keyId: String, assertion: String, clientData: String)` | [267](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L267) |
+| `DeviceAttestationManager.resetAttestation` | func | `func resetAttestation()` | [321](../Sources/Frame/Networking/DeviceAttestation/DeviceAttestationManager.swift#L321) |
 
 </details>
 
@@ -2171,8 +2184,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameApplePayViewModel.FrameApplePayResult.charge` | case | `case charge(id: String)` | [48](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L48) |
 | `FrameApplePayViewModel.FrameApplePayResult.paymentMethod` | case | `case paymentMethod(FrameObjects.PaymentMethod)` | [50](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L50) |
 | `FrameApplePayViewModel.init` | init | `init (mode: FrameApplePayMode, owner: PaymentMethodOwner, completion: ((Result<FrameApplePayResult, Error>) -> Void)? = nil)` | [82](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L82) |
-| `FrameApplePayViewModel.paymentAuthorizationController` | func | `func paymentAuthorizationController( _ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment ) async -> PKPaymentAuthorizationRe…` | [159](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L159) |
-| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [255](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L255) |
+| `FrameApplePayViewModel.paymentAuthorizationController` | func | `func paymentAuthorizationController( _ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment ) async -> PKPaymentAuthorizationRe…` | [161](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L161) |
+| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [271](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L271) |
 
 </details>
 
@@ -2182,12 +2195,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [368](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L368) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [370](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L370) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [372](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L372) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [375](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L375) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [377](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L377) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [382](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L382) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [402](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L402) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [404](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L404) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [406](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L406) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [409](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L409) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [411](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L411) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [416](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L416) |
 
 </details>
 
@@ -2219,8 +2232,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameApplePayButton` | struct | `struct FrameApplePayButton: View` | [20](../Sources/Frame/Views/FrameApplePayButton.swift#L20) |
-| `FrameApplePayButton.init` | init | `init (mode: FrameApplePayViewModel.FrameApplePayMode, owner: FrameApplePayViewModel.PaymentMethodOwner, addCheckoutDivider: Bool = false, buttonType: PKPayment…` | [41](../Sources/Frame/Views/FrameApplePayButton.swift#L41) |
-| `FrameApplePayButton.body` | var | `var body: some View` | [64](../Sources/Frame/Views/FrameApplePayButton.swift#L64) |
+| `FrameApplePayButton.init` | init | `init (mode: FrameApplePayViewModel.FrameApplePayMode, owner: FrameApplePayViewModel.PaymentMethodOwner, addCheckoutDivider: Bool = false, buttonType: PKPayment…` | [44](../Sources/Frame/Views/FrameApplePayButton.swift#L44) |
+| `FrameApplePayButton.body` | var | `var body: some View` | [67](../Sources/Frame/Views/FrameApplePayButton.swift#L67) |
 
 </details>
 
@@ -2806,10 +2819,10 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `OnboardingFlow.confirmPaymentMethod` | case | `case confirmPaymentMethod = 1` | [25](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L25) |
 | `OnboardingFlow.confirmBankAccount` | case | `case confirmBankAccount = 2` | [27](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L27) |
 | `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
-| `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [34](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L34) |
-| `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [58](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L58) |
-| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = true, showCompleti…` | [100](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L100) |
-| `OnboardingContainerView.body` | var | `var body: some View` | [135](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L135) |
+| `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [44](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L44) |
+| `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [68](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L68) |
+| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = true, showCompleti…` | [110](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L110) |
+| `OnboardingContainerView.body` | var | `var body: some View` | [145](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L145) |
 
 </details>
 
