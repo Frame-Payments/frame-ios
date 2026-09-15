@@ -48,7 +48,7 @@ actor AccountEventQueue {
 
     init(maxQueueSize: Int = 200,
         flushSizeThreshold: Int = 20,
-        flushInterval: TimeInterval = 30,
+        flushInterval: TimeInterval = 20,
         flushHandler: @escaping ([AccountEventsRequests.Event]) async -> (AccountEventsRequests.RecordResponse?, NetworkingError?)) {
         self.maxQueueSize = maxQueueSize
         self.flushSizeThreshold = flushSizeThreshold
