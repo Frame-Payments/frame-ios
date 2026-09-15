@@ -14,16 +14,16 @@ Coverage columns show which platforms currently emit the event: ✅ implemented,
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `onboarding_started` — Onboarding Started | `Onboarding` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_step_viewed` — Onboarding Step Viewed | per-step (see below) | step key | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_step_completed` — Onboarding Step Completed | per-step | step key | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_completed` — Onboarding Completed | `Onboarding` | final outcome | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_declined` — Onboarding Declined | `Onboarding` | decline reason | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_needs_review` — Onboarding Needs Review | `Onboarding` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_action_required` — Onboarding Action Required | `Onboarding` | what's required | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_cancelled` — Onboarding Cancelled | last step reached | how far the user got — this is the funnel drop-off signal | ⬜ | ⬜ | ⬜ | ⬜ |
-| `onboarding_blocked` — Onboarding Blocked | `Onboarding` | dead-end reason (capability outstanding, nothing actionable) | ⬜ | ⬜ | ⬜ | ▪️ |
-| `onboarding_session_start_failed` — Failed To Start Onboarding | `Onboarding` | mint/create failure | ⬜ | ⬜ | ⬜ | ▪️ |
+| `onboarding_started` — Onboarding Started | `Onboarding` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_step_viewed` — Onboarding Step Viewed | per-step (see below) | step key | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_step_completed` — Onboarding Step Completed | per-step | step key | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_completed` — Onboarding Completed | `Onboarding` | final outcome | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_declined` — Onboarding Declined | `Onboarding` | decline reason | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_needs_review` — Onboarding Needs Review | `Onboarding` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_action_required` — Onboarding Action Required | `Onboarding` | what's required | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_cancelled` — Onboarding Cancelled | last step reached | how far the user got — this is the funnel drop-off signal | ✅ | ⬜ | ⬜ | ⬜ |
+| `onboarding_blocked` — Onboarding Blocked | `Onboarding` | dead-end reason (capability outstanding, nothing actionable) | ✅ | ⬜ | ⬜ | ▪️ |
+| `onboarding_session_start_failed` — Failed To Start Onboarding | `Onboarding` | mint/create failure | ✅ | ⬜ | ⬜ | ▪️ |
 | `onboarding_session_expired` — Onboarding Session Expired | `Onboarding` | — | ▪️ | ▪️ | ▪️ | ⬜ |
 | `onboarding_session_not_found` — Onboarding Session Not Found | `Onboarding` | — | ▪️ | ▪️ | ▪️ | ⬜ |
 
@@ -31,75 +31,75 @@ Coverage columns show which platforms currently emit the event: ✅ implemented,
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `phone_verification_started` — Started Phone Verification | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `phone_code_sent` — Sent Verification Code | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `phone_code_send_failed` — Failed To Send Code | `PhoneVerification` | backend rejection reason | ⬜ | ⬜ | ⬜ | ⬜ |
-| `phone_code_entry_started` — Started Code Confirmation | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `phone_verified` — Confirmed Phone Number | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `phone_code_incorrect` — Entered Incorrect Code | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `phone_code_entry_cancelled` — Cancelled Code Entry | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ▪️ |
+| `phone_verification_started` — Started Phone Verification | `PhoneVerification` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `phone_code_sent` — Sent Verification Code | `PhoneVerification` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `phone_code_send_failed` — Failed To Send Code | `PhoneVerification` | backend rejection reason | ✅ | ⬜ | ⬜ | ⬜ |
+| `phone_code_entry_started` — Started Code Confirmation | `PhoneVerification` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `phone_verified` — Confirmed Phone Number | `PhoneVerification` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `phone_code_incorrect` — Entered Incorrect Code | `PhoneVerification` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `phone_code_entry_cancelled` — Cancelled Code Entry | `PhoneVerification` | — | ✅ | ⬜ | ⬜ | ▪️ |
 | `phone_code_resent` — Resent Verification Code | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ▪️ |
 | `phone_code_resend_failed` — Failed To Resend Code | `PhoneVerification` | — | ⬜ | ⬜ | ⬜ | ▪️ |
-| `silent_phone_auth_started` — Started Silent Phone Auth | `PhoneVerification` | provider: prove | ⬜ | ⬜ | ⬜ | ▪️ |
-| `silent_phone_auth_completed` — Completed Silent Phone Auth | `PhoneVerification` | provider: prove | ⬜ | ⬜ | ⬜ | ▪️ |
-| `silent_phone_auth_fallback` — Fell Back To Code Entry | `PhoneVerification` | why silent auth was abandoned | ⬜ | ⬜ | ⬜ | ▪️ |
-| `silent_phone_auth_failed` — Failed Silent Phone Auth | `PhoneVerification` | terminal failure after fallback also failed | ⬜ | ⬜ | ⬜ | ▪️ |
+| `silent_phone_auth_started` — Started Silent Phone Auth | `PhoneVerification` | provider: prove | ✅ | ⬜ | ⬜ | ▪️ |
+| `silent_phone_auth_completed` — Completed Silent Phone Auth | `PhoneVerification` | provider: prove | ✅ | ⬜ | ⬜ | ▪️ |
+| `silent_phone_auth_fallback` — Fell Back To Code Entry | `PhoneVerification` | why silent auth was abandoned | ✅ | ⬜ | ⬜ | ▪️ |
+| `silent_phone_auth_failed` — Failed Silent Phone Auth | `PhoneVerification` | terminal failure after fallback also failed | ✅ | ⬜ | ⬜ | ▪️ |
 
 ## Onboarding — Profile
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `profile_step_started` — Started Profile Step | `PersonalInformation` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `profile_updated` — Updated Account Profile | `PersonalInformation` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `profile_update_failed` — Failed To Update Profile | `PersonalInformation` | backend rejection reason | ⬜ | ⬜ | ⬜ | ⬜ |
-| `profile_validation_failed` — Profile Validation Failed | `PersonalInformation` | which field(s) | ⬜ | ⬜ | ⬜ | ⬜ |
+| `profile_step_started` — Started Profile Step | `PersonalInformation` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `profile_updated` — Updated Account Profile | `PersonalInformation` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `profile_update_failed` — Failed To Update Profile | `PersonalInformation` | backend rejection reason | ✅ | ⬜ | ⬜ | ⬜ |
+| `profile_validation_failed` — Profile Validation Failed | `PersonalInformation` | which field(s) | ✅ | ⬜ | ⬜ | ⬜ |
 
 ## Onboarding — Identity Verification / Step-Up
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `step_up_started` — Started Step Up | `IdentityVerification` | provider: persona | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_completed` — Completed Step Up | `IdentityVerification` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_already_verified` — Already Verified | `IdentityVerification` | pre-check short-circuit, Persona never launched | ⬜ | ⬜ | ⬜ | ▪️ |
-| `step_up_failed` — Failed Step Up | `IdentityVerification` | generic bucket — prefer a category below when known | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_needs_review` — Step Up Needs Review | `IdentityVerification` | category: review | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_data_mismatch` — Step Up Data Mismatch | `IdentityVerification` | category: retriable_with_new_data | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_escalated` — Step Up Escalated | `IdentityVerification` | category: step_up (e.g. SSN path failed, now needs gov ID) | ⬜ | ⬜ | ⬜ | ▪️ |
-| `step_up_declined` — Step Up Declined | `IdentityVerification` | category: terminal | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_unavailable` — Step Up Temporarily Unavailable | `IdentityVerification` | category: transient / provider_error | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_cancelled` — Cancelled Step Up | `IdentityVerification` | user closed the verification UI | ⬜ | ⬜ | ⬜ | ▪️ |
+| `step_up_started` — Started Step Up | `IdentityVerification` | provider: persona | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_completed` — Completed Step Up | `IdentityVerification` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_already_verified` — Already Verified | `IdentityVerification` | pre-check short-circuit, Persona never launched | ✅ | ⬜ | ⬜ | ▪️ |
+| `step_up_failed` — Failed Step Up | `IdentityVerification` | generic bucket — prefer a category below when known | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_needs_review` — Step Up Needs Review | `IdentityVerification` | category: review | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_data_mismatch` — Step Up Data Mismatch | `IdentityVerification` | category: retriable_with_new_data | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_escalated` — Step Up Escalated | `IdentityVerification` | category: step_up (e.g. SSN path failed, now needs gov ID) | ✅ | ⬜ | ⬜ | ▪️ |
+| `step_up_declined` — Step Up Declined | `IdentityVerification` | category: terminal | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_unavailable` — Step Up Temporarily Unavailable | `IdentityVerification` | category: transient / provider_error | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_cancelled` — Cancelled Step Up | `IdentityVerification` | user closed the verification UI | ✅ | ⬜ | ⬜ | ▪️ |
 | `step_up_provider_unavailable` — Step Up Provider Unavailable | `IdentityVerification` | Persona SDK not installed/linked — host misconfiguration | ⬜ | ⬜ | ⬜ | ▪️ |
 
 ## Onboarding — Payment Method
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `payment_method_step_started` — Started Payment Method Step | `PaymentMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `saved_payment_method_selected` — Selected Saved Payment Method | `PaymentMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `add_payment_method_started` — Started Add Payment Method | `PaymentMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `payment_method_added` — Added Payment Method | `PaymentMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `payment_method_add_failed` — Failed To Add Payment Method | `PaymentMethod` | backend rejection reason | ⬜ | ⬜ | ⬜ | ⬜ |
-| `card_validation_failed` — Card Validation Failed | `PaymentMethod` | which field | ⬜ | ⬜ | ⬜ | ⬜ |
-| `billing_address_updated` — Updated Billing Address | `PaymentMethod` | address-only verification path | ⬜ | ⬜ | ⬜ | ▪️ |
-| `billing_address_update_failed` — Failed To Update Billing Address | `PaymentMethod` | — | ⬜ | ⬜ | ⬜ | ▪️ |
-| `saved_payment_methods_load_failed` — Failed To Load Saved Methods | `PaymentMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
+| `payment_method_step_started` — Started Payment Method Step | `PaymentMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `saved_payment_method_selected` — Selected Saved Payment Method | `PaymentMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `add_payment_method_started` — Started Add Payment Method | `PaymentMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `payment_method_added` — Added Payment Method | `PaymentMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `payment_method_add_failed` — Failed To Add Payment Method | `PaymentMethod` | backend rejection reason | ✅ | ⬜ | ⬜ | ⬜ |
+| `card_validation_failed` — Card Validation Failed | `PaymentMethod` | which field | ✅ | ⬜ | ⬜ | ⬜ |
+| `billing_address_updated` — Updated Billing Address | `PaymentMethod` | address-only verification path | ✅ | ⬜ | ⬜ | ▪️ |
+| `billing_address_update_failed` — Failed To Update Billing Address | `PaymentMethod` | — | ✅ | ⬜ | ⬜ | ▪️ |
+| `saved_payment_methods_load_failed` — Failed To Load Saved Methods | `PaymentMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
 | `card_input_load_failed` — Card Input Failed To Load | `PaymentMethod` | element/iframe mount failure | ▪️ | ▪️ | ▪️ | ⬜ |
 
 ## Onboarding — Payout Method
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `payout_method_step_started` — Started Payout Method Step | `PayoutMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `saved_payout_method_selected` — Selected Saved Payout Method | `PayoutMethod` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `add_payout_method_started` — Started Add Payout Method | `PayoutMethod` | manual or plaid | ⬜ | ⬜ | ⬜ | ⬜ |
-| `payout_method_added` — Added Payout Method | `PayoutMethod` | manual/ACH path | ⬜ | ⬜ | ⬜ | ⬜ |
-| `payout_method_add_failed` — Failed To Add Payout Method | `PayoutMethod` | backend rejection reason | ⬜ | ⬜ | ⬜ | ⬜ |
-| `bank_link_started` — Started Bank Link | `PayoutMethod` | provider: plaid | ⬜ | ⬜ | ⬜ | ⬜ |
-| `bank_link_completed` — Completed Bank Link | `PayoutMethod` | provider: plaid | ⬜ | ⬜ | ⬜ | ⬜ |
-| `bank_link_cancelled` — Cancelled Bank Link | `PayoutMethod` | user dismissed Plaid | ⬜ | ⬜ | ⬜ | ▪️ |
-| `bank_link_failed` — Failed Bank Link | `PayoutMethod` | Plaid error message | ⬜ | ⬜ | ⬜ | ▪️ |
-| `payout_method_elected` — Elected Payout Method | `PayoutMethod` | set as primary | ⬜ | ⬜ | ⬜ | ▪️ |
-| `payout_method_election_failed` — Failed To Elect Payout Method | `PayoutMethod` | — | ⬜ | ⬜ | ⬜ | ▪️ |
+| `payout_method_step_started` — Started Payout Method Step | `PayoutMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `saved_payout_method_selected` — Selected Saved Payout Method | `PayoutMethod` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `add_payout_method_started` — Started Add Payout Method | `PayoutMethod` | manual or plaid | ✅ | ⬜ | ⬜ | ⬜ |
+| `payout_method_added` — Added Payout Method | `PayoutMethod` | manual/ACH path | ✅ | ⬜ | ⬜ | ⬜ |
+| `payout_method_add_failed` — Failed To Add Payout Method | `PayoutMethod` | backend rejection reason | ✅ | ⬜ | ⬜ | ⬜ |
+| `bank_link_started` — Started Bank Link | `PayoutMethod` | provider: plaid | ✅ | ⬜ | ⬜ | ⬜ |
+| `bank_link_completed` — Completed Bank Link | `PayoutMethod` | provider: plaid | ✅ | ⬜ | ⬜ | ⬜ |
+| `bank_link_cancelled` — Cancelled Bank Link | `PayoutMethod` | user dismissed Plaid | ✅ | ⬜ | ⬜ | ▪️ |
+| `bank_link_failed` — Failed Bank Link | `PayoutMethod` | Plaid error message | ✅ | ⬜ | ⬜ | ▪️ |
+| `payout_method_elected` — Elected Payout Method | `PayoutMethod` | set as primary | ✅ | ⬜ | ⬜ | ▪️ |
+| `payout_method_election_failed` — Failed To Elect Payout Method | `PayoutMethod` | — | ✅ | ⬜ | ⬜ | ▪️ |
 | `saved_payout_methods_load_failed` — Failed To Load Saved Payouts | `PayoutMethod` | — | ⬜ | ⬜ | ⬜ | ▪️ |
 
 ## Onboarding — Document Upload
@@ -120,41 +120,41 @@ Dormant on iOS and RN today (built, not wired into the active flow) — included
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `compliance_check_started` — Started Compliance Check | `Compliance` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `compliance_check_passed` — Passed Compliance Check | `Compliance` | — | ⬜ | ⬜ | ⬜ | ⬜ |
+| `compliance_check_started` — Started Compliance Check | `Compliance` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `compliance_check_passed` — Passed Compliance Check | `Compliance` | — | ✅ | ⬜ | ⬜ | ⬜ |
 | `compliance_check_failed` — Failed Compliance Check | `Compliance` | non-blocking — flow still advances | ⬜ | ⬜ | ⬜ | ⬜ |
-| `compliance_check_vpn_detected` — Detected VPN Or Proxy | `Compliance` | — | ⬜ | ▪️ | ▪️ | ▪️ |
-| `compliance_check_vpn_bypassed` — Continued Despite VPN Warning | `Compliance` | — | ⬜ | ▪️ | ▪️ | ▪️ |
+| `compliance_check_vpn_detected` — Detected VPN Or Proxy | `Compliance` | — | ✅ | ▪️ | ▪️ | ▪️ |
+| `compliance_check_vpn_bypassed` — Continued Despite VPN Warning | `Compliance` | — | ✅ | ▪️ | ▪️ | ▪️ |
 | `id_verification_popup_unsupported` — ID Verification Not Yet Supported | `Compliance` | web's `id_verification`/`geo_compliance` steps are launch stubs today — use this name, not `compliance_check_failed`, so it doesn't read as a real failure rate | ▪️ | ▪️ | ▪️ | ⬜ |
 
 ## Onboarding — Terms of Service
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `terms_of_service_shown` — Shown Terms Of Service | `TermsOfService` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `terms_of_service_accepted` — Accepted Terms Of Service | `TermsOfService` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `terms_of_service_token_failed` — Failed To Load Terms Token | `TermsOfService` | — | ⬜ | ⬜ | ⬜ | ⬜ |
+| `terms_of_service_shown` — Shown Terms Of Service | `TermsOfService` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `terms_of_service_accepted` — Accepted Terms Of Service | `TermsOfService` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `terms_of_service_token_failed` — Failed To Load Terms Token | `TermsOfService` | — | ✅ | ⬜ | ⬜ | ⬜ |
 | `terms_of_service_accept_failed` — Failed To Accept Terms | `TermsOfService` | — | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ## Checkout / Payment Confirmation
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `checkout_started` — Started Checkout | `PaymentSheet` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `checkout_payment_method_selected` — Selected Payment Method | `PaymentSheet` | saved or new | ⬜ | ⬜ | ⬜ | ⬜ |
-| `checkout_validation_failed` — Checkout Validation Failed | `PaymentSheet` | which field | ⬜ | ⬜ | ⬜ | ⬜ |
-| `checkout_payment_started` — Started Payment | `PaymentSheet` | pay button tapped | ⬜ | ⬜ | ⬜ | ⬜ |
-| `card_tokenized` — Tokenized Card | `PaymentSheet` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `card_tokenization_failed` — Failed To Tokenize Card | `PaymentSheet` | — | ⬜ | ⬜ | ⬜ | ✅ (as `tokenization_failed`) |
+| `checkout_started` — Started Checkout | `PaymentSheet` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `checkout_payment_method_selected` — Selected Payment Method | `PaymentSheet` | saved or new | ✅ | ⬜ | ⬜ | ⬜ |
+| `checkout_validation_failed` — Checkout Validation Failed | `PaymentSheet` | which field | ✅ | ⬜ | ⬜ | ⬜ |
+| `checkout_payment_started` — Started Payment | `PaymentSheet` | pay button tapped | ✅ | ⬜ | ⬜ | ⬜ |
+| `card_tokenized` — Tokenized Card | `PaymentSheet` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `card_tokenization_failed` — Failed To Tokenize Card | `PaymentSheet` | — | ✅ | ⬜ | ⬜ | ✅ (as `tokenization_failed`) |
 | `card_declined_by_merchant` — Card Declined By Merchant | `PaymentSheet` | merchant-reported via server-side rejection | ▪️ | ▪️ | ▪️ | ⬜ |
-| `checkout_payment_succeeded` — Payment Succeeded | `PaymentSheet` | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `checkout_payment_declined` — Payment Declined | `PaymentSheet` | issuer decline reason if available | ⬜ | ⬜ | ⬜ | ⬜ |
-| `checkout_payment_failed` — Payment Failed | `PaymentSheet` | technical failure, distinct from a decline | ⬜ | ⬜ | ⬜ | ✅ (as `tokenization_failed` — consider renaming, see note below) |
-| `checkout_cancelled` — Cancelled Checkout | `PaymentSheet` | — | ⬜ | ⬜ | ⬜ | ▪️ |
-| `step_up_challenge_started` — Started Step Up Challenge | `PaymentSheet` | 3DS | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_challenge_completed` — Completed Step Up Challenge | `PaymentSheet` | cardholder finished the UI — not itself a verdict | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_challenge_abandoned` — Abandoned Step Up Challenge | `PaymentSheet` | cardholder cancelled/dismissed | ⬜ | ⬜ | ⬜ | ⬜ |
-| `step_up_challenge_unavailable` — Step Up Challenge Unavailable | `PaymentSheet` | challenge page never loaded | ⬜ | ⬜ | ⬜ | ⬜ |
+| `checkout_payment_succeeded` — Payment Succeeded | `PaymentSheet` | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `checkout_payment_declined` — Payment Declined | `PaymentSheet` | issuer decline reason if available | ✅ | ⬜ | ⬜ | ⬜ |
+| `checkout_payment_failed` — Payment Failed | `PaymentSheet` | technical failure, distinct from a decline | ✅ | ⬜ | ⬜ | ✅ (as `tokenization_failed` — consider renaming, see note below) |
+| `checkout_cancelled` — Cancelled Checkout | `PaymentSheet` | — | ✅ | ⬜ | ⬜ | ▪️ |
+| `step_up_challenge_started` — Started Step Up Challenge | `PaymentSheet` | 3DS | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_challenge_completed` — Completed Step Up Challenge | `PaymentSheet` | cardholder finished the UI — not itself a verdict | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_challenge_abandoned` — Abandoned Step Up Challenge | `PaymentSheet` | cardholder cancelled/dismissed | ✅ | ⬜ | ⬜ | ⬜ |
+| `step_up_challenge_unavailable` — Step Up Challenge Unavailable | `PaymentSheet` | challenge page never loaded | ✅ | ⬜ | ⬜ | ⬜ |
 | `step_up_challenge_timed_out` — Step Up Challenge Timed Out | `PaymentSheet` | — | ✅ (as `charge_intent_confirmation_polling_exhausted`) | ⬜ | ✅ (as `charge_poll_exhausted` / `charge_poll_timed_out`) | ⬜ |
 
 **Note on existing web names:** `confirmCardPayment.ts` currently reuses `"tokenization_failed"` for both true tokenization failures and broader confirm/decline/3DS failures (`lib/confirmCardPayment.ts:146,379`). Recommend splitting these into `card_tokenization_failed` vs. `checkout_payment_failed` per this catalog next time that file is touched — flagging here rather than silently renaming a shipped event.
@@ -167,13 +167,13 @@ iOS and RN only — Android and Web have no Apple Pay surface.
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `apple_pay_started` — Started Apple Pay | `ApplePay` | — | ⬜ | ▪️ | ⬜ | ▪️ |
-| `apple_pay_unavailable` — Apple Pay Unavailable | `ApplePay` | which gate blocked it (merchant id / canMakePayments / attestation) | ⬜ | ▪️ | ⬜ | ▪️ |
-| `apple_pay_authorized` — Authorized Apple Pay Payment | `ApplePay` | — | ⬜ | ▪️ | ⬜ | ▪️ |
-| `apple_pay_failed` — Apple Pay Payment Failed | `ApplePay` | — | ⬜ | ▪️ | ⬜ | ▪️ |
-| `apple_pay_cancelled` — Cancelled Apple Pay | `ApplePay` | sheet dismissed with no result | ⬜ | ▪️ | ⬜ | ▪️ |
-| `apple_pay_card_added` — Added Apple Pay Card | `ApplePay` | mode: add-to-owner (onboarding wallet-card save, no charge) | ⬜ | ▪️ | ⬜ | ▪️ |
-| `apple_pay_assertion_rejected` — Apple Pay Assertion Rejected | `ApplePay` | attestation-linked failure, triggers an attestation reset | ⬜ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_started` — Started Apple Pay | `ApplePay` | — | ✅ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_unavailable` — Apple Pay Unavailable | `ApplePay` | which gate blocked it (merchant id / canMakePayments / attestation) | ✅ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_authorized` — Authorized Apple Pay Payment | `ApplePay` | — | ✅ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_failed` — Apple Pay Payment Failed | `ApplePay` | — | ✅ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_cancelled` — Cancelled Apple Pay | `ApplePay` | sheet dismissed with no result | ✅ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_card_added` — Added Apple Pay Card | `ApplePay` | mode: add-to-owner (onboarding wallet-card save, no charge) | ✅ | ▪️ | ⬜ | ▪️ |
+| `apple_pay_assertion_rejected` — Apple Pay Assertion Rejected | `ApplePay` | attestation-linked failure, triggers an attestation reset | ✅ | ▪️ | ⬜ | ▪️ |
 | `apple_pay_merchant_validation_failed` — Apple Pay Merchant Validation Failed | `ApplePay` | Apple domain-verification handshake failed | ▪️ | ▪️ | ▪️ | ▪️ |
 
 ## Google Pay
@@ -195,22 +195,22 @@ iOS and RN only. Android has no App Attest equivalent (tracked separately, out o
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `attestation_started` — Started Device Attestation | `PaymentSheet` or `ApplePay` depending on trigger | — | ⬜ | ▪️ | ⬜ | ▪️ |
-| `attestation_completed` — Completed Device Attestation | same | one-time per device — currently unemitted on both platforms | ⬜ | ▪️ | ⬜ | ▪️ |
-| `attestation_not_supported` — Device Attestation Not Supported | same | simulator or unsupported OS version | ⬜ | ▪️ | ⬜ | ▪️ |
+| `attestation_started` — Started Device Attestation | `PaymentSheet` or `ApplePay` depending on trigger | — | ✅ | ▪️ | ⬜ | ▪️ |
+| `attestation_completed` — Completed Device Attestation | same | one-time per device — currently unemitted on both platforms | ✅ | ▪️ | ⬜ | ▪️ |
+| `attestation_not_supported` — Device Attestation Not Supported | same | simulator or unsupported OS version | ✅ | ▪️ | ⬜ | ▪️ |
 | `attestation_failed` — Failed Device Attestation | same | subtype in detail (key gen / challenge fetch / apple attest / backend reject) | ✅ | ▪️ | ✅ | ▪️ |
 | `attestation_reset` — Reset Device Attestation | same | retry-after-reset, or externally triggered by an assertion rejection | ✅ (as `attestation_reset_and_retry`) | ▪️ | ⬜ | ▪️ |
-| `attestation_assertion_retried` — Retried Assertion After Reset | same | per-payment assertion, distinct from the one-time attestation above | ⬜ | ▪️ | ⬜ | ▪️ |
+| `attestation_assertion_retried` — Retried Assertion After Reset | same | per-payment assertion, distinct from the one-time attestation above | ✅ | ▪️ | ⬜ | ▪️ |
 
 ## Fraud Session (Sonar)
 
 | name (Title Case) | screen | detail | iOS | Android | RN | Web |
 |---|---|---|---|---|---|---|
-| `fraud_session_started` — Started Fraud Session | current screen at session bind | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `fraud_session_refreshed` — Refreshed Fraud Session | current screen | — | ⬜ | ⬜ | ⬜ | ⬜ |
-| `fraud_session_recreated` — Fraud Session Recreated | current screen | refresh failed, fell back to creating fresh — self-healing, not a hard failure | ⬜ | ⬜ | ⬜ | ⬜ |
+| `fraud_session_started` — Started Fraud Session | current screen at session bind | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `fraud_session_refreshed` — Refreshed Fraud Session | current screen | — | ✅ | ⬜ | ⬜ | ⬜ |
+| `fraud_session_recreated` — Fraud Session Recreated | current screen | refresh failed, fell back to creating fresh — self-healing, not a hard failure | ✅ | ⬜ | ⬜ | ⬜ |
 | `fraud_session_failed` — Failed Fraud Session | current screen | — | ✅ (as `sonar_session_failed`) | ⬜ | ✅ (as `sonar_session_failed`) | ⬜ |
-| `fraud_session_adopted` — Adopted Legacy Fraud Session | current screen | pre-account anonymous session migrated to account-scoped | ⬜ | ⬜ | ⬜ | ▪️ |
+| `fraud_session_adopted` — Adopted Legacy Fraud Session | current screen | pre-account anonymous session migrated to account-scoped | ✅ | ⬜ | ⬜ | ▪️ |
 
 ## SDK Initialization
 

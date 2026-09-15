@@ -7,9 +7,11 @@ import Foundation
 
 /// Builds and queues account/diagnostic events for the backend's merchant dashboard.
 ///
-/// Internal only — there is no public emit API. Integrators never send their own events; every
-/// call site here is SDK-owned instrumentation of a failure the SDK already knows about.
-enum AccountEventEmitter {
+/// There is no public *integrator-facing* emit API — every call site is SDK-owned instrumentation
+/// of a moment the SDK already knows about. ``emit(name:screen:detail:)`` is `public` only because
+/// `FrameOnboarding` is a separate SPM target from `Frame` and needs to call it too; it is not
+/// documented for or intended to be called by host apps.
+public enum AccountEventEmitter {
 
     /// The queue events are enqueued onto. Overridable so tests can inject a queue with a
     /// recording flush handler instead of exercising the real network path.
@@ -26,7 +28,7 @@ enum AccountEventEmitter {
     ///   - screen: The screen/flow the event happened on (e.g. `"ApplePay"`, `"Checkout"`).
     ///   - detail: Optional developer-facing detail. Must never contain PII, a PAN, a CVV, or a
     ///     raw customer identifier — use a debug description, never user-facing copy.
-    static func emit(name: String, screen: String, detail: String? = nil) {
+    public static func emit(name: String, screen: String, detail: String? = nil) {
         guard let accountId = FrameNetworking.shared.accountId else { return }
 
         let event = AccountEventsRequests.Event(

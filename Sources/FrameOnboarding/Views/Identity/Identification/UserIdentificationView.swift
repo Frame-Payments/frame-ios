@@ -287,9 +287,15 @@ struct UserIdentificationView: View {
             if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) {
                 TermsOfServiceView(padded: false)
                     .padding(.horizontal)
+                    .onAppear {
+                        AccountEventEmitter.emit(name: "terms_of_service_shown", screen: "TermsOfService")
+                    }
             }
             ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 guard onboardingContainerViewModel.validateAllPhoneAuth() else { return }
+                if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) {
+                    AccountEventEmitter.emit(name: "terms_of_service_accepted", screen: "TermsOfService")
+                }
                 Task {
                     let dob = DateOfBirthFormatter.format(
                         year: onboardingContainerViewModel.authBirthYear,
@@ -315,6 +321,9 @@ struct UserIdentificationView: View {
             PageHeaderView(headerTitle: "Personal Information") {
                 self.identitySteps = .phoneAuth
             }
+            .onAppear {
+                AccountEventEmitter.emit(name: "profile_step_started", screen: "PersonalInformation")
+            }
             ScrollView {
                 CustomerInformationView(viewModel: customerInfoVM,
                                         onboardingContainerViewModel: onboardingContainerViewModel)
@@ -330,7 +339,11 @@ struct UserIdentificationView: View {
             ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 let infoOK = customerInfoVM.validate()
                 let addressOK = personalAddressVM.validate()
-                guard infoOK, addressOK else { return }
+                guard infoOK, addressOK else {
+                    AccountEventEmitter.emit(name: "profile_validation_failed", screen: "PersonalInformation",
+                                             detail: "info valid: \(infoOK), address valid: \(addressOK)")
+                    return
+                }
                 personalAddressVM.normalize()
                 onboardingContainerViewModel.createdCustomerIdentity = customerInfoVM.identity
                 onboardingContainerViewModel.createdCustomerIdentity.address = personalAddressVM.address

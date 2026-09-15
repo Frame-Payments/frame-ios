@@ -33,6 +33,9 @@ public struct FrameApplePayButton: View {
     @Environment(\.frameTheme) private var theme
     @StateObject private var viewModel: FrameApplePayViewModel
     @ObservedObject private var attestationManager = DeviceAttestationManager.shared
+    /// Guards the unavailability event so a re-render while still unavailable (e.g. waiting on
+    /// attestation) reports the gate once per view instance instead of on every body evaluation.
+    @State private var didEmitUnavailable = false
 
     /// Mode-aware initializer. Use `.charge(amount:currency:)` to run the existing checkout flow,
     /// or `.addToOwner` to surface the wallet sheet for one-tap PaymentMethod creation
@@ -63,22 +66,46 @@ public struct FrameApplePayButton: View {
     /// preconditions are met, or an empty view when Apple Pay is unavailable or unconfigured.
     public var body: some View {
         let merchantConfigured = !(FrameNetworking.shared.applePayMerchantId ?? "").isEmpty
-        if merchantConfigured && FrameApplePayViewModel.canMakePayments() && attestationManager.isDeviceAttested {
-            PKPaymentButtonWrapper(
-                buttonType: buttonType,
-                buttonStyle: buttonStyle
-            ) {
-                viewModel.presentApplePay()
-            }
-            .frame(height: 50)
-            .disabled(viewModel.isProcessing)
+        let canMakePayments = FrameApplePayViewModel.canMakePayments()
+        let available = merchantConfigured && canMakePayments && attestationManager.isDeviceAttested
+        Group {
+            if available {
+                PKPaymentButtonWrapper(
+                    buttonType: buttonType,
+                    buttonStyle: buttonStyle
+                ) {
+                    viewModel.presentApplePay()
+                }
+                .frame(height: 50)
+                .disabled(viewModel.isProcessing)
 
-            if addCheckoutDivider {
-                paymentDivider
+                if addCheckoutDivider {
+                    paymentDivider
+                }
             }
+            // Renders nothing if Apple Pay is unavailable on this device or the merchant ID
+            // wasn't configured at init.
         }
-        // Renders nothing if Apple Pay is unavailable on this device or the merchant ID
-        // wasn't configured at init.
+        .onAppear { emitUnavailableIfNeeded(available: available, merchantConfigured: merchantConfigured, canMakePayments: canMakePayments) }
+        .onChange(of: attestationManager.isDeviceAttested) { _, _ in
+            emitUnavailableIfNeeded(available: available, merchantConfigured: merchantConfigured, canMakePayments: canMakePayments)
+        }
+    }
+
+    /// Reports which gate blocked the button, once per view instance (unless the gate outcome
+    /// changes, e.g. attestation finishing after the button first appeared unavailable).
+    private func emitUnavailableIfNeeded(available: Bool, merchantConfigured: Bool, canMakePayments: Bool) {
+        guard !available, !didEmitUnavailable else { return }
+        didEmitUnavailable = true
+        let reason: String
+        if !merchantConfigured {
+            reason = "merchant id"
+        } else if !canMakePayments {
+            reason = "canMakePayments"
+        } else {
+            reason = "attestation"
+        }
+        AccountEventEmitter.emit(name: "apple_pay_unavailable", screen: "ApplePay", detail: reason)
     }
 
     /// A horizontal "Or" divider rendered between the Apple Pay button and other payment options.

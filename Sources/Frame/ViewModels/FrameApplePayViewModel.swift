@@ -100,6 +100,8 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         guard !isProcessing else { return }
         isProcessing = true
 
+        AccountEventEmitter.emit(name: "apple_pay_started", screen: "ApplePay")
+
         Task {
             defer { isProcessing = false }
 
@@ -180,7 +182,12 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
             }
             guard let paymentMethod else {
                 if methodError?.isAssertionRejection == true {
+                    AccountEventEmitter.emit(name: "apple_pay_assertion_rejected", screen: "ApplePay",
+                                             detail: "attestation-linked failure, triggers an attestation reset")
                     DeviceAttestationManager.shared.resetAttestation()
+                } else {
+                    AccountEventEmitter.emit(name: "apple_pay_failed", screen: "ApplePay",
+                                             detail: methodError.map { "\($0)" } ?? "unknown error")
                 }
                 pendingResult = .failure(methodError ?? NetworkingError.unknownError)
                 return PKPaymentAuthorizationResult(status: .failure, errors: nil)
@@ -189,6 +196,8 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
 
             switch mode {
             case .addToOwner:
+                AccountEventEmitter.emit(name: "apple_pay_card_added", screen: "ApplePay",
+                                         detail: "mode: add-to-owner (onboarding wallet-card save, no charge)")
                 pendingResult = .success(.paymentMethod(paymentMethod))
                 return PKPaymentAuthorizationResult(status: .success, errors: nil)
 
@@ -210,9 +219,12 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
 
                     if let chargeIntent {
+                        AccountEventEmitter.emit(name: "apple_pay_authorized", screen: "ApplePay")
                         pendingResult = .success(.charge(id: chargeIntent.id))
                         return PKPaymentAuthorizationResult(status: .success, errors: nil)
                     } else {
+                        AccountEventEmitter.emit(name: "apple_pay_failed", screen: "ApplePay",
+                                                 detail: chargeError.map { "\($0)" } ?? "unknown error")
                         pendingResult = .failure(chargeError ?? NetworkingError.unknownError)
                         return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                     }
@@ -230,15 +242,19 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
 
                     if let transfer {
+                        AccountEventEmitter.emit(name: "apple_pay_authorized", screen: "ApplePay")
                         pendingResult = .success(.charge(id: transfer.id))
                         return PKPaymentAuthorizationResult(status: .success, errors: nil)
                     } else {
+                        AccountEventEmitter.emit(name: "apple_pay_failed", screen: "ApplePay",
+                                                 detail: transferError.map { "\($0)" } ?? "unknown error")
                         pendingResult = .failure(transferError ?? NetworkingError.unknownError)
                         return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                     }
                 }
             }
         } catch {
+            AccountEventEmitter.emit(name: "apple_pay_failed", screen: "ApplePay", detail: "\(error)")
             pendingResult = .failure(error)
             return PKPaymentAuthorizationResult(status: .failure, errors: nil)
         }
@@ -259,6 +275,9 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                 if let result = self.pendingResult {
                     self.pendingResult = nil
                     self.completion?(result)
+                } else {
+                    AccountEventEmitter.emit(name: "apple_pay_cancelled", screen: "ApplePay",
+                                             detail: "sheet dismissed with no result")
                 }
             }
         }

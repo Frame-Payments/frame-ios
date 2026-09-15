@@ -34,6 +34,7 @@ struct SelectPayoutMethodView: View {
                 }
         }
         .onAppear {
+            AccountEventEmitter.emit(name: "payout_method_step_started", screen: "PayoutMethod")
             // Otherwise the list is only populated as a side effect of the card step, which an
             // account that skips that step never runs.
             Task {
@@ -127,6 +128,7 @@ struct SelectPayoutMethodView: View {
         )
         .padding(.horizontal)
         .onTapGesture {
+            AccountEventEmitter.emit(name: "add_payout_method_started", screen: "PayoutMethod", detail: "manual or plaid")
             self.showAddPayoutMethod = true
         }
     }
@@ -167,6 +169,7 @@ struct SelectPayoutMethodView: View {
         .padding(.horizontal)
         .onTapGesture {
             onboardingContainerViewModel.selectedPayoutMethod = payoutMethod
+            AccountEventEmitter.emit(name: "saved_payout_method_selected", screen: "PayoutMethod")
         }
     }
 }

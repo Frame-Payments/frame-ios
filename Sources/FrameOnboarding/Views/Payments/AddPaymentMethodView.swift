@@ -77,7 +77,11 @@ struct AddPaymentMethodView: View {
                             cardError = nil
                         }
                     }
-                    guard addressOK && cardOK else { return }
+                    guard addressOK && cardOK else {
+                        AccountEventEmitter.emit(name: "card_validation_failed", screen: "PaymentMethod",
+                                                 detail: cardOK ? "billing address" : (cardError ?? "card"))
+                        return
+                    }
                     onboardingContainerViewModel.createdBillingAddress = billingVM.address
                     Task {
                         if onlyAddressVerification {
