@@ -28,7 +28,17 @@ class NetworkingConstants {
 public enum FrameAuthMode: Sendable {
     /// Authenticate with the publishable key (`pk_`). Set explicitly on client-safe endpoints
     /// (tokenization, config, device attestation) that are safe to call from an app binary.
+    ///
+    /// While an onboarding session is active, this is overridden by the session token instead —
+    /// account-scoped reads tagged `.publishable` (e.g. `getAccountWith`) need that token to
+    /// receive `profile`. Use ``publishableOnly`` where the session token must never be sent.
     case publishable
+    /// Authenticate with the publishable key (`pk_`), even while an onboarding session is active.
+    ///
+    /// Unlike ``publishable``, this is never overridden by the onboarding-session token. For
+    /// endpoints that only ever accept `pk_` regardless of what else is in progress (e.g.
+    /// account events, which name the account in the request body instead).
+    case publishableOnly
     /// Authenticate with the secret key (`sk_`). Server-only — avoid shipping this in an app binary.
     case secret
     /// Authenticate with a server-minted, per-object client secret used as a Bearer token.

@@ -156,6 +156,30 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer ci_abc_secret_xyz")
     }
 
+    /// `.publishableOnly` sends the pk_ like `.publishable` does outside a session.
+    func testPublishableOnlyUsesPublishableKey() async throws {
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
+        let session = makeSession()
+
+        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishableOnly)
+
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
+    }
+
+    /// Unlike `.publishable`, `.publishableOnly` is never overridden by an active onboarding
+    /// session — this is what account events rely on (FRA-6549): the endpoint only ever accepts
+    /// `pk_`, so a request fired mid-onboarding must not carry the onb_sess_ token.
+    func testPublishableOnlyIgnoresActiveOnboardingSession() async throws {
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
+        let session = makeSession()
+        FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_live_token")
+        defer { FrameNetworking.shared.endOnboardingSession() }
+
+        _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishableOnly)
+
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer pk_test_123")
+    }
+
     /// Ending the onboarding session restores normal credential resolution: a `.publishable`
     /// request again sends the publishable key instead of the onboarding-session token.
     func testEndingOnboardingSessionRestoresPublishableKey() async throws {

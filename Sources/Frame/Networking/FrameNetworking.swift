@@ -182,35 +182,39 @@ public class FrameNetworking: ObservableObject {
     /// Resolves the Bearer token for a request based on its ``FrameAuthMode``.
     ///
     /// While an onboarding session is active (see ``beginOnboardingSession(clientSecret:)``), the
-    /// onboarding-session token takes precedence for every request, scoping the flow to one account.
-    /// Otherwise, emits a one-time warning the first time the secret key is used, steering
-    /// integrators toward serving `sk_` from their backend.
+    /// onboarding-session token takes precedence for every ``FrameAuthMode/publishable`` request,
+    /// scoping the flow to one account — except ``FrameAuthMode/publishableOnly``, which always
+    /// sends the publishable key regardless of any active session. Otherwise, emits a one-time
+    /// warning the first time the secret key is used, steering integrators toward serving `sk_`
+    /// from their backend.
     private func bearerToken(for auth: FrameAuthMode) -> String {
         // An explicit per-call client secret always wins (e.g. a charge intent's client_secret).
         if case .clientSecret(let token) = auth {
             return token
         }
 
+        // `.publishableOnly` sends the pk_ unconditionally: unlike `.publishable`, it is never
+        // overridden by an active onboarding session.
+        if case .publishableOnly = auth {
+            return publishableKey()
+        }
+
         // During onboarding, every other request is authenticated by the onboarding-session token.
         if let onboardingSessionToken {
             return onboardingSessionToken
         }
-        
+
         // Outside an onboarding session, `.publishable` sends the pk_: merchant-level endpoints
         // (terms_of_service, device_attestation, …) are not account-scoped and only accept a pk_.
         // Mid-session the check above wins instead, because account-scoped reads tagged
         // `.publishable` (e.g. getAccountWith) need the session token to receive `profile`.
         if case .publishable = auth {
-            if apiPublishableKey.isEmpty {
-                warnOnce(&hasMissingPublishableKeyWarned,
-                         "⚠️ Frame: a client-safe request was made but no publishable key (pk_) is configured. Call initialize(publishableKey:) first.")
-            }
-            return apiPublishableKey
+            return publishableKey()
         }
-        
+
         switch auth {
-        case .publishable:
-            // Handled by the early return above; unreachable here.
+        case .publishable, .publishableOnly:
+            // Handled by the early returns above; unreachable here.
             return apiPublishableKey
         case .secret:
             // A secret key actually leaving the device on a live request is the most actionable
@@ -222,6 +226,15 @@ public class FrameNetworking: ObservableObject {
             // Handled by the early return above; unreachable here.
             return ""
         }
+    }
+
+    /// Returns the publishable key, warning once if none is configured.
+    private func publishableKey() -> String {
+        if apiPublishableKey.isEmpty {
+            warnOnce(&hasMissingPublishableKeyWarned,
+                     "⚠️ Frame: a client-safe request was made but no publishable key (pk_) is configured. Call initialize(publishableKey:) first.")
+        }
+        return apiPublishableKey
     }
 
     /// Set once a missing-publishable-key warning has been emitted.

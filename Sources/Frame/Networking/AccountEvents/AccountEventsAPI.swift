@@ -11,10 +11,10 @@ enum AccountEventsAPI {
 
     /// Submits a batch of events to the backend.
     ///
-    /// Authenticates with `.publishable` regardless of any active onboarding session: the event
-    /// already names the end-user account by `account_id` in the body, so nothing is gained by
-    /// scoping the request credential to the session, and publishable-only keeps delivery working
-    /// whether or not onboarding happens to be in progress when the event fires.
+    /// Authenticates with `.publishableOnly` regardless of any active onboarding session: the
+    /// endpoint only ever accepts `pk_`, the event already names the end-user account by
+    /// `account_id` in the body, and publishable-only keeps delivery working whether or not
+    /// onboarding happens to be in progress when the event fires.
     static func record(_ events: [AccountEventsRequests.Event]) async -> (AccountEventsRequests.RecordResponse?, NetworkingError?) {
         let request = AccountEventsRequests.RecordRequest(events: events)
         guard let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request) else {
@@ -27,7 +27,7 @@ enum AccountEventsAPI {
             (data, error) = try await FrameNetworking.shared.performDataTask(
                 endpoint: AccountEventsEndpoints.record,
                 requestBody: requestBody,
-                auth: .publishable
+                auth: .publishableOnly
             )
         } catch {
             return (nil, NetworkingError.unknownError)
