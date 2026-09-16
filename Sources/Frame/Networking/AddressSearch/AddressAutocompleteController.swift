@@ -28,9 +28,10 @@ public final class AddressAutocompleteController: ObservableObject {
 
     /// The most suggestions the list will hold.
     ///
-    /// Ten is Mapbox's own cap on this endpoint's `limit` parameter. The list scrolls internally,
-    /// so showing all ten no longer depends on how much space the form below it leaves.
-    public static let maximumSuggestions = 10
+    /// Five rows is what fits on a phone between the address field and the form controls below
+    /// it without scrolling. Mapbox returns up to ten, and a list that long is clipped by the
+    /// scrolling form it hangs over, leaving a half-drawn row the user cannot reach.
+    public static let maximumSuggestions = 5
 
     @Published public private(set) var suggestions: [AddressSuggestion] = []
 
