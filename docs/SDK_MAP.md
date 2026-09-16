@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1595 public symbols** across 142 files in 2 modules.
+**1596 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -53,10 +53,10 @@ regeneration, so architectural notes belong there.
 | Methods | 280 |
 | Properties (var) | 222 |
 | Properties (let) | 296 |
-| Enum cases | 337 |
-| **Total** | **1595** |
+| Enum cases | 338 |
+| **Total** | **1596** |
 
-### `Frame` — 1424 public symbols
+### `Frame` — 1425 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -86,50 +86,51 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking (74)
+#### Networking (75)
 
-<details><summary><code>CommonObjects.swift</code> — 36 symbols</summary>
+<details><summary><code>CommonObjects.swift</code> — 37 symbols</summary>
 
 [`Sources/Frame/Networking/CommonObjects.swift`](../Sources/Frame/Networking/CommonObjects.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameAuthMode` | enum | `enum FrameAuthMode: Sendable` | [28](../Sources/Frame/Networking/CommonObjects.swift#L28) |
-| `FrameAuthMode.publishable` | case | `case publishable` | [31](../Sources/Frame/Networking/CommonObjects.swift#L31) |
-| `FrameAuthMode.secret` | case | `case secret` | [33](../Sources/Frame/Networking/CommonObjects.swift#L33) |
-| `FrameAuthMode.clientSecret` | case | `case clientSecret(String)` | [38](../Sources/Frame/Networking/CommonObjects.swift#L38) |
-| `HTTPMethod` | enum | `enum HTTPMethod: String` | [42](../Sources/Frame/Networking/CommonObjects.swift#L42) |
-| `HTTPMethod.DELETE` | case | `case DELETE` | [44](../Sources/Frame/Networking/CommonObjects.swift#L44) |
-| `HTTPMethod.GET` | case | `case GET` | [46](../Sources/Frame/Networking/CommonObjects.swift#L46) |
-| `HTTPMethod.PATCH` | case | `case PATCH` | [48](../Sources/Frame/Networking/CommonObjects.swift#L48) |
-| `HTTPMethod.POST` | case | `case POST` | [50](../Sources/Frame/Networking/CommonObjects.swift#L50) |
-| `HTTPMethod.PUT` | case | `case PUT` | [52](../Sources/Frame/Networking/CommonObjects.swift#L52) |
-| `FileUpload` | struct | `struct FileUpload` | [56](../Sources/Frame/Networking/CommonObjects.swift#L56) |
-| `FileUpload.FieldName` | enum | `enum FieldName: String` | [58](../Sources/Frame/Networking/CommonObjects.swift#L58) |
-| `FileUpload.FieldName.front` | case | `case front` | [60](../Sources/Frame/Networking/CommonObjects.swift#L60) |
-| `FileUpload.FieldName.back` | case | `case back` | [62](../Sources/Frame/Networking/CommonObjects.swift#L62) |
-| `FileUpload.FieldName.selfie` | case | `case selfie` | [64](../Sources/Frame/Networking/CommonObjects.swift#L64) |
-| `FileUpload.image` | let | `let image: UIImage` | [73](../Sources/Frame/Networking/CommonObjects.swift#L73) |
-| `FileUpload.fieldName` | let | `let fieldName: FieldName` | [76](../Sources/Frame/Networking/CommonObjects.swift#L76) |
-| `FileUpload.init` | init | `init (image: UIImage, fieldName: FieldName)` | [89](../Sources/Frame/Networking/CommonObjects.swift#L89) |
-| `FrameNetworkingEndpoints` | protocol | `protocol FrameNetworkingEndpoints` | [99](../Sources/Frame/Networking/CommonObjects.swift#L99) |
-| `URLSessionProtocol` | protocol | `protocol URLSessionProtocol` | [134](../Sources/Frame/Networking/CommonObjects.swift#L134) |
-| `FrameResources` | enum | `enum FrameResources` | [143](../Sources/Frame/Networking/CommonObjects.swift#L143) |
-| `FrameResources.module` | var | `var module: Bundle` | [146](../Sources/Frame/Networking/CommonObjects.swift#L146) |
-| `FrameResources.module` | let | `let module: Bundle =` | [152](../Sources/Frame/Networking/CommonObjects.swift#L152) |
-| `NetworkingError` | enum | `enum NetworkingError: Error, Equatable` | [167](../Sources/Frame/Networking/CommonObjects.swift#L167) |
-| `NetworkingError.noData` | case | `case noData` | [169](../Sources/Frame/Networking/CommonObjects.swift#L169) |
-| `NetworkingError.invalidURL` | case | `case invalidURL` | [171](../Sources/Frame/Networking/CommonObjects.swift#L171) |
-| `NetworkingError.decodingFailed` | case | `case decodingFailed` | [173](../Sources/Frame/Networking/CommonObjects.swift#L173) |
-| `NetworkingError.serverError` | case | `case serverError(statusCode: Int, errorDescription: String)` | [179](../Sources/Frame/Networking/CommonObjects.swift#L179) |
-| `NetworkingError.unknownError` | case | `case unknownError` | [181](../Sources/Frame/Networking/CommonObjects.swift#L181) |
-| `NetworkingError.isAssertionRejection` | var | `var isAssertionRejection: Bool` | [187](../Sources/Frame/Networking/CommonObjects.swift#L187) |
-| `NetworkingError.isTransport` | var | `var isTransport: Bool` | [197](../Sources/Frame/Networking/CommonObjects.swift#L197) |
-| `NetworkingError.toastMessage` | func | `func toastMessage(fallback: String = ) -> String` | [208](../Sources/Frame/Networking/CommonObjects.swift#L208) |
-| `FrameMetadata` | struct | `struct FrameMetadata: Codable` | [268](../Sources/Frame/Networking/CommonObjects.swift#L268) |
-| `FrameMetadata.page` | let | `let page: Int` | [270](../Sources/Frame/Networking/CommonObjects.swift#L270) |
-| `FrameMetadata.url` | let | `let url: String` | [273](../Sources/Frame/Networking/CommonObjects.swift#L273) |
-| `FrameMetadata.hasMore` | let | `let hasMore: Bool` | [276](../Sources/Frame/Networking/CommonObjects.swift#L276) |
+| `FrameAuthMode.publishable` | case | `case publishable` | [35](../Sources/Frame/Networking/CommonObjects.swift#L35) |
+| `FrameAuthMode.publishableOnly` | case | `case publishableOnly` | [41](../Sources/Frame/Networking/CommonObjects.swift#L41) |
+| `FrameAuthMode.secret` | case | `case secret` | [43](../Sources/Frame/Networking/CommonObjects.swift#L43) |
+| `FrameAuthMode.clientSecret` | case | `case clientSecret(String)` | [48](../Sources/Frame/Networking/CommonObjects.swift#L48) |
+| `HTTPMethod` | enum | `enum HTTPMethod: String` | [52](../Sources/Frame/Networking/CommonObjects.swift#L52) |
+| `HTTPMethod.DELETE` | case | `case DELETE` | [54](../Sources/Frame/Networking/CommonObjects.swift#L54) |
+| `HTTPMethod.GET` | case | `case GET` | [56](../Sources/Frame/Networking/CommonObjects.swift#L56) |
+| `HTTPMethod.PATCH` | case | `case PATCH` | [58](../Sources/Frame/Networking/CommonObjects.swift#L58) |
+| `HTTPMethod.POST` | case | `case POST` | [60](../Sources/Frame/Networking/CommonObjects.swift#L60) |
+| `HTTPMethod.PUT` | case | `case PUT` | [62](../Sources/Frame/Networking/CommonObjects.swift#L62) |
+| `FileUpload` | struct | `struct FileUpload` | [66](../Sources/Frame/Networking/CommonObjects.swift#L66) |
+| `FileUpload.FieldName` | enum | `enum FieldName: String` | [68](../Sources/Frame/Networking/CommonObjects.swift#L68) |
+| `FileUpload.FieldName.front` | case | `case front` | [70](../Sources/Frame/Networking/CommonObjects.swift#L70) |
+| `FileUpload.FieldName.back` | case | `case back` | [72](../Sources/Frame/Networking/CommonObjects.swift#L72) |
+| `FileUpload.FieldName.selfie` | case | `case selfie` | [74](../Sources/Frame/Networking/CommonObjects.swift#L74) |
+| `FileUpload.image` | let | `let image: UIImage` | [83](../Sources/Frame/Networking/CommonObjects.swift#L83) |
+| `FileUpload.fieldName` | let | `let fieldName: FieldName` | [86](../Sources/Frame/Networking/CommonObjects.swift#L86) |
+| `FileUpload.init` | init | `init (image: UIImage, fieldName: FieldName)` | [99](../Sources/Frame/Networking/CommonObjects.swift#L99) |
+| `FrameNetworkingEndpoints` | protocol | `protocol FrameNetworkingEndpoints` | [109](../Sources/Frame/Networking/CommonObjects.swift#L109) |
+| `URLSessionProtocol` | protocol | `protocol URLSessionProtocol` | [144](../Sources/Frame/Networking/CommonObjects.swift#L144) |
+| `FrameResources` | enum | `enum FrameResources` | [153](../Sources/Frame/Networking/CommonObjects.swift#L153) |
+| `FrameResources.module` | var | `var module: Bundle` | [156](../Sources/Frame/Networking/CommonObjects.swift#L156) |
+| `FrameResources.module` | let | `let module: Bundle =` | [162](../Sources/Frame/Networking/CommonObjects.swift#L162) |
+| `NetworkingError` | enum | `enum NetworkingError: Error, Equatable` | [177](../Sources/Frame/Networking/CommonObjects.swift#L177) |
+| `NetworkingError.noData` | case | `case noData` | [179](../Sources/Frame/Networking/CommonObjects.swift#L179) |
+| `NetworkingError.invalidURL` | case | `case invalidURL` | [181](../Sources/Frame/Networking/CommonObjects.swift#L181) |
+| `NetworkingError.decodingFailed` | case | `case decodingFailed` | [183](../Sources/Frame/Networking/CommonObjects.swift#L183) |
+| `NetworkingError.serverError` | case | `case serverError(statusCode: Int, errorDescription: String)` | [189](../Sources/Frame/Networking/CommonObjects.swift#L189) |
+| `NetworkingError.unknownError` | case | `case unknownError` | [191](../Sources/Frame/Networking/CommonObjects.swift#L191) |
+| `NetworkingError.isAssertionRejection` | var | `var isAssertionRejection: Bool` | [197](../Sources/Frame/Networking/CommonObjects.swift#L197) |
+| `NetworkingError.isTransport` | var | `var isTransport: Bool` | [207](../Sources/Frame/Networking/CommonObjects.swift#L207) |
+| `NetworkingError.toastMessage` | func | `func toastMessage(fallback: String = ) -> String` | [218](../Sources/Frame/Networking/CommonObjects.swift#L218) |
+| `FrameMetadata` | struct | `struct FrameMetadata: Codable` | [278](../Sources/Frame/Networking/CommonObjects.swift#L278) |
+| `FrameMetadata.page` | let | `let page: Int` | [280](../Sources/Frame/Networking/CommonObjects.swift#L280) |
+| `FrameMetadata.url` | let | `let url: String` | [283](../Sources/Frame/Networking/CommonObjects.swift#L283) |
+| `FrameMetadata.hasMore` | let | `let hasMore: Bool` | [286](../Sources/Frame/Networking/CommonObjects.swift#L286) |
 
 </details>
 
@@ -173,10 +174,10 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [160](../Sources/Frame/Networking/FrameNetworking.swift#L160) |
 | `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [172](../Sources/Frame/Networking/FrameNetworking.swift#L172) |
 | `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [178](../Sources/Frame/Networking/FrameNetworking.swift#L178) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [306](../Sources/Frame/Networking/FrameNetworking.swift#L306) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [355](../Sources/Frame/Networking/FrameNetworking.swift#L355) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [411](../Sources/Frame/Networking/FrameNetworking.swift#L411) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [462](../Sources/Frame/Networking/FrameNetworking.swift#L462) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [319](../Sources/Frame/Networking/FrameNetworking.swift#L319) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [368](../Sources/Frame/Networking/FrameNetworking.swift#L368) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [424](../Sources/Frame/Networking/FrameNetworking.swift#L424) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [475](../Sources/Frame/Networking/FrameNetworking.swift#L475) |
 
 </details>
 
