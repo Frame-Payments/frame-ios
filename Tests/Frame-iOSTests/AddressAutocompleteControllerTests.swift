@@ -119,23 +119,22 @@ final class AddressAutocompleteControllerTests: XCTestCase {
         XCTAssertTrue(controller.suggestions.isEmpty)
     }
 
-    /// The list holds at most three rows, which is what fits on a phone between the address
-    /// field and the form controls below it.
+    /// The list holds at most ten rows, Mapbox's own cap on this endpoint's `limit` parameter.
     func testCapsSuggestionsToTheMaximum() async {
         let controller = AddressAutocompleteController(
             debounceInterval: .milliseconds(10),
             search: { _, _ in
-                (1...10).map { AddressSuggestion(id: "\($0)", title: "Title \($0)", subtitle: "") }
+                (1...15).map { AddressSuggestion(id: "\($0)", title: "Title \($0)", subtitle: "") }
             }
         )
 
-        XCTAssertEqual(AddressAutocompleteController.maximumSuggestions, 3)
+        XCTAssertEqual(AddressAutocompleteController.maximumSuggestions, 10)
 
         controller.queryChanged("100 Main", countryCode: "US")
         try? await Task.sleep(for: .milliseconds(150))
 
-        // The first three, in the order Mapbox ranked them.
-        XCTAssertEqual(controller.suggestions.map(\.id), ["1", "2", "3"])
+        // The first ten, in the order Mapbox ranked them.
+        XCTAssertEqual(controller.suggestions.map(\.id), (1...10).map { "\($0)" })
     }
 
     /// A query shorter than the minimum sends nothing at all.

@@ -93,32 +93,37 @@ public struct AddressAutocompleteField: View {
     }
 
     private var suggestionList: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(controller.suggestions) { suggestion in
-                Button {
-                    select(suggestion)
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(suggestion.title)
-                            .font(theme.fonts.body)
-                            .foregroundColor(theme.colors.textPrimary)
-                        if !suggestion.subtitle.isEmpty {
-                            Text(suggestion.subtitle)
-                                .font(theme.fonts.caption)
-                                .foregroundColor(theme.colors.textSecondary)
+        // Caps the list at roughly 4 rows visible at once; taller result sets scroll rather than
+        // extend past the form below, which used to clip whatever didn't fit.
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(controller.suggestions) { suggestion in
+                    Button {
+                        select(suggestion)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(suggestion.title)
+                                .font(theme.fonts.body)
+                                .foregroundColor(theme.colors.textPrimary)
+                            if !suggestion.subtitle.isEmpty {
+                                Text(suggestion.subtitle)
+                                    .font(theme.fonts.caption)
+                                    .foregroundColor(theme.colors.textSecondary)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                if suggestion.id != controller.suggestions.last?.id {
-                    Divider()
+                    if suggestion.id != controller.suggestions.last?.id {
+                        Divider()
+                    }
                 }
             }
         }
+        .frame(maxHeight: 220.0)
         // Two layers: the theme surface is what the list should look like, and the system
         // background behind it guarantees opacity even if a host app themes `surface` with a
         // translucent color. Without it the form rows underneath remain legible through the list.
