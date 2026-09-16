@@ -35,10 +35,6 @@ public final class BillingAddressViewModel: ObservableObject {
     /// The current billing address value, updated as the user edits the form.
     @Published public var address: FrameObjects.BillingAddress
 
-    /// Whether ``address``'s line 1 was filled from a selected Mapbox suggestion rather than typed
-    /// by hand. Reset to `false` whenever line 1 is edited after a selection.
-    @Published public var isAddressLine1Verified: Bool = false
-
     /// Per-field validation error messages; keyed by ``Field``.
     @Published public var errors: [Field: String] = [:]
 
@@ -71,8 +67,6 @@ public final class BillingAddressViewModel: ObservableObject {
 
         if let err = Validators.validateNonEmpty(address.addressLine1 ?? "", fieldName: "Address line 1") {
             next[.line1] = err
-        } else if !isAddressLine1Verified {
-            next[.line1] = "Select an address from the suggestions"
         }
         if let err = Validators.validateNonEmpty(address.city ?? "", fieldName: "City") {
             next[.city] = err

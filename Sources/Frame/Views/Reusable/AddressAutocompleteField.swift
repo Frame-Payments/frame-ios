@@ -7,9 +7,11 @@ import SwiftUI
 
 /// An address line 1 field that offers suggestions as the user types.
 ///
-/// The field is a plain ``ValidatedTextField``, so typing an address by hand works exactly as it
-/// does without autocomplete. Suggestions are drawn in an overlay below it and appear only while
-/// the field is focused and the lookup returned something.
+/// The field is a plain ``ValidatedTextField``, so typing drives the suggestion search exactly as
+/// it does without autocomplete. But a valid address must come from a picked suggestion: if the
+/// field loses focus without one being selected, whatever was hand-typed is cleared. Suggestions
+/// are drawn in an overlay below the field and appear only while it is focused and the lookup
+/// returned something.
 public struct AddressAutocompleteField: View {
     @Environment(\.frameTheme) private var theme
 
@@ -19,10 +21,11 @@ public struct AddressAutocompleteField: View {
     private let countryCode: String?
     private let inlineError: Bool
     private let onSelect: (FrameObjects.BillingAddress) -> Void
-    private let onEdit: () -> Void
 
     @StateObject private var controller: AddressAutocompleteController
     @FocusState private var isFocused: Bool
+    // Suppresses the blur-clear while `select(_:)` drops focus itself to fill the field.
+    @State private var isSelecting = false
 
     /// Creates an address field backed by autocomplete.
     ///
@@ -35,22 +38,18 @@ public struct AddressAutocompleteField: View {
     ///   - inlineError: When `true`, the error label sits beside the field rather than below it.
     ///   - controller: Drives the suggestion list. Injected in tests; the default talks to Mapbox.
     ///   - onSelect: Called with the full address when the user picks a suggestion.
-    ///   - onEdit: Called when the user types into the field by hand, as opposed to a suggestion
-    ///     being selected. Defaults to a no-op.
     public init(prompt: String,
                 text: Binding<String>,
                 error: Binding<String?>,
                 countryCode: String?,
                 inlineError: Bool = false,
                 controller: AddressAutocompleteController? = nil,
-                onEdit: @escaping () -> Void = {},
                 onSelect: @escaping (FrameObjects.BillingAddress) -> Void) {
         self.prompt = prompt
         self._text = text
         self._error = error
         self.countryCode = countryCode
         self.inlineError = inlineError
-        self.onEdit = onEdit
         self.onSelect = onSelect
         self._controller = StateObject(wrappedValue: controller ?? AddressAutocompleteController())
     }
@@ -66,11 +65,18 @@ public struct AddressAutocompleteField: View {
             .onChange(of: text) { _, newValue in
                 // A selection writes the field, so only react while the user is the one typing.
                 guard isFocused else { return }
-                onEdit()
                 controller.queryChanged(newValue, countryCode: countryCode)
             }
             .onChange(of: isFocused) { _, focused in
-                if !focused { controller.clear() }
+                if focused { return }
+                controller.clear()
+                if isSelecting {
+                    isSelecting = false
+                } else if !text.isEmpty {
+                    // Left the field without picking a suggestion: hand-typed text never becomes
+                    // a saved address, so drop it rather than let free text slip through.
+                    text = ""
+                }
             }
             .overlay(alignment: .topLeading) {
                 if isFocused, !controller.suggestions.isEmpty {
@@ -131,7 +137,9 @@ public struct AddressAutocompleteField: View {
             guard let address = await controller.select(suggestion) else { return }
             // Drop focus before filling. `onSelect` writes line 1, and the field's own
             // `onChange` treats a write while focused as the user typing, which restarts the
-            // search against the address that was just picked.
+            // search against the address that was just picked. `isSelecting` tells the blur
+            // handler this focus loss is a selection, not an abandoned hand-typed entry.
+            isSelecting = true
             isFocused = false
             onSelect(address)
         }

@@ -61,7 +61,6 @@ public struct BillingAddressDetailView: View {
         if let state = address.state { next.state = state }
         next.postalCode = address.postalCode
         viewModel.address = next
-        viewModel.isAddressLine1Verified = address.addressLine1 != nil
 
         if allowsInternational,
            let code = address.country,
@@ -139,8 +138,7 @@ public struct BillingAddressDetailView: View {
                                                  text: $viewModel.address.addressLine1.orEmpty,
                                                  error: viewModel.errorBinding(.line1),
                                                  countryCode: selectedCountry.alpha2Code,
-                                                 inlineError: true,
-                                                 onEdit: { viewModel.isAddressLine1Verified = false }) { address in
+                                                 inlineError: true) { address in
                             apply(address)
                         }
                         Divider()
