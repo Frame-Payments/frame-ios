@@ -7,9 +7,11 @@ import SwiftUI
 
 /// An address line 1 field that offers suggestions as the user types.
 ///
-/// The field is a plain ``ValidatedTextField``, so typing an address by hand works exactly as it
-/// does without autocomplete. Suggestions are drawn in an overlay below it and appear only while
-/// the field is focused and the lookup returned something.
+/// The field is a plain ``ValidatedTextField``, so typing drives the suggestion search exactly as
+/// it does without autocomplete. But a valid address must come from a picked suggestion: if the
+/// field loses focus without one being selected, whatever was hand-typed is cleared. Suggestions
+/// are drawn in an overlay below the field and appear only while it is focused and the lookup
+/// returned something.
 public struct AddressAutocompleteField: View {
     @Environment(\.frameTheme) private var theme
 
@@ -22,6 +24,8 @@ public struct AddressAutocompleteField: View {
 
     @StateObject private var controller: AddressAutocompleteController
     @FocusState private var isFocused: Bool
+    // Suppresses the blur-clear while `select(_:)` drops focus itself to fill the field.
+    @State private var isSelecting = false
 
     /// Creates an address field backed by autocomplete.
     ///
@@ -64,7 +68,15 @@ public struct AddressAutocompleteField: View {
                 controller.queryChanged(newValue, countryCode: countryCode)
             }
             .onChange(of: isFocused) { _, focused in
-                if !focused { controller.clear() }
+                if focused { return }
+                controller.clear()
+                if isSelecting {
+                    isSelecting = false
+                } else if !text.isEmpty {
+                    // Left the field without picking a suggestion: hand-typed text never becomes
+                    // a saved address, so drop it rather than let free text slip through.
+                    text = ""
+                }
             }
             .overlay(alignment: .topLeading) {
                 if isFocused, !controller.suggestions.isEmpty {
@@ -125,7 +137,9 @@ public struct AddressAutocompleteField: View {
             guard let address = await controller.select(suggestion) else { return }
             // Drop focus before filling. `onSelect` writes line 1, and the field's own
             // `onChange` treats a write while focused as the user typing, which restarts the
-            // search against the address that was just picked.
+            // search against the address that was just picked. `isSelecting` tells the blur
+            // handler this focus loss is a selection, not an abandoned hand-typed entry.
+            isSelecting = true
             isFocused = false
             onSelect(address)
         }

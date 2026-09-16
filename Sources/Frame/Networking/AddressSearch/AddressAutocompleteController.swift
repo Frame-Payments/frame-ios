@@ -28,10 +28,10 @@ public final class AddressAutocompleteController: ObservableObject {
 
     /// The most suggestions the list will hold.
     ///
-    /// Three rows is what fits on a phone between the address field and the form controls below
-    /// it. Mapbox returns up to ten, and a list that long is clipped by the scrolling form it
-    /// hangs over, leaving a half-drawn row the user cannot reach.
-    public static let maximumSuggestions = 3
+    /// Five rows is what fits on a phone between the address field and the form controls below
+    /// it without scrolling. Mapbox returns up to ten, and a list that long is clipped by the
+    /// scrolling form it hangs over, leaving a half-drawn row the user cannot reach.
+    public static let maximumSuggestions = 5
 
     @Published public private(set) var suggestions: [AddressSuggestion] = []
 

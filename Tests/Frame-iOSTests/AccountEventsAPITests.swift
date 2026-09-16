@@ -57,13 +57,35 @@ final class AccountEventsAPITests: XCTestCase {
         networking.urlSession = makeMockURLSession()
 
         let expectation = self.expectation(description: "request captured")
-        networking.performDataTask(endpoint: AccountEventsEndpoints.record, auth: .publishable) { _, _, _ in
+        networking.performDataTask(endpoint: AccountEventsEndpoints.record, auth: .publishableOnly) { _, _, _ in
             expectation.fulfill()
         }
         await fulfillment(of: [expectation], timeout: 1.0)
 
         let path = MockURLProtocol.lastRequest?.url?.path
         XCTAssertEqual(path, "/v1/client/account_events")
+    }
+
+    /// Regression for FRA-6549: the endpoint only ever accepts `pk_`. `AccountEventsAPI.record`
+    /// must keep authenticating with the publishable key even while an onboarding session is
+    /// active, rather than being scoped to the onb_sess_ token like other `.publishable` calls.
+    func testRecordIgnoresActiveOnboardingSession() async throws {
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
+        let session = HeaderCapturingAsyncSession(
+            data: #"{"recorded":1,"rejected":[]}"#.data(using: .utf8),
+            response: HTTPURLResponse(url: URL(string: "https://api.framepayments.com/v1/client/account_events")!,
+                                      statusCode: 202, httpVersion: nil, headerFields: nil)
+        )
+        FrameNetworking.shared.asyncURLSession = session
+        FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_live_token")
+        defer {
+            FrameNetworking.shared.endOnboardingSession()
+            FrameNetworking.shared.asyncURLSession = URLSession.shared
+        }
+
+        _ = await AccountEventsAPI.record([makeEvent()])
+
+        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/client/account_events"), "Bearer pk_test_123")
     }
 
     func testRecordSurfacesTransportFailure() async {
