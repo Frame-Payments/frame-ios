@@ -24,17 +24,19 @@ public enum AccountEventEmitter {
     /// an error or block the caller.
     ///
     /// - Parameters:
-    ///   - name: SDK-defined free text identifying the event (e.g. `"attestation_failed"`).
-    ///   - screen: The screen/flow the event happened on (e.g. `"ApplePay"`, `"Checkout"`).
-    ///   - detail: Optional developer-facing detail. Must never contain PII, a PAN, a CVV, or a
-    ///     raw customer identifier — use a debug description, never user-facing copy.
-    public static func emit(name: String, screen: String, detail: String? = nil) {
+    ///   - name: The event's identity — see ``AccountEventName``.
+    ///   - screen: The screen/flow the event happened on — see ``AccountEventScreen``.
+    ///   - detail: Optional developer-facing detail, either a fixed ``AccountEventDetail``
+    ///     constant or a dynamic debug description (e.g. `"\(error)"`). Must never contain PII,
+    ///     a PAN, a CVV, or a raw customer identifier — use a debug description, never
+    ///     user-facing copy.
+    public static func emit(name: AccountEventName, screen: AccountEventScreen, detail: String? = nil) {
         guard let accountId = FrameNetworking.shared.accountId else { return }
 
         let event = AccountEventsRequests.Event(
             accountId: accountId,
-            name: name,
-            screen: screen,
+            name: name.rawValue,
+            screen: screen.rawValue,
             platform: FrameSDK.eventPlatform,
             sdkVersion: FrameSDK.version,
             hostSDKVersion: FrameSDK.hostSDKVersion,

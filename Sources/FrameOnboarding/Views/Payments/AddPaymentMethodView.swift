@@ -78,7 +78,7 @@ struct AddPaymentMethodView: View {
                         }
                     }
                     guard addressOK && cardOK else {
-                        AccountEventEmitter.emit(name: "card_validation_failed", screen: "PaymentMethod",
+                        AccountEventEmitter.emit(name: .cardValidationFailed, screen: .paymentMethod,
                                                  detail: cardOK ? "billing address" : (cardError ?? "card"))
                         return
                     }

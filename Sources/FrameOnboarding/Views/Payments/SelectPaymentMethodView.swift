@@ -33,7 +33,7 @@ struct SelectPaymentMethodView: View {
                 }
         }
         .onAppear {
-            AccountEventEmitter.emit(name: "payment_method_step_started", screen: "PaymentMethod")
+            AccountEventEmitter.emit(name: .paymentMethodStepStarted, screen: .paymentMethod)
             Task {
                 await onboardingContainerViewModel.loadExistingPaymentMethods()
             }
@@ -86,7 +86,7 @@ struct SelectPaymentMethodView: View {
                             isSelected: onboardingContainerViewModel.selectedPaymentMethod == paymentMethod
                         ) {
                             onboardingContainerViewModel.selectedPaymentMethod = paymentMethod
-                            AccountEventEmitter.emit(name: "saved_payment_method_selected", screen: "PaymentMethod")
+                            AccountEventEmitter.emit(name: .savedPaymentMethodSelected, screen: .paymentMethod)
                         }
                         .padding(.horizontal)
                     }
@@ -130,7 +130,7 @@ struct SelectPaymentMethodView: View {
         )
         .padding(.horizontal)
         .onTapGesture {
-            AccountEventEmitter.emit(name: "add_payment_method_started", screen: "PaymentMethod")
+            AccountEventEmitter.emit(name: .addPaymentMethodStarted, screen: .paymentMethod)
             self.showAddPaymentMethod = true
         }
     }

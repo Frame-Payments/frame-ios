@@ -65,17 +65,17 @@ public struct GeolocationView: View {
     public var body: some View {
         GeolocationStateView
             .onAppear {
-                AccountEventEmitter.emit(name: "compliance_check_started", screen: "Compliance")
+                AccountEventEmitter.emit(name: .complianceCheckStarted, screen: .compliance)
                 //1. Get IP Address
                 onboardingContainerViewModel.ipAddress = SiftManager.getIPAddress()
                 //2. Check for VPN
                 guard hasVPNInterface() == false && hasSystemProxyEnabled() == false else {
-                    AccountEventEmitter.emit(name: "compliance_check_vpn_detected", screen: "Compliance")
+                    AccountEventEmitter.emit(name: .complianceCheckVpnDetected, screen: .compliance)
                     self.geolocationState = .vpn
                     return
                 }
 
-                AccountEventEmitter.emit(name: "compliance_check_passed", screen: "Compliance")
+                AccountEventEmitter.emit(name: .complianceCheckPassed, screen: .compliance)
                 let locationService = LocationService()
                 locationService.requestLocation { coordinates in
                     onboardingContainerViewModel.userCoordinates = coordinates
@@ -98,7 +98,7 @@ public struct GeolocationView: View {
             if geolocationState == .vpn {
                 Spacer()
                 ContinueButton(buttonText: "Continue Anyway") {
-                    AccountEventEmitter.emit(name: "compliance_check_vpn_bypassed", screen: "Compliance")
+                    AccountEventEmitter.emit(name: .complianceCheckVpnBypassed, screen: .compliance)
                     self.continueToNextStep = true
                 }
                 .padding(.bottom, -25.0)

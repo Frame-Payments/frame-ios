@@ -137,7 +137,7 @@ public actor SessionManager {
             }
             if let created = try? await createSession(accountId: nil) {
                 store(created, accountId: nil)
-                AccountEventEmitter.emit(name: "fraud_session_started", screen: "Checkout")
+                AccountEventEmitter.emit(name: .fraudSessionStarted, screen: .checkout)
             }
             return
         }
@@ -167,7 +167,7 @@ public actor SessionManager {
 
         let session = try await createSession(accountId: nil)
         store(session, accountId: nil)
-        AccountEventEmitter.emit(name: "fraud_session_started", screen: "Checkout")
+        AccountEventEmitter.emit(name: .fraudSessionStarted, screen: .checkout)
     }
 
     /// Re-touches the live session and restarts the keep-alive after the app returns to the
@@ -295,14 +295,14 @@ public actor SessionManager {
             // Leaving the legacy slot readable would let the next account on this device adopt the
             // same session.
             storage.clear(accountId: nil)
-            AccountEventEmitter.emit(name: "fraud_session_adopted", screen: "Checkout",
-                                     detail: "pre-account anonymous session migrated to account-scoped")
+            AccountEventEmitter.emit(name: .fraudSessionAdopted, screen: .checkout,
+                                     detail: AccountEventDetail.fraudSessionAdoptedFromAnonymous)
             return adopted
         }
 
         let created = try await createSession(accountId: accountId)
         store(created, accountId: accountId)
-        AccountEventEmitter.emit(name: "fraud_session_started", screen: "Checkout")
+        AccountEventEmitter.emit(name: .fraudSessionStarted, screen: .checkout)
         return created
     }
 
@@ -320,14 +320,14 @@ public actor SessionManager {
         let body = SessionRequestBody(identification: try await identification(), accountId: accountId)
         do {
             let refreshed = try await perform(endpoint: SonarSessionEndpoints.update(id: session), body: body)
-            AccountEventEmitter.emit(name: "fraud_session_refreshed", screen: "Checkout")
+            AccountEventEmitter.emit(name: .fraudSessionRefreshed, screen: .checkout)
             return refreshed
         } catch SessionManagerError.requestFailed {
             // The server no longer recognises this session, so replace it rather than fail the payment.
             storage.clear(accountId: accountId)
             let recreated = try await createSession(accountId: accountId)
-            AccountEventEmitter.emit(name: "fraud_session_recreated", screen: "Checkout",
-                                     detail: "refresh failed, fell back to creating fresh — self-healing, not a hard failure")
+            AccountEventEmitter.emit(name: .fraudSessionRecreated, screen: .checkout,
+                                     detail: AccountEventDetail.fraudSessionRefreshFellBackToRecreate)
             return recreated
         }
     }
@@ -349,7 +349,7 @@ public actor SessionManager {
             // Failures here are swallowed by every caller (the payment path independently calls
             // ensureSession(accountId:)) — this is the one place to surface them without disturbing
             // that swallow.
-            AccountEventEmitter.emit(name: "sonar_session_failed", screen: "Checkout", detail: "\(error)")
+            AccountEventEmitter.emit(name: .sonarSessionFailed, screen: .checkout, detail: "\(error)")
             throw error
         }
     }

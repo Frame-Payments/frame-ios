@@ -69,7 +69,7 @@ struct SecurePMVerificationView: View {
             }
             .onAppear {
                 if type == .phone {
-                    AccountEventEmitter.emit(name: "phone_code_entry_started", screen: "PhoneVerification")
+                    AccountEventEmitter.emit(name: .phoneCodeEntryStarted, screen: .phoneVerification)
                 }
             }
             Text(bodyText)

@@ -303,8 +303,8 @@ class OnboardingContainerViewModel: ObservableObject {
             reportError(error)
             guard let clientSecret = session?.clientSecret else {
                 if let error {
-                    AccountEventEmitter.emit(name: "onboarding_session_start_failed",
-                                             screen: "Onboarding",
+                    AccountEventEmitter.emit(name: .onboardingSessionStartFailed,
+                                             screen: .onboarding,
                                              detail: "\(error)")
                 }
                 return
@@ -356,9 +356,9 @@ class OnboardingContainerViewModel: ObservableObject {
             let request = AccountRequest.CreateAccountRequest(accountType: .individual, termsOfService: termsOfService, profile: profile, capabilities: requiredCapabilities)
             let (account, error) = try await AccountsAPI.createAccount(request: request)
             if let error {
-                AccountEventEmitter.emit(name: "profile_update_failed", screen: "PersonalInformation", detail: "\(error)")
+                AccountEventEmitter.emit(name: .profileUpdateFailed, screen: .personalInformation, detail: "\(error)")
             } else {
-                AccountEventEmitter.emit(name: "profile_updated", screen: "PersonalInformation")
+                AccountEventEmitter.emit(name: .profileUpdated, screen: .personalInformation)
             }
             reportError(error)
 
@@ -418,9 +418,9 @@ class OnboardingContainerViewModel: ObservableObject {
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
             let (account, error) = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
             if let error {
-                AccountEventEmitter.emit(name: "profile_update_failed", screen: "PersonalInformation", detail: "\(error)")
+                AccountEventEmitter.emit(name: .profileUpdateFailed, screen: .personalInformation, detail: "\(error)")
             } else {
-                AccountEventEmitter.emit(name: "profile_updated", screen: "PersonalInformation")
+                AccountEventEmitter.emit(name: .profileUpdated, screen: .personalInformation)
             }
             reportError(error)
             return account
@@ -434,7 +434,7 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (response, error) = try await TermsOfServiceAPI.createToken()
             if let error {
-                AccountEventEmitter.emit(name: "terms_of_service_token_failed", screen: "TermsOfService", detail: "\(error)")
+                AccountEventEmitter.emit(name: .termsOfServiceTokenFailed, screen: .termsOfService, detail: "\(error)")
             }
             self.termsOfServiceToken = response?.token
         } catch let error {
@@ -447,7 +447,7 @@ class OnboardingContainerViewModel: ObservableObject {
         guard beginAction() else { return }
         defer { endAction() }
 
-        AccountEventEmitter.emit(name: "phone_verification_started", screen: "PhoneVerification")
+        AccountEventEmitter.emit(name: .phoneVerificationStarted, screen: .phoneVerification)
 
         if accountId == nil {
             await createEmptyIndividualAccount(phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
@@ -459,14 +459,14 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let proveAuthToken = response.proveAuthToken else {
                 // Twilio flow: SMS sent, show OTP entry screen
-                AccountEventEmitter.emit(name: "phone_code_sent", screen: "PhoneVerification")
+                AccountEventEmitter.emit(name: .phoneCodeSent, screen: .phoneVerification)
                 pendingTwilioVerificationId = response.id
                 pendingTwilioVerificationAccountId = accountId
                 return
             }
 
             // Prove flow: run SDK, then confirm with verificationId from create response
-            AccountEventEmitter.emit(name: "silent_phone_auth_started", screen: "PhoneVerification", detail: "provider: prove")
+            AccountEventEmitter.emit(name: .silentPhoneAuthStarted, screen: .phoneVerification, detail: AccountEventDetail.proveProvider)
             proveOTPCancelledByUser = false
             proveOTPWasRequested = false
             do {
@@ -475,7 +475,7 @@ class OnboardingContainerViewModel: ObservableObject {
                 await fallBackToTwilio(after: proveError, accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
                 return
             }
-            AccountEventEmitter.emit(name: "silent_phone_auth_completed", screen: "PhoneVerification", detail: "provider: prove")
+            AccountEventEmitter.emit(name: .silentPhoneAuthCompleted, screen: .phoneVerification, detail: AccountEventDetail.proveProvider)
             self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
             await checkExistingAccount()
         } catch let error {
@@ -489,7 +489,7 @@ class OnboardingContainerViewModel: ObservableObject {
     private func createPhoneVerification(accountId: String, phoneNumber: String, dateOfBirth: String) async throws -> PhoneOTPVerificationCreateResponse? {
         let (response, error) = try await PhoneOTPVerificationAPI.createVerification(accountId: accountId, phoneNumber: phoneNumber, dateOfBirth: dateOfBirth)
         if let error {
-            AccountEventEmitter.emit(name: "phone_code_send_failed", screen: "PhoneVerification", detail: "\(error)")
+            AccountEventEmitter.emit(name: .phoneCodeSendFailed, screen: .phoneVerification, detail: "\(error)")
         }
         reportError(error)
         return response
@@ -523,7 +523,7 @@ class OnboardingContainerViewModel: ObservableObject {
             return
         }
 
-        AccountEventEmitter.emit(name: "silent_phone_auth_fallback", screen: "PhoneVerification", detail: "\(proveError)")
+        AccountEventEmitter.emit(name: .silentPhoneAuthFallback, screen: .phoneVerification, detail: "\(proveError)")
 
         // An applicant who was asked for a Prove code is looking at a code-entry screen (or just
         // watched it dismiss on submit). Keeping them on one is what makes this read as "that
@@ -536,7 +536,7 @@ class OnboardingContainerViewModel: ObservableObject {
         // rather than stranding the applicant on a screen that cannot succeed.
         guard let retry, retry.proveAuthToken == nil else {
             dismissProveOTPSheet()
-            AccountEventEmitter.emit(name: "silent_phone_auth_failed", screen: "PhoneVerification",
+            AccountEventEmitter.emit(name: .silentPhoneAuthFailed, screen: .phoneVerification,
                                      detail: "terminal failure after fallback also failed: \(proveError)")
             reportProveFailure(proveError)
             return
@@ -593,11 +593,11 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
             if let networkingError {
-                AccountEventEmitter.emit(name: "phone_code_incorrect", screen: "PhoneVerification")
+                AccountEventEmitter.emit(name: .phoneCodeIncorrect, screen: .phoneVerification)
                 reportError(networkingError)
                 return false
             }
-            AccountEventEmitter.emit(name: "phone_verified", screen: "PhoneVerification")
+            AccountEventEmitter.emit(name: .phoneVerified, screen: .phoneVerification)
             self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
             self.pendingTwilioVerificationId = nil
             self.pendingTwilioVerificationAccountId = nil
@@ -634,7 +634,7 @@ class OnboardingContainerViewModel: ObservableObject {
     /// Called when user cancels the Prove OTP sheet.
     func cancelProveOTP() {
         guard proveOTPContinuation != nil else { return }
-        AccountEventEmitter.emit(name: "phone_code_entry_cancelled", screen: "PhoneVerification")
+        AccountEventEmitter.emit(name: .phoneCodeEntryCancelled, screen: .phoneVerification)
         proveOTPCancelledByUser = true
         proveOTPContinuation?.resume(returning: nil)
         proveOTPContinuation = nil
@@ -648,7 +648,7 @@ class OnboardingContainerViewModel: ObservableObject {
         do {
             let (paymentMethodResponse, error) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(accountId: accountId)
             if let error {
-                AccountEventEmitter.emit(name: "saved_payment_methods_load_failed", screen: "PaymentMethod", detail: "\(error)")
+                AccountEventEmitter.emit(name: .savedPaymentMethodsLoadFailed, screen: .paymentMethod, detail: "\(error)")
             }
             reportError(error)
             if let methods = paymentMethodResponse?.data {
@@ -675,12 +675,12 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                               billing: createdBillingAddress)
             let (paymentMethod, error) = try await PaymentMethodsAPI.createCardPaymentMethod(request: request, encryptData: false)
             if let error {
-                AccountEventEmitter.emit(name: "payment_method_add_failed", screen: "PaymentMethod", detail: "\(error)")
+                AccountEventEmitter.emit(name: .paymentMethodAddFailed, screen: .paymentMethod, detail: "\(error)")
             }
             reportError(error)
 
             if let paymentMethod {
-                AccountEventEmitter.emit(name: "payment_method_added", screen: "PaymentMethod")
+                AccountEventEmitter.emit(name: .paymentMethodAdded, screen: .paymentMethod)
                 self.selectedPaymentMethod = paymentMethod
                 self.paymentMethods.append(paymentMethod)
 
@@ -701,12 +701,12 @@ class OnboardingContainerViewModel: ObservableObject {
             let request = PaymentMethodRequest.UpdatePaymentMethodRequest(billing: createdBillingAddress)
             let (paymentMethod, error) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
             if let error {
-                AccountEventEmitter.emit(name: "billing_address_update_failed", screen: "PaymentMethod", detail: "\(error)")
+                AccountEventEmitter.emit(name: .billingAddressUpdateFailed, screen: .paymentMethod, detail: "\(error)")
             }
             reportError(error)
 
             if let paymentMethod {
-                AccountEventEmitter.emit(name: "billing_address_updated", screen: "PaymentMethod", detail: "address-only verification path")
+                AccountEventEmitter.emit(name: .billingAddressUpdated, screen: .paymentMethod, detail: AccountEventDetail.billingAddressOnlyVerificationPath)
                 self.selectedPaymentMethod = paymentMethod
                 self.paymentMethods.append(paymentMethod)
 
@@ -732,14 +732,14 @@ class OnboardingContainerViewModel: ObservableObject {
             let request = AccountRequest.ElectPayoutMethodRequest(paymentMethodId: payoutMethod.id)
             let (account, error) = try await AccountsAPI.electPayoutMethod(accountId: accountId, request: request)
             if let error {
-                AccountEventEmitter.emit(name: "payout_method_election_failed", screen: "PayoutMethod", detail: "\(error)")
+                AccountEventEmitter.emit(name: .payoutMethodElectionFailed, screen: .payoutMethod, detail: "\(error)")
             }
             reportError(error)
 
             // A failure must not leave the UI showing this bank as primary.
             guard error == nil, let account else { return false }
 
-            AccountEventEmitter.emit(name: "payout_method_elected", screen: "PayoutMethod", detail: "set as primary")
+            AccountEventEmitter.emit(name: .payoutMethodElected, screen: .payoutMethod, detail: AccountEventDetail.payoutMethodSetAsPrimary)
             self.primaryPayoutMethodId = account.payoutPaymentMethodId ?? payoutMethod.id
             return true
         } catch let error {
@@ -762,12 +762,12 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                              billing: createdBillingAddress)
             let (payoutMethod, error) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
             if let error {
-                AccountEventEmitter.emit(name: "payout_method_add_failed", screen: "PayoutMethod", detail: "\(error)")
+                AccountEventEmitter.emit(name: .payoutMethodAddFailed, screen: .payoutMethod, detail: "\(error)")
             }
             reportError(error)
 
             if let payoutMethod {
-                AccountEventEmitter.emit(name: "payout_method_added", screen: "PayoutMethod", detail: "manual/ACH path")
+                AccountEventEmitter.emit(name: .payoutMethodAdded, screen: .payoutMethod, detail: AccountEventDetail.payoutMethodManualACHPath)
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
 
@@ -784,14 +784,14 @@ class OnboardingContainerViewModel: ObservableObject {
     func openPlaidLink(from viewController: UIViewController, onSuccess: @escaping () -> Void) async {
         guard let accountId else { return }
         guard beginAction() else { return }
-        AccountEventEmitter.emit(name: "bank_link_started", screen: "PayoutMethod", detail: "provider: plaid")
+        AccountEventEmitter.emit(name: .bankLinkStarted, screen: .payoutMethod, detail: AccountEventDetail.plaidProvider)
         // The action stays active until Plaid's onSuccess/onExit/error callback resolves the flow.
         do {
             let (response, error) = try await AccountsAPI.getPlaidLinkToken(accountId: accountId)
             reportError(error)
             guard let token = response?.linkToken else {
                 if let error {
-                    AccountEventEmitter.emit(name: "bank_link_failed", screen: "PayoutMethod", detail: "\(error)")
+                    AccountEventEmitter.emit(name: .bankLinkFailed, screen: .payoutMethod, detail: "\(error)")
                 }
                 endAction()
                 return
@@ -820,11 +820,11 @@ class OnboardingContainerViewModel: ObservableObject {
                     self?.endAction()
                 }
                 if let error = exit.error {
-                    AccountEventEmitter.emit(name: "bank_link_failed", screen: "PayoutMethod",
+                    AccountEventEmitter.emit(name: .bankLinkFailed, screen: .payoutMethod,
                                              detail: error.displayMessage ?? String(describing: error.errorCode))
                     print("Plaid Link exited with error: \(error.displayMessage ?? String(describing: error.errorCode))")
                 } else {
-                    AccountEventEmitter.emit(name: "bank_link_cancelled", screen: "PayoutMethod", detail: "user dismissed Plaid")
+                    AccountEventEmitter.emit(name: .bankLinkCancelled, screen: .payoutMethod, detail: AccountEventDetail.plaidUserDismissed)
                 }
             }
             let result = Plaid.create(config)
@@ -833,7 +833,7 @@ class OnboardingContainerViewModel: ObservableObject {
                 self.plaidHandler = handler
                 handler.open(presentUsing: .viewController(viewController))
             case .failure(let error):
-                AccountEventEmitter.emit(name: "bank_link_failed", screen: "PayoutMethod", detail: error.localizedDescription)
+                AccountEventEmitter.emit(name: .bankLinkFailed, screen: .payoutMethod, detail: error.localizedDescription)
                 endAction()
                 print("Plaid.create failed: \(error.localizedDescription)")
             }
@@ -858,11 +858,11 @@ class OnboardingContainerViewModel: ObservableObject {
             )
             let (payoutMethod, error) = try await PaymentMethodsAPI.connectPlaidBankAccount(request: request)
             if let error {
-                AccountEventEmitter.emit(name: "bank_link_failed", screen: "PayoutMethod", detail: "\(error)")
+                AccountEventEmitter.emit(name: .bankLinkFailed, screen: .payoutMethod, detail: "\(error)")
             }
             reportError(error)
             if let payoutMethod {
-                AccountEventEmitter.emit(name: "bank_link_completed", screen: "PayoutMethod", detail: "provider: plaid")
+                AccountEventEmitter.emit(name: .bankLinkCompleted, screen: .payoutMethod, detail: AccountEventDetail.plaidProvider)
                 self.selectedPayoutMethod = payoutMethod
                 self.payoutMethods.append(payoutMethod)
                 await self.electPayoutMethod(payoutMethod)
@@ -943,8 +943,8 @@ class OnboardingContainerViewModel: ObservableObject {
         let outcome = OnboardingOutcome.resolve(from: capabilities, required: originallyRequiredCapabilities)
         switch outcome {
         case .declined, .actionRequired:
-            AccountEventEmitter.emit(name: "onboarding_blocked", screen: "Onboarding",
-                                     detail: "capability outstanding, nothing actionable")
+            AccountEventEmitter.emit(name: .onboardingBlocked, screen: .onboarding,
+                                     detail: AccountEventDetail.onboardingBlockedNothingActionable)
             self.finalOutcome = outcome
             return outcome
         case .approved, .pendingReview:
@@ -981,15 +981,15 @@ class OnboardingContainerViewModel: ObservableObject {
             //     not-yet-verified, so fall through and run the Persona flow as normal.
             let (existing, existingError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
             if existingError == nil, existing?.verified == true {
-                AccountEventEmitter.emit(name: "step_up_already_verified", screen: "IdentityVerification",
-                                         detail: "pre-check short-circuit, Persona never launched")
+                AccountEventEmitter.emit(name: .stepUpAlreadyVerified, screen: .identityVerification,
+                                         detail: AccountEventDetail.stepUpAlreadyVerifiedShortCircuit)
                 self.personaInquiryId = inquiryId
                 self.identityVerifiedViaGovId = true
                 return
             }
 
             // 2. Launch the Persona SDK against the pre-created inquiry.
-            AccountEventEmitter.emit(name: "step_up_started", screen: "IdentityVerification", detail: "provider: persona")
+            AccountEventEmitter.emit(name: .stepUpStarted, screen: .identityVerification, detail: AccountEventDetail.personaProvider)
             let service = PersonaService(inquiryId: inquiryId)
             self.personaService = service
             let outcome = try await service.start(from: viewController)
@@ -999,8 +999,8 @@ class OnboardingContainerViewModel: ObservableObject {
             // exit from this method toasts, so say something here too: when verification is
             // required, a silent return leaves the Continue button looking dead.
             guard case .completed = outcome else {
-                AccountEventEmitter.emit(name: "step_up_cancelled", screen: "IdentityVerification",
-                                         detail: "user closed the verification UI")
+                AccountEventEmitter.emit(name: .stepUpCancelled, screen: .identityVerification,
+                                         detail: AccountEventDetail.stepUpCancelledByUser)
                 FrameToastCenter.shared.show("Identity verification was cancelled.")
                 return
             }
@@ -1009,13 +1009,13 @@ class OnboardingContainerViewModel: ObservableObject {
             //    doesn't decode leaves `verified` nil, which is treated as pending, never verified.
             let (completion, completeError) = try await IdentityVerificationAPI.complete(inquiryId: inquiryId)
             guard completeError == nil else {
-                AccountEventEmitter.emit(name: "step_up_unavailable", screen: "IdentityVerification",
+                AccountEventEmitter.emit(name: .stepUpUnavailable, screen: .identityVerification,
                                          detail: "category: transient / provider_error — \(String(describing: completeError))")
                 reportError(completeError)
                 return
             }
             if completion?.verified == true {
-                AccountEventEmitter.emit(name: "step_up_completed", screen: "IdentityVerification")
+                AccountEventEmitter.emit(name: .stepUpCompleted, screen: .identityVerification)
                 self.personaInquiryId = inquiryId
                 self.identityVerifiedViaGovId = true
             } else {
@@ -1027,7 +1027,7 @@ class OnboardingContainerViewModel: ObservableObject {
         } catch let error {
             self.personaService = nil
             print(error)
-            AccountEventEmitter.emit(name: "step_up_failed", screen: "IdentityVerification", detail: "\(error)")
+            AccountEventEmitter.emit(name: .stepUpFailed, screen: .identityVerification, detail: "\(error)")
             // A throw here (Persona SDK failure, transport error) is otherwise invisible. When
             // verification gates the step, the applicant needs to know why they can't continue.
             FrameToastCenter.shared.show("We couldn't verify your identity. Please try again or enter your Social Security Number.")
@@ -1039,22 +1039,22 @@ class OnboardingContainerViewModel: ObservableObject {
     nonisolated private static func emitStepUpFailure(for completion: IDVCompleteResponse?) {
         switch completion?.category {
         case "terminal":
-            AccountEventEmitter.emit(name: "step_up_declined", screen: "IdentityVerification", detail: "category: terminal")
+            AccountEventEmitter.emit(name: .stepUpDeclined, screen: .identityVerification, detail: AccountEventDetail.stepUpCategoryTerminal)
             return
         case "review":
-            AccountEventEmitter.emit(name: "step_up_needs_review", screen: "IdentityVerification", detail: "category: review")
+            AccountEventEmitter.emit(name: .stepUpNeedsReview, screen: .identityVerification, detail: AccountEventDetail.stepUpCategoryReview)
             return
         case "retriable_with_new_data":
-            AccountEventEmitter.emit(name: "step_up_data_mismatch", screen: "IdentityVerification",
-                                     detail: "category: retriable_with_new_data")
+            AccountEventEmitter.emit(name: .stepUpDataMismatch, screen: .identityVerification,
+                                     detail: AccountEventDetail.stepUpCategoryRetriableWithNewData)
             return
         case "step_up":
-            AccountEventEmitter.emit(name: "step_up_escalated", screen: "IdentityVerification",
-                                     detail: "category: step_up (e.g. SSN path failed, now needs gov ID)")
+            AccountEventEmitter.emit(name: .stepUpEscalated, screen: .identityVerification,
+                                     detail: AccountEventDetail.stepUpCategoryStepUpEscalated)
             return
         case "transient":
-            AccountEventEmitter.emit(name: "step_up_unavailable", screen: "IdentityVerification",
-                                     detail: "category: transient / provider_error")
+            AccountEventEmitter.emit(name: .stepUpUnavailable, screen: .identityVerification,
+                                     detail: AccountEventDetail.stepUpCategoryTransientProviderError)
             return
         default:
             break
@@ -1062,11 +1062,11 @@ class OnboardingContainerViewModel: ObservableObject {
 
         switch completion?.status {
         case "declined", "failed":
-            AccountEventEmitter.emit(name: "step_up_declined", screen: "IdentityVerification", detail: "category: terminal")
+            AccountEventEmitter.emit(name: .stepUpDeclined, screen: .identityVerification, detail: AccountEventDetail.stepUpCategoryTerminal)
         case "needs_review":
-            AccountEventEmitter.emit(name: "step_up_needs_review", screen: "IdentityVerification", detail: "category: review")
+            AccountEventEmitter.emit(name: .stepUpNeedsReview, screen: .identityVerification, detail: AccountEventDetail.stepUpCategoryReview)
         default:
-            AccountEventEmitter.emit(name: "step_up_failed", screen: "IdentityVerification",
+            AccountEventEmitter.emit(name: .stepUpFailed, screen: .identityVerification,
                                      detail: "generic bucket — status: \(completion?.status ?? "unknown")")
         }
     }
