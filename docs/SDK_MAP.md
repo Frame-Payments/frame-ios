@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1595 public symbols** across 142 files in 2 modules.
+**1596 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -51,10 +51,10 @@ regeneration, so architectural notes belong there.
 | Type aliases | 8 |
 | Initializers | 122 |
 | Methods | 280 |
-| Properties (var) | 222 |
+| Properties (var) | 223 |
 | Properties (let) | 296 |
 | Enum cases | 337 |
-| **Total** | **1595** |
+| **Total** | **1596** |
 
 ### `Frame` — 1424 public symbols
 
@@ -2491,8 +2491,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `AddressAutocompleteField` | struct | `struct AddressAutocompleteField: View` | [13](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L13) |
-| `AddressAutocompleteField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, countryCode: String?, inlineError: Bool = false, controller: AddressAutocompleteControlle…` | [37](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L37) |
-| `AddressAutocompleteField.body` | var | `var body: some View` | [54](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L54) |
+| `AddressAutocompleteField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, countryCode: String?, inlineError: Bool = false, controller: AddressAutocompleteControlle…` | [40](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L40) |
+| `AddressAutocompleteField.body` | var | `var body: some View` | [59](../Sources/Frame/Views/Reusable/AddressAutocompleteField.swift#L59) |
 
 </details>
 
@@ -2605,7 +2605,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-### `FrameOnboarding` — 171 public symbols
+### `FrameOnboarding` — 172 public symbols
 
 Onboarding product: the capability-driven identity/payment verification flow, its screens, and the onboarding-only APIs (3DS, IDV, phone OTP, geocompliance).
 
@@ -2783,7 +2783,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 |--------|------|-------------|------|
 | `BillingAddressDetailView` | struct | `struct BillingAddressDetailView: View` | [16](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L16) |
 | `BillingAddressDetailView.init` | init | `init (viewModel: BillingAddressViewModel, headerTitle: String = , showHeaderText: Bool = true)` | [34](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L34) |
-| `BillingAddressDetailView.body` | var | `var body: some View` | [123](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L123) |
+| `BillingAddressDetailView.body` | var | `var body: some View` | [124](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L124) |
 
 </details>
 
@@ -2882,7 +2882,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-#### ViewModels (44)
+#### ViewModels (45)
 
 <details><summary><code>BankAccountViewModel.swift</code> — 9 symbols</summary>
 
@@ -2902,7 +2902,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-<details><summary><code>BillingAddressViewModel.swift</code> — 17 symbols</summary>
+<details><summary><code>BillingAddressViewModel.swift</code> — 18 symbols</summary>
 
 [`Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift`](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift)
 
@@ -2919,12 +2919,13 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `BillingAddressViewModel.Field.postal` | case | `case postal` | [30](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L30) |
 | `BillingAddressViewModel.Field.country` | case | `case country` | [32](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L32) |
 | `BillingAddressViewModel.address` | var | `var address: FrameObjects.BillingAddress` | [36](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L36) |
-| `BillingAddressViewModel.errors` | var | `var errors: [Field: String] = [:]` | [39](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L39) |
-| `BillingAddressViewModel.mode` | let | `let mode: BillingAddressMode` | [42](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L42) |
-| `BillingAddressViewModel.init` | init | `init (address: FrameObjects.BillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: ), mode: BillingAddre…` | [49](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L49) |
-| `BillingAddressViewModel.validate` | func | `func validate() -> Bool` | [65](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L65) |
-| `BillingAddressViewModel.normalize` | func | `func normalize()` | [98](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L98) |
-| `BillingAddressViewModel.errorBinding` | func | `func errorBinding(_ field: Field) -> Binding<String?>` | [109](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L109) |
+| `BillingAddressViewModel.isAddressLine1Verified` | var | `var isAddressLine1Verified: Bool = false` | [40](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L40) |
+| `BillingAddressViewModel.errors` | var | `var errors: [Field: String] = [:]` | [43](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L43) |
+| `BillingAddressViewModel.mode` | let | `let mode: BillingAddressMode` | [46](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L46) |
+| `BillingAddressViewModel.init` | init | `init (address: FrameObjects.BillingAddress = FrameObjects.BillingAddress(country: AvailableCountry.defaultCountry.alpha2Code, postalCode: ), mode: BillingAddre…` | [53](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L53) |
+| `BillingAddressViewModel.validate` | func | `func validate() -> Bool` | [69](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L69) |
+| `BillingAddressViewModel.normalize` | func | `func normalize()` | [104](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L104) |
+| `BillingAddressViewModel.errorBinding` | func | `func errorBinding(_ field: Field) -> Binding<String?>` | [115](../Sources/FrameOnboarding/ViewModels/BillingAddressViewModel.swift#L115) |
 
 </details>
 
