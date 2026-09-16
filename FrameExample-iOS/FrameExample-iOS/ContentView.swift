@@ -100,7 +100,7 @@ struct ContentView: View {
             // clientSecret is the onb_sess_… token minted above; the SDK binds every onboarding
             // request to it, scoping the flow to a single account.
             OnboardingContainerView(clientSecret: viewModel.onboardingClientSecret,
-                                    accountId: viewModel.accountId,
+                                    accountId: viewModel.accountId == "ENTER_AN_ACCOUNT_ID" ? nil : viewModel.accountId,
                                     requiredCapabilities: requiredCapabilities) { result in
                 switch result {
                 case .completed(let id):
