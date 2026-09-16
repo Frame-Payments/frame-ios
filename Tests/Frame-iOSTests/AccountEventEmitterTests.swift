@@ -23,7 +23,7 @@ final class AccountEventEmitterTests: XCTestCase {
         let recorder = FlushRecorderForEmitterTests()
         AccountEventEmitter.queue = AccountEventQueue(flushHandler: { await recorder.record($0) })
 
-        AccountEventEmitter.emit(name: "attestation_failed", screen: "ApplePay", detail: "debug detail")
+        AccountEventEmitter.emit(name: .attestationFailed, screen: .applePay, detail: "debug detail")
         // emit() enqueues via an unstructured Task so it never blocks the caller (a hard
         // requirement — telemetry must not add latency to a payment flow); give it a beat to
         // land before flushing.
@@ -46,7 +46,7 @@ final class AccountEventEmitterTests: XCTestCase {
         let recorder = FlushRecorderForEmitterTests()
         AccountEventEmitter.queue = AccountEventQueue(flushHandler: { await recorder.record($0) })
 
-        AccountEventEmitter.emit(name: "attestation_failed", screen: "ApplePay")
+        AccountEventEmitter.emit(name: .attestationFailed, screen: .applePay)
         await AccountEventEmitter.queue.handleAppDidEnterBackground()
 
         let callCount = await recorder.callCount
