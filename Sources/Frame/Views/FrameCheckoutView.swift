@@ -132,7 +132,7 @@ public struct FrameCheckoutView: View {
             // hanging waiting for a completion that won't come.
             if !didFinish {
                 didFinish = true
-                AccountEventEmitter.emit(name: "checkout_cancelled", screen: "PaymentSheet")
+                AccountEventEmitter.emit(name: .checkoutCancelled, screen: .paymentSheet)
                 onResult(.cancelled)
             }
         }
@@ -206,7 +206,7 @@ public struct FrameCheckoutView: View {
                 ) {
                     checkoutViewModel.selectedAccountPaymentOption = option
                     checkoutViewModel.clearNewCardFieldErrors()
-                    AccountEventEmitter.emit(name: "checkout_payment_method_selected", screen: "PaymentSheet", detail: "saved")
+                    AccountEventEmitter.emit(name: .checkoutPaymentMethodSelected, screen: .paymentSheet, detail: AccountEventDetail.checkoutSavedPaymentMethod)
                 }
             }
             enterNewPaymentRow
@@ -238,7 +238,7 @@ public struct FrameCheckoutView: View {
         )
         .onTapGesture {
             checkoutViewModel.selectedAccountPaymentOption = nil
-            AccountEventEmitter.emit(name: "checkout_payment_method_selected", screen: "PaymentSheet", detail: "new")
+            AccountEventEmitter.emit(name: .checkoutPaymentMethodSelected, screen: .paymentSheet, detail: AccountEventDetail.checkoutNewPaymentMethod)
         }
     }
 

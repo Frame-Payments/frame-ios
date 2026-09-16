@@ -105,7 +105,7 @@ public struct FrameApplePayButton: View {
         } else {
             reason = "attestation"
         }
-        AccountEventEmitter.emit(name: "apple_pay_unavailable", screen: "ApplePay", detail: reason)
+        AccountEventEmitter.emit(name: .applePayUnavailable, screen: .applePay, detail: reason)
     }
 
     /// A horizontal "Or" divider rendered between the Apple Pay button and other payment options.

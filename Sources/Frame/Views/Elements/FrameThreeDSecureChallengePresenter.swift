@@ -39,20 +39,20 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
     public nonisolated func presentChallenge(_ challenge: FrameObjects.UseFrameSDK,
                                              for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult {
         guard let challengeURL = challenge.challengeURL else {
-            AccountEventEmitter.emit(name: "step_up_challenge_unavailable", screen: "PaymentSheet",
-                                     detail: "challenge page never loaded")
+            AccountEventEmitter.emit(name: .stepUpChallengeUnavailable, screen: .paymentSheet,
+                                     detail: AccountEventDetail.stepUpChallengeNeverLoaded)
             return .unavailable
         }
 
-        AccountEventEmitter.emit(name: "step_up_challenge_started", screen: "PaymentSheet", detail: "3DS")
+        AccountEventEmitter.emit(name: .stepUpChallengeStarted, screen: .paymentSheet, detail: AccountEventDetail.stepUpChallengeIs3DS)
         return await present(challengeURL: challengeURL)
     }
 
     @MainActor
     private func present(challengeURL: URL) async -> FrameThreeDSecureChallengeResult {
         guard let host = presentingViewController ?? Self.topMostViewController() else {
-            AccountEventEmitter.emit(name: "step_up_challenge_unavailable", screen: "PaymentSheet",
-                                     detail: "challenge page never loaded")
+            AccountEventEmitter.emit(name: .stepUpChallengeUnavailable, screen: .paymentSheet,
+                                     detail: AccountEventDetail.stepUpChallengeNeverLoaded)
             return .unavailable
         }
 
@@ -69,15 +69,15 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                 onFinish: {
                     dismisser.dismiss()
                     if resumeOnce.resume(with: .completed) {
-                        AccountEventEmitter.emit(name: "step_up_challenge_completed", screen: "PaymentSheet",
-                                                 detail: "cardholder finished the UI — not itself a verdict")
+                        AccountEventEmitter.emit(name: .stepUpChallengeCompleted, screen: .paymentSheet,
+                                                 detail: AccountEventDetail.stepUpChallengeCompletedContext)
                     }
                 },
                 onLoadFailure: { _ in
                     dismisser.dismiss()
                     if resumeOnce.resume(with: .unavailable) {
-                        AccountEventEmitter.emit(name: "step_up_challenge_unavailable", screen: "PaymentSheet",
-                                                 detail: "challenge page never loaded")
+                        AccountEventEmitter.emit(name: .stepUpChallengeUnavailable, screen: .paymentSheet,
+                                                 detail: AccountEventDetail.stepUpChallengeNeverLoaded)
                     }
                 }
             )
@@ -93,8 +93,8 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                                 Button("Cancel") {
                                     dismisser.dismiss()
                                     if resumeOnce.resume(with: .failed) {
-                                        AccountEventEmitter.emit(name: "step_up_challenge_abandoned", screen: "PaymentSheet",
-                                                                 detail: "cardholder cancelled/dismissed")
+                                        AccountEventEmitter.emit(name: .stepUpChallengeAbandoned, screen: .paymentSheet,
+                                                                 detail: AccountEventDetail.stepUpChallengeCardholderDismissed)
                                     }
                                 }
                             }
@@ -102,8 +102,8 @@ extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresent
                 }),
                 onDismiss: {
                     if resumeOnce.resume(with: .failed) {
-                        AccountEventEmitter.emit(name: "step_up_challenge_abandoned", screen: "PaymentSheet",
-                                                 detail: "cardholder cancelled/dismissed")
+                        AccountEventEmitter.emit(name: .stepUpChallengeAbandoned, screen: .paymentSheet,
+                                                 detail: AccountEventDetail.stepUpChallengeCardholderDismissed)
                     }
                 }
             )

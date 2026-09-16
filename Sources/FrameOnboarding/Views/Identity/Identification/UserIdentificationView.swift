@@ -288,13 +288,13 @@ struct UserIdentificationView: View {
                 TermsOfServiceView(padded: false)
                     .padding(.horizontal)
                     .onAppear {
-                        AccountEventEmitter.emit(name: "terms_of_service_shown", screen: "TermsOfService")
+                        AccountEventEmitter.emit(name: .termsOfServiceShown, screen: .termsOfService)
                     }
             }
             ContinueButton(isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
                 guard onboardingContainerViewModel.validateAllPhoneAuth() else { return }
                 if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) {
-                    AccountEventEmitter.emit(name: "terms_of_service_accepted", screen: "TermsOfService")
+                    AccountEventEmitter.emit(name: .termsOfServiceAccepted, screen: .termsOfService)
                 }
                 Task {
                     let dob = DateOfBirthFormatter.format(
@@ -322,7 +322,7 @@ struct UserIdentificationView: View {
                 self.identitySteps = .phoneAuth
             }
             .onAppear {
-                AccountEventEmitter.emit(name: "profile_step_started", screen: "PersonalInformation")
+                AccountEventEmitter.emit(name: .profileStepStarted, screen: .personalInformation)
             }
             ScrollView {
                 CustomerInformationView(viewModel: customerInfoVM,
@@ -340,7 +340,7 @@ struct UserIdentificationView: View {
                 let infoOK = customerInfoVM.validate()
                 let addressOK = personalAddressVM.validate()
                 guard infoOK, addressOK else {
-                    AccountEventEmitter.emit(name: "profile_validation_failed", screen: "PersonalInformation",
+                    AccountEventEmitter.emit(name: .profileValidationFailed, screen: .personalInformation,
                                              detail: "info valid: \(infoOK), address valid: \(addressOK)")
                     return
                 }

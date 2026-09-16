@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1454 public symbols** across 141 files in 2 modules.
+**1595 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
 | Structs | 182 |
-| Enums | 65 |
+| Enums | 68 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
 | Initializers | 122 |
 | Methods | 280 |
 | Properties (var) | 222 |
-| Properties (let) | 264 |
-| Enum cases | 231 |
-| **Total** | **1454** |
+| Properties (let) | 296 |
+| Enum cases | 337 |
+| **Total** | **1595** |
 
-### `Frame` — 1283 public symbols
+### `Frame` — 1424 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -225,7 +225,157 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/AccountEvents (2)
+#### Networking/AccountEvents (143)
+
+<details><summary><code>AccountEventCatalog.swift</code> — 141 symbols</summary>
+
+[`Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift`](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `AccountEventScreen` | enum | `enum AccountEventScreen: String` | [11](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L11) |
+| `AccountEventScreen.applePay` | case | `case applePay =` | [12](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L12) |
+| `AccountEventScreen.checkout` | case | `case checkout =` | [13](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L13) |
+| `AccountEventScreen.compliance` | case | `case compliance =` | [14](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L14) |
+| `AccountEventScreen.identityVerification` | case | `case identityVerification =` | [15](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L15) |
+| `AccountEventScreen.onboarding` | case | `case onboarding =` | [16](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L16) |
+| `AccountEventScreen.paymentMethod` | case | `case paymentMethod =` | [17](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L17) |
+| `AccountEventScreen.paymentSheet` | case | `case paymentSheet =` | [18](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L18) |
+| `AccountEventScreen.payoutMethod` | case | `case payoutMethod =` | [19](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L19) |
+| `AccountEventScreen.personalInformation` | case | `case personalInformation =` | [20](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L20) |
+| `AccountEventScreen.phoneVerification` | case | `case phoneVerification =` | [21](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L21) |
+| `AccountEventScreen.termsOfService` | case | `case termsOfService =` | [22](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L22) |
+| `AccountEventName` | enum | `enum AccountEventName: String` | [28](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L28) |
+| `AccountEventName.onboardingStarted` | case | `case onboardingStarted =` | [31](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L31) |
+| `AccountEventName.onboardingStepViewed` | case | `case onboardingStepViewed =` | [32](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L32) |
+| `AccountEventName.onboardingStepCompleted` | case | `case onboardingStepCompleted =` | [33](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L33) |
+| `AccountEventName.onboardingCompleted` | case | `case onboardingCompleted =` | [34](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L34) |
+| `AccountEventName.onboardingDeclined` | case | `case onboardingDeclined =` | [35](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L35) |
+| `AccountEventName.onboardingNeedsReview` | case | `case onboardingNeedsReview =` | [36](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L36) |
+| `AccountEventName.onboardingActionRequired` | case | `case onboardingActionRequired =` | [37](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L37) |
+| `AccountEventName.onboardingCancelled` | case | `case onboardingCancelled =` | [38](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L38) |
+| `AccountEventName.onboardingBlocked` | case | `case onboardingBlocked =` | [39](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L39) |
+| `AccountEventName.onboardingSessionStartFailed` | case | `case onboardingSessionStartFailed =` | [40](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L40) |
+| `AccountEventName.phoneVerificationStarted` | case | `case phoneVerificationStarted =` | [43](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L43) |
+| `AccountEventName.phoneCodeSent` | case | `case phoneCodeSent =` | [44](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L44) |
+| `AccountEventName.phoneCodeSendFailed` | case | `case phoneCodeSendFailed =` | [45](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L45) |
+| `AccountEventName.phoneCodeEntryStarted` | case | `case phoneCodeEntryStarted =` | [46](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L46) |
+| `AccountEventName.phoneVerified` | case | `case phoneVerified =` | [47](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L47) |
+| `AccountEventName.phoneCodeIncorrect` | case | `case phoneCodeIncorrect =` | [48](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L48) |
+| `AccountEventName.phoneCodeEntryCancelled` | case | `case phoneCodeEntryCancelled =` | [49](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L49) |
+| `AccountEventName.silentPhoneAuthStarted` | case | `case silentPhoneAuthStarted =` | [50](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L50) |
+| `AccountEventName.silentPhoneAuthCompleted` | case | `case silentPhoneAuthCompleted =` | [51](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L51) |
+| `AccountEventName.silentPhoneAuthFallback` | case | `case silentPhoneAuthFallback =` | [52](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L52) |
+| `AccountEventName.silentPhoneAuthFailed` | case | `case silentPhoneAuthFailed =` | [53](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L53) |
+| `AccountEventName.profileStepStarted` | case | `case profileStepStarted =` | [56](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L56) |
+| `AccountEventName.profileUpdated` | case | `case profileUpdated =` | [57](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L57) |
+| `AccountEventName.profileUpdateFailed` | case | `case profileUpdateFailed =` | [58](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L58) |
+| `AccountEventName.profileValidationFailed` | case | `case profileValidationFailed =` | [59](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L59) |
+| `AccountEventName.stepUpStarted` | case | `case stepUpStarted =` | [62](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L62) |
+| `AccountEventName.stepUpCompleted` | case | `case stepUpCompleted =` | [63](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L63) |
+| `AccountEventName.stepUpAlreadyVerified` | case | `case stepUpAlreadyVerified =` | [64](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L64) |
+| `AccountEventName.stepUpFailed` | case | `case stepUpFailed =` | [65](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L65) |
+| `AccountEventName.stepUpNeedsReview` | case | `case stepUpNeedsReview =` | [66](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L66) |
+| `AccountEventName.stepUpDataMismatch` | case | `case stepUpDataMismatch =` | [67](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L67) |
+| `AccountEventName.stepUpEscalated` | case | `case stepUpEscalated =` | [68](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L68) |
+| `AccountEventName.stepUpDeclined` | case | `case stepUpDeclined =` | [69](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L69) |
+| `AccountEventName.stepUpUnavailable` | case | `case stepUpUnavailable =` | [70](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L70) |
+| `AccountEventName.stepUpCancelled` | case | `case stepUpCancelled =` | [71](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L71) |
+| `AccountEventName.paymentMethodStepStarted` | case | `case paymentMethodStepStarted =` | [74](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L74) |
+| `AccountEventName.savedPaymentMethodSelected` | case | `case savedPaymentMethodSelected =` | [75](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L75) |
+| `AccountEventName.addPaymentMethodStarted` | case | `case addPaymentMethodStarted =` | [76](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L76) |
+| `AccountEventName.paymentMethodAdded` | case | `case paymentMethodAdded =` | [77](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L77) |
+| `AccountEventName.paymentMethodAddFailed` | case | `case paymentMethodAddFailed =` | [78](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L78) |
+| `AccountEventName.cardValidationFailed` | case | `case cardValidationFailed =` | [79](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L79) |
+| `AccountEventName.billingAddressUpdated` | case | `case billingAddressUpdated =` | [80](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L80) |
+| `AccountEventName.billingAddressUpdateFailed` | case | `case billingAddressUpdateFailed =` | [81](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L81) |
+| `AccountEventName.savedPaymentMethodsLoadFailed` | case | `case savedPaymentMethodsLoadFailed =` | [82](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L82) |
+| `AccountEventName.payoutMethodStepStarted` | case | `case payoutMethodStepStarted =` | [85](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L85) |
+| `AccountEventName.savedPayoutMethodSelected` | case | `case savedPayoutMethodSelected =` | [86](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L86) |
+| `AccountEventName.addPayoutMethodStarted` | case | `case addPayoutMethodStarted =` | [87](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L87) |
+| `AccountEventName.payoutMethodAdded` | case | `case payoutMethodAdded =` | [88](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L88) |
+| `AccountEventName.payoutMethodAddFailed` | case | `case payoutMethodAddFailed =` | [89](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L89) |
+| `AccountEventName.bankLinkStarted` | case | `case bankLinkStarted =` | [90](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L90) |
+| `AccountEventName.bankLinkCompleted` | case | `case bankLinkCompleted =` | [91](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L91) |
+| `AccountEventName.bankLinkCancelled` | case | `case bankLinkCancelled =` | [92](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L92) |
+| `AccountEventName.bankLinkFailed` | case | `case bankLinkFailed =` | [93](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L93) |
+| `AccountEventName.payoutMethodElected` | case | `case payoutMethodElected =` | [94](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L94) |
+| `AccountEventName.payoutMethodElectionFailed` | case | `case payoutMethodElectionFailed =` | [95](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L95) |
+| `AccountEventName.complianceCheckStarted` | case | `case complianceCheckStarted =` | [98](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L98) |
+| `AccountEventName.complianceCheckPassed` | case | `case complianceCheckPassed =` | [99](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L99) |
+| `AccountEventName.complianceCheckVpnDetected` | case | `case complianceCheckVpnDetected =` | [100](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L100) |
+| `AccountEventName.complianceCheckVpnBypassed` | case | `case complianceCheckVpnBypassed =` | [101](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L101) |
+| `AccountEventName.termsOfServiceShown` | case | `case termsOfServiceShown =` | [104](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L104) |
+| `AccountEventName.termsOfServiceAccepted` | case | `case termsOfServiceAccepted =` | [105](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L105) |
+| `AccountEventName.termsOfServiceTokenFailed` | case | `case termsOfServiceTokenFailed =` | [106](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L106) |
+| `AccountEventName.checkoutStarted` | case | `case checkoutStarted =` | [109](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L109) |
+| `AccountEventName.checkoutPaymentMethodSelected` | case | `case checkoutPaymentMethodSelected =` | [110](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L110) |
+| `AccountEventName.checkoutValidationFailed` | case | `case checkoutValidationFailed =` | [111](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L111) |
+| `AccountEventName.checkoutPaymentStarted` | case | `case checkoutPaymentStarted =` | [112](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L112) |
+| `AccountEventName.cardTokenized` | case | `case cardTokenized =` | [113](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L113) |
+| `AccountEventName.cardTokenizationFailed` | case | `case cardTokenizationFailed =` | [114](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L114) |
+| `AccountEventName.checkoutPaymentSucceeded` | case | `case checkoutPaymentSucceeded =` | [115](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L115) |
+| `AccountEventName.checkoutPaymentDeclined` | case | `case checkoutPaymentDeclined =` | [116](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L116) |
+| `AccountEventName.checkoutPaymentFailed` | case | `case checkoutPaymentFailed =` | [117](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L117) |
+| `AccountEventName.checkoutCancelled` | case | `case checkoutCancelled =` | [118](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L118) |
+| `AccountEventName.stepUpChallengeStarted` | case | `case stepUpChallengeStarted =` | [119](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L119) |
+| `AccountEventName.stepUpChallengeCompleted` | case | `case stepUpChallengeCompleted =` | [120](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L120) |
+| `AccountEventName.stepUpChallengeAbandoned` | case | `case stepUpChallengeAbandoned =` | [121](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L121) |
+| `AccountEventName.stepUpChallengeUnavailable` | case | `case stepUpChallengeUnavailable =` | [122](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L122) |
+| `AccountEventName.chargeIntentConfirmationPollingExhausted` | case | `case chargeIntentConfirmationPollingExhausted =` | [125](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L125) |
+| `AccountEventName.applePayStarted` | case | `case applePayStarted =` | [128](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L128) |
+| `AccountEventName.applePayUnavailable` | case | `case applePayUnavailable =` | [129](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L129) |
+| `AccountEventName.applePayAuthorized` | case | `case applePayAuthorized =` | [130](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L130) |
+| `AccountEventName.applePayFailed` | case | `case applePayFailed =` | [131](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L131) |
+| `AccountEventName.applePayCancelled` | case | `case applePayCancelled =` | [132](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L132) |
+| `AccountEventName.applePayCardAdded` | case | `case applePayCardAdded =` | [133](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L133) |
+| `AccountEventName.applePayAssertionRejected` | case | `case applePayAssertionRejected =` | [134](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L134) |
+| `AccountEventName.attestationStarted` | case | `case attestationStarted =` | [137](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L137) |
+| `AccountEventName.attestationCompleted` | case | `case attestationCompleted =` | [138](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L138) |
+| `AccountEventName.attestationNotSupported` | case | `case attestationNotSupported =` | [139](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L139) |
+| `AccountEventName.attestationFailed` | case | `case attestationFailed =` | [140](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L140) |
+| `AccountEventName.attestationResetAndRetry` | case | `case attestationResetAndRetry =` | [143](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L143) |
+| `AccountEventName.attestationAssertionRetried` | case | `case attestationAssertionRetried =` | [144](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L144) |
+| `AccountEventName.fraudSessionStarted` | case | `case fraudSessionStarted =` | [147](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L147) |
+| `AccountEventName.fraudSessionRefreshed` | case | `case fraudSessionRefreshed =` | [148](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L148) |
+| `AccountEventName.fraudSessionRecreated` | case | `case fraudSessionRecreated =` | [149](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L149) |
+| `AccountEventName.sonarSessionFailed` | case | `case sonarSessionFailed =` | [152](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L152) |
+| `AccountEventName.fraudSessionAdopted` | case | `case fraudSessionAdopted =` | [153](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L153) |
+| `AccountEventDetail` | enum | `enum AccountEventDetail` | [158](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L158) |
+| `AccountEventDetail.applePayAssertionRejected` | let | `let applePayAssertionRejected =` | [160](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L160) |
+| `AccountEventDetail.applePayAddToOwnerMode` | let | `let applePayAddToOwnerMode =` | [162](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L162) |
+| `AccountEventDetail.applePaySheetDismissedNoResult` | let | `let applePaySheetDismissedNoResult =` | [164](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L164) |
+| `AccountEventDetail.checkoutPayButtonTapped` | let | `let checkoutPayButtonTapped =` | [166](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L166) |
+| `AccountEventDetail.checkoutSavedPaymentMethod` | let | `let checkoutSavedPaymentMethod =` | [168](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L168) |
+| `AccountEventDetail.checkoutNewPaymentMethod` | let | `let checkoutNewPaymentMethod =` | [170](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L170) |
+| `AccountEventDetail.fraudSessionAdoptedFromAnonymous` | let | `let fraudSessionAdoptedFromAnonymous =` | [172](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L172) |
+| `AccountEventDetail.fraudSessionRefreshFellBackToRecreate` | let | `let fraudSessionRefreshFellBackToRecreate =` | [174](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L174) |
+| `AccountEventDetail.attestationNotSupportedReason` | let | `let attestationNotSupportedReason =` | [176](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L176) |
+| `AccountEventDetail.attestationOneTimePerDevice` | let | `let attestationOneTimePerDevice =` | [178](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L178) |
+| `AccountEventDetail.attestationAssertionRetriedContext` | let | `let attestationAssertionRetriedContext =` | [180](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L180) |
+| `AccountEventDetail.stepUpChallengeIs3DS` | let | `let stepUpChallengeIs3DS =` | [182](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L182) |
+| `AccountEventDetail.stepUpChallengeNeverLoaded` | let | `let stepUpChallengeNeverLoaded =` | [184](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L184) |
+| `AccountEventDetail.stepUpChallengeCompletedContext` | let | `let stepUpChallengeCompletedContext =` | [186](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L186) |
+| `AccountEventDetail.stepUpChallengeCardholderDismissed` | let | `let stepUpChallengeCardholderDismissed =` | [188](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L188) |
+| `AccountEventDetail.proveProvider` | let | `let proveProvider =` | [190](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L190) |
+| `AccountEventDetail.personaProvider` | let | `let personaProvider =` | [192](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L192) |
+| `AccountEventDetail.plaidProvider` | let | `let plaidProvider =` | [194](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L194) |
+| `AccountEventDetail.plaidUserDismissed` | let | `let plaidUserDismissed =` | [196](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L196) |
+| `AccountEventDetail.billingAddressOnlyVerificationPath` | let | `let billingAddressOnlyVerificationPath =` | [198](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L198) |
+| `AccountEventDetail.payoutMethodSetAsPrimary` | let | `let payoutMethodSetAsPrimary =` | [200](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L200) |
+| `AccountEventDetail.payoutMethodManualACHPath` | let | `let payoutMethodManualACHPath =` | [202](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L202) |
+| `AccountEventDetail.payoutMethodAddStartedManualOrPlaid` | let | `let payoutMethodAddStartedManualOrPlaid =` | [204](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L204) |
+| `AccountEventDetail.onboardingBlockedNothingActionable` | let | `let onboardingBlockedNothingActionable =` | [206](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L206) |
+| `AccountEventDetail.stepUpAlreadyVerifiedShortCircuit` | let | `let stepUpAlreadyVerifiedShortCircuit =` | [208](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L208) |
+| `AccountEventDetail.stepUpCancelledByUser` | let | `let stepUpCancelledByUser =` | [210](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L210) |
+| `AccountEventDetail.stepUpCategoryTerminal` | let | `let stepUpCategoryTerminal =` | [212](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L212) |
+| `AccountEventDetail.stepUpCategoryReview` | let | `let stepUpCategoryReview =` | [214](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L214) |
+| `AccountEventDetail.stepUpCategoryRetriableWithNewData` | let | `let stepUpCategoryRetriableWithNewData =` | [216](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L216) |
+| `AccountEventDetail.stepUpCategoryStepUpEscalated` | let | `let stepUpCategoryStepUpEscalated =` | [218](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L218) |
+| `AccountEventDetail.stepUpCategoryTransientProviderError` | let | `let stepUpCategoryTransientProviderError =` | [220](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L220) |
+| `AccountEventDetail.onboardingCompletedApproved` | let | `let onboardingCompletedApproved =` | [222](../Sources/Frame/Networking/AccountEvents/AccountEventCatalog.swift#L222) |
+
+</details>
 
 <details><summary><code>AccountEventEmitter.swift</code> — 2 symbols</summary>
 
@@ -234,7 +384,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `AccountEventEmitter` | enum | `enum AccountEventEmitter` | [14](../Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift#L14) |
-| `AccountEventEmitter.emit` | func | `func emit(name: String, screen: String, detail: String? = nil)` | [31](../Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift#L31) |
+| `AccountEventEmitter.emit` | func | `func emit(name: AccountEventName, screen: AccountEventScreen, detail: String? = nil)` | [33](../Sources/Frame/Networking/AccountEvents/AccountEventEmitter.swift#L33) |
 
 </details>
 
