@@ -600,11 +600,11 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `AddressAutocompleteController.Search` | typealias | `typealias Search = @Sendable (_ query: String, _ countryCode: String?) async throws -> [AddressSuggestion]` | [18](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L18) |
 | `AddressAutocompleteController.Retrieve` | typealias | `typealias Retrieve = @Sendable (AddressSuggestion) async throws -> FrameObjects.BillingAddress` | [20](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L20) |
 | `AddressAutocompleteController.minimumQueryLength` | let | `let minimumQueryLength = 2` | [27](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L27) |
-| `AddressAutocompleteController.maximumSuggestions` | let | `let maximumSuggestions = 10` | [33](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L33) |
-| `AddressAutocompleteController.init` | init | `init ( debounceInterval: Duration = .milliseconds(80), sleep: Sleeper? = nil, search: Search? = nil, retrieve: Retrieve? = nil )` | [52](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L52) |
-| `AddressAutocompleteController.queryChanged` | func | `func queryChanged(_ query: String, countryCode: String?)` | [74](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L74) |
-| `AddressAutocompleteController.select` | func | `func select(_ suggestion: AddressSuggestion) async -> FrameObjects.BillingAddress?` | [115](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L115) |
-| `AddressAutocompleteController.clear` | func | `func clear()` | [125](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L125) |
+| `AddressAutocompleteController.maximumSuggestions` | let | `let maximumSuggestions = 5` | [34](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L34) |
+| `AddressAutocompleteController.init` | init | `init ( debounceInterval: Duration = .milliseconds(80), sleep: Sleeper? = nil, search: Search? = nil, retrieve: Retrieve? = nil )` | [53](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L53) |
+| `AddressAutocompleteController.queryChanged` | func | `func queryChanged(_ query: String, countryCode: String?)` | [75](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L75) |
+| `AddressAutocompleteController.select` | func | `func select(_ suggestion: AddressSuggestion) async -> FrameObjects.BillingAddress?` | [116](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L116) |
+| `AddressAutocompleteController.clear` | func | `func clear()` | [126](../Sources/Frame/Networking/AddressSearch/AddressAutocompleteController.swift#L126) |
 
 </details>
 
