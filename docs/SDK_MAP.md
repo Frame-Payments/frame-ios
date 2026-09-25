@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1597 public symbols** across 142 files in 2 modules.
+**1598 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -50,19 +50,19 @@ regeneration, so architectural notes belong there.
 | Actors | 1 |
 | Type aliases | 8 |
 | Initializers | 122 |
-| Methods | 281 |
+| Methods | 282 |
 | Properties (var) | 222 |
 | Properties (let) | 296 |
 | Enum cases | 338 |
-| **Total** | **1597** |
+| **Total** | **1598** |
 
-### `Frame` — 1426 public symbols
+### `Frame` — 1427 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
-#### (root) (2)
+#### (root) (3)
 
-<details><summary><code>Version.swift</code> — 2 symbols</summary>
+<details><summary><code>Version.swift</code> — 3 symbols</summary>
 
 [`Sources/Frame/Version.swift`](../Sources/Frame/Version.swift)
 
@@ -70,6 +70,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `FrameSDK` | enum | `enum FrameSDK` | [9](../Sources/Frame/Version.swift#L9) |
 | `FrameSDK.version` | let | `let version =` | [15](../Sources/Frame/Version.swift#L15) |
+| `FrameSDK.setHostSDKInfo` | func | `func setHostSDKInfo(platform: String, version: String)` | [48](../Sources/Frame/Version.swift#L48) |
 
 </details>
 
