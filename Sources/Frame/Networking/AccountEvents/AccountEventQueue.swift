@@ -95,6 +95,11 @@ actor AccountEventQueue {
         await flushPending()
     }
 
+    /// Flushes immediately rather than waiting for `flushSizeThreshold` or the interval timer.
+    func flush() async {
+        await flushPending()
+    }
+
     private func startTimerIfNeeded() {
         guard timerTask == nil else { return }
         let interval = flushInterval

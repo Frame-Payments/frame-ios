@@ -86,6 +86,7 @@ class FrameCheckoutViewModel: ObservableObject {
 
     /// Fetches the account profile to pre-fill name and e-mail, then loads saved payment methods.
     func loadAccountDetails() async {
+        FrameNetworking.shared.setAccountIdIfUnset(accountId)
         AccountEventEmitter.emit(name: .checkoutStarted, screen: .paymentSheet)
         guard let accountId, !accountId.isEmpty else {
             self.didLoadAccountPaymentMethods = true
