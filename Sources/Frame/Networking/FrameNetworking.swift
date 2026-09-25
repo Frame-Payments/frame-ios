@@ -46,9 +46,37 @@ public class FrameNetworking: ObservableObject {
     /// onboarding flow to a single account (see ``beginOnboardingSession(clientSecret:)``).
     private var onboardingSessionToken: String?
 
-    /// The end-user account this app run belongs to, if supplied to ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``.
-    /// Read by ``AccountEventEmitter`` to stamp `account_id` on emitted account events.
-    private(set) var accountId: String?
+    /// Guards ``accountId``, which now has two writers callable from arbitrary async contexts,
+    /// unlike every other stored property here, which is written once at init.
+    private let accountIdLock = NSLock()
+    private var _accountId: String?
+
+    /// The end-user account this app run belongs to, if supplied to ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``,
+    /// or resolved later via ``setAccountIdIfUnset(_:)``. Read by ``AccountEventEmitter`` to stamp
+    /// `account_id` on emitted account events.
+    private(set) var accountId: String? {
+        get { accountIdLock.withLock { _accountId } }
+        set { accountIdLock.withLock { _accountId = newValue } }
+    }
+
+    /// Publishes an account resolved after ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``
+    /// — onboarding creates the account mid-flow, so a host that launched without one would
+    /// otherwise emit nothing for the whole run.
+    ///
+    /// Ignores a blank id, and does not overwrite an account the host already named.
+    ///
+    /// `public` only because `FrameOnboarding` is a separate SPM target from `Frame` and needs to
+    /// call it too, mirroring ``AccountEventEmitter/emit(name:screen:detail:)``.
+    public func setAccountIdIfUnset(_ accountId: String?) {
+        guard let resolved = accountId, !resolved.isEmpty else { return }
+        let didSet: Bool = accountIdLock.withLock {
+            guard _accountId == nil else { return false }
+            _accountId = resolved
+            return true
+        }
+        guard didSet else { return }
+        AccountEventEmitter.onAccountIdResolved(resolved)
+    }
 
     var isEvervaultConfigured: Bool = false
 

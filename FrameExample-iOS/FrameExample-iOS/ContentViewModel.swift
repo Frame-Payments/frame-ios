@@ -32,7 +32,7 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         // calls below; production apps should omit it.
         FrameNetworking.shared.initialize(publishableKey: "ENTER_PUBLISHABLE_KEY_HERE",
                                           secretKey: "ENTER_SECRET_KEY_HERE",
-                                          accountId: accountId,
+                                          accountId: accountId == "ENTER_AN_ACCOUNT_ID" ? nil : accountId,
 //                                          theme: FrameTheme(
 //                                              colors: .init(primaryButton: .purple, error: .orange),
 //                                              fonts: .init(title: .custom("Avenir-Black", size: 28)),

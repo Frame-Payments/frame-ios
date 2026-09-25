@@ -28,7 +28,7 @@ public enum FrameSDK {
 
     /// The platform reported on emitted account events. Defaults to `"ios"`; overridden by
     /// ``setHostSDKInfo(platform:version:)`` when this build runs under a wrapper SDK.
-    nonisolated(unsafe) static var eventPlatform = "ios"
+    nonisolated(unsafe) static var eventPlatform = "iOS"
 
     /// The wrapper SDK's version reported alongside emitted account events, if any.
     nonisolated(unsafe) static var hostSDKVersion: String?

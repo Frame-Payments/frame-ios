@@ -139,6 +139,7 @@ class OnboardingContainerViewModel: ObservableObject {
         self.accountId = accountId
         self.requiredCapabilities = requiredCapabilities
         self.originallyRequiredCapabilities = requiredCapabilities
+        FrameNetworking.shared.setAccountIdIfUnset(accountId)
     }
     
     /// How a step ended — a step that cannot be completed is distinct from one that merely failed.
@@ -364,6 +365,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let account else { return nil }
             self.accountId = account.id
+            FrameNetworking.shared.setAccountIdIfUnset(account.id)
             await beginOnboardingSessionIfNeeded()
             return account
         } catch let error {
@@ -387,6 +389,7 @@ class OnboardingContainerViewModel: ObservableObject {
 
             guard let account else { return }
             self.accountId = account.id
+            FrameNetworking.shared.setAccountIdIfUnset(account.id)
             await beginOnboardingSessionIfNeeded()
             return
         } catch let error {
