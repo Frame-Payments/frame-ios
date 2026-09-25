@@ -17,7 +17,7 @@ final class AccountEventEmitterTests: XCTestCase {
 
     override func tearDown() {
         AccountEventEmitter.queue = realQueue
-        FrameSDK.eventPlatform = "ios"
+        FrameSDK.eventPlatform = "iOS"
         FrameSDK.hostSDKVersion = nil
         super.tearDown()
     }
