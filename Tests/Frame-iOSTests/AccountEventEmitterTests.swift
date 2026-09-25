@@ -17,7 +17,7 @@ final class AccountEventEmitterTests: XCTestCase {
 
     override func tearDown() {
         AccountEventEmitter.queue = realQueue
-        FrameSDK.eventPlatform = "iOS"
+        FrameSDK.eventPlatform = "ios"
         FrameSDK.hostSDKVersion = nil
         super.tearDown()
     }
@@ -40,6 +40,7 @@ final class AccountEventEmitterTests: XCTestCase {
         XCTAssertEqual(batches.first?.first?.accountId, "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         XCTAssertEqual(batches.first?.first?.name, "attestation_failed")
         XCTAssertEqual(batches.first?.first?.screen, "ApplePay")
+        XCTAssertEqual(batches.first?.first?.platform, "ios")
     }
 
     func testEmitWithoutAccountIdBuffersInsteadOfDropping() async {
