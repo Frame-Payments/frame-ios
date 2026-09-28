@@ -1,8 +1,6 @@
 //
-//  SwiftUIView.swift
+//  AddPayoutMethodView.swift
 //  Frame-iOS
-//
-//  Created by Frame Payments on 12/11/25.
 //
 
 import SwiftUI
@@ -11,8 +9,8 @@ import Frame
 
 struct AddPayoutMethodView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.frameTheme) private var theme
     @StateObject private var onboardingContainerViewModel: OnboardingContainerViewModel
-    @StateObject private var billingVM: BillingAddressViewModel
     @StateObject private var bankVM: BankAccountViewModel
 
     @State private var selectedAccountType: FrameObjects.PaymentAccountType = .checking
@@ -22,10 +20,6 @@ struct AddPayoutMethodView: View {
 
     init(onboardingContainerViewModel: OnboardingContainerViewModel) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
-        self._billingVM = StateObject(wrappedValue: BillingAddressViewModel(
-            address: onboardingContainerViewModel.createdBillingAddress,
-            mode: .usOnly
-        ))
         self._bankVM = StateObject(wrappedValue: BankAccountViewModel(
             account: onboardingContainerViewModel.bankAccount
         ))
@@ -57,9 +51,12 @@ struct AddPayoutMethodView: View {
             self.dismiss()
         }
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                ContinueButton(buttonText: "Connect Bank Account",
-                               isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+            // Single horizontal inset for the whole column — child views must not add their own.
+            VStack(alignment: .leading, spacing: theme.spacing.formBlock) {
+                MethodOptionRow(
+                    iconName: "connect-bank-account-icon",
+                    title: "Connect a bank account"
+                ) {
                     guard let presenter = UIApplication.shared.topViewController else { return }
                     Task {
                         await onboardingContainerViewModel.openPlaidLink(from: presenter) {
@@ -68,32 +65,43 @@ struct AddPayoutMethodView: View {
                     }
                 }
 
-                Button("Enter manually") {
-                    showManualForm = true
+                Button {
+                    showManualForm.toggle()
+                } label: {
+                    HStack {
+                        Text("Enter bank details manually")
+                            .font(theme.fonts.bodySmall)
+                            .foregroundStyle(theme.colors.textPrimary)
+                        Spacer()
+                        Image(systemName: showManualForm ? "chevron.down" : "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(theme.colors.textSecondary)
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, minHeight: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .fill(theme.colors.surface)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .strokeBorder(theme.colors.surfaceStroke, lineWidth: 1)
+                    )
                 }
-                .frame(maxWidth: .infinity)
                 .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .padding(.bottom, 8)
 
                 if showManualForm {
-                    BankAccountDetailView(viewModel: bankVM)
-                    DropDownWithHeaderView(headerText: .constant("Account Type"),
+                    BankAccountDetailView(viewModel: bankVM, applyHorizontalPadding: false)
+                    DropDownWithHeaderView(headerText: .constant("Account type"),
                                            dropDownText: $accountTypeString,
-                                           showDropdownPicker: $showAccountTypePicker)
-                    BillingAddressDetailView(viewModel: billingVM)
-                        // The autocomplete list hangs out of the address form's bounds, and the
-                        // Continue button is its sibling here. Without this the button — laid out
-                        // later — paints over the suggestions.
-                        .zIndex(1)
-                    ContinueButton(buttonText: "Add Bank Account",
-                                   isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+                                           showDropdownPicker: $showAccountTypePicker,
+                                           applyHorizontalPadding: false)
+                    ContinueButton(buttonText: "Save bank",
+                                   isLoading: .constant(onboardingContainerViewModel.isPerformingAction),
+                                   includeOuterPadding: false) {
                         bankVM.account.accountType = selectedAccountType
-                        let bankOK = bankVM.validate()
-                        let addressOK = billingVM.validate()
-                        guard bankOK, addressOK else { return }
+                        guard bankVM.validate() else { return }
                         onboardingContainerViewModel.bankAccount = bankVM.account
-                        onboardingContainerViewModel.createdBillingAddress = billingVM.address
                         Task {
                             await onboardingContainerViewModel.addNewPayoutMethod()
                             self.dismiss()
@@ -102,6 +110,7 @@ struct AddPayoutMethodView: View {
                     KeyboardSpacing(spacingHeight: 200.0)
                 }
             }
+            .padding(.horizontal)
         }
     }
 }

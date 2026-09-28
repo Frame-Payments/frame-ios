@@ -41,6 +41,9 @@ public struct ContinueButton: View {
 
     /// The closure executed when the button is tapped and is not in a loading state.
     public var buttonAction: () -> ()
+    /// When `true` (default), applies outer padding around the button. Pass `false` when the
+    /// parent already provides leading/trailing insets.
+    public var includeOuterPadding: Bool
 
     /// Creates a `ContinueButton`.
     ///
@@ -49,16 +52,19 @@ public struct ContinueButton: View {
     ///   - style: The visual style of the button. Defaults to `.primary`.
     ///   - enabled: A binding that gates interactivity. Defaults to always `true`.
     ///   - isLoading: A binding that shows an in-button spinner when `true`. Defaults to always `false`.
+    ///   - includeOuterPadding: When `false`, skips the default outer padding. Defaults to `true`.
     ///   - buttonAction: The closure invoked on a valid tap.
     public init(buttonText: String = "Continue",
                 style: Style = .primary,
                 enabled: Binding<Bool> = .constant(true),
                 isLoading: Binding<Bool> = .constant(false),
+                includeOuterPadding: Bool = true,
                 buttonAction: @escaping () -> ()) {
         self.buttonText = buttonText
         self.style = style
         self._enabled = enabled
         self._isLoading = isLoading
+        self.includeOuterPadding = includeOuterPadding
         self.buttonAction = buttonAction
     }
 
@@ -86,10 +92,10 @@ public struct ContinueButton: View {
                 .overlay {
                     if !enabled && !isLoading {
                         RoundedRectangle(cornerRadius: theme.radii.medium)
-                            .stroke(theme.colors.disabledButtonStroke, lineWidth: 1.0)
+                            .strokeBorder(theme.colors.disabledButtonStroke, lineWidth: 1.0)
                     } else if enabled && style == .secondary {
                         RoundedRectangle(cornerRadius: theme.radii.medium)
-                            .stroke(theme.colors.secondaryButtonText, lineWidth: 1.0)
+                            .strokeBorder(theme.colors.secondaryButtonText, lineWidth: 1.0)
                     }
                     if isLoading {
                         ProgressView()
@@ -105,7 +111,7 @@ public struct ContinueButton: View {
         }
         .disabled(!enabled || isLoading)
         .frame(height: 50.0)
-        .padding()
+        .padding(includeOuterPadding ? EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16) : .init())
     }
 }
 

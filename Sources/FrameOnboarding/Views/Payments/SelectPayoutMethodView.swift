@@ -89,8 +89,12 @@ struct SelectPayoutMethodView: View {
                         payoutMethodView(payoutMethod: payoutMethods)
                     }
                 }
-                headerScrollTitles(name: "Add Payout Method")
-                addPayoutMethodRow
+                headerScrollTitles(name: "Payout methods")
+                MethodOptionRow(iconName: "connect-bank-account-icon", title: "Connect a bank account") {
+                    AccountEventEmitter.emit(name: .addPayoutMethodStarted, screen: .payoutMethod, detail: AccountEventDetail.payoutMethodAddStartedManualOrPlaid)
+                    self.showAddPayoutMethod = true
+                }
+                .padding(.horizontal)
             }
         }
     }
@@ -98,38 +102,10 @@ struct SelectPayoutMethodView: View {
     func headerScrollTitles(name: String) -> some View {
         HStack {
             Text(name)
-                .bold()
-                .font(theme.fonts.bodySmall)
+                .font(theme.fonts.label)
                 .padding(.horizontal)
                 .padding(.vertical, 8.0)
             Spacer()
-        }
-    }
-
-    var addPayoutMethodRow: some View {
-        HStack {
-            Image("emptycard", bundle: FrameResources.module)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 48.0, height: 32.0)
-                .padding(.horizontal)
-            Text("Bank Account (ACH)")
-                .bold()
-                .font(theme.fonts.bodySmall)
-            Spacer()
-            Image("right-chevron", bundle: FrameResources.module)
-                .padding()
-        }
-        .frame(maxWidth: .infinity, minHeight: 64.0)
-        .contentShape(Rectangle())
-        .overlay(
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
-        )
-        .padding(.horizontal)
-        .onTapGesture {
-            AccountEventEmitter.emit(name: .addPayoutMethodStarted, screen: .payoutMethod, detail: AccountEventDetail.payoutMethodAddStartedManualOrPlaid)
-            self.showAddPayoutMethod = true
         }
     }
 

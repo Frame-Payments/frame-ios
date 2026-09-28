@@ -12,29 +12,33 @@ struct PageHeaderView: View {
     @Environment(\.frameTheme) private var theme
 
     var useCloseButton: Bool = false
+    /// When `false`, the chevron/close control is omitted — used on the first step when there is no intro to return to.
+    var showsBackButton: Bool = true
 
     let headerTitle: String
     let buttonAction: () -> ()
 
     var body: some View {
-        HStack(alignment: .center) {
-            Button {
-                buttonAction()
-            } label: {
-                Image(useCloseButton ? "close-icon-white" : "left-chevron", bundle: FrameResources.module)
-                    .foregroundStyle(theme.colors.textPrimary)
+        VStack(alignment: .leading, spacing: showsBackButton ? 4 : 0) {
+            if showsBackButton {
+                Button {
+                    buttonAction()
+                } label: {
+                    Image(useCloseButton ? "close-icon-white" : "left-chevron", bundle: FrameResources.module)
+                        .foregroundStyle(theme.colors.textPrimary)
+                }
+                .frame(width: 44.0, height: 44.0)
             }
-            .frame(width: 50.0, height: 50.0)
 
-            Spacer()
             Text(headerTitle)
-                .bold()
+                .font(theme.fonts.heading)
                 .foregroundColor(theme.colors.textPrimary)
-            Spacer()
-            Rectangle()
-                .fill(.clear)
-                .frame(width: 50.0, height: 50.0)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20.0)
         }
+        .padding(.top, showsBackButton ? theme.spacing.sectionGap : theme.spacing.sectionTop)
     }
 }
 
@@ -45,4 +49,8 @@ struct PageHeaderView: View {
 
 #Preview {
     PageHeaderView(headerTitle: "Example Title", buttonAction: {})
+}
+
+#Preview("No back") {
+    PageHeaderView(showsBackButton: false, headerTitle: "Verify your phone number with a code", buttonAction: {})
 }

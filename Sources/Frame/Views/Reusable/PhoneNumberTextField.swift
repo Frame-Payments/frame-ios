@@ -12,6 +12,10 @@ import PhoneNumberKit
 /// `regionCode`.  Validation errors are displayed beneath the field unless
 /// `compactError` is `true`, in which case error text is suppressed so the
 /// caller can display it elsewhere.
+///
+/// By default the field draws its own rounded border that thickens and switches to
+/// ``FrameTheme/Colors/fieldFocusStroke`` while focused. Pass `showsBorder: false`
+/// when the caller draws chrome around the field.
 public struct PhoneNumberTextField: View {
     @Environment(\.frameTheme) private var theme
 
@@ -20,6 +24,10 @@ public struct PhoneNumberTextField: View {
     @Binding var error: String?
     var regionCode: String
     var compactError: Bool = false
+    private var showsBorder: Bool
+    private var focused: FocusState<Bool>.Binding?
+
+    @FocusState private var internalFocused: Bool
 
     /// Creates a phone-number text field.
     ///
@@ -33,16 +41,26 @@ public struct PhoneNumberTextField: View {
     ///     appropriate dialling prefix and formatting rules (e.g. `"US"`, `"GB"`).
     ///   - compactError: When `true`, the error label is hidden and the field
     ///     occupies less vertical space.  Defaults to `false`.
+    ///   - showsBorder: When `true` (default), draws a per-field focus-aware border.
+    ///   - focused: Optional binding so callers can style a surrounding border on focus.
     public init(prompt: String,
                 text: Binding<String>,
                 error: Binding<String?>,
                 regionCode: String,
-                compactError: Bool = false) {
+                compactError: Bool = false,
+                showsBorder: Bool = true,
+                focused: FocusState<Bool>.Binding? = nil) {
         self.prompt = prompt
         self._text = text
         self._error = error
         self.regionCode = regionCode
         self.compactError = compactError
+        self.showsBorder = showsBorder
+        self.focused = focused
+    }
+
+    private var isFocused: Bool {
+        focused?.wrappedValue ?? internalFocused
     }
 
     /// The formatted text field together with its optional inline error label.
@@ -54,6 +72,7 @@ public struct PhoneNumberTextField: View {
                 .textContentType(.telephoneNumber)
                 .frame(height: 49.0)
                 .padding(.horizontal)
+                .modifier(OptionalPhoneFocusModifier(focused: focused ?? $internalFocused))
                 .onChange(of: text) { _, newValue in
                     apply(formatted: newValue)
                     if error != nil { error = nil }
@@ -61,6 +80,25 @@ public struct PhoneNumberTextField: View {
                 .onChange(of: regionCode) { _, _ in
                     apply(formatted: text)
                 }
+                .background(
+                    Group {
+                        if showsBorder {
+                            RoundedRectangle(cornerRadius: theme.radii.medium)
+                                .fill(theme.colors.surface)
+                        }
+                    }
+                )
+                .overlay(
+                    Group {
+                        if showsBorder {
+                            RoundedRectangle(cornerRadius: theme.radii.medium)
+                                .strokeBorder(
+                                    isFocused ? theme.colors.fieldFocusStroke : theme.colors.surfaceStroke,
+                                    lineWidth: isFocused ? 1.5 : 1
+                                )
+                        }
+                    }
+                )
             if let error, !compactError {
                 Text(error)
                     .font(theme.fonts.caption)
@@ -94,5 +132,17 @@ public struct PhoneNumberTextField: View {
         let new = PartialFormatter(defaultRegion: region, withPrefix: false)
         formatterCache.setObject(new, forKey: key)
         return new
+    }
+}
+
+private struct OptionalPhoneFocusModifier: ViewModifier {
+    let focused: FocusState<Bool>.Binding?
+
+    func body(content: Content) -> some View {
+        if let focused {
+            content.focused(focused)
+        } else {
+            content
+        }
     }
 }
