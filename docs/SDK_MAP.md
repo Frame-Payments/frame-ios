@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1598 public symbols** across 142 files in 2 modules.
+**1607 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 74 |
-| Structs | 182 |
+| Structs | 183 |
 | Enums | 68 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
-| Initializers | 122 |
+| Initializers | 123 |
 | Methods | 282 |
-| Properties (var) | 222 |
+| Properties (var) | 229 |
 | Properties (let) | 296 |
 | Enum cases | 338 |
-| **Total** | **1598** |
+| **Total** | **1607** |
 
-### `Frame` — 1427 public symbols
+### `Frame` — 1435 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -2193,9 +2193,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Theming (41)
+#### Theming (48)
 
-<details><summary><code>FrameTheme.swift</code> — 41 symbols</summary>
+<details><summary><code>FrameTheme.swift</code> — 48 symbols</summary>
 
 [`Sources/Frame/Theming/FrameTheme.swift`](../Sources/Frame/Theming/FrameTheme.swift)
 
@@ -2205,43 +2205,50 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameTheme.colors` | var | `var colors: Colors` | [19](../Sources/Frame/Theming/FrameTheme.swift#L19) |
 | `FrameTheme.fonts` | var | `var fonts: Fonts` | [21](../Sources/Frame/Theming/FrameTheme.swift#L21) |
 | `FrameTheme.radii` | var | `var radii: Radii` | [23](../Sources/Frame/Theming/FrameTheme.swift#L23) |
-| `FrameTheme.init` | init | `init (colors: Colors = .init(), fonts: Fonts = .init(), radii: Radii = .init())` | [31](../Sources/Frame/Theming/FrameTheme.swift#L31) |
-| `FrameTheme.default` | let | `let `default` = FrameTheme()` | [38](../Sources/Frame/Theming/FrameTheme.swift#L38) |
-| `FrameTheme.with` | func | `func with(_ transform: (inout FrameTheme) -> Void) -> FrameTheme` | [42](../Sources/Frame/Theming/FrameTheme.swift#L42) |
-| `FrameTheme.Colors` | struct | `struct Colors: Equatable` | [52](../Sources/Frame/Theming/FrameTheme.swift#L52) |
-| `FrameTheme.Colors.primaryButton` | var | `var primaryButton: Color` | [54](../Sources/Frame/Theming/FrameTheme.swift#L54) |
-| `FrameTheme.Colors.primaryButtonText` | var | `var primaryButtonText: Color` | [56](../Sources/Frame/Theming/FrameTheme.swift#L56) |
-| `FrameTheme.Colors.secondaryButton` | var | `var secondaryButton: Color` | [58](../Sources/Frame/Theming/FrameTheme.swift#L58) |
-| `FrameTheme.Colors.secondaryButtonText` | var | `var secondaryButtonText: Color` | [60](../Sources/Frame/Theming/FrameTheme.swift#L60) |
-| `FrameTheme.Colors.disabledButton` | var | `var disabledButton: Color` | [62](../Sources/Frame/Theming/FrameTheme.swift#L62) |
-| `FrameTheme.Colors.disabledButtonStroke` | var | `var disabledButtonStroke: Color` | [64](../Sources/Frame/Theming/FrameTheme.swift#L64) |
-| `FrameTheme.Colors.disabledButtonText` | var | `var disabledButtonText: Color` | [66](../Sources/Frame/Theming/FrameTheme.swift#L66) |
-| `FrameTheme.Colors.surface` | var | `var surface: Color` | [68](../Sources/Frame/Theming/FrameTheme.swift#L68) |
-| `FrameTheme.Colors.surfaceStroke` | var | `var surfaceStroke: Color` | [70](../Sources/Frame/Theming/FrameTheme.swift#L70) |
-| `FrameTheme.Colors.textPrimary` | var | `var textPrimary: Color` | [72](../Sources/Frame/Theming/FrameTheme.swift#L72) |
-| `FrameTheme.Colors.textSecondary` | var | `var textSecondary: Color` | [74](../Sources/Frame/Theming/FrameTheme.swift#L74) |
-| `FrameTheme.Colors.error` | var | `var error: Color` | [76](../Sources/Frame/Theming/FrameTheme.swift#L76) |
-| `FrameTheme.Colors.toastBackground` | var | `var toastBackground: Color` | [78](../Sources/Frame/Theming/FrameTheme.swift#L78) |
-| `FrameTheme.Colors.toastText` | var | `var toastText: Color` | [80](../Sources/Frame/Theming/FrameTheme.swift#L80) |
-| `FrameTheme.Colors.onboardingHeaderBackground` | var | `var onboardingHeaderBackground: Color` | [82](../Sources/Frame/Theming/FrameTheme.swift#L82) |
-| `FrameTheme.Colors.onboardingProgressFilledOnBrand` | var | `var onboardingProgressFilledOnBrand: Color` | [84](../Sources/Frame/Theming/FrameTheme.swift#L84) |
-| `FrameTheme.Colors.onboardingProgressEmptyOnBrand` | var | `var onboardingProgressEmptyOnBrand: Color` | [86](../Sources/Frame/Theming/FrameTheme.swift#L86) |
-| `FrameTheme.Colors.init` | init | `init ( primaryButton: Color = Color( , bundle: FrameResources.module), primaryButtonText: Color = .white, secondaryButton: Color = Color(.systemBackground), se…` | [108](../Sources/Frame/Theming/FrameTheme.swift#L108) |
-| `FrameTheme.Fonts` | struct | `struct Fonts: Equatable` | [151](../Sources/Frame/Theming/FrameTheme.swift#L151) |
-| `FrameTheme.Fonts.title` | var | `var title: Font` | [153](../Sources/Frame/Theming/FrameTheme.swift#L153) |
-| `FrameTheme.Fonts.heading` | var | `var heading: Font` | [155](../Sources/Frame/Theming/FrameTheme.swift#L155) |
-| `FrameTheme.Fonts.headline` | var | `var headline: Font` | [157](../Sources/Frame/Theming/FrameTheme.swift#L157) |
-| `FrameTheme.Fonts.body` | var | `var body: Font` | [159](../Sources/Frame/Theming/FrameTheme.swift#L159) |
-| `FrameTheme.Fonts.bodySmall` | var | `var bodySmall: Font` | [161](../Sources/Frame/Theming/FrameTheme.swift#L161) |
-| `FrameTheme.Fonts.label` | var | `var label: Font` | [163](../Sources/Frame/Theming/FrameTheme.swift#L163) |
-| `FrameTheme.Fonts.caption` | var | `var caption: Font` | [165](../Sources/Frame/Theming/FrameTheme.swift#L165) |
-| `FrameTheme.Fonts.button` | var | `var button: Font` | [167](../Sources/Frame/Theming/FrameTheme.swift#L167) |
-| `FrameTheme.Fonts.init` | init | `init ( title: Font = .title, heading: Font = .system(size: 18, weight: .semibold), headline: Font = .headline, body: Font = .body, bodySmall: Font = .system(si…` | [180](../Sources/Frame/Theming/FrameTheme.swift#L180) |
-| `FrameTheme.Radii` | struct | `struct Radii: Equatable` | [205](../Sources/Frame/Theming/FrameTheme.swift#L205) |
-| `FrameTheme.Radii.small` | var | `var small: CGFloat` | [207](../Sources/Frame/Theming/FrameTheme.swift#L207) |
-| `FrameTheme.Radii.medium` | var | `var medium: CGFloat` | [209](../Sources/Frame/Theming/FrameTheme.swift#L209) |
-| `FrameTheme.Radii.large` | var | `var large: CGFloat` | [211](../Sources/Frame/Theming/FrameTheme.swift#L211) |
-| `FrameTheme.Radii.init` | init | `init (small: CGFloat = 8, medium: CGFloat = 10, large: CGFloat = 16)` | [219](../Sources/Frame/Theming/FrameTheme.swift#L219) |
+| `FrameTheme.spacing` | var | `var spacing: Spacing` | [26](../Sources/Frame/Theming/FrameTheme.swift#L26) |
+| `FrameTheme.init` | init | `init (colors: Colors = .init(), fonts: Fonts = .init(), radii: Radii = .init(), spacing: Spacing = .init())` | [35](../Sources/Frame/Theming/FrameTheme.swift#L35) |
+| `FrameTheme.default` | let | `let `default` = FrameTheme()` | [44](../Sources/Frame/Theming/FrameTheme.swift#L44) |
+| `FrameTheme.with` | func | `func with(_ transform: (inout FrameTheme) -> Void) -> FrameTheme` | [48](../Sources/Frame/Theming/FrameTheme.swift#L48) |
+| `FrameTheme.Colors` | struct | `struct Colors: Equatable` | [58](../Sources/Frame/Theming/FrameTheme.swift#L58) |
+| `FrameTheme.Colors.primaryButton` | var | `var primaryButton: Color` | [60](../Sources/Frame/Theming/FrameTheme.swift#L60) |
+| `FrameTheme.Colors.primaryButtonText` | var | `var primaryButtonText: Color` | [62](../Sources/Frame/Theming/FrameTheme.swift#L62) |
+| `FrameTheme.Colors.secondaryButton` | var | `var secondaryButton: Color` | [64](../Sources/Frame/Theming/FrameTheme.swift#L64) |
+| `FrameTheme.Colors.secondaryButtonText` | var | `var secondaryButtonText: Color` | [66](../Sources/Frame/Theming/FrameTheme.swift#L66) |
+| `FrameTheme.Colors.disabledButton` | var | `var disabledButton: Color` | [68](../Sources/Frame/Theming/FrameTheme.swift#L68) |
+| `FrameTheme.Colors.disabledButtonStroke` | var | `var disabledButtonStroke: Color` | [70](../Sources/Frame/Theming/FrameTheme.swift#L70) |
+| `FrameTheme.Colors.disabledButtonText` | var | `var disabledButtonText: Color` | [72](../Sources/Frame/Theming/FrameTheme.swift#L72) |
+| `FrameTheme.Colors.surface` | var | `var surface: Color` | [74](../Sources/Frame/Theming/FrameTheme.swift#L74) |
+| `FrameTheme.Colors.surfaceStroke` | var | `var surfaceStroke: Color` | [76](../Sources/Frame/Theming/FrameTheme.swift#L76) |
+| `FrameTheme.Colors.textPrimary` | var | `var textPrimary: Color` | [78](../Sources/Frame/Theming/FrameTheme.swift#L78) |
+| `FrameTheme.Colors.textSecondary` | var | `var textSecondary: Color` | [80](../Sources/Frame/Theming/FrameTheme.swift#L80) |
+| `FrameTheme.Colors.error` | var | `var error: Color` | [82](../Sources/Frame/Theming/FrameTheme.swift#L82) |
+| `FrameTheme.Colors.toastBackground` | var | `var toastBackground: Color` | [84](../Sources/Frame/Theming/FrameTheme.swift#L84) |
+| `FrameTheme.Colors.toastText` | var | `var toastText: Color` | [86](../Sources/Frame/Theming/FrameTheme.swift#L86) |
+| `FrameTheme.Colors.onboardingHeaderBackground` | var | `var onboardingHeaderBackground: Color` | [88](../Sources/Frame/Theming/FrameTheme.swift#L88) |
+| `FrameTheme.Colors.onboardingProgressFilledOnBrand` | var | `var onboardingProgressFilledOnBrand: Color` | [90](../Sources/Frame/Theming/FrameTheme.swift#L90) |
+| `FrameTheme.Colors.onboardingProgressEmptyOnBrand` | var | `var onboardingProgressEmptyOnBrand: Color` | [92](../Sources/Frame/Theming/FrameTheme.swift#L92) |
+| `FrameTheme.Colors.fieldFocusStroke` | var | `var fieldFocusStroke: Color` | [94](../Sources/Frame/Theming/FrameTheme.swift#L94) |
+| `FrameTheme.Colors.init` | init | `init ( primaryButton: Color = Color( , bundle: FrameResources.module), primaryButtonText: Color = .white, secondaryButton: Color = Color(.systemBackground), se…` | [116](../Sources/Frame/Theming/FrameTheme.swift#L116) |
+| `FrameTheme.Fonts` | struct | `struct Fonts: Equatable` | [161](../Sources/Frame/Theming/FrameTheme.swift#L161) |
+| `FrameTheme.Fonts.title` | var | `var title: Font` | [163](../Sources/Frame/Theming/FrameTheme.swift#L163) |
+| `FrameTheme.Fonts.heading` | var | `var heading: Font` | [165](../Sources/Frame/Theming/FrameTheme.swift#L165) |
+| `FrameTheme.Fonts.headline` | var | `var headline: Font` | [167](../Sources/Frame/Theming/FrameTheme.swift#L167) |
+| `FrameTheme.Fonts.body` | var | `var body: Font` | [169](../Sources/Frame/Theming/FrameTheme.swift#L169) |
+| `FrameTheme.Fonts.bodySmall` | var | `var bodySmall: Font` | [171](../Sources/Frame/Theming/FrameTheme.swift#L171) |
+| `FrameTheme.Fonts.label` | var | `var label: Font` | [173](../Sources/Frame/Theming/FrameTheme.swift#L173) |
+| `FrameTheme.Fonts.caption` | var | `var caption: Font` | [175](../Sources/Frame/Theming/FrameTheme.swift#L175) |
+| `FrameTheme.Fonts.button` | var | `var button: Font` | [177](../Sources/Frame/Theming/FrameTheme.swift#L177) |
+| `FrameTheme.Fonts.init` | init | `init ( title: Font? = nil, heading: Font? = nil, headline: Font? = nil, body: Font? = nil, bodySmall: Font? = nil, label: Font? = nil, caption: Font? = nil, bu…` | [201](../Sources/Frame/Theming/FrameTheme.swift#L201) |
+| `FrameTheme.Radii` | struct | `struct Radii: Equatable` | [227](../Sources/Frame/Theming/FrameTheme.swift#L227) |
+| `FrameTheme.Radii.small` | var | `var small: CGFloat` | [229](../Sources/Frame/Theming/FrameTheme.swift#L229) |
+| `FrameTheme.Radii.medium` | var | `var medium: CGFloat` | [231](../Sources/Frame/Theming/FrameTheme.swift#L231) |
+| `FrameTheme.Radii.large` | var | `var large: CGFloat` | [233](../Sources/Frame/Theming/FrameTheme.swift#L233) |
+| `FrameTheme.Radii.init` | init | `init (small: CGFloat = 8, medium: CGFloat = 10, large: CGFloat = 16)` | [241](../Sources/Frame/Theming/FrameTheme.swift#L241) |
+| `FrameTheme.Spacing` | struct | `struct Spacing: Equatable` | [249](../Sources/Frame/Theming/FrameTheme.swift#L249) |
+| `FrameTheme.Spacing.sectionTop` | var | `var sectionTop: CGFloat` | [251](../Sources/Frame/Theming/FrameTheme.swift#L251) |
+| `FrameTheme.Spacing.sectionGap` | var | `var sectionGap: CGFloat` | [253](../Sources/Frame/Theming/FrameTheme.swift#L253) |
+| `FrameTheme.Spacing.formBlock` | var | `var formBlock: CGFloat` | [255](../Sources/Frame/Theming/FrameTheme.swift#L255) |
+| `FrameTheme.Spacing.init` | init | `init (sectionTop: CGFloat = 16, sectionGap: CGFloat = 12, formBlock: CGFloat = 16)` | [258](../Sources/Frame/Theming/FrameTheme.swift#L258) |
 
 </details>
 
@@ -2437,9 +2444,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `EncryptedPaymentCardInput` | struct | `struct EncryptedPaymentCardInput: PaymentCardInputStyle` | [14](../Sources/Frame/Views/Elements/EncryptedPaymentCardInput.swift#L14) |
-| `EncryptedPaymentCardInput.init` | init | `init ()` | [16](../Sources/Frame/Views/Elements/EncryptedPaymentCardInput.swift#L16) |
-| `EncryptedPaymentCardInput.makeBody` | func | `func makeBody(configuration: Configuration) -> some View` | [22](../Sources/Frame/Views/Elements/EncryptedPaymentCardInput.swift#L22) |
+| `EncryptedPaymentCardInput` | struct | `struct EncryptedPaymentCardInput: PaymentCardInputStyle` | [12](../Sources/Frame/Views/Elements/EncryptedPaymentCardInput.swift#L12) |
+| `EncryptedPaymentCardInput.init` | init | `init ()` | [14](../Sources/Frame/Views/Elements/EncryptedPaymentCardInput.swift#L14) |
+| `EncryptedPaymentCardInput.makeBody` | func | `func makeBody(configuration: Configuration) -> some View` | [20](../Sources/Frame/Views/Elements/EncryptedPaymentCardInput.swift#L20) |
 
 </details>
 
@@ -2485,7 +2492,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Views/Reusable (40)
+#### Views/Reusable (41)
 
 <details><summary><code>AddressAutocompleteField.swift</code> — 3 symbols</summary>
 
@@ -2499,7 +2506,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>ContinueButton.swift</code> — 11 symbols</summary>
+<details><summary><code>ContinueButton.swift</code> — 12 symbols</summary>
 
 [`Sources/Frame/Views/Reusable/ContinueButton.swift`](../Sources/Frame/Views/Reusable/ContinueButton.swift)
 
@@ -2514,8 +2521,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `ContinueButton.enabled` | var | `var enabled: Bool` | [38](../Sources/Frame/Views/Reusable/ContinueButton.swift#L38) |
 | `ContinueButton.isLoading` | var | `var isLoading: Bool` | [40](../Sources/Frame/Views/Reusable/ContinueButton.swift#L40) |
 | `ContinueButton.buttonAction` | var | `var buttonAction: () -> ()` | [43](../Sources/Frame/Views/Reusable/ContinueButton.swift#L43) |
-| `ContinueButton.init` | init | `init (buttonText: String = , style: Style = .primary, enabled: Binding<Bool> = .constant(true), isLoading: Binding<Bool> = .constant(false), buttonAction: @esc…` | [53](../Sources/Frame/Views/Reusable/ContinueButton.swift#L53) |
-| `ContinueButton.body` | var | `var body: some View` | [79](../Sources/Frame/Views/Reusable/ContinueButton.swift#L79) |
+| `ContinueButton.includeOuterPadding` | var | `var includeOuterPadding: Bool` | [46](../Sources/Frame/Views/Reusable/ContinueButton.swift#L46) |
+| `ContinueButton.init` | init | `init (buttonText: String = , style: Style = .primary, enabled: Binding<Bool> = .constant(true), isLoading: Binding<Bool> = .constant(false), includeOuterPaddin…` | [57](../Sources/Frame/Views/Reusable/ContinueButton.swift#L57) |
+| `ContinueButton.body` | var | `var body: some View` | [85](../Sources/Frame/Views/Reusable/ContinueButton.swift#L85) |
 
 </details>
 
@@ -2564,9 +2572,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `PhoneNumberTextField` | struct | `struct PhoneNumberTextField: View` | [15](../Sources/Frame/Views/Reusable/PhoneNumberTextField.swift#L15) |
-| `PhoneNumberTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, regionCode: String, compactError: Bool = false)` | [36](../Sources/Frame/Views/Reusable/PhoneNumberTextField.swift#L36) |
-| `PhoneNumberTextField.body` | var | `var body: some View` | [49](../Sources/Frame/Views/Reusable/PhoneNumberTextField.swift#L49) |
+| `PhoneNumberTextField` | struct | `struct PhoneNumberTextField: View` | [19](../Sources/Frame/Views/Reusable/PhoneNumberTextField.swift#L19) |
+| `PhoneNumberTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, regionCode: String, compactError: Bool = false, showsBorder: Bool = true, focused: FocusS…` | [46](../Sources/Frame/Views/Reusable/PhoneNumberTextField.swift#L46) |
+| `PhoneNumberTextField.body` | var | `var body: some View` | [67](../Sources/Frame/Views/Reusable/PhoneNumberTextField.swift#L67) |
 
 </details>
 
@@ -2591,9 +2599,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `TextFieldInputRestriction` | enum | `enum TextFieldInputRestriction` | [12](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L12) |
 | `TextFieldInputRestriction.none` | case | `case none` | [14](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L14) |
 | `TextFieldInputRestriction.textOnly` | case | `case textOnly` | [22](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L22) |
-| `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [51](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L51) |
-| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [84](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L84) |
-| `ValidatedTextField.body` | var | `var body: some View` | [109](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L109) |
+| `ValidatedTextField` | struct | `struct ValidatedTextField: View` | [55](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L55) |
+| `ValidatedTextField.init` | init | `init (prompt: String, text: Binding<String>, error: Binding<String?>, keyboardType: UIKeyboardType = .default, textContentType: UITextContentType? = nil, chara…` | [93](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L93) |
+| `ValidatedTextField.body` | var | `var body: some View` | [124](../Sources/Frame/Views/Reusable/ValidatedTextField.swift#L124) |
 
 </details>
 
@@ -2608,7 +2616,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-### `FrameOnboarding` — 171 public symbols
+### `FrameOnboarding` — 172 public symbols
 
 Onboarding product: the capability-driven identity/payment verification flow, its screens, and the onboarding-only APIs (3DS, IDV, phone OTP, geocompliance).
 
@@ -2764,7 +2772,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-#### Reusable/PaymentElements (27)
+#### Reusable/PaymentElements (28)
 
 <details><summary><code>BankAccountDetailView.swift</code> — 3 symbols</summary>
 
@@ -2773,8 +2781,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `BankAccountDetailView` | struct | `struct BankAccountDetailView: View` | [15](../Sources/FrameOnboarding/Reusable/PaymentElements/BankAccountDetailView.swift#L15) |
-| `BankAccountDetailView.init` | init | `init (viewModel: BankAccountViewModel, showHeaderText: Bool = true)` | [25](../Sources/FrameOnboarding/Reusable/PaymentElements/BankAccountDetailView.swift#L25) |
-| `BankAccountDetailView.body` | var | `var body: some View` | [32](../Sources/FrameOnboarding/Reusable/PaymentElements/BankAccountDetailView.swift#L32) |
+| `BankAccountDetailView.init` | init | `init (viewModel: BankAccountViewModel, showHeaderText: Bool = true, applyHorizontalPadding: Bool = true)` | [27](../Sources/FrameOnboarding/Reusable/PaymentElements/BankAccountDetailView.swift#L27) |
+| `BankAccountDetailView.body` | var | `var body: some View` | [38](../Sources/FrameOnboarding/Reusable/PaymentElements/BankAccountDetailView.swift#L38) |
 
 </details>
 
@@ -2784,9 +2792,9 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `BillingAddressDetailView` | struct | `struct BillingAddressDetailView: View` | [16](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L16) |
-| `BillingAddressDetailView.init` | init | `init (viewModel: BillingAddressViewModel, headerTitle: String = , showHeaderText: Bool = true)` | [34](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L34) |
-| `BillingAddressDetailView.body` | var | `var body: some View` | [123](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L123) |
+| `BillingAddressDetailView` | struct | `struct BillingAddressDetailView: View` | [18](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L18) |
+| `BillingAddressDetailView.init` | init | `init (viewModel: BillingAddressViewModel, headerTitle: String = , showHeaderText: Bool = true)` | [36](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L36) |
+| `BillingAddressDetailView.body` | var | `var body: some View` | [138](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L138) |
 
 </details>
 
@@ -2796,12 +2804,12 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `CustomerInformationView` | struct | `struct CustomerInformationView: View` | [15](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L15) |
-| `CustomerInformationView.body` | var | `var body: some View` | [58](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L58) |
+| `CustomerInformationView` | struct | `struct CustomerInformationView: View` | [13](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L13) |
+| `CustomerInformationView.body` | var | `var body: some View` | [62](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L62) |
 
 </details>
 
-<details><summary><code>DropDownWithHeaderView.swift</code> — 7 symbols</summary>
+<details><summary><code>DropDownWithHeaderView.swift</code> — 8 symbols</summary>
 
 [`Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift`](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift)
 
@@ -2813,7 +2821,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `DropDownWithHeaderView.showDropdownPicker` | var | `var showDropdownPicker: Bool` | [22](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift#L22) |
 | `DropDownWithHeaderView.showHeaderText` | var | `var showHeaderText: Bool = true` | [25](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift#L25) |
 | `DropDownWithHeaderView.showDropdownBorder` | var | `var showDropdownBorder: Bool = true` | [27](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift#L27) |
-| `DropDownWithHeaderView.body` | var | `var body: some View` | [30](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift#L30) |
+| `DropDownWithHeaderView.applyHorizontalPadding` | var | `var applyHorizontalPadding: Bool = true` | [29](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift#L29) |
+| `DropDownWithHeaderView.body` | var | `var body: some View` | [32](../Sources/FrameOnboarding/Reusable/PaymentElements/DropDownWithHeaderView.swift#L32) |
 
 </details>
 
@@ -2974,7 +2983,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
 | `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [44](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L44) |
 | `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [68](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L68) |
-| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = true, showCompleti…` | [110](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L110) |
+| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = false, showComplet…` | [110](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L110) |
 | `OnboardingContainerView.body` | var | `var body: some View` | [145](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L145) |
 
 </details>
