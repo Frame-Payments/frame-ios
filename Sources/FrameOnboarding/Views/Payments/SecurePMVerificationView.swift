@@ -142,6 +142,8 @@ struct SecurePMVerificationView: View {
                         }
                     }
                 }
+                // Slightly more room under the text links before the primary button.
+                .padding(.top, 6 - otpActionSpacing)
             }
             .buttonStyle(.plain)
             .padding(.horizontal)
