@@ -70,31 +70,31 @@ public struct FrameCheckoutView: View {
             topHeaderBar
             Divider()
             ScrollView {
-                if applePayConfigured {
-                    applePayButton
-                }
-                if !(checkoutViewModel.accountPaymentOptions ?? []).isEmpty {
-                    paymentMethodList
-                        .padding(.top)
-                        .padding(.bottom)
-                }
-                customerInformation
-                    .padding(.bottom)
-                if checkoutViewModel.didLoadAccountPaymentMethods,
-                   checkoutViewModel.selectedAccountPaymentOption == nil {
-                    cardInformation
-                        .padding(.bottom)
-                    if addressMode != .hidden {
-                        regionInformation
-                            // The address autocomplete list is drawn past this section's bounds,
-                            // and the toggle and pay button are its siblings here. Without this
-                            // they are laid out later and paint over the suggestions.
-                            .zIndex(1)
+                VStack(alignment: .leading, spacing: 0) {
+                    if applePayConfigured {
+                        applePayButton
                     }
-                    saveCardToggle
+                    if !(checkoutViewModel.accountPaymentOptions ?? []).isEmpty {
+                        paymentMethodList
+                            .padding(.top, theme.spacing.sectionTop)
+                            .padding(.bottom, theme.spacing.sectionTop)
+                    }
+                    customerInformation
+                    if checkoutViewModel.didLoadAccountPaymentMethods,
+                       checkoutViewModel.selectedAccountPaymentOption == nil {
+                        cardInformation
+                        if addressMode != .hidden {
+                            regionInformation
+                                // The address autocomplete list is drawn past this section's bounds,
+                                // and the toggle and pay button are its siblings here. Without this
+                                // they are laid out later and paint over the suggestions.
+                                .zIndex(1)
+                        }
+                        saveCardToggle
+                    }
+                    checkoutButton
+                    Spacer()
                 }
-                checkoutButton
-                Spacer()
             }
         }
         .task {
@@ -242,14 +242,21 @@ public struct FrameCheckoutView: View {
         }
     }
 
-    /// Evervault-encrypted card number, expiry, and CVC input fields with inline validation errors.
-    @ViewBuilder
-    var cardInformation: some View {
-        Text("Card Information")
+    /// Shared section title with equal top/bottom padding so checkout headers read as one rhythm.
+    private func checkoutSectionHeader(_ title: String) -> some View {
+        Text(title)
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(theme.fonts.headline)
             .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
+            .padding(.top, theme.spacing.sectionTop)
+            .padding(.bottom, theme.spacing.sectionTop)
+    }
+
+    /// Evervault-encrypted card number, expiry, and CVC input fields with inline validation errors.
+    @ViewBuilder
+    var cardInformation: some View {
+        checkoutSectionHeader("Card Information")
         // Evervault Card Input
         PaymentCardInput(cardData: $checkoutViewModel.cardData)
             .paymentCardInputStyle(EncryptedPaymentCardInput())
@@ -268,11 +275,7 @@ public struct FrameCheckoutView: View {
     /// Name and email text fields for identifying the customer.
     @ViewBuilder
     var customerInformation: some View {
-        Text("Customer Information")
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(theme.fonts.headline)
-            .foregroundColor(theme.colors.textSecondary)
-            .padding(.horizontal)
+        checkoutSectionHeader("Customer Information")
         VStack(spacing: theme.spacing.formBlock) {
             ValidatedTextField(prompt: "Customer Name",
                                text: $checkoutViewModel.customerName,
@@ -335,11 +338,7 @@ public struct FrameCheckoutView: View {
     /// Street address, city, state, country picker, and zip code fields for billing address collection.
     @ViewBuilder
     var regionInformation: some View {
-        Text("Billing Address")
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(theme.fonts.headline)
-            .foregroundColor(theme.colors.textSecondary)
-            .padding(.horizontal)
+        checkoutSectionHeader("Billing Address")
         VStack(spacing: theme.spacing.formBlock) {
             AddressAutocompleteField(prompt: "Address Line 1",
                                      text: $checkoutViewModel.customerAddressLine1,
