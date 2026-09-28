@@ -1,11 +1,10 @@
 //
-//  SwiftUIView.swift
+//  SecurePMVerificationView.swift
 //  Frame-iOS
-//
-//  Created by Frame Payments on 11/19/25.
 //
 
 import SwiftUI
+import UIKit
 import Frame
 
 /// 3D Secure is deliberately absent: an issuer code must never pass through the app, so that
@@ -49,17 +48,28 @@ struct SecurePMVerificationView: View {
         self._returnToPreviousStep = returnToPreviousStep
     }
     
-    private var headerTitle: String {
-        return "Enter Verification Code"
+    private var displayPhoneNumber: String {
+        let dial = onboardingContainerViewModel.phoneCountry.dialCode
+        let digits = onboardingContainerViewModel.authPhoneNumber
+            .replacingOccurrences(of: " ", with: "")
+        if digits.isEmpty {
+            return dial
+        }
+        return "\(dial) \(digits)"
     }
 
-    private var bodyText: String {
-        return "We've sent a verification code to your phone. Enter it below."
+    private var otpSubtitle: AttributedString {
+        var prefix = AttributedString("We texted a 6-digit code to ")
+        var phone = AttributedString(displayPhoneNumber)
+        phone.font = theme.fonts.bodySmall.bold()
+        phone.foregroundColor = UIColor(theme.colors.textPrimary)
+        prefix.append(phone)
+        return prefix
     }
 
     var body: some View {
-        VStack {
-            PageHeaderView(headerTitle: headerTitle) {
+        VStack(alignment: .leading) {
+            PageHeaderView(headerTitle: "Enter your verification code") {
                 switch type {
                 case .proveOtp:
                     onboardingContainerViewModel.cancelProveOTP()
@@ -72,21 +82,59 @@ struct SecurePMVerificationView: View {
                     AccountEventEmitter.emit(name: .phoneCodeEntryStarted, screen: .phoneVerification)
                 }
             }
-            Text(bodyText)
-                .fontWeight(type == .proveOtp ? .regular : .light)
+            Text(otpSubtitle)
                 .font(theme.fonts.bodySmall)
-                .foregroundColor(type == .proveOtp ? theme.colors.textSecondary : .primary)
+                .foregroundStyle(theme.colors.textSecondary)
                 .padding(.horizontal)
             codeContainerStack
+            Text("Your code expires in 10 minutes")
+                .font(theme.fonts.caption)
+                .foregroundStyle(theme.colors.textSecondary)
+                .padding(.horizontal)
+                .padding(.bottom, theme.spacing.formBlock)
+            VStack(alignment: .leading, spacing: 4) {
+                Button("Resend code") {
+                    Task {
+                        let dob = DateOfBirthFormatter.format(
+                            year: onboardingContainerViewModel.authBirthYear,
+                            month: onboardingContainerViewModel.authBirthMonth,
+                            day: onboardingContainerViewModel.authBirthDay
+                        )
+                        let phoneNumber = onboardingContainerViewModel.phoneCountry.dialCode
+                            + onboardingContainerViewModel.authPhoneNumber.replacingOccurrences(of: " ", with: "")
+                        await onboardingContainerViewModel.sendOTPVerification(
+                            phoneNumber: phoneNumber,
+                            dateOfBirth: dob
+                        )
+                        clearEnteredCode()
+                    }
+                }
+                .font(theme.fonts.bodySmall)
+                .foregroundStyle(theme.colors.textPrimary)
+                .disabled(onboardingContainerViewModel.isPerformingAction)
+
+                Button("Change phone number") {
+                    switch type {
+                    case .proveOtp:
+                        onboardingContainerViewModel.cancelProveOTP()
+                    case .phone:
+                        self.returnToPreviousStep = true
+                    }
+                }
+                .font(theme.fonts.bodySmall)
+                .foregroundStyle(theme.colors.textPrimary)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal)
             ContinueButton(enabled: $codeInput,
-                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction),
+                           includeOuterPadding: false) {
                 Task {
                     switch type {
                     case .phone:
                         if await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode) {
                             self.continueToNextStep = true
                         } else {
-                            // The toast explains why; clear the boxes so the code can be retyped.
                             clearEnteredCode()
                         }
                     case .proveOtp:
@@ -94,12 +142,12 @@ struct SecurePMVerificationView: View {
                     }
                 }
             }
+            .padding(.horizontal)
+            .padding(.top, theme.spacing.formBlock)
+            .padding(.bottom, 16)
             Spacer()
         }
         .onChange(of: type) { _, _ in
-            // This view is reused in place when the Prove sheet falls back to Twilio. The digit
-            // boxes are @State and survive that swap, so the dead Prove code has to be cleared or
-            // the applicant would be looking at it with the Continue button already enabled.
             clearEnteredCode()
         }
     }

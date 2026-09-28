@@ -2,8 +2,6 @@
 //  CustomerInformationView.swift
 //  Frame-iOS
 //
-//  Created by Frame Payments on 1/9/26.
-//
 
 import SwiftUI
 import Frame
@@ -23,11 +21,18 @@ public struct CustomerInformationView: View {
     /// carries the resulting verified state.
     @ObservedObject var onboardingContainerViewModel: OnboardingContainerViewModel
 
-    @State private var birthYear: String = ""
-    @State private var birthMonth: String = ""
-    @State private var birthDay: String = ""
+    @State private var birthDate: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+    @State private var showBirthDatePicker: Bool = false
+    @FocusState private var ssnFocused: Bool
 
     @State private var headerTitle: String
+
+    private var dobRange: ClosedRange<Date> {
+        let calendar = Calendar.current
+        let min = calendar.date(byAdding: .year, value: -120, to: Date()) ?? Date.distantPast
+        let max = Date()
+        return min...max
+    }
 
     /// Creates a ``CustomerInformationView``.
     ///
@@ -35,11 +40,11 @@ public struct CustomerInformationView: View {
     ///   - viewModel: The view model that owns and validates the customer identity state.
     ///   - onboardingContainerViewModel: The onboarding container view model driving the no-SSN
     ///     government-ID verification flow and holding its verified state.
-    ///   - headerTitle: The bold label displayed above the name/email/phone fields.
-    ///     Defaults to `"Customer Information"`.
+    ///   - headerTitle: The bold label displayed above the name fields.
+    ///     Defaults to `"Legal name"`.
     init(viewModel: CustomerInformationViewModel,
          onboardingContainerViewModel: OnboardingContainerViewModel,
-         headerTitle: String = "Customer Information") {
+         headerTitle: String = "Legal name") {
         self.viewModel = viewModel
         self.onboardingContainerViewModel = onboardingContainerViewModel
         self._headerTitle = State(initialValue: headerTitle)
@@ -48,7 +53,6 @@ public struct CustomerInformationView: View {
     /// Whether to surface the no-SSN government-ID verification affordance: KYC is required and
     /// verification isn't already running automatically.
     private var requiresKYC: Bool {
-        // Verification runs automatically after Continue, so the manual opt-out is redundant.
         guard !onboardingContainerViewModel.governmentIdRequired else { return false }
         let caps = onboardingContainerViewModel.requiredCapabilities
         return caps.contains(.kyc) || caps.contains(.kycPrefill)
@@ -56,48 +60,49 @@ public struct CustomerInformationView: View {
 
     /// The root view hierarchy that renders all customer-information input sections.
     public var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: theme.spacing.formBlock) {
             Text(headerTitle)
-                .bold()
                 .font(theme.fonts.label)
-                .padding([.horizontal, .top])
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .fill(theme.colors.surface)
-                .stroke(theme.colors.surfaceStroke)
-                .frame(height: 150.0)
-                .overlay {
-                    VStack(spacing: 0) {
-                        HStack {
-                            ValidatedTextField(prompt: "First Name",
-                                               text: $viewModel.identity.firstName,
-                                               error: viewModel.errorBinding(.firstName),
-                                               textContentType: .givenName,
-                                               inputRestriction: .textOnly,
-                                               inlineError: true)
-                            Divider()
-                            ValidatedTextField(prompt: "Last Name",
-                                               text: $viewModel.identity.lastName,
-                                               error: viewModel.errorBinding(.lastName),
-                                               textContentType: .familyName,
-                                               inputRestriction: .textOnly,
-                                               inlineError: true)
-                        }
-                        .frame(height: 49.0)
-                        Divider()
-                        ValidatedTextField(prompt: "Email Address",
-                                           text: $viewModel.identity.email,
-                                           error: viewModel.errorBinding(.email),
-                                           keyboardType: .emailAddress,
-                                           textContentType: .emailAddress,
-                                           inlineError: true)
-                        Divider()
-                        PhoneNumberTextField(prompt: "Phone Number",
-                                             text: $viewModel.identity.phoneNumber,
-                                             error: viewModel.errorBinding(.phone),
-                                             regionCode: viewModel.phoneCountry.alpha2)
-                    }
-                }
                 .padding(.horizontal)
+                .padding(.top, theme.spacing.sectionTop)
+            ValidatedTextField(prompt: "First name",
+                               text: $viewModel.identity.firstName,
+                               error: viewModel.errorBinding(.firstName),
+                               textContentType: .givenName,
+                               inputRestriction: .textOnly,
+                               inlineError: true)
+            .padding(.horizontal)
+            ValidatedTextField(prompt: "Last name",
+                               text: $viewModel.identity.lastName,
+                               error: viewModel.errorBinding(.lastName),
+                               textContentType: .familyName,
+                               inputRestriction: .textOnly,
+                               inlineError: true)
+            .padding(.horizontal)
+            Text("Enter your name exactly as it is recorded with government agencies (e.g., IRS).")
+                .font(theme.fonts.caption)
+                .foregroundStyle(theme.colors.textSecondary)
+                .padding(.horizontal)
+
+            Text("Email address")
+                .font(theme.fonts.label)
+                .padding(.horizontal)
+            ValidatedTextField(prompt: "Email address",
+                               text: $viewModel.identity.email,
+                               error: viewModel.errorBinding(.email),
+                               keyboardType: .emailAddress,
+                               textContentType: .emailAddress,
+                               inlineError: true)
+            .padding(.horizontal)
+
+            Text("Phone number")
+                .font(theme.fonts.label)
+                .padding(.horizontal)
+            PhoneNumberTextField(prompt: "Phone number",
+                                 text: $viewModel.identity.phoneNumber,
+                                 error: viewModel.errorBinding(.phone),
+                                 regionCode: viewModel.phoneCountry.alpha2)
+            .padding(.horizontal)
             birthdayView
             if onboardingContainerViewModel.identityVerifiedViaGovId,
                !onboardingContainerViewModel.correctedKycDetailsRequired {
@@ -111,14 +116,12 @@ public struct CustomerInformationView: View {
             }
         }
         .onAppear {
-            seedBirthComponentsFromStoredValue()
-            // Keep the info view model's SSN-skip flag in sync with any already-verified state.
+            seedBirthDateFromStoredValue()
             viewModel.skipSSN = onboardingContainerViewModel.skipsSSNEntry
         }
         .onChange(of: onboardingContainerViewModel.identityVerifiedViaGovId) { _, verified in
             viewModel.skipSSN = onboardingContainerViewModel.skipsSSNEntry
             if verified, viewModel.skipSSN {
-                // Clear any stale SSN error and value so nothing leaks into submit.
                 viewModel.errors[.ssn] = nil
                 viewModel.identity.ssn = ""
             }
@@ -130,43 +133,67 @@ public struct CustomerInformationView: View {
                 viewModel.identity.ssn = ""
             }
         }
-        .onChange(of: birthYear) { _, _ in
-            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
-        }
-        .onChange(of: birthMonth) { _, _ in
-            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
-        }
-        .onChange(of: birthDay) { _, _ in
-            viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(year: birthYear, month: birthMonth, day: birthDay)
+        .onChange(of: birthDate) { _, newValue in
+            applyBirthDate(newValue)
         }
         .onChange(of: viewModel.identity.dateOfBirth) { _, newValue in
-            // Re-seed from async hydration (e.g. checkExistingAccount populating identity after mount).
-            // Skip if the user has already started typing — otherwise zero-padding would rewrite their input mid-entry.
-            guard birthYear.isEmpty, birthMonth.isEmpty, birthDay.isEmpty else { return }
-            let parts = newValue.components(separatedBy: "-")
-            guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
-            birthYear = parts[0]
-            birthMonth = parts[1]
-            birthDay = parts[2]
+            guard let parsed = Self.parseISODate(newValue) else { return }
+            let current = Self.isoString(from: birthDate)
+            if current != newValue {
+                birthDate = parsed
+            }
         }
     }
 
-    /// Splits a stored YYYY-M(M)-D(D) string back into the three editable components.
-    /// Tolerates unpadded month/day so legacy data (e.g. "1990-1-5") still hydrates the form.
-    private func seedBirthComponentsFromStoredValue() {
-        let parts = viewModel.identity.dateOfBirth.components(separatedBy: "-")
-        guard parts.count == 3, parts.allSatisfy({ !$0.isEmpty }) else { return }
-        birthYear = parts[0]
-        birthMonth = parts[1]
-        birthDay = parts[2]
+    private func seedBirthDateFromStoredValue() {
+        if let parsed = Self.parseISODate(viewModel.identity.dateOfBirth) {
+            birthDate = parsed
+        }
     }
 
-    /// A grouped row of Month, Day, and Year text fields for capturing the customer's date of birth.
+    private func applyBirthDate(_ date: Date) {
+        let parts = Self.components(from: date)
+        viewModel.identity.dateOfBirth = DateOfBirthFormatter.format(
+            year: parts.year,
+            month: parts.month,
+            day: parts.day
+        )
+        viewModel.errors[.birthMonth] = nil
+        viewModel.errors[.birthDay] = nil
+        viewModel.errors[.birthYear] = nil
+    }
+
+    private static func components(from date: Date) -> (year: String, month: String, day: String) {
+        let calendar = Calendar.current
+        let y = calendar.component(.year, from: date)
+        let m = calendar.component(.month, from: date)
+        let d = calendar.component(.day, from: date)
+        return (String(y), String(format: "%02d", m), String(format: "%02d", d))
+    }
+
+    private static func isoString(from date: Date) -> String {
+        let parts = components(from: date)
+        return DateOfBirthFormatter.format(year: parts.year, month: parts.month, day: parts.day)
+    }
+
+    private static func parseISODate(_ value: String) -> Date? {
+        let parts = value.components(separatedBy: "-")
+        guard parts.count == 3,
+              let y = Int(parts[0]),
+              let m = Int(parts[1]),
+              let d = Int(parts[2]) else { return nil }
+        var comps = DateComponents()
+        comps.year = y
+        comps.month = m
+        comps.day = d
+        return Calendar.current.date(from: comps)
+    }
+
+    /// Native wheel date picker for the customer's date of birth.
     @ViewBuilder
     var birthdayView: some View {
         HStack {
-            Text("Birthday")
-                .bold()
+            Text("Date of birth")
                 .font(theme.fonts.label)
             Spacer()
             if let dobError = viewModel.firstDateOfBirthError {
@@ -175,97 +202,121 @@ public struct CustomerInformationView: View {
                     .foregroundColor(theme.colors.error)
             }
         }
-        .padding([.horizontal, .top])
-        RoundedRectangle(cornerRadius: theme.radii.medium)
-            .fill(theme.colors.surface)
-            .stroke(theme.colors.surfaceStroke)
-            .frame(height: 50.0)
-            .overlay {
-                HStack {
-                    ValidatedTextField(prompt: "Month",
-                                       text: $birthMonth,
-                                       error: viewModel.errorBinding(.birthMonth),
-                                       keyboardType: .numberPad,
-                                       textContentType: .birthdateMonth,
-                                       characterLimit: 2,
-                                       compactError: true)
-                    Divider()
-                    ValidatedTextField(prompt: "Day",
-                                       text: $birthDay,
-                                       error: viewModel.errorBinding(.birthDay),
-                                       keyboardType: .numberPad,
-                                       textContentType: .birthdateDay,
-                                       characterLimit: 2,
-                                       compactError: true)
-                    Divider()
-                    ValidatedTextField(prompt: "Year",
-                                       text: $birthYear,
-                                       error: viewModel.errorBinding(.birthYear),
-                                       keyboardType: .numberPad,
-                                       textContentType: .birthdateYear,
-                                       characterLimit: 4,
-                                       compactError: true)
-                }
+        .padding(.horizontal)
+        Button {
+            showBirthDatePicker = true
+        } label: {
+            HStack {
+                Text(birthDate, format: .dateTime.month().day().year())
+                    .font(theme.fonts.body)
+                    .foregroundStyle(theme.colors.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
             .padding(.horizontal)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(theme.colors.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .stroke(theme.colors.surfaceStroke)
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal)
+        .sheet(isPresented: $showBirthDatePicker) {
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button("Done") { showBirthDatePicker = false }
+                        .font(theme.fonts.button)
+                        .padding()
+                }
+                DatePicker(
+                    "",
+                    selection: $birthDate,
+                    in: dobRange,
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                .padding(.horizontal)
+            }
+            .presentationDetents([.height(280)])
+            .presentationDragIndicator(.visible)
+        }
     }
 
-    /// A labeled input row that collects the last four digits of the customer's Social Security Number.
+    /// FrameOS-style last-4 SSN field with masked prefix addon.
     @ViewBuilder
     var socialSecurityView: some View {
-        Text("Social Security Number")
-            .bold()
+        Text("Last 4 digits of Social Security number")
             .font(theme.fonts.label)
-            .padding([.horizontal, .top])
+            .foregroundStyle(theme.colors.textSecondary)
+            .padding(.horizontal)
         RoundedRectangle(cornerRadius: theme.radii.medium)
             .fill(theme.colors.surface)
-            .stroke(theme.colors.surfaceStroke)
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .strokeBorder(
+                        ssnFocused ? theme.colors.fieldFocusStroke : theme.colors.surfaceStroke,
+                        lineWidth: ssnFocused ? 1.5 : 1
+                    )
+            )
             .frame(height: 50.0)
             .overlay {
                 HStack(spacing: 0) {
-                    RoundedRectangle(cornerRadius: theme.radii.medium)
-                        .fill(theme.colors.surfaceStroke)
-                        .stroke(theme.colors.surfaceStroke)
-                        .frame(width: 120.0, height: 50.0)
-                        .overlay {
-                            Text("Last 4 Digits")
-                                .font(.footnote)
-                                .bold()
-                                .foregroundColor(theme.colors.textPrimary)
-                        }
-                    ValidatedTextField(prompt: "SSN",
+                    Text("••• - •• -")
+                        .font(theme.fonts.body)
+                        .foregroundStyle(theme.colors.textSecondary)
+                        .padding(.leading, 16)
+                        .padding(.trailing, 12)
+                    Rectangle()
+                        .fill(ssnFocused ? theme.colors.fieldFocusStroke : theme.colors.surfaceStroke)
+                        .frame(width: ssnFocused ? 1.5 : 1)
+                    ValidatedTextField(prompt: "0000",
                                        text: $viewModel.identity.ssn,
                                        error: viewModel.errorBinding(.ssn),
                                        keyboardType: .numberPad,
                                        characterLimit: 4,
-                                       inlineError: true)
+                                       inlineError: true,
+                                       showsBorder: false,
+                                       focused: $ssnFocused)
                 }
             }
             .padding(.horizontal)
     }
 
-    /// Secondary text-style button offering the no-SSN government-ID verification path. Shown
-    /// directly under the SSN row while KYC is required and the applicant has not yet verified.
+    /// Borderless link offering the no-SSN government-ID verification path.
     @ViewBuilder
     var noSSNButton: some View {
-        ContinueButton(buttonText: "I don't have a social security number",
-                       style: .secondary,
-                       isLoading: .constant(onboardingContainerViewModel.isPerformingAction)) {
+        Button {
             guard let presenter = UIApplication.shared.topViewController else { return }
             Task {
                 await onboardingContainerViewModel.verifyIdentityWithoutSsn(from: presenter)
             }
+        } label: {
+            Text("No Social Security number? Verify with an ID document")
+                .font(theme.fonts.caption)
+                .foregroundStyle(theme.colors.textSecondary)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .buttonStyle(.plain)
+        .disabled(onboardingContainerViewModel.isPerformingAction)
+        .padding(.horizontal)
+        .padding(.top, -4)
     }
 
     /// Confirmation row shown in place of the SSN input and no-SSN button once the applicant has
     /// verified their identity with a government ID.
     @ViewBuilder
     var governmentIdVerifiedView: some View {
-        Text("Social Security Number")
-            .bold()
+        Text("Last 4 digits of Social Security number")
             .font(theme.fonts.label)
-            .padding([.horizontal, .top])
+            .foregroundStyle(theme.colors.textSecondary)
+            .padding(.horizontal)
         RoundedRectangle(cornerRadius: theme.radii.medium)
             .fill(theme.colors.surface)
             .stroke(theme.colors.surfaceStroke)

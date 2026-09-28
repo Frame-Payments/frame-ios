@@ -91,8 +91,12 @@ struct SelectPaymentMethodView: View {
                         .padding(.horizontal)
                     }
                 }
-                headerScrollTitles(name: "Add Payment Method")
-                addPaymentMethodRow
+                headerScrollTitles(name: "Add a payment method")
+                MethodOptionRow(iconName: "add-card-icon", title: "Add a card") {
+                    AccountEventEmitter.emit(name: .addPaymentMethodStarted, screen: .paymentMethod)
+                    self.showAddPaymentMethod = true
+                }
+                .padding(.horizontal)
             }
         }
     }
@@ -100,38 +104,10 @@ struct SelectPaymentMethodView: View {
     func headerScrollTitles(name: String) -> some View {
         HStack {
             Text(name)
-                .bold()
-                .font(theme.fonts.bodySmall)
+                .font(theme.fonts.label)
                 .padding(.horizontal)
                 .padding(.vertical, 8.0)
             Spacer()
-        }
-    }
-
-    var addPaymentMethodRow: some View {
-        HStack {
-            Image("emptycard", bundle: FrameResources.module)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 48.0, height: 32.0)
-                .padding(.horizontal)
-            Text("Debit/Credit Card")
-                .bold()
-                .font(theme.fonts.bodySmall)
-            Spacer()
-            Image("right-chevron", bundle: FrameResources.module)
-                .padding()
-        }
-        .frame(maxWidth: .infinity, minHeight: 64.0)
-        .contentShape(Rectangle())
-        .overlay(
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .stroke(theme.colors.surfaceStroke, lineWidth: 1)
-        )
-        .padding(.horizontal)
-        .onTapGesture {
-            AccountEventEmitter.emit(name: .addPaymentMethodStarted, screen: .paymentMethod)
-            self.showAddPaymentMethod = true
         }
     }
 

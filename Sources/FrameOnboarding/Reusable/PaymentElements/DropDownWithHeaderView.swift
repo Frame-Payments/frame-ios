@@ -25,6 +25,8 @@ public struct DropDownWithHeaderView: View {
     @State public var showHeaderText: Bool = true
     /// When `true`, a rounded-rectangle stroke border is drawn around the dropdown row.
     @State public var showDropdownBorder: Bool = true
+    /// When `true`, applies horizontal insets. Pass `false` when the parent already provides padding.
+    public var applyHorizontalPadding: Bool = true
 
     /// The SwiftUI view hierarchy for the header label and tappable dropdown row.
     public var body: some View {
@@ -33,7 +35,8 @@ public struct DropDownWithHeaderView: View {
                 Text(headerText)
                     .bold()
                     .font(theme.fonts.label)
-                    .padding([.horizontal, .top])
+                    .padding(.top, applyHorizontalPadding ? nil : 0)
+                    .padding(.horizontal, applyHorizontalPadding ? nil : 0)
             }
             HStack {
                 Text(dropDownText)
@@ -46,11 +49,15 @@ public struct DropDownWithHeaderView: View {
             }
             .frame(maxWidth: .infinity, minHeight: 42.0)
             .contentShape(Rectangle())
+            .background(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .fill(theme.colors.surface)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: theme.radii.medium)
-                    .stroke(theme.colors.surfaceStroke, lineWidth: showDropdownBorder ? 1 : 0)
+                    .strokeBorder(theme.colors.surfaceStroke, lineWidth: showDropdownBorder ? 1 : 0)
             )
-            .padding([.horizontal])
+            .padding(.horizontal, applyHorizontalPadding ? nil : 0)
             .onTapGesture {
                 self.showDropdownPicker.toggle()
             }

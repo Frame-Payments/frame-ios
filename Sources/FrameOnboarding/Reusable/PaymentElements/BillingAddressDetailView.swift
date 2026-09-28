@@ -13,6 +13,8 @@ import Frame
 /// The view adapts its field layout and labels to the selected country when operating in
 /// international mode, and restricts entry to US-only addresses when in US-only mode.
 /// Validation errors are surfaced inline beneath each field via the bound ``BillingAddressViewModel``.
+///
+/// Each field is a separate bordered control so focus rings apply per input.
 public struct BillingAddressDetailView: View {
     @Environment(\.frameTheme) private var theme
     @ObservedObject var viewModel: BillingAddressViewModel
@@ -96,98 +98,107 @@ public struct BillingAddressDetailView: View {
         return AddressSubregions.subregion(forCode: code, countryCode: country)?.name ?? format.stateLabel
     }
 
-    /// A tappable row that opens the subregion picker, styled to sit beside the City field.
+    /// A tappable row that opens the subregion picker, styled like a standalone text field.
     private var subregionDropdown: some View {
-        HStack(spacing: 4) {
-            Text(subregionText)
-                .font(theme.fonts.body)
-                .foregroundColor((viewModel.address.state ?? "").isEmpty
-                                 ? theme.colors.textSecondary
-                                 : theme.colors.textPrimary)
-                .lineLimit(1)
-                .padding(.horizontal)
-            if let error = viewModel.errors[.state] {
-                Text(error)
-                    .font(theme.fonts.caption)
-                    .foregroundColor(theme.colors.error)
+        Button {
+            showSubregionPicker = true
+        } label: {
+            HStack(spacing: 4) {
+                Text(subregionText)
+                    .font(theme.fonts.body)
+                    .foregroundColor((viewModel.address.state ?? "").isEmpty
+                                     ? theme.colors.textSecondary
+                                     : theme.colors.textPrimary)
+                    .lineLimit(1)
+                if let error = viewModel.errors[.state] {
+                    Text(error)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
-            Spacer(minLength: 0)
+            .padding(.horizontal)
+            .frame(maxWidth: .infinity, minHeight: 49, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .fill(theme.colors.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .strokeBorder(theme.colors.surfaceStroke, lineWidth: 1)
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 49.0)
-        .contentShape(Rectangle())
-        .onTapGesture { showSubregionPicker = true }
+        .buttonStyle(.plain)
     }
 
     /// The root view hierarchy for the billing-address form.
     public var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: theme.spacing.formBlock) {
             if showHeaderText {
                 Text(headerTitle)
                     .bold()
                     .font(theme.fonts.label)
-                    .padding([.horizontal, .top])
+                    .padding(.horizontal)
+                    .padding(.top, theme.spacing.sectionTop)
             }
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .fill(theme.colors.surface)
-                .stroke(theme.colors.surfaceStroke)
-                .frame(minHeight: allowsInternational ? 250.0 : 200.0)
-                .overlay {
-                    VStack(spacing: 0) {
-                        AddressAutocompleteField(prompt: "Address Line 1",
-                                                 text: $viewModel.address.addressLine1.orEmpty,
-                                                 error: viewModel.errorBinding(.line1),
-                                                 countryCode: selectedCountry.alpha2Code,
-                                                 inlineError: true) { address in
-                            apply(address)
-                        }
-                        Divider()
-                        ValidatedTextField(prompt: "Address Line 2",
-                                           text: $viewModel.address.addressLine2.orEmpty,
-                                           error: .constant(nil),
-                                           textContentType: .streetAddressLine2,
-                                           inlineError: true)
-                        Divider()
-                        HStack {
-                            ValidatedTextField(prompt: "City",
-                                               text: $viewModel.address.city.orEmpty,
-                                               error: viewModel.errorBinding(.city),
-                                               textContentType: .addressCity,
-                                               inputRestriction: .textOnly,
-                                               inlineError: true)
-                            Divider()
-                            if subregions != nil {
-                                subregionDropdown
-                            } else {
-                                ValidatedTextField(prompt: format.stateLabel,
-                                                   text: $viewModel.address.state.orEmpty,
-                                                   error: viewModel.errorBinding(.state),
-                                                   textContentType: .addressState,
-                                                   characterLimit: format.stateMaxLength,
-                                                   inputRestriction: .textOnly,
-                                                   inlineError: true)
-                            }
-                        }
-                        .frame(height: 49.0)
-                        Divider()
-                        ValidatedTextField(prompt: format.postalLabel,
-                                           text: $viewModel.address.postalCode,
-                                           error: viewModel.errorBinding(.postal),
-                                           keyboardType: format.postalKeyboard,
-                                           textContentType: .postalCode,
-                                           characterLimit: allowsInternational ? nil : 5,
-                                           inlineError: true)
-                        if allowsInternational {
-                            Divider()
-                            DropDownWithHeaderView(headerText: .constant(""),
-                                                   dropDownText: $countryText,
-                                                   showDropdownPicker: $showCountryPicker,
-                                                   showHeaderText: false,
-                                                   showDropdownBorder: false)
-                        }
-                    }
+            AddressAutocompleteField(prompt: "Street address",
+                                     text: $viewModel.address.addressLine1.orEmpty,
+                                     error: viewModel.errorBinding(.line1),
+                                     countryCode: selectedCountry.alpha2Code,
+                                     inlineError: true) { address in
+                apply(address)
+            }
+            .padding(.horizontal)
+
+            ValidatedTextField(prompt: "Address line 2 (optional)",
+                               text: $viewModel.address.addressLine2.orEmpty,
+                               error: .constant(nil),
+                               textContentType: .streetAddressLine2,
+                               inlineError: true)
+            .padding(.horizontal)
+
+            HStack(alignment: .top, spacing: 12) {
+                ValidatedTextField(prompt: "City",
+                                   text: $viewModel.address.city.orEmpty,
+                                   error: viewModel.errorBinding(.city),
+                                   textContentType: .addressCity,
+                                   inputRestriction: .textOnly,
+                                   inlineError: true)
+                if subregions != nil {
+                    subregionDropdown
+                } else {
+                    ValidatedTextField(prompt: format.stateLabel,
+                                       text: $viewModel.address.state.orEmpty,
+                                       error: viewModel.errorBinding(.state),
+                                       textContentType: .addressState,
+                                       characterLimit: format.stateMaxLength,
+                                       inputRestriction: .textOnly,
+                                       inlineError: true)
                 }
+            }
+            .padding(.horizontal)
+
+            ValidatedTextField(prompt: format.postalLabel,
+                               text: $viewModel.address.postalCode,
+                               error: viewModel.errorBinding(.postal),
+                               keyboardType: format.postalKeyboard,
+                               textContentType: .postalCode,
+                               characterLimit: allowsInternational ? nil : 5,
+                               inlineError: true)
+            .padding(.horizontal)
+
+            if allowsInternational {
+                DropDownWithHeaderView(headerText: .constant(""),
+                                       dropDownText: $countryText,
+                                       showDropdownPicker: $showCountryPicker,
+                                       showHeaderText: false,
+                                       showDropdownBorder: true,
+                                       applyHorizontalPadding: false)
                 .padding(.horizontal)
+            }
         }
         .onAppear {
             if !allowsInternational {

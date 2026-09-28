@@ -104,13 +104,13 @@ public struct OnboardingContainerView: View {
     ///     `nil` only for legacy integrations that still authenticate onboarding with a secret key.
     ///   - accountId: An existing Frame account ID to pre-populate data for, or `nil` to create a new account during onboarding.
     ///   - requiredCapabilities: The set of ``FrameObjects/Capabilities`` the user must satisfy; determines which steps are shown.
-    ///   - showIntroScreen: Pass `false` to skip the introductory splash and begin the first step immediately. Defaults to `true`.
+    ///   - showIntroScreen: Pass `true` to show the introductory splash before the first step. Defaults to `false`.
     ///   - showCompletionScreen: Pass `false` to omit the ``OnboardingFlow/verificationSubmitted`` confirmation screen. Defaults to `true`.
     ///   - onResult: Closure called with a ``FrameResult`` when the flow finishes or is cancelled.
     public init(clientSecret: String? = nil,
                 accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
-                showIntroScreen: Bool = true,
+                showIntroScreen: Bool = false,
                 showCompletionScreen: Bool = true,
                 onResult: @escaping (FrameResult) -> Void = { _ in }) {
         self.onboardingClientSecret = clientSecret
@@ -158,7 +158,8 @@ public struct OnboardingContainerView: View {
                 case .personalInformation:
                     UserIdentificationView(onboardingContainerViewModel: onboardingContainerViewModel,
                                            continueToNextStep: $continueToNextStep,
-                                           returnToPreviousStep: $returnToPreviousStep)
+                                           returnToPreviousStep: $returnToPreviousStep,
+                                           showsContainerBackButton: canReturnFromCurrentStep)
                 case .verificationSubmitted:
                     VerificationSubmittedView(continueToNextStep: $continueToNextStep,
                                               outcome: onboardingContainerViewModel.finalOutcome,
@@ -244,7 +245,10 @@ public struct OnboardingContainerView: View {
         .onChange(of: returnToPreviousStep, { oldValue, newValue in
             guard returnToPreviousStep else { return }
             guard onboardingContainerViewModel.onboardingFlow.first != onboardingContainerViewModel.currentStep else {
-                self.startedOnboarding = false
+                // Only surface the intro when it was actually part of this presentation.
+                if showIntroScreen {
+                    self.startedOnboarding = false
+                }
                 self.returnToPreviousStep = false
                 return
             }
@@ -287,6 +291,14 @@ public struct OnboardingContainerView: View {
         }
     }
     
+    /// Whether leaving the current step via back should be offered — false on the first step when the intro is omitted.
+    private var canReturnFromCurrentStep: Bool {
+        if onboardingContainerViewModel.currentStep != onboardingContainerViewModel.onboardingFlow.first {
+            return true
+        }
+        return showIntroScreen
+    }
+
     /// A fixed-height header bar containing a segmented progress indicator for the onboarding steps.
     var containerHeader: some View {
         Rectangle()

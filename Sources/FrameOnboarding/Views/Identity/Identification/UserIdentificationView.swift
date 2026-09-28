@@ -48,6 +48,14 @@ struct UserIdentificationView: View {
 
     @State private var returnToPhoneNumberEntry: Bool = false
     @State private var continueToCustomerInfoStep: Bool = false
+    @State private var authBirthDate: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+    @State private var showAuthBirthDatePicker: Bool = false
+    @FocusState private var phoneFieldFocused: Bool
+
+    private var authDobRange: ClosedRange<Date> {
+        let min = Calendar.current.date(byAdding: .year, value: -120, to: Date()) ?? Date.distantPast
+        return min...Date()
+    }
     /// Set by the Prove OTP sheet once it has fallen back to Twilio and the typed code verified.
     @State private var proveSheetVerified: Bool = false
     /// Set when the fallback sheet's back button asks to close it.
@@ -55,15 +63,19 @@ struct UserIdentificationView: View {
     
     @Binding var continueToNextStep: Bool
     @Binding var returnToPreviousStep: Bool
+    /// Whether the phone-auth screen can navigate back out of this step (intro or a prior flow step).
+    var showsContainerBackButton: Bool
 
     let idTypes = IdentificationTypes.allCases
 
     init(onboardingContainerViewModel: OnboardingContainerViewModel,
          continueToNextStep: Binding<Bool>,
-         returnToPreviousStep: Binding<Bool>) {
+         returnToPreviousStep: Binding<Bool>,
+         showsContainerBackButton: Bool = true) {
         self._onboardingContainerViewModel = StateObject(wrappedValue: onboardingContainerViewModel)
         self._continueToNextStep = continueToNextStep
         self._returnToPreviousStep = returnToPreviousStep
+        self.showsContainerBackButton = showsContainerBackButton
         self._personalAddressVM = StateObject(wrappedValue: BillingAddressViewModel(
             address: onboardingContainerViewModel.createdCustomerIdentity.address,
             mode: .international
@@ -175,7 +187,8 @@ struct UserIdentificationView: View {
     
     var authenticationView: some View {
         VStack(alignment: .leading) {
-            PageHeaderView(headerTitle: onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) ? "Enter Your Phone Number & DOB" : "Enter Your Phone Number") {
+            PageHeaderView(showsBackButton: showsContainerBackButton,
+                           headerTitle: "Verify your phone number with a code") {
                 self.returnToPreviousStep.toggle()
             }
             .onAppear {
@@ -184,14 +197,18 @@ struct UserIdentificationView: View {
                         await onboardingContainerViewModel.generateTermsOfServiceToken()
                     }
                 }
+                seedAuthBirthDate()
             }
-            Text("We’ll send you a code — it helps us keep your account secure.")
+            .onChange(of: authBirthDate) { _, newValue in
+                syncAuthBirthDate(newValue)
+            }
+            Text("We'll text you a 6-digit code to confirm it's you.")
                 .font(theme.fonts.bodySmall)
                 .foregroundColor(theme.colors.textSecondary)
                 .padding(.horizontal, 20.0)
                 .padding(.bottom, 20.0)
             HStack {
-                Text("Phone Number")
+                Text("Phone number")
                     .fontWeight(.semibold)
                     .font(theme.fonts.bodySmall)
                 Spacer()
@@ -217,7 +234,7 @@ struct UserIdentificationView: View {
                     .frame(maxWidth: .infinity, minHeight: 56.0)
                     .overlay(
                         RoundedRectangle(cornerRadius: theme.radii.medium)
-                            .stroke(theme.colors.surfaceStroke, lineWidth: 1)
+                            .strokeBorder(theme.colors.surfaceStroke, lineWidth: 1)
                     )
                 }
                 .frame(width: 110.0)
@@ -225,14 +242,22 @@ struct UserIdentificationView: View {
 
                 RoundedRectangle(cornerRadius: theme.radii.medium)
                     .fill(theme.colors.surface)
-                    .stroke(theme.colors.surfaceStroke)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .strokeBorder(
+                                phoneFieldFocused ? theme.colors.fieldFocusStroke : theme.colors.surfaceStroke,
+                                lineWidth: phoneFieldFocused ? 1.5 : 1
+                            )
+                    )
                     .frame(maxHeight: 56.0)
                     .overlay {
                         PhoneNumberTextField(prompt: "Enter your phone number",
                                              text: $onboardingContainerViewModel.authPhoneNumber,
                                              error: onboardingContainerViewModel.errorBinding(.authPhone),
                                              regionCode: onboardingContainerViewModel.phoneCountry.alpha2,
-                                             compactError: true)
+                                             compactError: true,
+                                             showsBorder: false,
+                                             focused: $phoneFieldFocused)
                     }
             }
             .padding(.trailing)
@@ -240,8 +265,7 @@ struct UserIdentificationView: View {
             if onboardingContainerViewModel.requiredCapabilities.contains(.kycPrefill) {
                 HStack {
                     Text("Date of Birth")
-                        .fontWeight(.semibold)
-                        .font(theme.fonts.bodySmall)
+                        .font(theme.fonts.label)
                     Spacer()
                     if let dobError = firstDateOfBirthError() {
                         Text(dobError)
@@ -250,38 +274,49 @@ struct UserIdentificationView: View {
                     }
                 }
                 .padding(.horizontal)
-                RoundedRectangle(cornerRadius: theme.radii.medium)
-                    .fill(theme.colors.surface)
-                    .stroke(theme.colors.surfaceStroke)
-                    .overlay {
-                        HStack {
-                            ValidatedTextField(prompt: "Month",
-                                               text: $onboardingContainerViewModel.authBirthMonth,
-                                               error: onboardingContainerViewModel.errorBinding(.authBirthMonth),
-                                               keyboardType: .numberPad,
-                                               textContentType: .birthdateMonth,
-                                               characterLimit: 2,
-                                               compactError: true)
-                            Divider()
-                            ValidatedTextField(prompt: "Day",
-                                               text: $onboardingContainerViewModel.authBirthDay,
-                                               error: onboardingContainerViewModel.errorBinding(.authBirthDay),
-                                               keyboardType: .numberPad,
-                                               textContentType: .birthdateDay,
-                                               characterLimit: 2,
-                                               compactError: true)
-                            Divider()
-                            ValidatedTextField(prompt: "Year",
-                                               text: $onboardingContainerViewModel.authBirthYear,
-                                               error: onboardingContainerViewModel.errorBinding(.authBirthYear),
-                                               keyboardType: .numberPad,
-                                               textContentType: .birthdateYear,
-                                               characterLimit: 4,
-                                               compactError: true)
-                        }
+                Button {
+                    showAuthBirthDatePicker = true
+                } label: {
+                    HStack {
+                        Text(authBirthDate, format: .dateTime.month().day().year())
+                            .font(theme.fonts.body)
+                            .foregroundStyle(theme.colors.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.caption)
+                            .foregroundStyle(theme.colors.textSecondary)
                     }
                     .padding(.horizontal)
-                    .frame(height: 55.0)
+                    .frame(maxWidth: .infinity, minHeight: 55)
+                    .background(theme.colors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .stroke(theme.colors.surfaceStroke)
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal)
+                .sheet(isPresented: $showAuthBirthDatePicker) {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Spacer()
+                            Button("Done") { showAuthBirthDatePicker = false }
+                                .font(theme.fonts.button)
+                                .padding()
+                        }
+                        DatePicker(
+                            "",
+                            selection: $authBirthDate,
+                            in: authDobRange,
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
+                        .padding(.horizontal)
+                    }
+                    .presentationDetents([.height(280)])
+                    .presentationDragIndicator(.visible)
+                }
             }
             Spacer()
             if onboardingContainerViewModel.requiredCapabilities.contains(.geoCompliance) {
@@ -318,17 +353,19 @@ struct UserIdentificationView: View {
 
     var customerInformationView: some View {
         VStack(alignment: .leading) {
-            PageHeaderView(headerTitle: "Personal Information") {
+            PageHeaderView(headerTitle: "Verify your personal info") {
                 self.identitySteps = .phoneAuth
             }
             .onAppear {
                 AccountEventEmitter.emit(name: .profileStepStarted, screen: .personalInformation)
             }
             ScrollView {
+                personalInfoIntro
                 CustomerInformationView(viewModel: customerInfoVM,
-                                        onboardingContainerViewModel: onboardingContainerViewModel)
+                                        onboardingContainerViewModel: onboardingContainerViewModel,
+                                        headerTitle: "Legal name")
                 BillingAddressDetailView(viewModel: personalAddressVM,
-                                         headerTitle: "Current Address")
+                                         headerTitle: "Home address")
                 KeyboardSpacing()
             }
             // The address form's autocomplete list is drawn past the form's own bounds. The
@@ -366,11 +403,55 @@ struct UserIdentificationView: View {
             .padding(.bottom)
         }
     }
+
+    private var personalInfoIntro: some View {
+        Text(personalInfoIntroText)
+            .font(theme.fonts.bodySmall)
+            .foregroundStyle(theme.colors.textSecondary)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
+            .padding(.bottom, theme.spacing.sectionGap)
+    }
+
+    private var personalInfoIntroText: AttributedString {
+        var result = AttributedString(
+            "This information is collected to verify your identity, keep your account safe, and help meet legal regulatory requirements. For more information, review Frame's "
+        )
+        var privacy = AttributedString("Privacy Policy")
+        privacy.link = LegalConfiguration.privacyURL
+        privacy.underlineStyle = .single
+        privacy.foregroundColor = UIColor(theme.colors.textPrimary)
+        result.append(privacy)
+        result.append(AttributedString("."))
+        return result
+    }
     
     private func firstDateOfBirthError() -> String? {
         return onboardingContainerViewModel.errorBinding(.authBirthMonth).wrappedValue
             ?? onboardingContainerViewModel.errorBinding(.authBirthDay).wrappedValue
             ?? onboardingContainerViewModel.errorBinding(.authBirthYear).wrappedValue
+    }
+
+    private func seedAuthBirthDate() {
+        let y = onboardingContainerViewModel.authBirthYear
+        let m = onboardingContainerViewModel.authBirthMonth
+        let d = onboardingContainerViewModel.authBirthDay
+        guard let year = Int(y), let month = Int(m), let day = Int(d) else { return }
+        var comps = DateComponents()
+        comps.year = year
+        comps.month = month
+        comps.day = day
+        if let date = Calendar.current.date(from: comps) {
+            authBirthDate = date
+        }
+    }
+
+    private func syncAuthBirthDate(_ date: Date) {
+        let calendar = Calendar.current
+        onboardingContainerViewModel.authBirthYear = String(calendar.component(.year, from: date))
+        onboardingContainerViewModel.authBirthMonth = String(format: "%02d", calendar.component(.month, from: date))
+        onboardingContainerViewModel.authBirthDay = String(format: "%02d", calendar.component(.day, from: date))
     }
 
     @ViewBuilder

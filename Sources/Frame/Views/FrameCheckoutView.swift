@@ -273,51 +273,58 @@ public struct FrameCheckoutView: View {
             .font(theme.fonts.headline)
             .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
-        VStack(spacing: 0) {
+        VStack(spacing: theme.spacing.formBlock) {
             ValidatedTextField(prompt: "Customer Name",
                                text: $checkoutViewModel.customerName,
                                error: errorBinding(.name),
                                textContentType: .name,
                                inputRestriction: .textOnly)
-            Divider()
             ValidatedTextField(prompt: "Customer Email",
                                text: $checkoutViewModel.customerEmail,
                                error: errorBinding(.email),
                                keyboardType: .emailAddress,
                                textContentType: .emailAddress)
         }
-        .background(
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .fill(theme.colors.surface)
-                .stroke(theme.colors.surfaceStroke)
-        )
         .padding(.horizontal)
     }
 
     /// A tappable row that opens the subregion picker, used where the country's states or
     /// provinces are an enumerated list rather than free text.
     private var subregionDropdown: some View {
-        HStack(spacing: 4) {
-            Text(AddressSubregions.subregion(forCode: checkoutViewModel.customerState,
-                                             countryCode: checkoutViewModel.customerCountry.alpha2Code)?.name
-                 ?? addressFormat.stateLabel)
-                .font(theme.fonts.body)
-                .foregroundColor(checkoutViewModel.customerState.isEmpty
-                                 ? theme.colors.textSecondary
-                                 : theme.colors.textPrimary)
-                .lineLimit(1)
-                .padding(.horizontal)
-            if let error = checkoutViewModel.fieldErrors[.state] {
-                Text(error)
-                    .font(theme.fonts.caption)
-                    .foregroundColor(theme.colors.error)
+        Button {
+            isShowingSubregionPicker = true
+        } label: {
+            HStack(spacing: 4) {
+                Text(AddressSubregions.subregion(forCode: checkoutViewModel.customerState,
+                                                 countryCode: checkoutViewModel.customerCountry.alpha2Code)?.name
+                     ?? addressFormat.stateLabel)
+                    .font(theme.fonts.body)
+                    .foregroundColor(checkoutViewModel.customerState.isEmpty
+                                     ? theme.colors.textSecondary
+                                     : theme.colors.textPrimary)
+                    .lineLimit(1)
+                if let error = checkoutViewModel.fieldErrors[.state] {
+                    Text(error)
+                        .font(theme.fonts.caption)
+                        .foregroundColor(theme.colors.error)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
-            Spacer(minLength: 0)
+            .padding(.horizontal)
+            .frame(maxWidth: .infinity, minHeight: 49, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .fill(theme.colors.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.radii.medium)
+                    .strokeBorder(theme.colors.surfaceStroke, lineWidth: 1)
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 49.0)
-        .contentShape(Rectangle())
-        .onTapGesture { isShowingSubregionPicker = true }
+        .buttonStyle(.plain)
     }
 
     /// Field labels, keyboard, and length limits for the currently selected billing country.
@@ -333,20 +340,18 @@ public struct FrameCheckoutView: View {
             .font(theme.fonts.headline)
             .foregroundColor(theme.colors.textSecondary)
             .padding(.horizontal)
-        VStack(spacing: 0) {
+        VStack(spacing: theme.spacing.formBlock) {
             AddressAutocompleteField(prompt: "Address Line 1",
                                      text: $checkoutViewModel.customerAddressLine1,
                                      error: errorBinding(.addressLine1),
                                      countryCode: checkoutViewModel.customerCountry.alpha2Code) { address in
                 checkoutViewModel.apply(address)
             }
-            Divider()
             ValidatedTextField(prompt: "Address Line 2",
                                text: $checkoutViewModel.customerAddressLine2,
                                error: .constant(nil),
                                textContentType: .streetAddressLine2)
-            Divider()
-            HStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 12) {
                 ValidatedTextField(prompt: "City",
                                    text: $checkoutViewModel.customerCity,
                                    error: errorBinding(.city),
@@ -363,39 +368,39 @@ public struct FrameCheckoutView: View {
                                        inputRestriction: .textOnly)
                 }
             }
-            Divider()
-            HStack {
-                Button {
-                    self.isShowingPicker = true
-                } label: {
+            Button {
+                self.isShowingPicker = true
+            } label: {
+                HStack {
                     Text(checkoutViewModel.customerCountry.displayName)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .font(theme.fonts.headline)
                         .foregroundColor(theme.colors.textPrimary)
-                        .padding(.horizontal)
+                    if let image = UIImage(named: "BlackDownArrow", in: FrameResources.module, with: nil) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20.0)
+                    }
                 }
-
-                if let image = UIImage(named: "BlackDownArrow", in: FrameResources.module, with: nil) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20.0)
-                        .padding()
-                }
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity, minHeight: 49)
+                .background(
+                    RoundedRectangle(cornerRadius: theme.radii.medium)
+                        .fill(theme.colors.surface)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: theme.radii.medium)
+                        .strokeBorder(theme.colors.surfaceStroke, lineWidth: 1)
+                )
             }
-            .frame(height: 49.0)
-            Divider()
+            .buttonStyle(.plain)
             ValidatedTextField(prompt: addressFormat.postalLabel,
                                text: $checkoutViewModel.customerZipCode,
                                error: errorBinding(.zip),
                                keyboardType: addressFormat.postalKeyboard,
                                textContentType: .postalCode)
         }
-        .background(
-            RoundedRectangle(cornerRadius: theme.radii.medium)
-                .fill(theme.colors.surface)
-                .stroke(theme.colors.surfaceStroke)
-        )
         .padding(.horizontal)
     }
 

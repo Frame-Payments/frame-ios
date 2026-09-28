@@ -22,16 +22,22 @@ public struct FrameTheme: Equatable {
     /// The corner-radius scale used across all SDK components.
     public var radii: Radii
 
+    /// Vertical spacing scale for section titles, sheet headers, and form blocks.
+    public var spacing: Spacing
+
     /// Creates a ``FrameTheme`` with the given sub-themes, falling back to SDK defaults for any omitted arguments.
     ///
     /// - Parameters:
     ///   - colors: The color palette to apply. Defaults to ``Colors/init()``.
     ///   - fonts: The font scale to apply. Defaults to ``Fonts/init()``.
     ///   - radii: The corner-radius scale to apply. Defaults to ``Radii/init()``.
-    public init(colors: Colors = .init(), fonts: Fonts = .init(), radii: Radii = .init()) {
+    ///   - spacing: The vertical spacing scale to apply. Defaults to ``Spacing/init()``.
+    public init(colors: Colors = .init(), fonts: Fonts = .init(), radii: Radii = .init(), spacing: Spacing = .init()) {
+        FrameFontRegistration.registerIfNeeded()
         self.colors = colors
         self.fonts = fonts
         self.radii = radii
+        self.spacing = spacing
     }
 
     /// The out-of-the-box Frame theme used when no custom theme is injected.
@@ -84,6 +90,8 @@ public struct FrameTheme: Equatable {
         public var onboardingProgressFilledOnBrand: Color
         /// Color for the empty segment of the onboarding progress indicator, rendered on the brand header.
         public var onboardingProgressEmptyOnBrand: Color
+        /// Border / ring color for focused form fields (matches FrameOS primary green).
+        public var fieldFocusStroke: Color
 
         /// Creates a ``Colors`` palette, falling back to SDK-bundled asset-catalogue colors for any omitted arguments.
         ///
@@ -122,7 +130,8 @@ public struct FrameTheme: Equatable {
             toastText: Color = .white,
             onboardingHeaderBackground: Color = Color("OnboardingHeaderBackground", bundle: FrameResources.module),
             onboardingProgressFilledOnBrand: Color = .white,
-            onboardingProgressEmptyOnBrand: Color = .white.opacity(0.25)
+            onboardingProgressEmptyOnBrand: Color = .white.opacity(0.25),
+            fieldFocusStroke: Color = Color("MainButtonColor", bundle: FrameResources.module)
         ) {
             self.primaryButton = primaryButton
             self.primaryButtonText = primaryButtonText
@@ -141,6 +150,7 @@ public struct FrameTheme: Equatable {
             self.onboardingHeaderBackground = onboardingHeaderBackground
             self.onboardingProgressFilledOnBrand = onboardingProgressFilledOnBrand
             self.onboardingProgressEmptyOnBrand = onboardingProgressEmptyOnBrand
+            self.fieldFocusStroke = fieldFocusStroke
         }
     }
 
@@ -177,24 +187,36 @@ public struct FrameTheme: Equatable {
         ///   - label: Font for form-field and list-item labels.
         ///   - caption: Font for captions and fine-print text.
         ///   - button: Font for button labels.
+        /// Creates a ``Fonts`` scale, falling back to bundled Soehne weights for any omitted arguments.
+        ///
+        /// - Parameters:
+        ///   - title: Font for large display titles.
+        ///   - heading: Font for section headings.
+        ///   - headline: Font for sub-section headlines.
+        ///   - body: Font for standard body copy.
+        ///   - bodySmall: Font for smaller body copy.
+        ///   - label: Font for form-field and list-item labels.
+        ///   - caption: Font for captions and fine-print text.
+        ///   - button: Font for button labels.
         public init(
-            title: Font = .title,
-            heading: Font = .system(size: 18, weight: .semibold),
-            headline: Font = .headline,
-            body: Font = .body,
-            bodySmall: Font = .system(size: 14),
-            label: Font = .subheadline,
-            caption: Font = .caption,
-            button: Font = .headline
+            title: Font? = nil,
+            heading: Font? = nil,
+            headline: Font? = nil,
+            body: Font? = nil,
+            bodySmall: Font? = nil,
+            label: Font? = nil,
+            caption: Font? = nil,
+            button: Font? = nil
         ) {
-            self.title = title
-            self.heading = heading
-            self.headline = headline
-            self.body = body
-            self.bodySmall = bodySmall
-            self.label = label
-            self.caption = caption
-            self.button = button
+            FrameFontRegistration.registerIfNeeded()
+            self.title = title ?? FrameFontRegistration.soehne(size: 28, postScriptName: FrameFontRegistration.Name.fett)
+            self.heading = heading ?? FrameFontRegistration.soehne(size: 18, postScriptName: FrameFontRegistration.Name.dreiviertelfett)
+            self.headline = headline ?? FrameFontRegistration.soehne(size: 17, postScriptName: FrameFontRegistration.Name.dreiviertelfett)
+            self.body = body ?? FrameFontRegistration.soehne(size: 17, postScriptName: FrameFontRegistration.Name.buch)
+            self.bodySmall = bodySmall ?? FrameFontRegistration.soehne(size: 14, postScriptName: FrameFontRegistration.Name.buch)
+            self.label = label ?? FrameFontRegistration.soehne(size: 15, postScriptName: FrameFontRegistration.Name.kraftig)
+            self.caption = caption ?? FrameFontRegistration.soehne(size: 12, postScriptName: FrameFontRegistration.Name.buch)
+            self.button = button ?? FrameFontRegistration.soehne(size: 17, postScriptName: FrameFontRegistration.Name.dreiviertelfett)
         }
     }
 
@@ -220,6 +242,23 @@ public struct FrameTheme: Equatable {
             self.small = small
             self.medium = medium
             self.large = large
+        }
+    }
+
+    /// Vertical spacing tokens for titles, sheet headers, and form sections.
+    public struct Spacing: Equatable {
+        /// Top padding above screen / sheet titles.
+        public var sectionTop: CGFloat
+        /// Spacing between a section title and the content beneath it.
+        public var sectionGap: CGFloat
+        /// Spacing between stacked form blocks.
+        public var formBlock: CGFloat
+
+        /// Creates a ``Spacing`` scale. Defaults: `sectionTop` 16, `sectionGap` 12, `formBlock` 16.
+        public init(sectionTop: CGFloat = 16, sectionGap: CGFloat = 12, formBlock: CGFloat = 16) {
+            self.sectionTop = sectionTop
+            self.sectionGap = sectionGap
+            self.formBlock = formBlock
         }
     }
 }

@@ -48,6 +48,10 @@ public enum TextFieldInputRestriction {
 /// When the error is non-nil it is shown either beside the field (inline) or below it (stacked).
 /// Typing into the field automatically clears the current error and enforces an optional
 /// character limit, making it suitable for form inputs throughout the SDK.
+///
+/// By default the field draws its own rounded border that thickens and switches to
+/// ``FrameTheme/Colors/fieldFocusStroke`` while focused. Pass `showsBorder: false` when the
+/// caller draws a shared chrome around the field (for example an SSN prefix addon).
 public struct ValidatedTextField: View {
     @Environment(\.frameTheme) private var theme
 
@@ -62,7 +66,10 @@ public struct ValidatedTextField: View {
     private var compactError: Bool
     private var errorSpacing: CGFloat
     private var inlineError: Bool
+    private var showsBorder: Bool
     private var focused: FocusState<Bool>.Binding?
+
+    @FocusState private var internalFocused: Bool
 
     /// Creates a new `ValidatedTextField`.
     ///
@@ -78,6 +85,8 @@ public struct ValidatedTextField: View {
     ///   - compactError: When `true`, the error label is suppressed and no extra vertical space is reserved for it.
     ///   - inlineError: When `true`, the error label is placed to the right of the field in a horizontal stack rather than below it.
     ///   - errorSpacing: Points of spacing between the field and the error label (or between elements in compact/inline layouts). Defaults to `4`.
+    ///   - showsBorder: When `true` (default), draws a per-field focus-aware border. Pass `false` when the
+    ///     parent supplies chrome around the field.
     ///   - focused: Optional binding to the owner's focus state, so a caller that draws something
     ///     alongside the field — an autocomplete list, for instance — can tell when it is being
     ///     edited. Pass `nil` when focus does not matter.
@@ -91,6 +100,7 @@ public struct ValidatedTextField: View {
                 compactError: Bool = false,
                 inlineError: Bool = false,
                 errorSpacing: CGFloat = 4,
+                showsBorder: Bool = true,
                 focused: FocusState<Bool>.Binding? = nil) {
         self.prompt = prompt
         self._text = text
@@ -102,7 +112,12 @@ public struct ValidatedTextField: View {
         self.compactError = compactError
         self.inlineError = inlineError
         self.errorSpacing = errorSpacing
+        self.showsBorder = showsBorder
         self.focused = focused
+    }
+
+    private var isFocused: Bool {
+        focused?.wrappedValue ?? internalFocused
     }
 
     /// The view hierarchy that renders the text field and its optional validation error label.
@@ -110,17 +125,7 @@ public struct ValidatedTextField: View {
         VStack(alignment: .leading, spacing: compactError ? 0 : errorSpacing) {
             if inlineError {
                 HStack(spacing: errorSpacing) {
-                    TextField("", text: $text, prompt: Text(prompt))
-                        .font(theme.fonts.body)
-                        .keyboardType(keyboardType)
-                        .textContentType(textContentType)
-                        .frame(height: 49.0)
-                        .padding(.horizontal)
-                        .onChange(of: text) { _, newValue in
-                            applyInputRules(to: newValue)
-                            if error != nil { error = nil }
-                        }
-                        .modifier(OptionalFocusModifier(focused: focused))
+                    fieldContent
                     if let error, !compactError {
                         Text(error)
                             .font(theme.fonts.caption)
@@ -129,17 +134,7 @@ public struct ValidatedTextField: View {
                     }
                 }
             } else {
-                TextField("", text: $text, prompt: Text(prompt))
-                    .font(theme.fonts.body)
-                    .keyboardType(keyboardType)
-                    .textContentType(textContentType)
-                    .frame(height: 49.0)
-                    .padding(.horizontal)
-                    .onChange(of: text) { _, newValue in
-                        applyInputRules(to: newValue)
-                        if error != nil { error = nil }
-                    }
-                    .modifier(OptionalFocusModifier(focused: focused))
+                fieldContent
                 if let error, !compactError {
                     Text(error)
                         .font(theme.fonts.caption)
@@ -149,6 +144,40 @@ public struct ValidatedTextField: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var fieldContent: some View {
+        TextField("", text: $text, prompt: Text(prompt))
+            .font(theme.fonts.body)
+            .keyboardType(keyboardType)
+            .textContentType(textContentType)
+            .frame(height: 49.0)
+            .padding(.horizontal, showsBorder ? 16 : 16)
+            .onChange(of: text) { _, newValue in
+                applyInputRules(to: newValue)
+                if error != nil { error = nil }
+            }
+            .modifier(OptionalFocusModifier(focused: focused ?? $internalFocused))
+            .background(
+                Group {
+                    if showsBorder {
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .fill(theme.colors.surface)
+                    }
+                }
+            )
+            .overlay(
+                Group {
+                    if showsBorder {
+                        RoundedRectangle(cornerRadius: theme.radii.medium)
+                            .strokeBorder(
+                                isFocused ? theme.colors.fieldFocusStroke : theme.colors.surfaceStroke,
+                                lineWidth: isFocused ? 1.5 : 1
+                            )
+                    }
+                }
+            )
     }
 
     /// Strips disallowed characters, then truncates — in that order, so filtering can't pull a

@@ -762,7 +762,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                              routingNumber: bankAccount.routingNumber ?? "",
                                                                              customer: nil,
                                                                              account: accountId,
-                                                                             billing: createdBillingAddress)
+                                                                             billing: nil)
             let (payoutMethod, error) = try await PaymentMethodsAPI.createACHPaymentMethod(request: request)
             if let error {
                 AccountEventEmitter.emit(name: .payoutMethodAddFailed, screen: .payoutMethod, detail: "\(error)")
