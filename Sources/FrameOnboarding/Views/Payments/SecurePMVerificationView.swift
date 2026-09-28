@@ -50,12 +50,12 @@ struct SecurePMVerificationView: View {
     
     private var displayPhoneNumber: String {
         let dial = onboardingContainerViewModel.phoneCountry.dialCode
-        let digits = onboardingContainerViewModel.authPhoneNumber
-            .replacingOccurrences(of: " ", with: "")
-        if digits.isEmpty {
+        // Keep PhoneNumberKit formatting (e.g. "(200) 100-1695") so grouping spaces remain.
+        let formatted = onboardingContainerViewModel.authPhoneNumber.trimmingCharacters(in: .whitespaces)
+        if formatted.isEmpty {
             return dial
         }
-        return "\(dial) \(digits)"
+        return "\(dial) \(formatted)"
     }
 
     private var otpSubtitle: AttributedString {
@@ -66,6 +66,9 @@ struct SecurePMVerificationView: View {
         prefix.append(phone)
         return prefix
     }
+
+    /// Matches the gap between "Resend code" and "Change phone number".
+    private let otpActionSpacing: CGFloat = 4
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -87,12 +90,11 @@ struct SecurePMVerificationView: View {
                 .foregroundStyle(theme.colors.textSecondary)
                 .padding(.horizontal)
             codeContainerStack
-            Text("Your code expires in 10 minutes")
-                .font(theme.fonts.caption)
-                .foregroundStyle(theme.colors.textSecondary)
-                .padding(.horizontal)
-                .padding(.bottom, theme.spacing.formBlock)
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: otpActionSpacing) {
+                Text("Your code expires in 10 minutes")
+                    .font(theme.fonts.caption)
+                    .foregroundStyle(theme.colors.textSecondary)
+
                 Button("Resend code") {
                     Task {
                         let dob = DateOfBirthFormatter.format(
@@ -123,27 +125,26 @@ struct SecurePMVerificationView: View {
                 }
                 .font(theme.fonts.bodySmall)
                 .foregroundStyle(theme.colors.textPrimary)
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal)
-            ContinueButton(enabled: $codeInput,
-                           isLoading: .constant(onboardingContainerViewModel.isPerformingAction),
-                           includeOuterPadding: false) {
-                Task {
-                    switch type {
-                    case .phone:
-                        if await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode) {
-                            self.continueToNextStep = true
-                        } else {
-                            clearEnteredCode()
+
+                ContinueButton(enabled: $codeInput,
+                               isLoading: .constant(onboardingContainerViewModel.isPerformingAction),
+                               includeOuterPadding: false) {
+                    Task {
+                        switch type {
+                        case .phone:
+                            if await onboardingContainerViewModel.confirmTwilioOTP(code: enteredCode) {
+                                self.continueToNextStep = true
+                            } else {
+                                clearEnteredCode()
+                            }
+                        case .proveOtp:
+                            onboardingContainerViewModel.submitProveOTP(enteredCode)
                         }
-                    case .proveOtp:
-                        onboardingContainerViewModel.submitProveOTP(enteredCode)
                     }
                 }
             }
+            .buttonStyle(.plain)
             .padding(.horizontal)
-            .padding(.top, theme.spacing.formBlock)
             .padding(.bottom, 16)
             Spacer()
         }
