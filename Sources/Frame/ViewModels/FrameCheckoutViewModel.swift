@@ -256,7 +256,7 @@ class FrameCheckoutViewModel: ObservableObject {
     /// - Returns: The created ``FrameObjects/Transfer`` on success, or `nil` if preconditions are
     ///   not met (zero amount, missing account, action already in progress, or validation failure).
     /// - Throws: Any networking error encountered during payment-method creation or transfer creation.
-    func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.Transfer? {
+    func checkoutWithSelectedPaymentMethod(saveMethod: Bool) async throws -> FrameObjects.TransferV2? {
         guard amount != 0 else { return nil }
         guard let accountId, !accountId.isEmpty else { return nil }
         guard !isPerformingAction else { return nil }
@@ -288,28 +288,26 @@ class FrameCheckoutViewModel: ObservableObject {
         // for one rather than racing SDK start-up.
         try await SessionManager.shared.ensureSession(accountId: accountId)
 
-        // Confirmed here rather than inline: an inline confirm rejects any charge that is not
-        // already settled, so a card the issuer wants to challenge fails before it can be.
-        let request = TransferRequests.CreateTransferRequest(
-            amount: amount,
-            accountId: accountId,
-            currency: "usd",
-            sourcePaymentMethodId: paymentMethodId,
-            destinationPaymentMethodId: nil,
-            description: nil,
-            metadata: nil,
-            confirm: false)
+        // Deferred confirm: inline confirm rejects any charge that is not already settled.
+        let request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: amount, currency: "usd"),
+            source: .init(accountId: accountId, paymentMethodId: paymentMethodId),
+            confirm: false,
+            authorizationMode: "automatic"
+        )
 
-        let (transfer, transferError) = try await TransfersAPI.createTransfer(request: request)
+        let (transfer, transferError) = try await TransfersV2API.createTransfer(request: request)
         if let transferError {
             AccountEventEmitter.emit(name: .checkoutPaymentFailed, screen: .paymentSheet, detail: "\(transferError)")
             throw transferError
         }
         guard let transfer else { return nil }
 
-        // `requiresConfirmation` is the normal answer to a deferred-confirm transfer, and the
-        // confirm is what decides whether a challenge is needed at all.
-        guard transfer.status == .requiresConfirmation || transfer.status == .requiresThreeDSecure else {
+        let paymentStatus = transfer.payment?.status
+        let needsConfirm = paymentStatus == "requires_confirmation"
+            || paymentStatus == "requires_3d_secure"
+            || paymentStatus == "requires_action"
+        guard needsConfirm else {
             AccountEventEmitter.emit(name: .checkoutPaymentSucceeded, screen: .paymentSheet)
             return transfer
         }
@@ -330,34 +328,22 @@ class FrameCheckoutViewModel: ObservableObject {
         }
     }
 
-    /// Confirms a transfer the API held back, running a 3D Secure challenge if the confirm asks
-    /// for one, and reports the charge's real outcome.
-    ///
-    /// `isPerformingAction` stays set by the caller for the whole run, including the polling
-    /// window, so the pay button cannot be tapped a second time mid-challenge.
-    ///
-    /// - Parameter transfer: A transfer whose status is
-    ///   ``FrameObjects/TransferStatus/requiresConfirmation`` or
-    ///   ``FrameObjects/TransferStatus/requiresThreeDSecure``.
-    /// - Returns: The transfer, once the charge has settled.
-    /// - Throws: ``FrameChargeIntentError`` when the challenge cannot run or the charge's status
-    ///   cannot be read, or ``FrameCheckoutError`` when the charge is declined or unresolved.
-    private func completeThreeDSecure(for transfer: FrameObjects.Transfer) async throws -> FrameObjects.Transfer {
+    /// Confirms a V2 transfer the API held back, running a 3D Secure challenge if needed.
+    private func completeThreeDSecure(for transfer: FrameObjects.TransferV2) async throws -> FrameObjects.TransferV2 {
         guard let clientSecret = transfer.clientSecret else {
             throw FrameCheckoutError.threeDSecureUnavailable
         }
 
-        let confirmation = ChargeIntentConfirmation(
+        let confirmation = TransferV2Confirmation(
             challengePresenter: FrameThreeDSecureChallengePresenter()
         )
 
         switch try await confirmation.confirm(clientSecret: clientSecret) {
-        case .succeeded:
-            return transfer
-        case .failed(_, let reason):
-            throw FrameCheckoutError.declined(message: reason?.message)
+        case .succeeded(let confirmed):
+            return confirmed
+        case .failed(_, let message):
+            throw FrameCheckoutError.declined(message: message)
         case .timedOut:
-            // The charge may still settle, so this is not reported as a decline.
             throw FrameCheckoutError.unresolved
         }
     }
