@@ -84,51 +84,17 @@ class FrameCheckoutViewModel: ObservableObject {
         self.addressMode = addressMode
     }
 
-    /// Fetches the account profile to pre-fill name and e-mail, then loads saved payment methods.
+    /// Opens checkout on card entry. A client credential cannot read the account profile or the
+    /// saved-method list.
     func loadAccountDetails() async {
         FrameNetworking.shared.setAccountIdIfUnset(accountId)
         AccountEventEmitter.emit(name: .checkoutStarted, screen: .paymentSheet)
-        guard let accountId, !accountId.isEmpty else {
-            self.didLoadAccountPaymentMethods = true
-            return
-        }
-        do {
-            let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
-            if let error {
-                FrameToastCenter.shared.show(error.toastMessage())
-            }
-            if let account = response?.profile?.individual {
-                let name = (account.name?.firstName ?? "") + " " + (account.name?.lastName ?? "")
-                self.customerName = name
-                self.customerEmail = account.email ?? ""
-            }
-        } catch {
-            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
-        }
-
-        await loadAccountPaymentMethods()
+        self.didLoadAccountPaymentMethods = true
     }
 
-    /// Fetches saved payment methods for the current account and auto-selects the first one.
+    /// Marks the payment list ready without fetching it. Saved methods are not available to a
+    /// client credential, so checkout stays on card entry.
     func loadAccountPaymentMethods() async {
-        guard let accountId, !accountId.isEmpty else {
-            self.didLoadAccountPaymentMethods = true
-            return
-        }
-        do {
-            let (response, error) = try await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId)
-            if let error {
-                FrameToastCenter.shared.show(error.toastMessage())
-            }
-            self.accountPaymentOptions = response?.data
-            if selectedAccountPaymentOption == nil,
-               cardData.card.number.isEmpty,
-               let first = response?.data?.first {
-                self.selectedAccountPaymentOption = first
-            }
-        } catch {
-            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
-        }
         self.didLoadAccountPaymentMethods = true
     }
 

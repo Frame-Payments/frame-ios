@@ -111,9 +111,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
     /// Retrieves a single account by its ID.
     ///
-    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
-    ///   During the SDK onboarding flow these calls instead carry the active onboarding-session
-    ///   token automatically — see ``FrameNetworking/beginOnboardingSession(clientSecret:)``.
+    /// - Note: A publishable key cannot read an account. During onboarding the active session
+    ///   token is sent instead — see ``FrameNetworking/beginOnboardingSession(clientSecret:)``.
+    ///   The response omits `profile`. Prefill comes from the phone-verification confirm.
     /// - Parameters:
     ///   - accountId: The unique identifier of the account to retrieve.
     ///   - forTesting: When `true`, skips Sift login-event collection; defaults to `false`.
@@ -167,7 +167,8 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
     /// Retrieves all payment methods associated with the specified account.
     ///
-    /// - Note: This is a client-safe read and authenticates with the publishable key (`pk_`).
+    /// - Note: A client credential cannot list payment methods. Checkout and onboarding do not
+    ///   call this. Methods created in the current session are kept locally.
     /// - Parameter accountId: The unique identifier of the account whose payment methods to retrieve.
     /// - Returns: A tuple containing a ``PaymentMethodResponses/ListPaymentMethodsResponse`` and any ``NetworkingError``.
     public static func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {

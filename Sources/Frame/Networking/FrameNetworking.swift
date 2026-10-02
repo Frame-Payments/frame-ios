@@ -234,8 +234,7 @@ public class FrameNetworking: ObservableObject {
 
         // Outside an onboarding session, `.publishable` sends the pk_: merchant-level endpoints
         // (terms_of_service, device_attestation, …) are not account-scoped and only accept a pk_.
-        // Mid-session the check above wins instead, because account-scoped reads tagged
-        // `.publishable` (e.g. getAccountWith) need the session token to receive `profile`.
+        // Mid-session the check above wins instead, so account-scoped calls use `onb_sess_`.
         if case .publishable = auth {
             return publishableKey()
         }

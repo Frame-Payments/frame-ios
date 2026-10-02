@@ -86,9 +86,9 @@ struct AddPaymentMethodView: View {
                     Task {
                         if onlyAddressVerification {
                             await onboardingContainerViewModel.updatePaymentMethod()
-                        } else {
-                            await onboardingContainerViewModel.addNewPaymentMethod()
+                            return
                         }
+                        await onboardingContainerViewModel.addNewPaymentMethod()
                         self.dismiss()
                     }
                 }

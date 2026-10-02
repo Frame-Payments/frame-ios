@@ -23,19 +23,14 @@ final class CheckoutViewModelTests: XCTestCase {
         await viewModel.loadAccountPaymentMethods()
         XCTAssertNil(viewModel.accountPaymentOptions)
 
-        // Empty response body — options remain nil after a failed decode.
-        let viewModelTwo = FrameCheckoutViewModel(accountId: "1", amount: 100)
-        await viewModelTwo.loadAccountPaymentMethods()
-        XCTAssertNil(viewModelTwo.accountPaymentOptions)
-
-        // Valid account with one attached payment method.
+        // A populated list response is ignored. Checkout does not fetch saved methods.
         let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
         let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod])
         session.data = try? JSONEncoder().encode(response)
-        let viewModelThree = FrameCheckoutViewModel(accountId: "1", amount: 100)
-        await viewModelThree.loadAccountPaymentMethods()
-        XCTAssertNotNil(viewModelThree.accountPaymentOptions)
-        XCTAssertEqual(viewModelThree.accountPaymentOptions?.first?.id, "1")
+        let viewModelTwo = FrameCheckoutViewModel(accountId: "1", amount: 100)
+        await viewModelTwo.loadAccountPaymentMethods()
+        XCTAssertNil(viewModelTwo.accountPaymentOptions)
+        XCTAssertTrue(viewModelTwo.didLoadAccountPaymentMethods)
     }
 
     // MARK: Helpers
@@ -338,7 +333,7 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.fieldErrors[.zip])
     }
 
-    @MainActor func testLoadAccountPaymentMethods_autoSelectsFirstWhenNonEmpty() async {
+    @MainActor func testLoadAccountPaymentMethods_doesNotSelectFromAListResponse() async {
         FrameNetworking.shared.asyncURLSession = session
         let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
         let pm2 = FrameObjects.PaymentMethod(id: "pm_2", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
@@ -347,7 +342,8 @@ final class CheckoutViewModelTests: XCTestCase {
 
         let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
         await vm.loadAccountPaymentMethods()
-        XCTAssertEqual(vm.selectedAccountPaymentOption?.id, "pm_1")
+        XCTAssertNil(vm.selectedAccountPaymentOption)
+        XCTAssertTrue(vm.didLoadAccountPaymentMethods)
     }
 
     @MainActor func testLoadAccountPaymentMethods_doesNotAutoSelectWhenEmpty() async {

@@ -29,9 +29,9 @@ public enum FrameAuthMode: Sendable {
     /// Authenticate with the publishable key (`pk_`). Set explicitly on client-safe endpoints
     /// (tokenization, config, device attestation) that are safe to call from an app binary.
     ///
-    /// While an onboarding session is active, this is overridden by the session token instead —
-    /// account-scoped reads tagged `.publishable` (e.g. `getAccountWith`) need that token to
-    /// receive `profile`. Use ``publishableOnly`` where the session token must never be sent.
+    /// While an onboarding session is active, this is overridden by the session token instead,
+    /// which scopes the call to that account. Use ``publishableOnly`` where the session token
+    /// must never be sent.
     case publishable
     /// Authenticate with the publishable key (`pk_`), even while an onboarding session is active.
     ///

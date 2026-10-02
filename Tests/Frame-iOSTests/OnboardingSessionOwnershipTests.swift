@@ -25,9 +25,7 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
         return OnboardingContainerViewModel(accountId: "acct_123", requiredCapabilities: [])
     }
 
-    /// A flow that begins a session takes ownership and ends it, restoring pk_/sk_ auth. This is the
-    /// same ownership flag the self-mint path (`beginOnboardingSessionIfNeeded`) sets, so ending it
-    /// here covers the clientSecret == nil leak that previously survived onboarding.
+    /// A flow that begins a host-supplied session takes ownership and ends it, restoring pk_/sk_ auth.
     func testOwnedSessionIsEnded() {
         let viewModel = makeViewModel()
 
@@ -56,11 +54,8 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
 
     // MARK: - Standalone add/select-method screens (FRA-6358)
 
-    /// The leak the standalone screens shipped with: without a `clientSecret`,
-    /// `checkExistingAccount()` mints a session internally, so a teardown gated on
-    /// `onboardingClientSecret != nil` never fired and the token outranked the `pk_` on every later
-    /// `.publishable` request. The self-minted session must be owned so teardown clears it.
-    func testSelfMintedSessionIsOwnedAndEnded() async throws {
+    /// The host mints the session. Loading an account does not create one with the publishable key.
+    func testLoadingAnAccountDoesNotMintASession() async throws {
         let savedSession = FrameNetworking.shared.asyncURLSession
         defer { FrameNetworking.shared.asyncURLSession = savedSession }
 
@@ -72,19 +67,11 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
         )
         FrameNetworking.shared.asyncURLSession = mock
 
-        // No clientSecret supplied — this is the publishable-key-only path the standalone screens
-        // and the RN example app take.
         let viewModel = makeViewModel()
         await viewModel.checkExistingAccount()
 
-        XCTAssertTrue(FrameNetworking.shared.hasActiveOnboardingSession,
-                      "checkExistingAccount() mints a session when the host supplies none")
-        XCTAssertTrue(viewModel.ownsOnboardingSession,
-                      "a self-minted session must be owned, or teardown skips it and it leaks into checkout")
-
-        viewModel.endOnboardingSessionIfOwned()
-        XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession,
-                       "a leaked onb_sess_ outranks the pk_ on every later .publishable request")
+        XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession)
+        XCTAssertFalse(viewModel.ownsOnboardingSession)
     }
 
     /// Teardown must not depend on `isPerformingAction` having settled — the success callback can
@@ -102,9 +89,8 @@ final class OnboardingSessionOwnershipTests: XCTestCase {
         XCTAssertFalse(FrameNetworking.shared.hasActiveOnboardingSession)
     }
 
-    /// The ordering case: `checkExistingAccount()` mints in a Task, and the user can resolve the
-    /// screen first. Teardown then runs while ownership is still false, so the late mint would
-    /// install a token with nothing left to end it.
+    /// Dismissing the screen before the account read returns must not install a session. The SDK
+    /// does not mint one.
     func testMintCompletingAfterTeardownDoesNotInstallASession() async throws {
         let savedSession = FrameNetworking.shared.asyncURLSession
         defer { FrameNetworking.shared.asyncURLSession = savedSession }
