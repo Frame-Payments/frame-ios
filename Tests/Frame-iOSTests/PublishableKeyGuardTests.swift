@@ -133,9 +133,7 @@ final class PublishableKeyGuardTests: XCTestCase {
     }
 
     /// While an onboarding session is active, its token authenticates every request — including
-    /// one explicitly tagged `.publishable`. Account-scoped reads like `getAccountWith` are
-    /// `.publishable` but need the session token, because the backend withholds `profile` unless
-    /// the request carries a secret key or a matching onboarding session.
+    /// one explicitly tagged `.publishable`. Account-scoped calls use that token.
     /// Precedence: clientSecret > session > publishable > secret.
     func testOnboardingSessionOverridesPublishableAndSecret() async throws {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
@@ -143,7 +141,7 @@ final class PublishableKeyGuardTests: XCTestCase {
         FrameNetworking.shared.beginOnboardingSession(clientSecret: "onb_sess_live_token")
         defer { FrameNetworking.shared.endOnboardingSession() }
 
-        // A `.publishable` request is scoped to the session, so account-scoped reads keep `profile`.
+        // A `.publishable` request is scoped to the session.
         _ = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer onb_sess_live_token")
 

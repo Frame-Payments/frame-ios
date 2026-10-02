@@ -22,7 +22,7 @@ import Frame
 public struct FrameSelectPayoutMethodView: View {
     @StateObject private var viewModel: OnboardingContainerViewModel
     private let onResult: (FrameResult) -> Void
-    private let onboardingClientSecret: String?
+    private let onboardingClientSecret: String
 
     /// Guards against emitting `.cancelled` on dismiss once an election has succeeded.
     @State private var didFinish: Bool = false
@@ -31,13 +31,12 @@ public struct FrameSelectPayoutMethodView: View {
     ///
     /// - Parameters:
     ///   - clientSecret: The onboarding-session token (`onb_sess_…`) minted by your server
-    ///     (`POST /v1/onboarding_sessions`). Electing a payout method requires a caller scoped to
-    ///     the account, so this token — not a publishable key — authorizes the change. Pass `nil`
-    ///     only for legacy integrations that still authenticate with a secret key.
+    ///     (`POST /v1/onboarding_sessions`). Required. Electing a payout method requires a caller
+    ///     scoped to the account, so this token — not a publishable key — authorizes the change.
     ///   - accountId: The Frame account ID whose payout method is being set.
     ///   - onResult: Closure called with a ``FrameResult`` when the screen finishes or is cancelled.
     ///     On `.completed` the associated ID is the newly elected payout method.
-    public init(clientSecret: String? = nil,
+    public init(clientSecret: String,
                 accountId: String,
                 onResult: @escaping (FrameResult) -> Void = { _ in }) {
         self.onboardingClientSecret = clientSecret
@@ -72,9 +71,7 @@ public struct FrameSelectPayoutMethodView: View {
             .frameToastOverlay()
             .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
-                if let onboardingClientSecret {
-                    viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
-                }
+                viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
                 // Seeds `primaryPayoutMethodId`; onboarding gets this from its container.
                 Task { await viewModel.checkExistingAccount() }
             }
@@ -95,5 +92,5 @@ public struct FrameSelectPayoutMethodView: View {
 }
 
 #Preview {
-    FrameSelectPayoutMethodView(accountId: "")
+    FrameSelectPayoutMethodView(clientSecret: "onb_sess_preview", accountId: "")
 }

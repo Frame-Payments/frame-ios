@@ -39,20 +39,24 @@ public struct PhoneOTPVerificationConfirmResponse: Codable {
     public let status: String
     /// Status of any prefill data associated with the session, if available.
     @Lenient public private(set) var prefillStatus: String?
+    /// Individual profile returned once, when `prefillStatus` is `prefilled`. A replay omits it.
+    @Lenient public private(set) var profile: FrameObjects.AccountProfile?
 
     /// Creates a new ``PhoneOTPVerificationConfirmResponse``.
     /// - Parameters:
     ///   - id: Unique identifier for the verification session.
     ///   - status: Current status of the confirmed verification session.
     ///   - prefillStatus: Status of any prefill data associated with the session.
-    public init(id: String, status: String, prefillStatus: String? = nil) {
+    ///   - profile: One-time prefill profile, present only when `prefillStatus` is `prefilled`.
+    public init(id: String, status: String, prefillStatus: String? = nil, profile: FrameObjects.AccountProfile? = nil) {
         self.id = id
         self.status = status
         self.prefillStatus = prefillStatus
+        self.profile = profile
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, status
+        case id, status, profile
         case prefillStatus = "prefill_status"
     }
 }

@@ -218,30 +218,30 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     // MARK: Onboarding session (demo / testing only)
 
     /// Mints an onboarding-session token (`onb_sess_…`) for the given account so the example app can
-    /// exercise the onboarding flow end-to-end.
+    /// exercise the onboarding flow end-to-end. Returns the token, or `nil` when minting failed.
     ///
-    /// - Important: This is **not** the intended production path. Creating an onboarding session is a
-    ///   server-only operation that authenticates with your secret key (`sk_`), which must never ship
-    ///   in an app binary. Real integrations mint this token from their backend
-    ///   (`POST /v1/onboarding_sessions`) and hand it to the app. The example app does it inline only
-    ///   because it already configures an `sk_` to exercise the legacy server-side demo calls.
+    /// - Important: This mint exists only because the example app has no backend. Production apps
+    ///   mint `POST /v1/onboarding_sessions` on their server with `sk_` and pass the client secret in.
+    ///   Creating a session authenticates with your secret key, which must never ship in an app binary.
     /// - Parameter accountId: The existing Frame account to onboard.
-    func mintOnboardingClientSecret(accountId: String) async {
+    /// - Returns: The `onb_sess_…` token, or `nil` if the request failed.
+    func mintOnboardingClientSecret(accountId: String) async -> String? {
         let request = OnboardingSessionRequest.CreateOnboardingSessionRequest(
             accountId: accountId,
             steps: [.idVerification, .geoCompliance, .paymentMethod]
         )
         do {
             let (session, error) = try await OnboardingSessionsAPI.createOnboardingSession(request: request)
-            if let clientSecret = session?.clientSecret {
-                DispatchQueue.main.async {
-                    self.onboardingClientSecret = clientSecret
-                }
+            if let clientSecret = session?.clientSecret, !clientSecret.isEmpty {
+                await MainActor.run { self.onboardingClientSecret = clientSecret }
+                return clientSecret
             } else {
                 print("⚠️ Frame example: failed to mint onboarding session token. Error: \(String(describing: error))")
+                return nil
             }
         } catch let error {
             print(error.localizedDescription)
+            return nil
         }
     }
     

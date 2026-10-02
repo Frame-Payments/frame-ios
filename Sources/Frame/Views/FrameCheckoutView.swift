@@ -41,10 +41,16 @@ public struct FrameCheckoutView: View {
     ///   - accountId: The Frame account identifier that will receive the charge.
     ///   - paymentAmount: The amount to charge in the currency's smallest unit (e.g. cents for USD).
     ///   - addressMode: Controls billing-address field visibility. Defaults to `.required`.
+    ///   - account: Account fetched on the host's backend with `sk_`. Prefills name and email.
+    ///     When `nil` and the SDK was initialized with a secret key, checkout fetches the account.
+    ///   - paymentMethods: Saved methods fetched on the host's backend with `sk_`. When `nil` and
+    ///     the SDK was initialized with a secret key, checkout fetches the list.
     ///   - onResult: Closure called exactly once with a ``FrameResult`` when the flow finishes or is cancelled.
     public init(accountId: String,
                 paymentAmount: Int,
                 addressMode: FrameAddressMode = .required,
+                account: FrameObjects.Account? = nil,
+                paymentMethods: [FrameObjects.PaymentMethod]? = nil,
                 onResult: @escaping (FrameResult) -> Void) {
         self.accountId = accountId
         self.paymentAmount = paymentAmount
@@ -54,7 +60,9 @@ public struct FrameCheckoutView: View {
         _checkoutViewModel = StateObject(wrappedValue: FrameCheckoutViewModel(
             accountId: accountId,
             amount: paymentAmount,
-            addressMode: addressMode
+            addressMode: addressMode,
+            account: account,
+            paymentMethods: paymentMethods
         ))
     }
 
