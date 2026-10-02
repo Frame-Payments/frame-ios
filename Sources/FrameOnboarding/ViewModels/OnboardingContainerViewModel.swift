@@ -344,16 +344,34 @@ class OnboardingContainerViewModel: ObservableObject {
     // Create new business account if no ID was previously provided to start onboarding.
     func createNewBusinessAccount() async { }
 
-    /// Re-reads capabilities for an account the host already created. Personal info is saved by
-    /// the host backend; a client credential cannot patch the account.
-    /// - Returns: The account, or `nil` when the read failed.
+    /// Writes the confirmed personal info and terms of service onto an existing account.
+    ///
+    /// The active onboarding session authenticates the patch (`onb_sess_…`). Terms are omitted
+    /// when this account already has an acceptance on file.
+    /// - Returns: The updated account, or `nil` when the request failed.
     func updateExistingIndividualAccount() async -> FrameObjects.Account? {
         guard let accountId else { return nil }
         guard beginAction() else { return nil }
         defer { endAction() }
 
         do {
-            let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            let individualAccount = AccountRequest.UpdateIndividualAccount(name: FrameObjects.AccountNameInfo(firstName: createdCustomerIdentity.firstName,
+                                                                                                              lastName: createdCustomerIdentity.lastName),
+                                                                           email: createdCustomerIdentity.email,
+                                                                           phone: FrameObjects.AccountPhoneNumber(number: createdCustomerIdentity.phoneNumber,
+                                                                                                                  countryCode: phoneCountry.dialCode),
+                                                                           address: createdCustomerIdentity.address,
+                                                                           birthdate: createdCustomerIdentity.dateOfBirth,
+                                                                           ssnLastFour: skipsSSNEntry ? nil : createdCustomerIdentity.ssn)
+            let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
+            let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
+            let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
+            let (account, error) = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
+            if let error {
+                AccountEventEmitter.emit(name: .profileUpdateFailed, screen: .personalInformation, detail: "\(error)")
+            } else {
+                AccountEventEmitter.emit(name: .profileUpdated, screen: .personalInformation)
+            }
             reportError(error)
             if let capabilities = account?.capabilities {
                 self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
