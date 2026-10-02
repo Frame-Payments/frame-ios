@@ -170,16 +170,16 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking` | class | `class FrameNetworking: ObservableObject` | [24](../Sources/Frame/Networking/FrameNetworking.swift#L24) |
 | `FrameNetworking.jsonEncoder` | let | `let jsonEncoder = JSONEncoder()` | [29](../Sources/Frame/Networking/FrameNetworking.swift#L29) |
 | `FrameNetworking.jsonDecoder` | let | `let jsonDecoder = JSONDecoder()` | [31](../Sources/Frame/Networking/FrameNetworking.swift#L31) |
-| `FrameNetworking.setAccountIdIfUnset` | func | `func setAccountIdIfUnset(_ accountId: String?)` | [70](../Sources/Frame/Networking/FrameNetworking.swift#L70) |
-| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [108](../Sources/Frame/Networking/FrameNetworking.swift#L108) |
-| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [166](../Sources/Frame/Networking/FrameNetworking.swift#L166) |
-| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [188](../Sources/Frame/Networking/FrameNetworking.swift#L188) |
-| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [200](../Sources/Frame/Networking/FrameNetworking.swift#L200) |
-| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [206](../Sources/Frame/Networking/FrameNetworking.swift#L206) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [346](../Sources/Frame/Networking/FrameNetworking.swift#L346) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [395](../Sources/Frame/Networking/FrameNetworking.swift#L395) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [451](../Sources/Frame/Networking/FrameNetworking.swift#L451) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [502](../Sources/Frame/Networking/FrameNetworking.swift#L502) |
+| `FrameNetworking.setAccountIdIfUnset` | func | `func setAccountIdIfUnset(_ accountId: String?)` | [74](../Sources/Frame/Networking/FrameNetworking.swift#L74) |
+| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [112](../Sources/Frame/Networking/FrameNetworking.swift#L112) |
+| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [170](../Sources/Frame/Networking/FrameNetworking.swift#L170) |
+| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [192](../Sources/Frame/Networking/FrameNetworking.swift#L192) |
+| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [204](../Sources/Frame/Networking/FrameNetworking.swift#L204) |
+| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [210](../Sources/Frame/Networking/FrameNetworking.swift#L210) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [350](../Sources/Frame/Networking/FrameNetworking.swift#L350) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [399](../Sources/Frame/Networking/FrameNetworking.swift#L399) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [455](../Sources/Frame/Networking/FrameNetworking.swift#L455) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [506](../Sources/Frame/Networking/FrameNetworking.swift#L506) |
 
 </details>
 
@@ -2355,12 +2355,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [369](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L369) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [371](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L371) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [373](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L373) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [376](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L376) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [378](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L378) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [383](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L383) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [439](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L439) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [441](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L441) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [443](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L443) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [446](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L446) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [448](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L448) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [453](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L453) |
 
 </details>
 
@@ -2416,8 +2416,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameCheckoutView` | struct | `struct FrameCheckoutView: View` | [17](../Sources/Frame/Views/FrameCheckoutView.swift#L17) |
-| `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, onResult: @escaping (FrameResult) -> Void)` | [45](../Sources/Frame/Views/FrameCheckoutView.swift#L45) |
-| `FrameCheckoutView.body` | var | `var body: some View` | [68](../Sources/Frame/Views/FrameCheckoutView.swift#L68) |
+| `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, account: FrameObjects.Account? = nil, paymentMethods: [FrameObjects.Pay…` | [49](../Sources/Frame/Views/FrameCheckoutView.swift#L49) |
+| `FrameCheckoutView.body` | var | `var body: some View` | [76](../Sources/Frame/Views/FrameCheckoutView.swift#L76) |
 
 </details>
 
