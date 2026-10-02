@@ -97,9 +97,10 @@ struct ContentView: View {
             Text(applePayResult ?? "")
         }
         .sheet(isPresented: $showOnboardingSheet, content: {
-            // clientSecret is the onb_sess_… token minted above; the SDK binds every onboarding
-            // request to it, scoping the flow to a single account.
-            OnboardingContainerView(clientSecret: viewModel.onboardingClientSecret,
+            // Example app has no backend, so this token was minted with sk_ above. Production apps
+            // mint POST /v1/onboarding_sessions on their server and pass the client secret in.
+            if let clientSecret = viewModel.onboardingClientSecret {
+            OnboardingContainerView(clientSecret: clientSecret,
                                     accountId: viewModel.accountId == "ENTER_AN_ACCOUNT_ID" ? nil : viewModel.accountId,
                                     requiredCapabilities: requiredCapabilities) { result in
                 switch result {
@@ -115,6 +116,7 @@ struct ContentView: View {
                 case .failed(let error):
                     print(error.localizedDescription)
                 }
+            }
             }
         })
         .sheet(isPresented: $showCheckoutView) {
@@ -145,11 +147,14 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showAddPaymentMethodView, content: {
-            FrameAddPaymentMethodView(accountId: viewModel.accountId)
-                .presentationDragIndicator(.visible)
+            if let clientSecret = viewModel.onboardingClientSecret {
+                FrameAddPaymentMethodView(clientSecret: clientSecret, accountId: viewModel.accountId)
+                    .presentationDragIndicator(.visible)
+            }
         })
         .sheet(isPresented: $showSelectPayoutMethodView, content: {
-            FrameSelectPayoutMethodView(accountId: viewModel.accountId, onResult: { result in
+            if let clientSecret = viewModel.onboardingClientSecret {
+            FrameSelectPayoutMethodView(clientSecret: clientSecret, accountId: viewModel.accountId, onResult: { result in
                 // This screen leaves dismissal to its host, so close the sheet here.
                 self.showSelectPayoutMethodView = false
                 switch result {
@@ -165,6 +170,7 @@ struct ContentView: View {
                 }
             })
                 .presentationDragIndicator(.visible)
+            }
         })
         .sheet(isPresented: $showCustomersView) {
             customersScrollView
@@ -326,16 +332,14 @@ struct ContentView: View {
     
     var onboardingButton: some View {
         Button {
-            // Demo/testing only: mint an onboarding-session token from the configured sk_ before
-            // presenting the flow, then launch. Production apps mint this token on their backend
-            // (POST /v1/onboarding_sessions) and pass it in as the clientSecret — see ContentViewModel.
+            // Example app has no backend. Production apps mint POST /v1/onboarding_sessions
+            // on their server with sk_ and pass the client secret in.
             Task {
-                if UUID(uuidString: viewModel.accountId) == nil  {
-                    viewModel.accountId = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    await viewModel.mintOnboardingClientSecret(accountId: viewModel.accountId)
-                    self.showOnboardingSheet = true
-                } else {
-                    await viewModel.mintOnboardingClientSecret(accountId: viewModel.accountId)
+                let accountId = UUID(uuidString: viewModel.accountId) == nil
+                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    : viewModel.accountId
+                viewModel.accountId = accountId
+                if await viewModel.mintOnboardingClientSecret(accountId: accountId) != nil {
                     self.showOnboardingSheet = true
                 }
             }
@@ -370,7 +374,17 @@ struct ContentView: View {
     
     var addPaymentMethodButton: some View {
         Button {
-            self.showAddPaymentMethodView = true
+            // Example app has no backend. Production apps mint POST /v1/onboarding_sessions
+            // on their server with sk_ and pass the client secret in.
+            Task {
+                let accountId = UUID(uuidString: viewModel.accountId) == nil
+                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    : viewModel.accountId
+                viewModel.accountId = accountId
+                if await viewModel.mintOnboardingClientSecret(accountId: accountId) != nil {
+                    self.showAddPaymentMethodView = true
+                }
+            }
         } label: {
             Text("Add New Payment Method")
                 .font(.headline)
@@ -386,7 +400,17 @@ struct ContentView: View {
     
     var selectPayoutMethodButton: some View {
         Button {
-            self.showSelectPayoutMethodView = true
+            // Example app has no backend. Production apps mint POST /v1/onboarding_sessions
+            // on their server with sk_ and pass the client secret in.
+            Task {
+                let accountId = UUID(uuidString: viewModel.accountId) == nil
+                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    : viewModel.accountId
+                viewModel.accountId = accountId
+                if await viewModel.mintOnboardingClientSecret(accountId: accountId) != nil {
+                    self.showSelectPayoutMethodView = true
+                }
+            }
         } label: {
             Text("Set Primary Payout Method")
                 .font(.headline)
