@@ -34,6 +34,10 @@ public class FrameNetworking: ObservableObject {
     var urlSession: URLSession = URLSession.shared
 
     private var apiSecretKey: String = "" // Secret key (sk_). Server-only; avoid shipping in an app binary.
+
+    /// True when ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``
+    /// was given a non-empty secret key. Checkout uses this to decide whether it can read an account.
+    var hasSecretKey: Bool { !apiSecretKey.isEmpty }
     private var apiPublishableKey: String = "" // Publishable key (pk_). Default credential for client-safe endpoints.
     private var debugMode: Bool = false // Print API data on task calls.
 

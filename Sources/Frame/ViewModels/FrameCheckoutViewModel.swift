@@ -71,6 +71,10 @@ class FrameCheckoutViewModel: ObservableObject {
     var amount: Int
     /// Controls whether the billing-address section is required, optional, or hidden.
     let addressMode: FrameAddressMode
+    /// The host already supplied an account, so checkout does not GET one.
+    private let usesSuppliedAccount: Bool
+    /// The host already supplied the saved-method list, so checkout does not fetch it.
+    private let usesSuppliedPaymentMethods: Bool
 
     /// Creates a new checkout view-model.
     ///
@@ -78,24 +82,90 @@ class FrameCheckoutViewModel: ObservableObject {
     ///   - accountId: The Frame account ID for the payer, or `nil` for guest checkout.
     ///   - amount: Charge amount in the smallest currency unit (e.g. cents for USD).
     ///   - addressMode: Whether the billing address is `.required`, `.optional`, or `.hidden`.
-    init(accountId: String?, amount: Int, addressMode: FrameAddressMode = .required) {
+    ///   - account: Account fetched on the host's backend. Prefills name and email. When `nil`
+    ///     and a secret key is configured, checkout fetches the account itself.
+    ///   - paymentMethods: Saved methods fetched on the host's backend. When `nil` and a secret
+    ///     key is configured, checkout fetches the list itself.
+    init(accountId: String?,
+         amount: Int,
+         addressMode: FrameAddressMode = .required,
+         account: FrameObjects.Account? = nil,
+         paymentMethods: [FrameObjects.PaymentMethod]? = nil) {
         self.accountId = accountId
         self.amount = amount
         self.addressMode = addressMode
+        self.usesSuppliedAccount = account != nil
+        self.usesSuppliedPaymentMethods = paymentMethods != nil
+        if let account {
+            applyAccount(account)
+        }
+        if let paymentMethods {
+            applyPaymentMethods(paymentMethods)
+        }
     }
 
-    /// Opens checkout on card entry. A client credential cannot read the account profile or the
-    /// saved-method list.
+    /// Prefills name and email from a supplied account, or from account GET when a secret key
+    /// is configured. A publishable key cannot read the profile.
     func loadAccountDetails() async {
         FrameNetworking.shared.setAccountIdIfUnset(accountId)
         AccountEventEmitter.emit(name: .checkoutStarted, screen: .paymentSheet)
+        if !usesSuppliedAccount {
+            await fetchAccountProfile()
+        }
+        await loadAccountPaymentMethods()
+    }
+
+    /// Uses the supplied saved-method list, or fetches it when a secret key is configured.
+    /// A publishable key cannot list payment methods, so checkout stays on card entry.
+    func loadAccountPaymentMethods() async {
+        if usesSuppliedPaymentMethods {
+            self.didLoadAccountPaymentMethods = true
+            return
+        }
+        guard FrameNetworking.shared.hasSecretKey, let accountId, !accountId.isEmpty else {
+            self.didLoadAccountPaymentMethods = true
+            return
+        }
+        do {
+            let (response, error) = try await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId)
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
+            }
+            applyPaymentMethods(response?.data ?? [])
+        } catch {
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
+        }
         self.didLoadAccountPaymentMethods = true
     }
 
-    /// Marks the payment list ready without fetching it. Saved methods are not available to a
-    /// client credential, so checkout stays on card entry.
-    func loadAccountPaymentMethods() async {
-        self.didLoadAccountPaymentMethods = true
+    private func fetchAccountProfile() async {
+        guard FrameNetworking.shared.hasSecretKey, let accountId, !accountId.isEmpty else { return }
+        do {
+            let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
+            }
+            if let response {
+                applyAccount(response)
+            }
+        } catch {
+            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
+        }
+    }
+
+    private func applyAccount(_ account: FrameObjects.Account) {
+        guard let individual = account.profile?.individual else { return }
+        customerName = (individual.name?.firstName ?? "") + " " + (individual.name?.lastName ?? "")
+        customerEmail = individual.email ?? ""
+    }
+
+    private func applyPaymentMethods(_ methods: [FrameObjects.PaymentMethod]) {
+        accountPaymentOptions = methods
+        if selectedAccountPaymentOption == nil,
+           cardData.card.number.isEmpty,
+           let first = methods.first {
+            selectedAccountPaymentOption = first
+        }
     }
 
     /// Clear field errors that only apply to the new-card flow. Called when the user
