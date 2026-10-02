@@ -2983,8 +2983,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
 | `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [44](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L44) |
 | `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [68](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L68) |
-| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = false, showComplet…` | [110](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L110) |
-| `OnboardingContainerView.body` | var | `var body: some View` | [145](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L145) |
+| `OnboardingContainerView.init` | init | `init (clientSecret: String, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = false, showCompletionScre…` | [109](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L109) |
+| `OnboardingContainerView.body` | var | `var body: some View` | [144](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L144) |
 
 </details>
 
@@ -3010,8 +3010,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameAddPaymentMethodView` | struct | `struct FrameAddPaymentMethodView: View` | [24](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L24) |
-| `FrameAddPaymentMethodView.init` | init | `init (clientSecret: String? = nil, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [41](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L41) |
-| `FrameAddPaymentMethodView.body` | var | `var body: some View` | [51](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L51) |
+| `FrameAddPaymentMethodView.init` | init | `init (clientSecret: String, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [40](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L40) |
+| `FrameAddPaymentMethodView.body` | var | `var body: some View` | [50](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L50) |
 
 </details>
 
@@ -3022,8 +3022,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameAddPayoutMethodView` | struct | `struct FrameAddPayoutMethodView: View` | [24](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L24) |
-| `FrameAddPayoutMethodView.init` | init | `init (clientSecret: String? = nil, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [42](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L42) |
-| `FrameAddPayoutMethodView.body` | var | `var body: some View` | [52](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L52) |
+| `FrameAddPayoutMethodView.init` | init | `init (clientSecret: String, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [41](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L41) |
+| `FrameAddPayoutMethodView.body` | var | `var body: some View` | [51](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L51) |
 
 </details>
 
@@ -3034,8 +3034,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameSelectPayoutMethodView` | struct | `struct FrameSelectPayoutMethodView: View` | [22](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L22) |
-| `FrameSelectPayoutMethodView.init` | init | `init (clientSecret: String? = nil, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [40](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L40) |
-| `FrameSelectPayoutMethodView.body` | var | `var body: some View` | [50](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L50) |
+| `FrameSelectPayoutMethodView.init` | init | `init (clientSecret: String, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [39](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L39) |
+| `FrameSelectPayoutMethodView.body` | var | `var body: some View` | [49](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L49) |
 
 </details>
 
