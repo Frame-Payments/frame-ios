@@ -21,6 +21,7 @@ struct ContentView: View {
     @Environment(\.frameTheme) var theme
 
     @State var showCheckoutView: Bool = false
+    @State var checkoutClientSecret: FrameCheckoutClientSecret?
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
     
@@ -131,6 +132,7 @@ struct ContentView: View {
                                                       amountInCents: 25000)],
                           shippingAmountInCents: 4000,
                           cartViewTitle: "Messina Clothing",
+                          checkoutClientSecret: checkoutClientSecret,
                           onResult: { result in
                 switch result {
                     case .completed(let id):
@@ -358,7 +360,19 @@ struct ContentView: View {
     
     var cartButton: some View {
         Button {
-            self.showCheckoutView = true
+            // Example app has no backend. Production apps mint POST /v1/checkout_sessions
+            // on their server with sk_ and pass the client secret in. Checkout refreshes an
+            // expired token with the secret key configured on this example.
+            Task {
+                let accountId = viewModel.accountId.isEmpty
+                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    : viewModel.accountId
+                viewModel.accountId = accountId
+                if let secret = await viewModel.mintCheckoutClientSecret(accountId: accountId) {
+                    self.checkoutClientSecret = secret
+                    self.showCheckoutView = true
+                }
+            }
         } label: {
             Text("Show Cart/Checkout")
                 .font(.headline)

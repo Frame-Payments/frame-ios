@@ -45,12 +45,16 @@ public struct FrameCheckoutView: View {
     ///     When `nil` and the SDK was initialized with a secret key, checkout fetches the account.
     ///   - paymentMethods: Saved methods fetched on the host's backend with `sk_`. When `nil` and
     ///     the SDK was initialized with a secret key, checkout fetches the list.
+    ///   - checkoutClientSecret: `chk_sess_` token from `POST /v1/checkout_sessions`. When set,
+    ///     checkout reads the name, email, and saved cards with it. An expired token is refreshed
+    ///     with the secret key when one is configured.
     ///   - onResult: Closure called exactly once with a ``FrameResult`` when the flow finishes or is cancelled.
     public init(accountId: String,
                 paymentAmount: Int,
                 addressMode: FrameAddressMode = .required,
                 account: FrameObjects.Account? = nil,
                 paymentMethods: [FrameObjects.PaymentMethod]? = nil,
+                checkoutClientSecret: FrameCheckoutClientSecret? = nil,
                 onResult: @escaping (FrameResult) -> Void) {
         self.accountId = accountId
         self.paymentAmount = paymentAmount
@@ -62,7 +66,8 @@ public struct FrameCheckoutView: View {
             amount: paymentAmount,
             addressMode: addressMode,
             account: account,
-            paymentMethods: paymentMethods
+            paymentMethods: paymentMethods,
+            checkoutClientSecret: checkoutClientSecret
         ))
     }
 

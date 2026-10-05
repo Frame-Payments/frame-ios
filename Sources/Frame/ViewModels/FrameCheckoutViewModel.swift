@@ -75,6 +75,8 @@ class FrameCheckoutViewModel: ObservableObject {
     private let usesSuppliedAccount: Bool
     /// The host already supplied the saved-method list, so checkout does not fetch it.
     private let usesSuppliedPaymentMethods: Bool
+    /// Checkout token for the redacted account and saved-card reads. Refreshed in place when it expires.
+    private let checkoutClientSecret: FrameCheckoutClientSecret?
 
     /// Creates a new checkout view-model.
     ///
@@ -86,16 +88,20 @@ class FrameCheckoutViewModel: ObservableObject {
     ///     and a secret key is configured, checkout fetches the account itself.
     ///   - paymentMethods: Saved methods fetched on the host's backend. When `nil` and a secret
     ///     key is configured, checkout fetches the list itself.
+    ///   - checkoutClientSecret: `chk_sess_` token from `POST /v1/checkout_sessions`. When set,
+    ///     checkout reads the name, email, and saved cards with it instead of the secret key.
     init(accountId: String?,
          amount: Int,
          addressMode: FrameAddressMode = .required,
          account: FrameObjects.Account? = nil,
-         paymentMethods: [FrameObjects.PaymentMethod]? = nil) {
+         paymentMethods: [FrameObjects.PaymentMethod]? = nil,
+         checkoutClientSecret: FrameCheckoutClientSecret? = nil) {
         self.accountId = accountId
         self.amount = amount
         self.addressMode = addressMode
         self.usesSuppliedAccount = account != nil
         self.usesSuppliedPaymentMethods = paymentMethods != nil
+        self.checkoutClientSecret = checkoutClientSecret
         if let account {
             applyAccount(account)
         }
@@ -104,11 +110,15 @@ class FrameCheckoutViewModel: ObservableObject {
         }
     }
 
-    /// Prefills name and email from a supplied account, or from account GET when a secret key
-    /// is configured. A publishable key cannot read the profile.
+    /// Prefills name and email from a supplied account, a checkout client secret, or account GET
+    /// when a secret key is configured. A publishable key cannot read the profile.
     func loadAccountDetails() async {
         FrameNetworking.shared.setAccountIdIfUnset(accountId)
         AccountEventEmitter.emit(name: .checkoutStarted, screen: .paymentSheet)
+        if checkoutClientSecret != nil {
+            await loadWithCheckoutClientSecret()
+            return
+        }
         if !usesSuppliedAccount {
             await fetchAccountProfile()
         }
@@ -151,6 +161,31 @@ class FrameCheckoutViewModel: ObservableObject {
         } catch {
             FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
         }
+    }
+
+    private func loadWithCheckoutClientSecret() async {
+        guard let checkoutClientSecret, let accountId, !accountId.isEmpty else {
+            self.didLoadAccountPaymentMethods = true
+            return
+        }
+        if !usesSuppliedAccount {
+            let (profile, error) = await CheckoutSessionsAPI.loadAccount(accountId: accountId, secret: checkoutClientSecret)
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
+            }
+            if let individual = profile?.individual {
+                customerName = (individual.name?.firstName ?? "") + " " + (individual.name?.lastName ?? "")
+                customerEmail = individual.email ?? ""
+            }
+        }
+        if !usesSuppliedPaymentMethods {
+            let (methods, error) = await CheckoutSessionsAPI.loadPaymentMethods(accountId: accountId, secret: checkoutClientSecret)
+            if let error {
+                FrameToastCenter.shared.show(error.toastMessage())
+            }
+            applyPaymentMethods(methods)
+        }
+        self.didLoadAccountPaymentMethods = true
     }
 
     private func applyAccount(_ account: FrameObjects.Account) {
