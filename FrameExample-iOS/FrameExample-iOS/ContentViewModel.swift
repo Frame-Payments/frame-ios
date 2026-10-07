@@ -245,6 +245,31 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
     
+    /// Mints a checkout client secret (`chk_sess_…`) so the example can load a name, email, and
+    /// saved cards. Returns the token, or `nil` when minting failed.
+    ///
+    /// - Important: This mint exists only because the example app has no backend. Production apps
+    ///   mint `POST /v1/checkout_sessions` on their server with `sk_` and pass the client secret in.
+    /// - Parameter accountId: The account checkout will charge.
+    /// - Returns: The checkout token and its expiry, or `nil` if the request failed.
+    func mintCheckoutClientSecret(accountId: String) async -> FrameCheckoutClientSecret? {
+        guard !accountId.isEmpty else { return nil }
+        do {
+            let (session, error) = try await CheckoutSessionsAPI.createCheckoutSession(accountId: accountId)
+            if let clientSecret = session?.clientSecret, !clientSecret.isEmpty, let expiresAt = session?.expiresAt {
+                return FrameCheckoutClientSecret(
+                    clientSecret: clientSecret,
+                    expiresAt: Date(timeIntervalSince1970: TimeInterval(expiresAt))
+                )
+            }
+            print("⚠️ Frame example: failed to mint checkout client secret. Error: \(String(describing: error))")
+            return nil
+        } catch {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+
     func createEmptyIndividualAccount(capabilities: [FrameObjects.Capabilities]) async -> String? {
         // Note: callers (e.g. sendOTPVerification) already hold the action guard. Don't double-guard.
         do {

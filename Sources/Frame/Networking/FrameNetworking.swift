@@ -38,6 +38,9 @@ public class FrameNetworking: ObservableObject {
     /// True when ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``
     /// was given a non-empty secret key. Checkout uses this to decide whether it can read an account.
     var hasSecretKey: Bool { !apiSecretKey.isEmpty }
+
+    /// The secret key, for a checkout-session mint that must not be replaced by an onboarding session.
+    var secretKeyCredential: String { apiSecretKey }
     private var apiPublishableKey: String = "" // Publishable key (pk_). Default credential for client-safe endpoints.
     private var debugMode: Bool = false // Print API data on task calls.
 
