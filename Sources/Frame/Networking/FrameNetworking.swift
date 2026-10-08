@@ -34,6 +34,13 @@ public class FrameNetworking: ObservableObject {
     var urlSession: URLSession = URLSession.shared
 
     private var apiSecretKey: String = "" // Secret key (sk_). Server-only; avoid shipping in an app binary.
+
+    /// True when ``initialize(publishableKey:secretKey:accountId:applePayMerchantId:theme:debugMode:)``
+    /// was given a non-empty secret key. Checkout uses this to decide whether it can read an account.
+    var hasSecretKey: Bool { !apiSecretKey.isEmpty }
+
+    /// The secret key, for a checkout-session mint that must not be replaced by an onboarding session.
+    var secretKeyCredential: String { apiSecretKey }
     private var apiPublishableKey: String = "" // Publishable key (pk_). Default credential for client-safe endpoints.
     private var debugMode: Bool = false // Print API data on task calls.
 
@@ -234,8 +241,7 @@ public class FrameNetworking: ObservableObject {
 
         // Outside an onboarding session, `.publishable` sends the pk_: merchant-level endpoints
         // (terms_of_service, device_attestation, …) are not account-scoped and only accept a pk_.
-        // Mid-session the check above wins instead, because account-scoped reads tagged
-        // `.publishable` (e.g. getAccountWith) need the session token to receive `profile`.
+        // Mid-session the check above wins instead, so account-scoped calls use `onb_sess_`.
         if case .publishable = auth {
             return publishableKey()
         }

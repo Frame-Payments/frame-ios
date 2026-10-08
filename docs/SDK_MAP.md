@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1607 public symbols** across 142 files in 2 modules.
+**1618 public symbols** across 145 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
-| Classes | 74 |
-| Structs | 183 |
-| Enums | 68 |
+| Classes | 75 |
+| Structs | 185 |
+| Enums | 69 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 8 |
-| Initializers | 123 |
-| Methods | 282 |
-| Properties (var) | 229 |
-| Properties (let) | 296 |
+| Initializers | 125 |
+| Methods | 283 |
+| Properties (var) | 232 |
+| Properties (let) | 297 |
 | Enum cases | 338 |
-| **Total** | **1607** |
+| **Total** | **1618** |
 
-### `Frame` — 1435 public symbols
+### `Frame` — 1446 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -170,16 +170,16 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameNetworking` | class | `class FrameNetworking: ObservableObject` | [24](../Sources/Frame/Networking/FrameNetworking.swift#L24) |
 | `FrameNetworking.jsonEncoder` | let | `let jsonEncoder = JSONEncoder()` | [29](../Sources/Frame/Networking/FrameNetworking.swift#L29) |
 | `FrameNetworking.jsonDecoder` | let | `let jsonDecoder = JSONDecoder()` | [31](../Sources/Frame/Networking/FrameNetworking.swift#L31) |
-| `FrameNetworking.setAccountIdIfUnset` | func | `func setAccountIdIfUnset(_ accountId: String?)` | [70](../Sources/Frame/Networking/FrameNetworking.swift#L70) |
-| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [108](../Sources/Frame/Networking/FrameNetworking.swift#L108) |
-| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [166](../Sources/Frame/Networking/FrameNetworking.swift#L166) |
-| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [188](../Sources/Frame/Networking/FrameNetworking.swift#L188) |
-| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [200](../Sources/Frame/Networking/FrameNetworking.swift#L200) |
-| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [206](../Sources/Frame/Networking/FrameNetworking.swift#L206) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [347](../Sources/Frame/Networking/FrameNetworking.swift#L347) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [396](../Sources/Frame/Networking/FrameNetworking.swift#L396) |
-| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [452](../Sources/Frame/Networking/FrameNetworking.swift#L452) |
-| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [503](../Sources/Frame/Networking/FrameNetworking.swift#L503) |
+| `FrameNetworking.setAccountIdIfUnset` | func | `func setAccountIdIfUnset(_ accountId: String?)` | [77](../Sources/Frame/Networking/FrameNetworking.swift#L77) |
+| `FrameNetworking.initialize` | func | `func initialize(publishableKey: String, secretKey: String? = nil, accountId: String? = nil, applePayMerchantId: String? = nil, theme: FrameTheme = .default, de…` | [115](../Sources/Frame/Networking/FrameNetworking.swift#L115) |
+| `FrameNetworking.initializeWithAPIKey` | func | `func initializeWithAPIKey(_ key: String, publishableKey: String, applePayMerchantId: String? = nil, theme: FrameTheme = .default, debugMode: Bool = false)` | [173](../Sources/Frame/Networking/FrameNetworking.swift#L173) |
+| `FrameNetworking.beginOnboardingSession` | func | `func beginOnboardingSession(clientSecret: String)` | [195](../Sources/Frame/Networking/FrameNetworking.swift#L195) |
+| `FrameNetworking.endOnboardingSession` | func | `func endOnboardingSession()` | [207](../Sources/Frame/Networking/FrameNetworking.swift#L207) |
+| `FrameNetworking.hasActiveOnboardingSession` | var | `var hasActiveOnboardingSession: Bool` | [213](../Sources/Frame/Networking/FrameNetworking.swift#L213) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret) async throws -> (Data?, NetworkingError?)` | [353](../Sources/Frame/Networking/FrameNetworking.swift#L353) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret) async throws -> (Data?, Networkin…` | [402](../Sources/Frame/Networking/FrameNetworking.swift#L402) |
+| `FrameNetworking.performDataTask` | func | `func performDataTask(endpoint: FrameNetworkingEndpoints, requestBody: Data? = nil, auth: FrameAuthMode = .secret, completion: @escaping @Sendable (Data?, URLRe…` | [458](../Sources/Frame/Networking/FrameNetworking.swift#L458) |
+| `FrameNetworking.performMultipartDataTask` | func | `func performMultipartDataTask(endpoint: FrameNetworkingEndpoints, filesToUpload: [FileUpload], auth: FrameAuthMode = .secret, completion: @escaping @Sendable (…` | [509](../Sources/Frame/Networking/FrameNetworking.swift#L509) |
 
 </details>
 
@@ -571,22 +571,22 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `AccountsAPI.getAccountWith` | func | `func getAccountWith(accountId: String, forTesting: Bool = false) async throws -> (FrameObjects.Account?, NetworkingError?)` | [121](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L121) |
 | `AccountsAPI.deleteAccountWith` | func | `func deleteAccountWith(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)` | [140](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L140) |
 | `AccountsAPI.searchAccounts` | func | `func searchAccounts(email: String) async throws -> (AccountResponses.ListAccountsResponse?, NetworkingError?)` | [156](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L156) |
-| `AccountsAPI.getPaymentMethodsForAccount` | func | `func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)` | [173](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L173) |
-| `AccountsAPI.restrictAccount` | func | `func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)` | [189](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L189) |
-| `AccountsAPI.unrestrictAccount` | func | `func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)` | [205](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L205) |
-| `AccountsAPI.electPayoutMethod` | func | `func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest) async throws -> (FrameObjects.Account?, NetworkingError?)` | [227](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L227) |
-| `AccountsAPI.getPlaidLinkToken` | func | `func getPlaidLinkToken(accountId: String) async throws -> (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?)` | [243](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L243) |
-| `AccountsAPI.createAccount` | func | `func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [261](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L261) |
-| `AccountsAPI.updateAccountWith` | func | `func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, Networki…` | [280](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L280) |
-| `AccountsAPI.getAccounts` | func | `func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool = false, completionHandler: @…` | [301](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L301) |
-| `AccountsAPI.getAccountWith` | func | `func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [320](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L320) |
-| `AccountsAPI.deleteAccountWith` | func | `func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [338](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L338) |
-| `AccountsAPI.searchAccounts` | func | `func searchAccounts(email: String, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void)` | [355](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L355) |
-| `AccountsAPI.getPaymentMethodsForAccount` | func | `func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError…` | [374](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L374) |
-| `AccountsAPI.restrictAccount` | func | `func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [392](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L392) |
-| `AccountsAPI.unrestrictAccount` | func | `func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [410](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L410) |
-| `AccountsAPI.getPlaidLinkToken` | func | `func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void)` | [427](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L427) |
-| `AccountsAPI.electPayoutMethod` | func | `func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, Netw…` | [445](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L445) |
+| `AccountsAPI.getPaymentMethodsForAccount` | func | `func getPaymentMethodsForAccount(accountId: String) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?)` | [174](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L174) |
+| `AccountsAPI.restrictAccount` | func | `func restrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)` | [190](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L190) |
+| `AccountsAPI.unrestrictAccount` | func | `func unrestrictAccount(accountId: String) async throws -> (FrameObjects.Account?, NetworkingError?)` | [206](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L206) |
+| `AccountsAPI.electPayoutMethod` | func | `func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest) async throws -> (FrameObjects.Account?, NetworkingError?)` | [228](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L228) |
+| `AccountsAPI.getPlaidLinkToken` | func | `func getPlaidLinkToken(accountId: String) async throws -> (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?)` | [244](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L244) |
+| `AccountsAPI.createAccount` | func | `func createAccount(request: AccountRequest.CreateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [262](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L262) |
+| `AccountsAPI.updateAccountWith` | func | `func updateAccountWith(accountId: String, request: AccountRequest.UpdateAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, Networki…` | [281](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L281) |
+| `AccountsAPI.getAccounts` | func | `func getAccounts(status: FrameObjects.AccountStatus?, type: FrameObjects.AccountType?, externalId: String?, includeDisabled: Bool = false, completionHandler: @…` | [302](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L302) |
+| `AccountsAPI.getAccountWith` | func | `func getAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [321](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L321) |
+| `AccountsAPI.deleteAccountWith` | func | `func deleteAccountWith(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [339](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L339) |
+| `AccountsAPI.searchAccounts` | func | `func searchAccounts(email: String, completionHandler: @escaping @Sendable (AccountResponses.ListAccountsResponse?, NetworkingError?) -> Void)` | [356](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L356) |
+| `AccountsAPI.getPaymentMethodsForAccount` | func | `func getPaymentMethodsForAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError…` | [375](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L375) |
+| `AccountsAPI.restrictAccount` | func | `func restrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [393](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L393) |
+| `AccountsAPI.unrestrictAccount` | func | `func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [411](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L411) |
+| `AccountsAPI.getPlaidLinkToken` | func | `func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void)` | [428](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L428) |
+| `AccountsAPI.electPayoutMethod` | func | `func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, Netw…` | [446](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L446) |
 
 </details>
 
@@ -901,6 +901,46 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `ChargeIntentResponses` | class | `class ChargeIntentResponses` | [11](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsResponses.swift#L11) |
 | `ChargeIntentResponses.ListChargeIntentsResponse` | struct | `struct ListChargeIntentsResponse: Codable` | [13](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsResponses.swift#L13) |
+
+</details>
+
+#### Networking/CheckoutSessions (11)
+
+<details><summary><code>CheckoutSessionRequests.swift</code> — 3 symbols</summary>
+
+[`Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift`](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `CreateCheckoutSessionRequest` | struct | `struct CreateCheckoutSessionRequest: Codable, Sendable` | [7](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L7) |
+| `CreateCheckoutSessionRequest.accountId` | let | `let accountId: String` | [9](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L9) |
+| `CreateCheckoutSessionRequest.init` | init | `init (accountId: String)` | [17](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L17) |
+
+</details>
+
+<details><summary><code>CheckoutSessionResponses.swift</code> — 6 symbols</summary>
+
+[`Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift`](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `FrameCheckoutClientSecret` | class | `class FrameCheckoutClientSecret: @unchecked Sendable` | [7](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L7) |
+| `FrameCheckoutClientSecret.clientSecret` | var | `var clientSecret: String` | [9](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L9) |
+| `FrameCheckoutClientSecret.expiresAt` | var | `var expiresAt: Date` | [11](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L11) |
+| `FrameCheckoutClientSecret.isExpired` | var | `var isExpired: Bool` | [14](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L14) |
+| `FrameCheckoutClientSecret.init` | init | `init (clientSecret: String, expiresAt: Date)` | [20](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L20) |
+| `CheckoutSession` | struct | `struct CheckoutSession: Codable, Sendable` | [27](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L27) |
+
+</details>
+
+<details><summary><code>CheckoutSessionsAPI.swift</code> — 2 symbols</summary>
+
+[`Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift`](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `CheckoutSessionsAPI` | enum | `enum CheckoutSessionsAPI` | [8](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift#L8) |
+| `CheckoutSessionsAPI.createCheckoutSession` | func | `func createCheckoutSession(accountId: String) async throws -> (CheckoutSession?, NetworkingError?)` | [13](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift#L13) |
 
 </details>
 
@@ -1463,10 +1503,10 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `OnboardingSessionsAPI` | class | `class OnboardingSessionsAPI: OnboardingSessionsProtocol, @unchecked Sendable` | [28](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L28) |
-| `OnboardingSessionsAPI.createOnboardingSessionWithPublishableKey` | func | `func createOnboardingSessionWithPublishableKey(request: OnboardingSessionRequest.CreateOnboardingSessionRequest) async throws -> (OnboardingSessionResponses.On…` | [38](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L38) |
-| `OnboardingSessionsAPI.createOnboardingSession` | func | `func createOnboardingSession(request: OnboardingSessionRequest.CreateOnboardingSessionRequest) async throws -> (OnboardingSessionResponses.OnboardingSession?, …` | [57](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L57) |
-| `OnboardingSessionsAPI.createOnboardingSession` | func | `func createOnboardingSession(request: OnboardingSessionRequest.CreateOnboardingSessionRequest, completionHandler: @escaping @Sendable (OnboardingSessionRespons…` | [77](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L77) |
+| `OnboardingSessionsAPI` | class | `class OnboardingSessionsAPI: OnboardingSessionsProtocol, @unchecked Sendable` | [23](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L23) |
+| `OnboardingSessionsAPI.createOnboardingSessionWithPublishableKey` | func | `func createOnboardingSessionWithPublishableKey(request: OnboardingSessionRequest.CreateOnboardingSessionRequest) async throws -> (OnboardingSessionResponses.On…` | [34](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L34) |
+| `OnboardingSessionsAPI.createOnboardingSession` | func | `func createOnboardingSession(request: OnboardingSessionRequest.CreateOnboardingSessionRequest) async throws -> (OnboardingSessionResponses.OnboardingSession?, …` | [53](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L53) |
+| `OnboardingSessionsAPI.createOnboardingSession` | func | `func createOnboardingSession(request: OnboardingSessionRequest.CreateOnboardingSessionRequest, completionHandler: @escaping @Sendable (OnboardingSessionRespons…` | [73](../Sources/Frame/Networking/OnboardingSessions/OnboardingSessionsAPI.swift#L73) |
 
 </details>
 
@@ -2355,12 +2395,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [403](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L403) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [405](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L405) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [407](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L407) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [410](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L410) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [412](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L412) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [417](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L417) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [474](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L474) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [476](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L476) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [478](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L478) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [481](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L481) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [483](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L483) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [488](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L488) |
 
 </details>
 
@@ -2404,8 +2444,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameCartView` | struct | `struct FrameCartView: View` | [12](../Sources/Frame/Views/FrameCartView.swift#L12) |
-| `FrameCartView.init` | init | `init ( accountId: String, cartItems: [any FrameCartItem], shippingAmountInCents: Int, cartViewTitle: String = , subtitle: String = , cartItemHeight: CGFloat = …` | [52](../Sources/Frame/Views/FrameCartView.swift#L52) |
-| `FrameCartView.body` | var | `var body: some View` | [73](../Sources/Frame/Views/FrameCartView.swift#L73) |
+| `FrameCartView.init` | init | `init ( accountId: String, cartItems: [any FrameCartItem], shippingAmountInCents: Int, cartViewTitle: String = , subtitle: String = , cartItemHeight: CGFloat = …` | [54](../Sources/Frame/Views/FrameCartView.swift#L54) |
+| `FrameCartView.body` | var | `var body: some View` | [77](../Sources/Frame/Views/FrameCartView.swift#L77) |
 
 </details>
 
@@ -2416,8 +2456,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameCheckoutView` | struct | `struct FrameCheckoutView: View` | [17](../Sources/Frame/Views/FrameCheckoutView.swift#L17) |
-| `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, onResult: @escaping (FrameResult) -> Void)` | [45](../Sources/Frame/Views/FrameCheckoutView.swift#L45) |
-| `FrameCheckoutView.body` | var | `var body: some View` | [68](../Sources/Frame/Views/FrameCheckoutView.swift#L68) |
+| `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, account: FrameObjects.Account? = nil, paymentMethods: [FrameObjects.Pay…` | [52](../Sources/Frame/Views/FrameCheckoutView.swift#L52) |
+| `FrameCheckoutView.body` | var | `var body: some View` | [81](../Sources/Frame/Views/FrameCheckoutView.swift#L81) |
 
 </details>
 
@@ -2752,7 +2792,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `PhoneOTPVerificationConfirmResponse` | struct | `struct PhoneOTPVerificationConfirmResponse: Codable` | [35](../Sources/FrameOnboarding/Networking/PhoneOTPVerification/PhoneOTPVerificationResponses.swift#L35) |
 | `PhoneOTPVerificationConfirmResponse.id` | let | `let id: String` | [37](../Sources/FrameOnboarding/Networking/PhoneOTPVerification/PhoneOTPVerificationResponses.swift#L37) |
 | `PhoneOTPVerificationConfirmResponse.status` | let | `let status: String` | [39](../Sources/FrameOnboarding/Networking/PhoneOTPVerification/PhoneOTPVerificationResponses.swift#L39) |
-| `PhoneOTPVerificationConfirmResponse.init` | init | `init (id: String, status: String, prefillStatus: String? = nil)` | [48](../Sources/FrameOnboarding/Networking/PhoneOTPVerification/PhoneOTPVerificationResponses.swift#L48) |
+| `PhoneOTPVerificationConfirmResponse.init` | init | `init (id: String, status: String, prefillStatus: String? = nil, profile: FrameObjects.AccountProfile? = nil)` | [51](../Sources/FrameOnboarding/Networking/PhoneOTPVerification/PhoneOTPVerificationResponses.swift#L51) |
 
 </details>
 
@@ -2983,8 +3023,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
 | `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [44](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L44) |
 | `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [68](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L68) |
-| `OnboardingContainerView.init` | init | `init (clientSecret: String? = nil, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = false, showComplet…` | [110](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L110) |
-| `OnboardingContainerView.body` | var | `var body: some View` | [145](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L145) |
+| `OnboardingContainerView.init` | init | `init (clientSecret: String, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = false, showCompletionScre…` | [109](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L109) |
+| `OnboardingContainerView.body` | var | `var body: some View` | [144](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L144) |
 
 </details>
 
@@ -3010,8 +3050,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameAddPaymentMethodView` | struct | `struct FrameAddPaymentMethodView: View` | [24](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L24) |
-| `FrameAddPaymentMethodView.init` | init | `init (clientSecret: String? = nil, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [41](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L41) |
-| `FrameAddPaymentMethodView.body` | var | `var body: some View` | [51](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L51) |
+| `FrameAddPaymentMethodView.init` | init | `init (clientSecret: String, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [40](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L40) |
+| `FrameAddPaymentMethodView.body` | var | `var body: some View` | [50](../Sources/FrameOnboarding/Views/Payments/FrameAddPaymentMethodView.swift#L50) |
 
 </details>
 
@@ -3022,8 +3062,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameAddPayoutMethodView` | struct | `struct FrameAddPayoutMethodView: View` | [24](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L24) |
-| `FrameAddPayoutMethodView.init` | init | `init (clientSecret: String? = nil, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [42](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L42) |
-| `FrameAddPayoutMethodView.body` | var | `var body: some View` | [52](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L52) |
+| `FrameAddPayoutMethodView.init` | init | `init (clientSecret: String, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [41](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L41) |
+| `FrameAddPayoutMethodView.body` | var | `var body: some View` | [51](../Sources/FrameOnboarding/Views/Payments/FrameAddPayoutMethodView.swift#L51) |
 
 </details>
 
@@ -3034,8 +3074,8 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameSelectPayoutMethodView` | struct | `struct FrameSelectPayoutMethodView: View` | [22](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L22) |
-| `FrameSelectPayoutMethodView.init` | init | `init (clientSecret: String? = nil, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [40](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L40) |
-| `FrameSelectPayoutMethodView.body` | var | `var body: some View` | [50](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L50) |
+| `FrameSelectPayoutMethodView.init` | init | `init (clientSecret: String, accountId: String, onResult: @escaping (FrameResult) -> Void =` | [39](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L39) |
+| `FrameSelectPayoutMethodView.body` | var | `var body: some View` | [49](../Sources/FrameOnboarding/Views/Payments/FrameSelectPayoutMethodView.swift#L49) |
 
 </details>
 

@@ -29,9 +29,9 @@ public enum FrameAuthMode: Sendable {
     /// Authenticate with the publishable key (`pk_`). Set explicitly on client-safe endpoints
     /// (tokenization, config, device attestation) that are safe to call from an app binary.
     ///
-    /// While an onboarding session is active, this is overridden by the session token instead —
-    /// account-scoped reads tagged `.publishable` (e.g. `getAccountWith`) need that token to
-    /// receive `profile`. Use ``publishableOnly`` where the session token must never be sent.
+    /// While an onboarding session is active, this is overridden by the session token instead,
+    /// which scopes the call to that account. Use ``publishableOnly`` where the session token
+    /// must never be sent.
     case publishable
     /// Authenticate with the publishable key (`pk_`), even while an onboarding session is active.
     ///
@@ -43,8 +43,8 @@ public enum FrameAuthMode: Sendable {
     case secret
     /// Authenticate with a server-minted, per-object client secret used as a Bearer token.
     ///
-    /// Covers both the charge-intent / 3DS `client_secret` (`ci_<id>_secret_…`) and the
-    /// onboarding-session token (`onb_sess_…`).
+    /// Covers the charge-intent / 3DS `client_secret` (`ci_<id>_secret_…`), the
+    /// onboarding-session token (`onb_sess_…`), and the checkout token (`chk_sess_…`).
     case clientSecret(String)
 }
 

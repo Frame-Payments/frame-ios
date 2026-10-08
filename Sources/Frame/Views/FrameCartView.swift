@@ -33,6 +33,7 @@ public struct FrameCartView: View {
     @State private var didFinish = false
 
     private let onResult: ((FrameResult) -> Void)?
+    private let checkoutClientSecret: FrameCheckoutClientSecret?
 
     /// The Frame account identifier used to scope the checkout session.
     var accountId: String
@@ -47,6 +48,7 @@ public struct FrameCartView: View {
     ///   - subtitle: A secondary heading rendered above the item list. Defaults to `"Cart"`.
     ///   - cartItemHeight: The fixed height for each item row. Defaults to `65.0`.
     ///   - checkoutButtonTitle: The label on the checkout button. Defaults to `"Checkout"`.
+    ///   - checkoutClientSecret: `chk_sess_` token forwarded to ``FrameCheckoutView``.
     ///   - onResult: An optional closure called when the cart flow finishes, providing a
     ///     ``FrameResult`` that indicates completion, failure, or cancellation.
     public init(
@@ -57,6 +59,7 @@ public struct FrameCartView: View {
         subtitle: String = "Cart",
         cartItemHeight: CGFloat = 65.0,
         checkoutButtonTitle: String = "Checkout",
+        checkoutClientSecret: FrameCheckoutClientSecret? = nil,
         onResult: ((FrameResult) -> Void)? = nil
     ) {
         self.cartViewModel = FrameCartViewModel(cartItems: cartItems, shippingAmount: shippingAmountInCents)
@@ -66,6 +69,7 @@ public struct FrameCartView: View {
         self.subtitle = subtitle
         self.cartItemHeight = cartItemHeight
         self.checkoutButtonTitle = checkoutButtonTitle
+        self.checkoutClientSecret = checkoutClientSecret
         self.onResult = onResult
     }
 
@@ -78,7 +82,7 @@ public struct FrameCartView: View {
                 checkoutButton
             }
             .navigationDestination(isPresented: $continueToCheckout) {
-                FrameCheckoutView(accountId: accountId, paymentAmount: cartViewModel.finalTotal) { result in
+                FrameCheckoutView(accountId: accountId, paymentAmount: cartViewModel.finalTotal, checkoutClientSecret: checkoutClientSecret) { result in
                     // Map the inner checkout's result into the cart's result. Treat the inner
                     // `.cancelled` (user backs out of checkout) as a return to the cart rather
                     // than terminating the cart flow — the cart sheet stays open and emits its

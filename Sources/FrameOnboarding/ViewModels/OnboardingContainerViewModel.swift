@@ -184,45 +184,22 @@ class OnboardingContainerViewModel: ObservableObject {
     // Load existing account object to show on account page.
     func checkExistingAccount(updateCapabilies: Bool = false) async {
         guard let accountId else { return }
-        // A host that launches onboarding with an existing accountId but no clientSecret has no
-        // account-creation step to mint from, so bind a session here too — otherwise IDV and other
-        // account-scoped requests fall back to the configured key. No-ops if a session is already active.
-        await beginOnboardingSessionIfNeeded()
         do {
             let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
             reportError(error)
 
-            // A previously completed government-ID verification leaves the idv capability active.
-            // Seed the session flag so the applicant isn't asked to verify a second time. Read
-            // before the profile guard below: capabilities aren't PII-gated, but `profile` is
-            // withheld unless the request carries a secret key or a matching onboarding session,
-            // so a legacy publishable-key host would otherwise never reach this.
+            // Capabilities and terms are not profile. `profile` on this GET is ignored: a
+            // one-time prefill arrives on the phone-verification confirm instead.
             if account?.capabilities?.contains(where: { $0.name == FrameObjects.Capabilities.idv.rawValue
                                                         && $0.status == "active" }) == true {
                 self.identityVerifiedViaGovId = true
             }
 
-            // Withheld unless the request carries a matching onboarding session or a secret key.
-            self.primaryPayoutMethodId = account?.payoutPaymentMethodId
-
-            // Seeded here too, not just in `updateCapabilitiesBasedOnCompletion` — that runs only
-            // when the caller passes `updateCapabilies: true`.
             if let capabilities = account?.capabilities {
                 self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
                 self.correctedKycDetailsRequired = Self.requiresCorrectedKycDetails(capabilities)
             }
 
-            guard let profile = account?.profile?.individual else { return }
-            let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
-                                                             state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
-                                                             addressLine1: profile.address?.addressLine1, addressLine2: profile.address?.addressLine2)
-            self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? "",
-                                                                                                 lastName: profile.name?.lastName ?? "",
-                                                                                                 dateOfBirth: profile.birthdate ?? "",
-                                                                                                 email: profile.email ?? "",
-                                                                                                 phoneNumber: profile.phone?.number ?? profile.phoneNumber ?? "",
-                                                                                                 ssn: profile.ssnLastFour ?? "",
-                                                                                                 address: profileAddress)
             self.existingAccountHasTOS = account?.termsOfService?.acceptedAt != nil
 
             guard updateCapabilies else { return }
@@ -287,40 +264,9 @@ class OnboardingContainerViewModel: ObservableObject {
         self.currentStep = onboardingArray.first ?? .personalInformation
     }
     
-    /// Mints an account-scoped onboarding session (`onb_sess_…`) for the just-created account and
-    /// binds every subsequent onboarding request to it, so calls like IDV authenticate as the
-    /// session instead of falling back to the configured `pk_`/`sk_`. Uses the publishable key,
-    /// which `POST /v1/onboarding_sessions` accepts, so no secret key leaves the device.
-    ///
-    /// Idempotent and safe to call after each account-creation path: it does nothing when the host
-    /// already supplied a `clientSecret` (a session is active) or when no account exists yet.
-    private func beginOnboardingSessionIfNeeded() async {
-        guard !FrameNetworking.shared.hasActiveOnboardingSession else { return }
-        guard let accountId else { return }
-
-        let request = OnboardingSessionRequest.CreateOnboardingSessionRequest(accountId: accountId)
-        do {
-            let (session, error) = try await OnboardingSessionsAPI.createOnboardingSessionWithPublishableKey(request: request)
-            reportError(error)
-            guard let clientSecret = session?.clientSecret else {
-                if let error {
-                    AccountEventEmitter.emit(name: .onboardingSessionStartFailed,
-                                             screen: .onboarding,
-                                             detail: "\(error)")
-                }
-                return
-            }
-            // The flow resolved while this mint was in flight; installing the token now would leak it.
-            guard !hasEndedOnboardingSession else { return }
-            FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
-            ownsOnboardingSession = true
-        } catch let error {
-            print(error)
-        }
-    }
-
     /// Binds every onboarding request to a host-supplied session token and records that this flow
-    /// owns the session, so it's ended when the flow completes or is dismissed.
+    /// owns the session, so it's ended when the flow completes or is dismissed. The host mints
+    /// that token with a secret key. A publishable key cannot create one.
     func beginOnboardingSession(clientSecret: String) {
         FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
         ownsOnboardingSession = true
@@ -366,7 +312,6 @@ class OnboardingContainerViewModel: ObservableObject {
             guard let account else { return nil }
             self.accountId = account.id
             FrameNetworking.shared.setAccountIdIfUnset(account.id)
-            await beginOnboardingSessionIfNeeded()
             return account
         } catch let error {
             print(error)
@@ -390,7 +335,6 @@ class OnboardingContainerViewModel: ObservableObject {
             guard let account else { return }
             self.accountId = account.id
             FrameNetworking.shared.setAccountIdIfUnset(account.id)
-            await beginOnboardingSessionIfNeeded()
             return
         } catch let error {
             print(error)
@@ -400,7 +344,10 @@ class OnboardingContainerViewModel: ObservableObject {
     // Create new business account if no ID was previously provided to start onboarding.
     func createNewBusinessAccount() async { }
 
-    // Update individual account if ID was provided at the start of onboarding.
+    /// Writes the confirmed personal info and terms of service onto an existing account.
+    ///
+    /// The active onboarding session authenticates the patch (`onb_sess_…`). Terms are omitted
+    /// when this account already has an acceptance on file.
     /// - Returns: The updated account, or `nil` when the request failed.
     func updateExistingIndividualAccount() async -> FrameObjects.Account? {
         guard let accountId else { return nil }
@@ -417,7 +364,7 @@ class OnboardingContainerViewModel: ObservableObject {
                                                                            birthdate: createdCustomerIdentity.dateOfBirth,
                                                                            ssnLastFour: skipsSSNEntry ? nil : createdCustomerIdentity.ssn)
             let profile = AccountRequest.UpdateAccountProfile(business: nil, individual: individualAccount)
-            let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt:formatter.string(from: Date()))
+            let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
             let request = AccountRequest.UpdateAccountRequest(termsOfService: existingAccountHasTOS ? nil : termsOfService, profile: profile)
             let (account, error) = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
             if let error {
@@ -426,11 +373,33 @@ class OnboardingContainerViewModel: ObservableObject {
                 AccountEventEmitter.emit(name: .profileUpdated, screen: .personalInformation)
             }
             reportError(error)
+            if let capabilities = account?.capabilities {
+                self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
+                self.correctedKycDetailsRequired = Self.requiresCorrectedKycDetails(capabilities)
+            }
             return account
         } catch let error {
             print(error)
         }
         return nil
+    }
+
+    /// Copies the one-time prefill off a phone-verification confirm. A replay has no profile.
+    private func applyConfirmedPrefill(_ response: PhoneOTPVerificationConfirmResponse?) {
+        guard response?.prefillStatus == "prefilled", let profile = response?.profile?.individual else { return }
+        let profileAddress = FrameObjects.BillingAddress(city: profile.address?.city, country: profile.address?.country,
+                                                         state: profile.address?.state, postalCode: profile.address?.postalCode ?? "",
+                                                         addressLine1: profile.address?.addressLine1, addressLine2: profile.address?.addressLine2)
+        self.createdCustomerIdentity = CustomerIdentityRequest.CreateCustomerIdentityRequest(firstName: profile.name?.firstName ?? "",
+                                                                                             lastName: profile.name?.lastName ?? "",
+                                                                                             dateOfBirth: profile.birthdate ?? "",
+                                                                                             email: profile.email ?? "",
+                                                                                             phoneNumber: profile.phone?.number ?? profile.phoneNumber ?? "",
+                                                                                             ssn: profile.ssnLastFour ?? "",
+                                                                                             address: profileAddress)
+        if let firstName = profile.name?.firstName, let lastName = profile.name?.lastName {
+            self.proveUserInfo = ProveUserInfo(firstName: firstName, lastName: lastName)
+        }
     }
 
     func generateTermsOfServiceToken() async {
@@ -479,7 +448,9 @@ class OnboardingContainerViewModel: ObservableObject {
                 return
             }
             AccountEventEmitter.emit(name: .silentPhoneAuthCompleted, screen: .phoneVerification, detail: AccountEventDetail.proveProvider)
-            self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+            if proveUserInfo == nil {
+                self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+            }
             await checkExistingAccount()
         } catch let error {
             print(error)
@@ -500,9 +471,10 @@ class OnboardingContainerViewModel: ObservableObject {
 
     /// Runs the Prove SDK against `authToken`, confirming with the backend on success.
     private func runProveAuth(accountId: String, verificationId: String, authToken: String) async throws -> Bool {
-        let confirmHandler: ProveConfirmHandler = { accountId, verificationId in
-            let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId)
+        let confirmHandler: ProveConfirmHandler = { [weak self] accountId, verificationId in
+            let (response, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId)
             if let networkingError { throw networkingError }
+            await MainActor.run { self?.applyConfirmedPrefill(response) }
         }
         let proveService = ProveAuthService(accountId: accountId, verificationId: verificationId, confirmHandler: confirmHandler, otpProvider: { [weak self] in
             await self?.requestProveOTP()
@@ -594,14 +566,17 @@ class OnboardingContainerViewModel: ObservableObject {
         defer { endAction() }
 
         do {
-            let (_, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
+            let (response, networkingError) = try await PhoneOTPVerificationAPI.confirmVerification(accountId: accountId, verificationId: verificationId, code: code)
             if let networkingError {
                 AccountEventEmitter.emit(name: .phoneCodeIncorrect, screen: .phoneVerification)
                 reportError(networkingError)
                 return false
             }
             AccountEventEmitter.emit(name: .phoneVerified, screen: .phoneVerification)
-            self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+            applyConfirmedPrefill(response)
+            if proveUserInfo == nil {
+                self.proveUserInfo = ProveUserInfo(firstName: "", lastName: "")
+            }
             self.pendingTwilioVerificationId = nil
             self.pendingTwilioVerificationAccountId = nil
             await checkExistingAccount()
@@ -644,24 +619,9 @@ class OnboardingContainerViewModel: ObservableObject {
         showProveOTPEntry = false
     }
     
-    // Load existing Payment Methods for customer
-    func loadExistingPaymentMethods() async {
-        guard let accountId else { return }
-
-        do {
-            let (paymentMethodResponse, error) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(accountId: accountId)
-            if let error {
-                AccountEventEmitter.emit(name: .savedPaymentMethodsLoadFailed, screen: .paymentMethod, detail: "\(error)")
-            }
-            reportError(error)
-            if let methods = paymentMethodResponse?.data {
-                self.paymentMethods = methods.filter({ $0.card != nil })
-                self.payoutMethods = methods.filter({ $0.ach != nil })
-            }
-        } catch let error {
-            print(error)
-        }
-    }
+    /// Saved methods are not listed with a client credential. Methods added in this session stay
+    /// on `paymentMethods` and `payoutMethods`.
+    func loadExistingPaymentMethods() async {}
 
     // Add new payment method to customer object
     func addNewPaymentMethod() async {
@@ -694,30 +654,9 @@ class OnboardingContainerViewModel: ObservableObject {
         }
     }
 
-    // Update an existing payment method with a billing address
+    /// A client credential cannot patch a payment method. Billing goes on the create request.
     func updatePaymentMethod() async {
-        guard let paymentMethodId = selectedPaymentMethod?.id else { return }
-        guard beginAction() else { return }
-        defer { endAction() }
-
-        do {
-            let request = PaymentMethodRequest.UpdatePaymentMethodRequest(billing: createdBillingAddress)
-            let (paymentMethod, error) = try await PaymentMethodsAPI.updatePaymentMethodWith(paymentMethodId: paymentMethodId, request: request)
-            if let error {
-                AccountEventEmitter.emit(name: .billingAddressUpdateFailed, screen: .paymentMethod, detail: "\(error)")
-            }
-            reportError(error)
-
-            if let paymentMethod {
-                AccountEventEmitter.emit(name: .billingAddressUpdated, screen: .paymentMethod, detail: AccountEventDetail.billingAddressOnlyVerificationPath)
-                self.selectedPaymentMethod = paymentMethod
-                self.paymentMethods.append(paymentMethod)
-
-                self.clearAccountDetails()
-            }
-        } catch let error {
-            print(error)
-        }
+        FrameToastCenter.shared.show("This card's billing address can't be updated here.")
     }
     
     /// Elects `payoutMethod` as the account's payout destination (its "primary" bank).

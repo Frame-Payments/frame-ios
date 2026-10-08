@@ -24,7 +24,7 @@ import Frame
 public struct FrameAddPaymentMethodView: View {
     @StateObject private var viewModel: OnboardingContainerViewModel
     private let onResult: (FrameResult) -> Void
-    private let onboardingClientSecret: String?
+    private let onboardingClientSecret: String
 
     /// Guards against emitting `.cancelled` on dismiss when a method was already added.
     @State private var didFinish: Bool = false
@@ -33,12 +33,11 @@ public struct FrameAddPaymentMethodView: View {
     ///
     /// - Parameters:
     ///   - clientSecret: The onboarding-session token (`onb_sess_…`) minted by your server
-    ///     (`POST /v1/onboarding_sessions`) and handed to your app. While this screen is presented
-    ///     every request authenticates with this token, scoping it to a single account. Pass `nil`
-    ///     only for legacy integrations that still authenticate with a secret key.
+    ///     (`POST /v1/onboarding_sessions`) and handed to your app. Required. While this screen is
+    ///     presented every request authenticates with this token, scoping it to a single account.
     ///   - accountId: The Frame account ID the new payment method is attached to.
     ///   - onResult: Closure called with a ``FrameResult`` when the screen finishes or is cancelled.
-    public init(clientSecret: String? = nil,
+    public init(clientSecret: String,
                 accountId: String,
                 onResult: @escaping (FrameResult) -> Void = { _ in }) {
         self.onboardingClientSecret = clientSecret
@@ -56,9 +55,7 @@ public struct FrameAddPaymentMethodView: View {
             .frameToastOverlay()
             .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
-                if let onboardingClientSecret {
-                    viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
-                }
+                viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
             }
             .onChange(of: viewModel.selectedPaymentMethod?.id) { _, newValue in
                 guard let newValue, !didFinish else { return }
@@ -85,5 +82,5 @@ public struct FrameAddPaymentMethodView: View {
 }
 
 #Preview {
-    FrameAddPaymentMethodView(accountId: "")
+    FrameAddPaymentMethodView(clientSecret: "onb_sess_preview", accountId: "")
 }

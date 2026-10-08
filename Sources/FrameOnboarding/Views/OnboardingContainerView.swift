@@ -92,22 +92,21 @@ public struct OnboardingContainerView: View {
     /// Whether the end-of-flow capability check is still in flight.
     @State private var isResolvingOutcome: Bool = false
 
-    /// The onboarding-session client secret (`onb_sess_…`) that authenticates the flow, if provided.
-    private let onboardingClientSecret: String?
+    /// The onboarding-session client secret (`onb_sess_…`) that authenticates the flow.
+    private let onboardingClientSecret: String
 
     /// Creates an ``OnboardingContainerView`` configured for the given account and capability set.
     ///
     /// - Parameters:
     ///   - clientSecret: The onboarding-session token (`onb_sess_…`) minted by your server
-    ///     (`POST /v1/onboarding_sessions`) and handed to your app. While the flow is active every
-    ///     onboarding request authenticates with this token, scoping it to a single account. Pass
-    ///     `nil` only for legacy integrations that still authenticate onboarding with a secret key.
+    ///     (`POST /v1/onboarding_sessions`) and handed to your app. Required. While the flow is
+    ///     active every onboarding request authenticates with this token, scoping it to a single account.
     ///   - accountId: An existing Frame account ID to pre-populate data for, or `nil` to create a new account during onboarding.
     ///   - requiredCapabilities: The set of ``FrameObjects/Capabilities`` the user must satisfy; determines which steps are shown.
     ///   - showIntroScreen: Pass `true` to show the introductory splash before the first step. Defaults to `false`.
     ///   - showCompletionScreen: Pass `false` to omit the ``OnboardingFlow/verificationSubmitted`` confirmation screen. Defaults to `true`.
     ///   - onResult: Closure called with a ``FrameResult`` when the flow finishes or is cancelled.
-    public init(clientSecret: String? = nil,
+    public init(clientSecret: String,
                 accountId: String? = nil,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
                 showIntroScreen: Bool = false,
@@ -187,9 +186,7 @@ public struct OnboardingContainerView: View {
             AccountEventEmitter.emit(name: .onboardingStarted, screen: .onboarding)
             // Bind every onboarding request to the onboarding-session token (onb_sess_…) for the
             // lifetime of the flow, so calls authenticate per-account instead of with a secret key.
-            if let onboardingClientSecret {
-                onboardingContainerViewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
-            }
+            onboardingContainerViewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
             if !showIntroScreen {
                 self.startedOnboarding = true
             }
@@ -277,8 +274,6 @@ public struct OnboardingContainerView: View {
             guard !onboardingContainerViewModel.isPerformingAction else { return }
 
             // End the onboarding session so later SDK calls revert to pk_/sk_ authentication.
-            // Covers both a host-supplied secret and a session the flow self-minted after creating
-            // the account (clientSecret == nil), which would otherwise leak into a later checkout.
             // Ownership-gated so a container that never began one doesn't wipe another flow's session.
             onboardingContainerViewModel.endOnboardingSessionIfOwned()
             if !didFinish {
@@ -361,5 +356,5 @@ public struct OnboardingContainerView: View {
 }
 
 #Preview {
-    OnboardingContainerView(requiredCapabilities: [.kycPrefill, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification])
+    OnboardingContainerView(clientSecret: "onb_sess_preview", requiredCapabilities: [.kycPrefill, .cardVerification, .geoCompliance, .bankAccountVerification, .ageVerification])
 }
