@@ -15,7 +15,6 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     @Published var subscriptionPhases: [FrameObjects.SubscriptionPhase] = []
     @Published var customerIdentity: FrameObjects.CustomerIdentity?
     @Published var customers: [FrameObjects.Customer] = []
-    @Published var chargeIntents: [FrameObjects.ChargeIntent] = []
     @Published var refunds: [FrameObjects.Refund] = []
     /// The onboarding-session token (`onb_sess_…`) minted for the demo flow, if any.
     @Published var onboardingClientSecret: String?
@@ -45,7 +44,6 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
             await self.getCustomers()
             await self.getPaymentMethods()
             await self.getSubscriptions()
-            await self.getChargeIntents()
             await self.getRefunds()
 //            await self.getSubscriptionPhases(subscriptionId: "")
 //            await self.getCustomerIdentity(customerIdentity: "")
@@ -98,16 +96,6 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
             if let customerIdentity = customerIdentity {
                 DispatchQueue.main.async {
                     self.customerIdentity = customerIdentity
-                }
-            }
-        }
-    }
-    
-    func getChargeIntents() {
-        ChargeIntentsAPI.getAllChargeIntents() { (chargeIntents, error) in
-            if let chargeIntents = chargeIntents?.data {
-                DispatchQueue.main.async {
-                    self.chargeIntents = chargeIntents
                 }
             }
         }
@@ -189,19 +177,6 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
     
-    func getChargeIntents() async {
-        do {
-            let (intents, _) = try await ChargeIntentsAPI.getAllChargeIntents()
-            if let intents = intents?.data {
-                DispatchQueue.main.async {
-                    self.chargeIntents = intents
-                }
-            }
-        } catch let error {
-            print (error.localizedDescription)
-        }
-    }
-    
     func getRefunds() async {
         do {
             let (refunds, _) = try await RefundsAPI.getRefunds()
@@ -252,14 +227,21 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     ///   mint `POST /v1/checkout_sessions` on their server with `sk_` and pass the client secret in.
     /// - Parameter accountId: The account checkout will charge.
     /// - Returns: The checkout token and its expiry, or `nil` if the request failed.
-    func mintCheckoutClientSecret(accountId: String) async -> FrameCheckoutClientSecret? {
+    func mintCheckoutClientSecret(
+        accountId: String,
+        amountCents: Int? = nil,
+        currency: String = "usd"
+    ) async -> FrameCheckoutClientSecret? {
         guard !accountId.isEmpty else { return nil }
         do {
-            let (session, error) = try await CheckoutSessionsAPI.createCheckoutSession(accountId: accountId)
+            let amount = amountCents.map { FrameObjects.TransferV2Money(value: $0, currency: currency) }
+            let (session, error) = try await CheckoutSessionsAPI.createCheckoutSession(accountId: accountId, amount: amount)
             if let clientSecret = session?.clientSecret, !clientSecret.isEmpty, let expiresAt = session?.expiresAt {
                 return FrameCheckoutClientSecret(
                     clientSecret: clientSecret,
-                    expiresAt: Date(timeIntervalSince1970: TimeInterval(expiresAt))
+                    expiresAt: Date(timeIntervalSince1970: TimeInterval(expiresAt)),
+                    amountCents: session?.amount?.value ?? amountCents,
+                    amountCurrency: session?.amount?.currency ?? (amountCents == nil ? nil : currency)
                 )
             }
             print("⚠️ Frame example: failed to mint checkout client secret. Error: \(String(describing: error))")

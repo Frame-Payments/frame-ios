@@ -189,6 +189,35 @@ extension FrameObjects {
         @Lenient public private(set) var token: String?
     }
 
+    /// A 3D Secure challenge session for the client to complete.
+    ///
+    /// The API serialises `source`, `directory_server_name`, and `challenge_url`.
+    public struct UseFrameSDK: Codable, Sendable, Equatable {
+        /// The opaque session identifier the challenge is driven from.
+        public let source: String
+        /// The card network's directory server for this challenge (e.g. `"visa"`).
+        @Lenient public private(set) var directoryServerName: String?
+        /// The issuer challenge page to present. Absent if the API could not build one.
+        ///
+        /// Decoded from a string rather than declared `URL`: `URL`'s own `Decodable` cannot be
+        /// driven through `@Lenient`, which would silently yield `nil` for a valid URL.
+        public var challengeURL: URL? { challengeURLString.flatMap(URL.init(string:)) }
+
+        @Lenient private var challengeURLString: String?
+
+        public init(source: String, directoryServerName: String? = nil, challengeURL: URL? = nil) {
+            self.source = source
+            self.directoryServerName = directoryServerName
+            self.challengeURLString = challengeURL?.absoluteString
+        }
+
+        public enum CodingKeys: String, CodingKey {
+            case source
+            case directoryServerName = "directory_server_name"
+            case challengeURLString = "challenge_url"
+        }
+    }
+
     /// Challenge presentation fields for client-side 3DS (when the API exposes them).
     public struct TransferV2NextAction: Codable, Sendable, Equatable {
         /// The kind of action required. Currently `"use_frame_sdk"` or a redirect.
@@ -229,8 +258,6 @@ extension FrameObjects {
         @Lenient public private(set) var payment: TransferV2Payment?
         @Lenient public private(set) var payout: TransferV2Payout?
         @Lenient public private(set) var accountTransfer: TransferV2AccountTransfer?
-        /// Present once the API ships the client-confirm contract (FRA-7248).
-        @Lenient public private(set) var clientSecret: String?
         @Lenient public private(set) var nextAction: TransferV2NextAction?
 
         public init(id: String,
@@ -255,7 +282,6 @@ extension FrameObjects {
                     payment: TransferV2Payment? = nil,
                     payout: TransferV2Payout? = nil,
                     accountTransfer: TransferV2AccountTransfer? = nil,
-                    clientSecret: String? = nil,
                     nextAction: TransferV2NextAction? = nil) {
             self.id = id
             self.object = object
@@ -279,7 +305,6 @@ extension FrameObjects {
             self.payment = payment
             self.payout = payout
             self.accountTransfer = accountTransfer
-            self.clientSecret = clientSecret
             self.nextAction = nextAction
         }
 
@@ -293,7 +318,6 @@ extension FrameObjects {
             case canceledAt = "canceled_at"
             case reversedAt = "reversed_at"
             case accountTransfer = "account_transfer"
-            case clientSecret = "client_secret"
             case nextAction = "next_action"
         }
     }

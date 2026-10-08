@@ -37,14 +37,10 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
 
     /// Result delivered to the host app's completion handler.
     ///
-    /// `.charge` carries the id of the resulting resource:
-    /// - `.customer(...)` owner produces a `ChargeIntent` id
-    /// - `.account(...)` owner produces a `Transfer` id
-    /// Callers infer the resource type from the owner they passed in.
-    ///
+    /// `.charge` carries the id of the V2 transfer. Charging requires an `.account` owner.
     /// `.paymentMethod` carries a persisted wallet PaymentMethod for use in AddPaymentMethod flows.
     public enum FrameApplePayResult {
-        /// A charge was created successfully; `id` is the ChargeIntent or Transfer identifier.
+        /// A V2 transfer was created successfully.
         case charge(id: String)
         /// A payment method was saved successfully without charging the owner.
         case paymentMethod(FrameObjects.PaymentMethod)
@@ -60,6 +56,10 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
 
     /// The customer or account that will own the resulting payment method or charge.
     let owner: PaymentMethodOwner
+
+    /// Transfer-capable checkout session. When set, the charge authenticates with its `chk_sess_…`
+    /// bearer instead of the secret key. Read at charge time so a refresh is visible.
+    let checkoutClientSecret: FrameCheckoutClientSecret?
 
     /// Optional closure called with the final success or failure result after the Apple Pay flow completes.
     var completion: ((Result<FrameApplePayResult, Error>) -> Void)?
@@ -81,9 +81,11 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
     ///   - completion: Called on the main actor with the success or failure result after the flow ends.
     public init(mode: FrameApplePayMode,
                 owner: PaymentMethodOwner,
+                checkoutClientSecret: FrameCheckoutClientSecret? = nil,
                 completion: ((Result<FrameApplePayResult, Error>) -> Void)? = nil) {
         self.mode = mode
         self.owner = owner
+        self.checkoutClientSecret = checkoutClientSecret
         self.completion = completion
     }
 
@@ -202,56 +204,53 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                 return PKPaymentAuthorizationResult(status: .success, errors: nil)
 
             case .charge(let amount, let currency):
-                // 2. Create the charge. Customer owners use the legacy ChargeIntent flow;
-                // account owners use the account-scoped Transfer flow. Both deliver an id
-                // back to the caller, who knows which resource type to expect based on
-                // the owner they passed in.
-                switch owner {
-                case .customer(let customerId):
-                    let request = ChargeIntentsRequests.CreateChargeIntentRequest(
-                        amount: amount,
-                        currency: currency,
-                        customer: customerId,
-                        paymentMethod: paymentMethodId,
-                        confirm: true,
-                        authorizationMode: .automatic
+                guard case .account(let accountId) = owner else {
+                    AccountEventEmitter.emit(name: .applePayFailed, screen: .applePay,
+                                             detail: "Apple Pay charges require an account")
+                    pendingResult = .failure(
+                        NetworkingError.serverError(statusCode: 400, errorDescription: "Apple Pay charges require an account.")
                     )
-                    let (chargeIntent, chargeError) = try await ChargeIntentsAPI.createChargeIntent(request: request)
+                    return PKPaymentAuthorizationResult(status: .failure, errors: nil)
+                }
+                // The server rejects the transfer outright without a live session for this account.
+                try await SessionManager.shared.ensureSession(accountId: accountId)
 
-                    if let chargeIntent {
-                        AccountEventEmitter.emit(name: .applePayAuthorized, screen: .applePay)
-                        pendingResult = .success(.charge(id: chargeIntent.id))
-                        return PKPaymentAuthorizationResult(status: .success, errors: nil)
-                    } else {
-                        AccountEventEmitter.emit(name: .applePayFailed, screen: .applePay,
-                                                 detail: chargeError.map { "\($0)" } ?? "unknown error")
-                        pendingResult = .failure(chargeError ?? NetworkingError.unknownError)
+                // Apple Pay already carries a cryptogram — confirm inline (same as Android Google Pay).
+                let request = TransferV2Requests.CreateTransferRequest(
+                    amount: .init(value: amount, currency: currency),
+                    source: .init(accountId: accountId, paymentMethodId: paymentMethodId),
+                    confirm: true,
+                    authorizationMode: "automatic"
+                )
+                let (transfer, transferError): (FrameObjects.TransferV2?, NetworkingError?)
+                if let checkoutClientSecret {
+                    let token = await CheckoutSessionsAPI.authorizationToken(
+                        accountId: accountId,
+                        secret: checkoutClientSecret
+                    )
+                    guard let token, !token.isEmpty else {
+                        pendingResult = .failure(
+                            NetworkingError.serverError(statusCode: 401, errorDescription: "Checkout client secret expired.")
+                        )
                         return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                     }
-
-                case .account(let accountId):
-                    // The server rejects the transfer outright without a live session for this account.
-                    try await SessionManager.shared.ensureSession(accountId: accountId)
-
-                    // Apple Pay already carries a cryptogram — confirm inline (same as Android Google Pay).
-                    let request = TransferV2Requests.CreateTransferRequest(
-                        amount: .init(value: amount, currency: currency),
-                        source: .init(accountId: accountId, paymentMethodId: paymentMethodId),
-                        confirm: true,
-                        authorizationMode: "automatic"
+                    (transfer, transferError) = try await TransfersV2API.createTransfer(
+                        request: request,
+                        checkoutClientSecret: token
                     )
-                    let (transfer, transferError) = try await TransfersV2API.createTransfer(request: request)
+                } else {
+                    (transfer, transferError) = try await TransfersV2API.createTransfer(request: request)
+                }
 
-                    if let transfer {
-                        AccountEventEmitter.emit(name: .applePayAuthorized, screen: .applePay)
-                        pendingResult = .success(.charge(id: transfer.id))
-                        return PKPaymentAuthorizationResult(status: .success, errors: nil)
-                    } else {
-                        AccountEventEmitter.emit(name: .applePayFailed, screen: .applePay,
-                                                 detail: transferError.map { "\($0)" } ?? "unknown error")
-                        pendingResult = .failure(transferError ?? NetworkingError.unknownError)
-                        return PKPaymentAuthorizationResult(status: .failure, errors: nil)
-                    }
+                if let transfer {
+                    AccountEventEmitter.emit(name: .applePayAuthorized, screen: .applePay)
+                    pendingResult = .success(.charge(id: transfer.id))
+                    return PKPaymentAuthorizationResult(status: .success, errors: nil)
+                } else {
+                    AccountEventEmitter.emit(name: .applePayFailed, screen: .applePay,
+                                             detail: transferError.map { "\($0)" } ?? "unknown error")
+                    pendingResult = .failure(transferError ?? NetworkingError.unknownError)
+                    return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                 }
             }
         } catch {

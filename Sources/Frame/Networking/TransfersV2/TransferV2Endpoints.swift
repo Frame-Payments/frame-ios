@@ -12,7 +12,7 @@ enum TransferV2Endpoints: FrameNetworkingEndpoints {
     case getTransferWith(transferId: String)
     case getTransfers(perPage: Int?, page: Int?)
     case updateTransfer(transferId: String)
-    /// Secret-key confirm sends an `Idempotency-Key`. Publishable + `client_secret` omits it.
+    /// Secret-key confirm sends an `Idempotency-Key`. Checkout-session confirm omits it.
     case confirmTransfer(transferId: String, idempotencyKey: String?)
     case captureTransfer(transferId: String, idempotencyKey: String)
     case voidTransfer(transferId: String, idempotencyKey: String)

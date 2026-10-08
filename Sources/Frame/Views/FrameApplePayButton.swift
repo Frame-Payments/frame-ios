@@ -13,10 +13,10 @@ import PassKit
 /// has been configured, and device attestation has succeeded. It renders nothing otherwise,
 /// making it safe to include unconditionally in any layout.
 ///
-/// Use ``FrameApplePayViewModel/FrameApplePayMode`` to choose between charging a customer
+/// Use ``FrameApplePayViewModel/FrameApplePayMode`` to choose between charging an account
 /// (``.charge(amount:currency:)``) or silently adding a payment method to an owner
 /// (``.addToOwner``). Pass a ``FrameApplePayViewModel/PaymentMethodOwner`` to associate the
-/// resulting payment method with the correct Frame resource.
+/// resulting payment method with the correct Frame resource. A charge requires an account owner.
 public struct FrameApplePayButton: View {
 
     // MARK: - Configuration
@@ -46,6 +46,7 @@ public struct FrameApplePayButton: View {
                 addCheckoutDivider: Bool = false,
                 buttonType: PKPaymentButtonType = .buy,
                 buttonStyle: PKPaymentButtonStyle = .automatic,
+                checkoutClientSecret: FrameCheckoutClientSecret? = nil,
                 completion: @escaping (Result<FrameApplePayViewModel.FrameApplePayResult, Error>) -> Void) {
 
         self.addCheckoutDivider = addCheckoutDivider
@@ -56,6 +57,7 @@ public struct FrameApplePayButton: View {
         _viewModel = StateObject(wrappedValue: FrameApplePayViewModel(
             mode: mode,
             owner: owner,
+            checkoutClientSecret: checkoutClientSecret,
             completion: completion
         ))
     }

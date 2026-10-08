@@ -40,9 +40,10 @@ protocol TransfersV2Protocol {
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)
 }
 
-/// Manages V2 transfer resources (`/v2/transfers`) in the Frame Payments SDK.
+/// Manages transfer resources (`/v2/transfers`) in the Frame Payments SDK.
 ///
-/// Additive alongside ``TransfersAPI`` (V1). Money movement authenticates with the secret key.
+/// Capture, void, refund, update, and list authenticate with the secret key. Checkout create,
+/// show, and confirm authenticate with a `chk_sess_` token minted with a locked amount.
 public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
 
     /// Attaches Sonar when the create has a payment-method source (charge-backed).
@@ -77,17 +78,47 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
 
     // MARK: - async/await
 
-    /// Creates a V2 transfer. Requires an `Idempotency-Key` (generated when `idempotencyKey` is `nil`).
+    /// Creates a V2 transfer with the secret key. Requires an `Idempotency-Key` (generated when `idempotencyKey` is `nil`).
     ///
-    /// - Important: Money movement is server-only; authenticates with the secret key.
+    /// Checkout should call ``createTransfer(request:idempotencyKey:checkoutClientSecret:)`` instead.
     public static func createTransfer(
         request: TransferV2Requests.CreateTransferRequest,
         idempotencyKey: String? = nil
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
+        try await createTransfer(request: request, idempotencyKey: idempotencyKey, auth: .secret)
+    }
+
+    /// Creates a V2 transfer as a checkout session (`Authorization: Bearer chk_sess_…`).
+    ///
+    /// The session must have been minted with a locked amount. The request amount has to match
+    /// that lock; source must be a payment method on the session account. Requires an
+    /// `Idempotency-Key` (generated when `idempotencyKey` is `nil`).
+    public static func createTransfer(
+        request: TransferV2Requests.CreateTransferRequest,
+        idempotencyKey: String? = nil,
+        checkoutClientSecret: String
+    ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
+        guard !checkoutClientSecret.isEmpty else { return (nil, nil) }
+        return try await createTransfer(
+            request: request,
+            idempotencyKey: idempotencyKey,
+            auth: .clientSecret(checkoutClientSecret)
+        )
+    }
+
+    private static func createTransfer(
+        request: TransferV2Requests.CreateTransferRequest,
+        idempotencyKey: String?,
+        auth: FrameAuthMode
+    ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
         let key = (idempotencyKey?.isEmpty == false) ? idempotencyKey! : UUID().uuidString
         let endpoint = TransferV2Endpoints.createTransfer(idempotencyKey: key)
         let body = encodeBody(await withSonarSession(request))
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: body)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(
+            endpoint: endpoint,
+            requestBody: body,
+            auth: auth
+        )
         if let error { return (nil, error) }
         return decodeTransfer(data)
     }
@@ -158,36 +189,35 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
         return decodeTransfer(data)
     }
 
-    /// Confirms a server-minted V2 transfer in-app using its `client_secret` (publishable auth).
+    /// Confirms a deferred-confirm payment transfer as a checkout session (`Bearer chk_sess_…`).
     ///
-    /// Mirrors ``ChargeIntentsAPI/confirmChargeIntent(intentId:clientSecret:)``.
-    /// Does not send `Idempotency-Key` — publishable confirm is exempt on the API.
+    /// Does not send `Idempotency-Key`. Capture, void, and refund stay secret-key only.
     public static func confirmTransfer(
         transferId: String,
-        clientSecret: String
+        request: TransferV2Requests.CreateTransferRequest? = nil,
+        checkoutClientSecret: String
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
-        guard !transferId.isEmpty, !clientSecret.isEmpty else { return (nil, nil) }
+        guard !transferId.isEmpty, !checkoutClientSecret.isEmpty else { return (nil, nil) }
         let endpoint = TransferV2Endpoints.confirmTransfer(transferId: transferId, idempotencyKey: nil)
-        let body = TransferV2Requests.ConfirmWithClientSecretRequest(clientSecret: clientSecret)
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
-            requestBody: encodeBody(body),
-            auth: .publishable
+            requestBody: encodeBody(request),
+            auth: .clientSecret(checkoutClientSecret)
         )
         if let error { return (nil, error) }
         return decodeTransfer(data)
     }
 
-    /// Retrieves a server-minted V2 transfer in-app using its `client_secret` (publishable auth).
+    /// Retrieves a V2 transfer created by this checkout session (`Bearer chk_sess_…`).
     public static func getTransferWith(
         transferId: String,
-        clientSecret: String
+        checkoutClientSecret: String
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
-        guard !transferId.isEmpty, !clientSecret.isEmpty else { return (nil, nil) }
+        guard !transferId.isEmpty, !checkoutClientSecret.isEmpty else { return (nil, nil) }
         let endpoint = TransferV2Endpoints.getTransferWith(transferId: transferId)
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
-            auth: .publishable
+            auth: .clientSecret(checkoutClientSecret)
         )
         if let error { return (nil, error) }
         return decodeTransfer(data)

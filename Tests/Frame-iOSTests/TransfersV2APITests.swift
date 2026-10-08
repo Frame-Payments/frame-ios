@@ -149,13 +149,16 @@ final class TransfersV2APITests: XCTestCase {
           "amount":{"value":15000,"currency":"usd"},
           "fee":{"value":45,"currency":"usd"},
           "net_amount":{"value":14955,"currency":"usd"},
-          "payment":{"status":"succeeded","authorization_mode":"automatic"}
+          "payment":{"status":"succeeded","authorization_mode":"automatic"},
+          "next_action":{"type":"use_frame_sdk","use_frame_sdk":{"source":"sess_3ds","challenge_url":"https://issuer.example/challenge"}}
         }
         """.data(using: .utf8)!
         let transfer = try JSONDecoder().decode(FrameObjects.TransferV2.self, from: json)
         XCTAssertEqual(transfer.amount?.value, 15000)
         XCTAssertEqual(transfer.payment?.status, "succeeded")
         XCTAssertEqual(transfer.type, .payment)
+        XCTAssertEqual(transfer.nextAction?.type, "use_frame_sdk")
+        XCTAssertEqual(transfer.nextAction?.useFrameSDK?.source, "sess_3ds")
     }
 
     func testCreateTransferReturnsDecodingFailedOnMalformedBody() async {
@@ -201,5 +204,52 @@ final class TransfersV2APITests: XCTestCase {
         } catch {
             XCTFail("Error should not be thrown: \(error)")
         }
+    }
+
+    func testCheckoutSessionCreateSendsSessionBearer() async throws {
+        FrameNetworking.shared.asyncURLSession = session
+        session.data = try JSONEncoder().encode(transferResponse)
+        let (_, _) = try await TransfersV2API.createTransfer(
+            request: makeCreateRequest(),
+            checkoutClientSecret: "chk_sess_live"
+        )
+        XCTAssertEqual(session.lastRequest?.value(forHTTPHeaderField: "Authorization"), "Bearer chk_sess_live")
+        XCTAssertNotNil(session.lastRequest?.value(forHTTPHeaderField: "Idempotency-Key"))
+        let body = try JSONSerialization.jsonObject(with: session.lastRequest?.httpBody ?? Data()) as? [String: Any]
+        XCTAssertNil(body?["client_secret"])
+    }
+
+    func testCheckoutSessionConfirmOmitsIdempotencyKey() async throws {
+        FrameNetworking.shared.asyncURLSession = session
+        session.data = try JSONEncoder().encode(transferResponse)
+        let (_, _) = try await TransfersV2API.confirmTransfer(
+            transferId: "tr_v2_1",
+            checkoutClientSecret: "chk_sess_live"
+        )
+        XCTAssertEqual(session.lastRequest?.value(forHTTPHeaderField: "Authorization"), "Bearer chk_sess_live")
+        XCTAssertNil(session.lastRequest?.value(forHTTPHeaderField: "Idempotency-Key"))
+        XCTAssertEqual(session.lastRequest?.url?.path, "/v2/transfers/tr_v2_1/confirm")
+    }
+
+    func testConfirmationSettlesOnNestedPaymentStatus() async throws {
+        let succeeded = try JSONDecoder().decode(
+            FrameObjects.TransferV2.self,
+            from: Data("{\"id\":\"tr_v2_1\",\"status\":\"pending\",\"payment\":{\"status\":\"succeeded\"}}".utf8)
+        )
+        let confirmation = TransferV2Confirmation(
+            checkoutClientSecret: "chk_sess_live",
+            challengePresenter: nil,
+            confirmTransfer: { transferId in
+                XCTAssertEqual(transferId, "tr_v2_1")
+                return succeeded
+            },
+            loadTransfer: { _ in succeeded },
+            sleep: { _ in }
+        )
+        let outcome = try await confirmation.confirm(transferId: "tr_v2_1")
+        guard case .succeeded(let transfer) = outcome else {
+            return XCTFail("Expected succeeded, got \(outcome)")
+        }
+        XCTAssertEqual(transfer.id, "tr_v2_1")
     }
 }

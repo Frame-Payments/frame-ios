@@ -360,14 +360,15 @@ class FrameCheckoutViewModel: ObservableObject {
         try await SessionManager.shared.ensureSession(accountId: accountId)
 
         // Deferred confirm: inline confirm rejects any charge that is not already settled.
+        let currency = checkoutClientSecret?.amountCurrency ?? "usd"
         let request = TransferV2Requests.CreateTransferRequest(
-            amount: .init(value: amount, currency: "usd"),
+            amount: .init(value: amount, currency: currency),
             source: .init(accountId: accountId, paymentMethodId: paymentMethodId),
             confirm: false,
             authorizationMode: "automatic"
         )
 
-        let (transfer, transferError) = try await TransfersV2API.createTransfer(request: request)
+        let (transfer, transferError) = try await createCheckoutTransfer(request)
         if let transferError {
             AccountEventEmitter.emit(name: .checkoutPaymentFailed, screen: .paymentSheet, detail: "\(transferError)")
             throw transferError
@@ -399,17 +400,28 @@ class FrameCheckoutViewModel: ObservableObject {
         }
     }
 
+    private func createCheckoutTransfer(
+        _ request: TransferV2Requests.CreateTransferRequest
+    ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
+        if let secret = checkoutClientSecret {
+            guard let accountId, !accountId.isEmpty,
+                  let token = await CheckoutSessionsAPI.authorizationToken(accountId: accountId, secret: secret),
+                  !token.isEmpty else {
+                return (nil, .serverError(statusCode: 401, errorDescription: "Checkout client secret expired."))
+            }
+            return try await TransfersV2API.createTransfer(request: request, checkoutClientSecret: token)
+        }
+        return try await TransfersV2API.createTransfer(request: request)
+    }
+
     /// Confirms a V2 transfer the API held back, running a 3D Secure challenge if needed.
     private func completeThreeDSecure(for transfer: FrameObjects.TransferV2) async throws -> FrameObjects.TransferV2 {
-        guard let clientSecret = transfer.clientSecret else {
-            throw FrameCheckoutError.threeDSecureUnavailable
-        }
-
         let confirmation = TransferV2Confirmation(
+            checkoutClientSecret: checkoutClientSecret?.clientSecret,
             challengePresenter: FrameThreeDSecureChallengePresenter()
         )
 
-        switch try await confirmation.confirm(clientSecret: clientSecret) {
+        switch try await confirmation.confirm(transferId: transfer.id) {
         case .succeeded(let confirmed):
             return confirmed
         case .failed(_, let message):

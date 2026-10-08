@@ -28,13 +28,26 @@ struct ContentView: View {
     @State var showCustomersView: Bool = false
     @State var showPaymentMethodsView: Bool = false
     @State var showSubscriptionsView: Bool = false
-    @State var showChargeIntentsView: Bool = false
     @State var showRefundsView: Bool = false
     @State var showSubscriptionPhases: Bool = false
     @State var showOnboardingSheet: Bool = false
     @State var applePayResult: String? = nil
 
     let requiredCapabilities: [FrameObjects.Capabilities] = [.kycPrefill, .geoCompliance, .ageVerification]
+    private let exampleCartItems: [ExampleCartItem] = [
+        ExampleCartItem(id: "1",
+                        imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
+                        title: "Vintage Track Jacket",
+                        amountInCents: 10000),
+        ExampleCartItem(id: "2",
+                        imageURL: "https://hourscollection.com/cdn/shop/files/ZipHoodie-Grey-productphoto_2.png?v=1762198126&width=1080",
+                        title: "Zip Up Hoodie",
+                        amountInCents: 25000)
+    ]
+    private let exampleShippingCents = 4000
+    private var exampleCartTotal: Int {
+        exampleCartItems.reduce(exampleShippingCents) { $0 + $1.amountInCents }
+    }
     
     var body: some View {
         VStack {
@@ -76,9 +89,6 @@ struct ContentView: View {
                 allSubscriptionsButton
                     .disabled(viewModel.subscriptions.isEmpty)
                     .opacity(viewModel.subscriptions.isEmpty ? 0.3 : 1)
-                allChargeIntentsButton
-                    .disabled(viewModel.chargeIntents.isEmpty)
-                    .opacity(viewModel.chargeIntents.isEmpty ? 0.3 : 1)
                 allRefundsButton
                     .disabled(viewModel.refunds.isEmpty)
                     .opacity(viewModel.refunds.isEmpty ? 0.3 : 1)
@@ -122,15 +132,8 @@ struct ContentView: View {
         })
         .sheet(isPresented: $showCheckoutView) {
             FrameCartView(accountId: viewModel.accountId,
-                          cartItems: [ExampleCartItem(id: "1",
-                                                      imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
-                                                      title: "Vintage Track Jacket",
-                                                      amountInCents: 10000),
-                                      ExampleCartItem(id: "2",
-                                                      imageURL: "https://hourscollection.com/cdn/shop/files/ZipHoodie-Grey-productphoto_2.png?v=1762198126&width=1080",
-                                                      title: "Zip Up Hoodie",
-                                                      amountInCents: 25000)],
-                          shippingAmountInCents: 4000,
+                          cartItems: exampleCartItems,
+                          shippingAmountInCents: exampleShippingCents,
                           cartViewTitle: "Messina Clothing",
                           checkoutClientSecret: checkoutClientSecret,
                           onResult: { result in
@@ -184,10 +187,6 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSubscriptionsView, content: {
             subscriptionsScrollView
-                .presentationDragIndicator(.visible)
-        })
-        .sheet(isPresented: $showChargeIntentsView, content: {
-            chargeIntentsScrollView
                 .presentationDragIndicator(.visible)
         })
         .sheet(isPresented: $showRefundsView) {
@@ -287,29 +286,6 @@ struct ContentView: View {
         }
     }
     
-    var chargeIntentsScrollView: some View {
-        ScrollView {
-            VStack {
-                Text("Charge Intents")
-                    .font(.title)
-                    .padding()
-                ForEach(viewModel.chargeIntents) { intent in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("**Charge Intent ID:** \n\(intent.id)")
-                            Text("**Customer ID:** \n\(intent.customer?.id ?? "")")
-                            Text("**Payment Method Id:** \n\(intent.paymentMethod?.id ?? "")")
-                        }
-                        Spacer()
-                    }
-                    Divider()
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-        }
-    }
-    
     var refundsScrollView: some View {
         ScrollView {
             VStack {
@@ -368,7 +344,8 @@ struct ContentView: View {
                     ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
                     : viewModel.accountId
                 viewModel.accountId = accountId
-                if let secret = await viewModel.mintCheckoutClientSecret(accountId: accountId) {
+                // A session without a locked amount cannot create a transfer.
+                if let secret = await viewModel.mintCheckoutClientSecret(accountId: accountId, amountCents: exampleCartTotal) {
                     self.checkoutClientSecret = secret
                     self.showCheckoutView = true
                 }
@@ -475,22 +452,6 @@ struct ContentView: View {
 //            self.showCheckoutView = true
         } label: {
             Text("View All Subscriptions")
-                .font(.headline)
-                .foregroundColor(theme.colors.primaryButtonText)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(height: 45.0)
-        .frame(maxWidth: .infinity)
-        .background(theme.colors.primaryButton)
-        .cornerRadius(10.0)
-        .padding([.horizontal, .bottom])
-    }
-    
-    var allChargeIntentsButton: some View {
-        Button {
-            self.showChargeIntentsView = true
-        } label: {
-            Text("View All Charge Intents")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)

@@ -186,8 +186,7 @@ All API classes are stateless — call them directly without creating an instanc
 | `CustomersAPI` | Create, retrieve, update, delete, and search customers |
 | `CustomerIdentityAPI` | Customer identity verification |
 | `PaymentMethodsAPI` | Add and manage payment methods |
-| `ChargeIntentsAPI` | Create and manage charge intents (legacy customer-scoped charges) |
-| `TransfersAPI` | Create and manage transfers (account-scoped charge or payout flows) |
+| `TransfersV2API` | Create and manage transfers (`/v2/transfers`, account-scoped charge or payout flows) |
 | `ApplePayAPI` | Apple Pay token processing |
 | `SubscriptionsAPI` | Subscription lifecycle management |
 | `SubscriptionPhasesAPI` | Subscription phase management |
@@ -223,33 +222,17 @@ do {
 }
 ```
 
-### Example: Creating a Charge Intent
-
-`ChargeIntent` is the legacy customer-scoped charge resource. For account-scoped checkouts, use `TransfersAPI` (next example).
-
-```swift
-let chargeIntent = CreateChargeIntentRequest(
-    amount: 4999,
-    currency: "usd",
-    customerId: customer.id
-)
-
-let intent = try await ChargeIntentsAPI.createChargeIntent(chargeIntent)
-```
-
 ### Example: Creating a Transfer
 
-`TransfersAPI` is the account-scoped equivalent. A Transfer with `sourcePaymentMethodId` charges a payment method into an account (charge flow); a Transfer with `destinationPaymentMethodId` pays out from the account to a payment method (payout flow). See the [Transfers docs](https://docs.framepayments.com/frameos/transfers) for the full request/response schema.
+`TransfersV2API` is the account-scoped equivalent (`POST /v2/transfers`). A transfer whose `source` is a payment method charges that method into an account; a transfer whose `destination` is a payment method pays out from the account. See the [Transfers docs](https://docs.framepayments.com/frameos/transfers) for the full request/response schema.
 
 ```swift
-let request = TransferRequests.CreateTransferRequest(
-    amount: 4999,
-    accountId: "acc_123",
-    currency: "usd",
-    sourcePaymentMethodId: "pm_456"   // charge flow
+let request = TransferV2Requests.CreateTransferRequest(
+    amount: .init(value: 4999, currency: "usd"),
+    source: .init(accountId: "acc_123", paymentMethodId: "pm_456")
 )
 
-let (transfer, error) = try await TransfersAPI.createTransfer(request: request)
+let (transfer, error) = try await TransfersV2API.createTransfer(request: request)
 ```
 
 ---
@@ -410,7 +393,7 @@ For live theming inside your own SwiftUI views, read `@Environment(\.frameTheme)
 
 ## Apple Pay
 
-`FrameApplePayButton` is a drop-in SwiftUI view that presents a native Apple Pay sheet, submits the encrypted payment token to Frame, and returns the resulting charge id (a `ChargeIntent` id for `.customer` owners, a `Transfer` id for `.account` owners) via a callback.
+`FrameApplePayButton` is a drop-in SwiftUI view that presents a native Apple Pay sheet, submits the encrypted payment token to Frame, and returns the resulting V2 transfer id via a callback. A charge requires an account owner.
 
 Apple Pay setup is a three-part process: get a merchant ID from Apple, configure your Xcode project, pass the merchant ID to the SDK at init. Once those are done, **let us know** (see [Enabling Apple Pay on your account](#enabling-apple-pay-on-your-account)) and we'll flip the feature on for your business.
 
@@ -458,7 +441,7 @@ Once steps 1–3 are complete, contact Frame at [support@framepayments.com](mail
 
 Drop `FrameApplePayButton` anywhere in your SwiftUI view hierarchy. It renders nothing on devices that do not support Apple Pay or when the merchant ID isn't configured at init — no need to guard it yourself.
 
-The button takes a `mode` (`.charge(amount:currency:)` to charge the user, or `.addToOwner` to attach the wallet card without charging) and a `PaymentMethodOwner` (`.customer(...)` for the legacy ChargeIntent flow, `.account(...)` for the Transfer flow). The completion result carries the created resource's id — the caller decides what it represents based on the owner passed in.
+The button takes a `mode` (`.charge(amount:currency:)` to charge an account, or `.addToOwner` to attach the wallet card without charging) and a `PaymentMethodOwner`. `.charge` requires `.account(...)` and returns a V2 transfer id. `.customer(...)` can only save a payment method.
 
 ```swift
 import Frame_iOS
@@ -469,8 +452,6 @@ FrameApplePayButton(
 ) { result in
     switch result {
     case .success(.charge(let id)):
-        // `.customer` owner → ChargeIntent id
-        // `.account`  owner → Transfer id
         print("Payment succeeded: \(id)")
     case .success(.paymentMethod):
         break // not produced in .charge mode
@@ -480,16 +461,7 @@ FrameApplePayButton(
 }
 ```
 
-Pass `.customer(...)` instead of `.account(...)` if your integration is customer-based:
-
-```swift
-FrameApplePayButton(
-    mode: .charge(amount: 4999, currency: "usd"),
-    owner: .customer("cus_456")
-) { result in ... }
-```
-
-Pass `mode: .addToOwner` to attach the wallet card as a PaymentMethod without charging — useful for onboarding flows. The completion delivers `.success(.paymentMethod(FrameObjects.PaymentMethod))`.
+Pass `mode: .addToOwner` to attach the wallet card as a PaymentMethod without charging — useful for onboarding flows. The completion delivers `.success(.paymentMethod(FrameObjects.PaymentMethod))`. `.customer(...)` is valid for that mode.
 
 ### Button Customization
 

@@ -335,17 +335,4 @@ public enum TransferV2Requests {
         }
     }
 
-    /// Body for client-side confirm / retrieve with a V2 transfer `client_secret`.
-    public struct ConfirmWithClientSecretRequest: Codable, Sendable {
-        /// The transfer's server-minted `client_secret`.
-        public let clientSecret: String
-
-        public init(clientSecret: String) {
-            self.clientSecret = clientSecret
-        }
-
-        enum CodingKeys: String, CodingKey {
-            case clientSecret = "client_secret"
-        }
-    }
 }
