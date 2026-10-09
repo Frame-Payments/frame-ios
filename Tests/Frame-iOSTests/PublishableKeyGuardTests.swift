@@ -231,49 +231,6 @@ final class PublishableKeyGuardTests: XCTestCase {
         XCTAssertEqual(session.authorizationHeader(forPath: "/v1/payment_methods"), "Bearer sk_test_oops")
     }
 
-    /// The API treats a Bearer token as a client secret only for `onb_sess_` prefixes, so a
-    /// `ci_` secret in that header 401s. `use_frame_sdk` must accompany it in the body.
-    func testConfirmChargeIntentSendsClientSecretInBodyWithPublishableKey() async throws {
-        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
-        let session = makeSession()
-        session.data = Data("{}".utf8)
-
-        _ = try? await ChargeIntentsAPI.confirmChargeIntent(intentId: "123", clientSecret: "ci_123_secret_abc")
-
-        // Filter by path: initialize() spawns background pk_ requests (Evervault/attestation).
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/charge_intents/123/confirm"),
-                       "Bearer pk_test_123")
-
-        let body = session.jsonBody(forPath: "/v1/charge_intents/123/confirm")
-        XCTAssertEqual(body?["client_secret"] as? String, "ci_123_secret_abc")
-        XCTAssertEqual(body?["use_frame_sdk"] as? Bool, true)
-    }
-
-    /// `show` allows publishable callers and validates no client secret.
-    func testGetChargeIntentUsesPublishableKey() async throws {
-        FrameNetworking.shared.initialize(publishableKey: "pk_test_123", secretKey: "sk_test_456")
-        let session = makeSession()
-        session.data = Data("{}".utf8)
-
-        _ = try? await ChargeIntentsAPI.getChargeIntent(intentId: "123", clientSecret: "ci_123_secret_abc")
-
-        XCTAssertEqual(session.authorizationHeader(forPath: "/v1/charge_intents/123"),
-                       "Bearer pk_test_123")
-    }
-
-    /// An empty client_secret short-circuits (no request is made) rather than sending `Bearer `.
-    func testConfirmChargeIntentRejectsEmptyClientSecret() async throws {
-        FrameNetworking.shared.initialize(publishableKey: "pk_test_123")
-        let session = makeSession()
-
-        let (result, error) = try await ChargeIntentsAPI.confirmChargeIntent(intentId: "ci_123", clientSecret: "")
-
-        XCTAssertNil(result)
-        XCTAssertNil(error)
-        XCTAssertFalse(session.sentRequest(toPath: "/v1/charge_intents"),
-                       "no charge-intent request should be sent for an empty client_secret")
-    }
-
     /// The completion-handler request path (which builds the Authorization header separately from
     /// the async path) resolves the same default as the async path: the secret key.
     func testCompletionHandlerPathDefaultsToSecretKey() {

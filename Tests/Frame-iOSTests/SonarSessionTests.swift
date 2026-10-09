@@ -332,15 +332,16 @@ final class SessionStorageTests: XCTestCase {
 /// source payment method.
 final class TransferSonarSessionTests: XCTestCase {
 
-    private func encode(_ request: TransferRequests.CreateTransferRequest) throws -> [String: Any] {
+    private func encode(_ request: TransferV2Requests.CreateTransferRequest) throws -> [String: Any] {
         let data = try JSONEncoder().encode(request)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 
     func testChargeBackedTransferEncodesTheSonarSession() throws {
-        var request = TransferRequests.CreateTransferRequest(amount: 5000,
-                                                             accountId: "acc_1",
-                                                             sourcePaymentMethodId: "pm_1")
+        var request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: 5000, currency: "usd"),
+            source: .init(accountId: "acc_1", paymentMethodId: "pm_1")
+        )
         request.sonarSessionId = "fps_1"
 
         XCTAssertEqual(try encode(request)["sonar_session_id"] as? String, "fps_1")
@@ -348,9 +349,10 @@ final class TransferSonarSessionTests: XCTestCase {
 
     /// Sending it here would turn a working payout into a 400.
     func testPayoutTransferOmitsTheSonarSessionEntirely() throws {
-        let request = TransferRequests.CreateTransferRequest(amount: 5000,
-                                                             accountId: "acc_1",
-                                                             destinationPaymentMethodId: "pm_1")
+        let request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: 5000, currency: "usd"),
+            destination: .init(paymentMethodId: "pm_1")
+        )
 
         XCTAssertNil(try encode(request)["sonar_session_id"])
     }

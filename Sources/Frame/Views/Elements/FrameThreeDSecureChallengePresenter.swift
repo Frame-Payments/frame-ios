@@ -12,7 +12,7 @@ import UIKit
 /// The page comes from `next_action.use_frame_sdk.challenge_url`, already carrying the redirect
 /// that marks the challenge finished; this loads it and watches for that redirect. The one-time
 /// code stays between the cardholder and their issuer. Finishing is not the same as being
-/// charged — ``ChargeIntentConfirmation`` asks the API for the verdict.
+/// charged — ``TransferV2Confirmation`` asks the API for the verdict.
 @MainActor
 public final class FrameThreeDSecureChallengePresenter: NSObject {
     /// The redirect the API builds its challenge URLs against.
@@ -36,8 +36,7 @@ public final class FrameThreeDSecureChallengePresenter: NSObject {
 
 extension FrameThreeDSecureChallengePresenter: FrameThreeDSecureChallengePresenting {
     /// Presents the challenge and returns once it has finished, failed, or could not load.
-    public nonisolated func presentChallenge(_ challenge: FrameObjects.UseFrameSDK,
-                                             for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult {
+    public nonisolated func presentChallenge(_ challenge: FrameObjects.UseFrameSDK) async -> FrameThreeDSecureChallengeResult {
         guard let challengeURL = challenge.challengeURL else {
             AccountEventEmitter.emit(name: .stepUpChallengeUnavailable, screen: .paymentSheet,
                                      detail: AccountEventDetail.stepUpChallengeNeverLoaded)

@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1618 public symbols** across 145 files in 2 modules.
+**1612 public symbols** across 141 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
-| Classes | 75 |
-| Structs | 185 |
+| Classes | 70 |
+| Structs | 191 |
 | Enums | 69 |
 | Protocols | 5 |
 | Actors | 1 |
-| Type aliases | 8 |
-| Initializers | 125 |
-| Methods | 283 |
+| Type aliases | 9 |
+| Initializers | 126 |
+| Methods | 277 |
 | Properties (var) | 232 |
-| Properties (let) | 297 |
-| Enum cases | 338 |
-| **Total** | **1618** |
+| Properties (let) | 328 |
+| Enum cases | 304 |
+| **Total** | **1612** |
 
-### `Frame` — 1446 public symbols
+### `Frame` — 1440 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -722,191 +722,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/ChargeIntents (126)
+#### Networking/CheckoutSessions (15)
 
-<details><summary><code>ChargeIntentClientSecret.swift</code> — 17 symbols</summary>
-
-[`Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift`](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift)
-
-| Symbol | Kind | Declaration | Line |
-|--------|------|-------------|------|
-| `ChargeIntentClientSecret` | struct | `struct ChargeIntentClientSecret: Sendable, Equatable` | [13](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L13) |
-| `ChargeIntentClientSecret.value` | let | `let value: String` | [15](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L15) |
-| `ChargeIntentClientSecret.chargeIntentID` | let | `let chargeIntentID: String` | [18](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L18) |
-| `ChargeIntentClientSecret.init` | init | `init (_ value: String) throws` | [25](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L25) |
-| `FrameChargeIntentError` | enum | `enum FrameChargeIntentError: Error, Equatable` | [49](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L49) |
-| `FrameChargeIntentError.invalidClientSecret` | case | `case invalidClientSecret` | [51](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L51) |
-| `FrameChargeIntentError.missingThreeDSecureChallenge` | case | `case missingThreeDSecureChallenge` | [54](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L54) |
-| `FrameChargeIntentError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable(underlying: Error?)` | [57](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L57) |
-| `FrameChargeIntentError.statusUnavailable` | case | `case statusUnavailable(attempts: Int, underlying: Error?)` | [60](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L60) |
-| `FrameChargeIntentError.== (lhs: FrameChargeIntentError, rhs: Fr` | func | `func == (lhs: FrameChargeIntentError, rhs: FrameChargeIntentError) -> Bool` | [62](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L62) |
-| `FrameChargeIntentOutcome` | enum | `enum FrameChargeIntentOutcome: Sendable, Equatable` | [80](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L80) |
-| `FrameChargeIntentOutcome.succeeded` | case | `case succeeded(FrameObjects.ChargeIntent)` | [82](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L82) |
-| `FrameChargeIntentOutcome.failed` | case | `case failed(FrameObjects.ChargeIntent, reason: FrameChargeFailureReason?)` | [85](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L85) |
-| `FrameChargeIntentOutcome.timedOut` | case | `case timedOut` | [88](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L88) |
-| `FrameChargeFailureReason` | struct | `struct FrameChargeFailureReason: Sendable, Equatable` | [103](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L103) |
-| `FrameChargeFailureReason.code` | let | `let code: String?` | [105](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L105) |
-| `FrameChargeFailureReason.message` | let | `let message: String?` | [107](../Sources/Frame/Networking/ChargeIntents/ChargeIntentClientSecret.swift#L107) |
-
-</details>
-
-<details><summary><code>ChargeIntentConfirmation.swift</code> — 15 symbols</summary>
-
-[`Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift`](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift)
-
-| Symbol | Kind | Declaration | Line |
-|--------|------|-------------|------|
-| `FrameThreeDSecureChallengePresenting` | protocol | `protocol FrameThreeDSecureChallengePresenting: Sendable` | [12](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L12) |
-| `FrameThreeDSecureChallengeResult` | enum | `enum FrameThreeDSecureChallengeResult: Sendable, Equatable` | [19](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L19) |
-| `FrameThreeDSecureChallengeResult.completed` | case | `case completed` | [21](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L21) |
-| `FrameThreeDSecureChallengeResult.failed` | case | `case failed` | [23](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L23) |
-| `FrameThreeDSecureChallengeResult.unavailable` | case | `case unavailable` | [25](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L25) |
-| `ChargeIntentConfirmation` | struct | `struct ChargeIntentConfirmation: Sendable` | [33](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L33) |
-| `ChargeIntentConfirmation.PollingConfiguration` | struct | `struct PollingConfiguration: Sendable` | [36](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L36) |
-| `ChargeIntentConfirmation.PollingConfiguration.maxAttempts` | let | `let maxAttempts: Int` | [38](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L38) |
-| `ChargeIntentConfirmation.PollingConfiguration.interval` | let | `let interval: Duration` | [40](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L40) |
-| `ChargeIntentConfirmation.PollingConfiguration.init` | init | `init (maxAttempts: Int = 10, interval: Duration = .seconds(1))` | [43](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L43) |
-| `ChargeIntentConfirmation.PollingConfiguration.default` | let | `let `default` = PollingConfiguration()` | [49](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L49) |
-| `ChargeIntentConfirmation.IntentLoader` | typealias | `typealias IntentLoader = @Sendable (_ intentID: String, _ clientSecret: String) async throws -> FrameObjects.ChargeIntent?` | [53](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L53) |
-| `ChargeIntentConfirmation.Sleeper` | typealias | `typealias Sleeper = @Sendable (Duration) async throws -> Void` | [55](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L55) |
-| `ChargeIntentConfirmation.init` | init | `init (challengePresenter: FrameThreeDSecureChallengePresenting?, polling: PollingConfiguration = .default, confirmIntent: IntentLoader? = nil, loadIntent: Inte…` | [72](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L72) |
-| `ChargeIntentConfirmation.confirm` | func | `func confirm(clientSecret: String) async throws -> FrameChargeIntentOutcome` | [93](../Sources/Frame/Networking/ChargeIntents/ChargeIntentConfirmation.swift#L93) |
-
-</details>
-
-<details><summary><code>ChargeIntentsAPI.swift</code> — 17 symbols</summary>
-
-[`Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift`](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift)
-
-| Symbol | Kind | Declaration | Line |
-|--------|------|-------------|------|
-| `ChargeIntentsAPI` | class | `class ChargeIntentsAPI: ChargeIntentsProtocol, @unchecked Sendable` | [35](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L35) |
-| `ChargeIntentsAPI.createChargeIntent` | func | `func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)` | [49](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L49) |
-| `ChargeIntentsAPI.captureChargeIntent` | func | `func captureChargeIntent(intentId: String, request: ChargeIntentsRequests.CaptureChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingEr…` | [74](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L74) |
-| `ChargeIntentsAPI.confirmChargeIntent` | func | `func confirmChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)` | [98](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L98) |
-| `ChargeIntentsAPI.cancelChargeIntent` | func | `func cancelChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)` | [118](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L118) |
-| `ChargeIntentsAPI.getAllChargeIntents` | func | `func getAllChargeIntents(page: Int? = nil, perPage: Int? = nil) async throws -> (ChargeIntentResponses.ListChargeIntentsResponse?, NetworkingError?)` | [137](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L137) |
-| `ChargeIntentsAPI.getChargeIntent` | func | `func getChargeIntent(intentId: String, clientSecret: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)` | [154](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L154) |
-| `ChargeIntentsAPI.updateChargeIntent` | func | `func updateChargeIntent(intentId: String, request: ChargeIntentsRequests.UpdateChargeIntentRequest) async throws -> (FrameObjects.ChargeIntent?, NetworkingErro…` | [173](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L173) |
-| `ChargeIntentsAPI.voidRemainingChargeIntent` | func | `func voidRemainingChargeIntent(intentId: String) async throws -> (FrameObjects.ChargeIntent?, NetworkingError?)` | [190](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L190) |
-| `ChargeIntentsAPI.createChargeIntent` | func | `func createChargeIntent(request: ChargeIntentsRequests.CreateChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, Networkin…` | [209](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L209) |
-| `ChargeIntentsAPI.captureChargeIntent` | func | `func captureChargeIntent(intentId: String, request: ChargeIntentsRequests.CaptureChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.Char…` | [234](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L234) |
-| `ChargeIntentsAPI.confirmChargeIntent` | func | `func confirmChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)` | [253](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L253) |
-| `ChargeIntentsAPI.cancelChargeIntent` | func | `func cancelChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)` | [275](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L275) |
-| `ChargeIntentsAPI.getAllChargeIntents` | func | `func getAllChargeIntents(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (ChargeIntentResponses.ListChargeIntentsResponse?, Netwo…` | [294](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L294) |
-| `ChargeIntentsAPI.getChargeIntent` | func | `func getChargeIntent(intentId: String, clientSecret: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)` | [312](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L312) |
-| `ChargeIntentsAPI.updateChargeIntent` | func | `func updateChargeIntent(intentId: String, request: ChargeIntentsRequests.UpdateChargeIntentRequest, completionHandler: @escaping @Sendable (FrameObjects.Charge…` | [332](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L332) |
-| `ChargeIntentsAPI.voidRemainingChargeIntent` | func | `func voidRemainingChargeIntent(intentId: String, completionHandler: @escaping @Sendable (FrameObjects.ChargeIntent?, NetworkingError?) -> Void)` | [351](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsAPI.swift#L351) |
-
-</details>
-
-<details><summary><code>ChargeIntentsObjects.swift</code> — 56 symbols</summary>
-
-[`Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift`](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift)
-
-| Symbol | Kind | Declaration | Line |
-|--------|------|-------------|------|
-| `FrameObjects.AuthorizationMode` | enum | `enum AuthorizationMode: String, Codable, Sendable` | [12](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L12) |
-| `FrameObjects.AuthorizationMode.automatic` | case | `case automatic` | [14](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L14) |
-| `FrameObjects.AuthorizationMode.manual` | case | `case manual` | [16](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L16) |
-| `FrameObjects.ChargeIntentStatus` | enum | `enum ChargeIntentStatus: String, Codable, Sendable` | [23](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L23) |
-| `FrameObjects.ChargeIntentStatus.canceled` | case | `case canceled` | [25](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L25) |
-| `FrameObjects.ChargeIntentStatus.disputed` | case | `case disputed` | [27](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L27) |
-| `FrameObjects.ChargeIntentStatus.disputedWon` | case | `case disputedWon =` | [29](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L29) |
-| `FrameObjects.ChargeIntentStatus.disputedLost` | case | `case disputedLost =` | [31](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L31) |
-| `FrameObjects.ChargeIntentStatus.expired` | case | `case expired` | [33](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L33) |
-| `FrameObjects.ChargeIntentStatus.failed` | case | `case failed` | [35](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L35) |
-| `FrameObjects.ChargeIntentStatus.fraudDeclined` | case | `case fraudDeclined =` | [37](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L37) |
-| `FrameObjects.ChargeIntentStatus.fraudReview` | case | `case fraudReview =` | [39](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L39) |
-| `FrameObjects.ChargeIntentStatus.incomplete` | case | `case incomplete` | [41](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L41) |
-| `FrameObjects.ChargeIntentStatus.pending` | case | `case pending` | [43](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L43) |
-| `FrameObjects.ChargeIntentStatus.refunded` | case | `case refunded` | [45](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L45) |
-| `FrameObjects.ChargeIntentStatus.requiresAccountOrCustomer` | case | `case requiresAccountOrCustomer =` | [47](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L47) |
-| `FrameObjects.ChargeIntentStatus.requiresCapture` | case | `case requiresCapture =` | [49](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L49) |
-| `FrameObjects.ChargeIntentStatus.requiresConfirmation` | case | `case requiresConfirmation =` | [51](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L51) |
-| `FrameObjects.ChargeIntentStatus.requiresPaymentMethod` | case | `case requiresPaymentMethod =` | [53](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L53) |
-| `FrameObjects.ChargeIntentStatus.requiresThreeDSecure` | case | `case requiresThreeDSecure =` | [55](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L55) |
-| `FrameObjects.ChargeIntentStatus.reversed` | case | `case reversed` | [57](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L57) |
-| `FrameObjects.ChargeIntentStatus.succeeded` | case | `case succeeded` | [59](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L59) |
-| `FrameObjects.ChargeIntentStatus.unknown` | case | `case unknown` | [61](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L61) |
-| `FrameObjects.ChargeIntentStatus.init` | init | `init (from decoder: Decoder) throws` | [64](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L64) |
-| `FrameObjects.ChargeIntentStatus.isTerminal` | var | `var isTerminal: Bool` | [72](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L72) |
-| `FrameObjects.NextAction` | struct | `struct NextAction: Codable, Sendable, Equatable` | [87](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L87) |
-| `FrameObjects.NextAction.type` | let | `let type: String` | [89](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L89) |
-| `FrameObjects.NextAction.init` | init | `init (type: String, useFrameSDK: UseFrameSDK? = nil)` | [94](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L94) |
-| `FrameObjects.UseFrameSDK` | struct | `struct UseFrameSDK: Codable, Sendable, Equatable` | [110](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L110) |
-| `FrameObjects.UseFrameSDK.source` | let | `let source: String` | [113](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L113) |
-| `FrameObjects.UseFrameSDK.challengeURL` | var | `var challengeURL: URL?` | [120](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L120) |
-| `FrameObjects.UseFrameSDK.init` | init | `init (source: String, directoryServerName: String? = nil, challengeURL: URL? = nil)` | [125](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L125) |
-| `FrameObjects.ChargeIntent` | struct | `struct ChargeIntent: Codable, Sendable, Identifiable, Equatable` | [140](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L140) |
-| `FrameObjects.ChargeIntent.id` | let | `let id: String` | [142](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L142) |
-| `FrameObjects.ChargeIntent.currency` | let | `let currency: String` | [144](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L144) |
-| `FrameObjects.ChargeIntent.status` | let | `let status: FrameObjects.ChargeIntentStatus` | [156](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L156) |
-| `FrameObjects.ChargeIntent.authorizationMode` | let | `let authorizationMode: FrameObjects.AuthorizationMode` | [160](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L160) |
-| `FrameObjects.ChargeIntent.object` | let | `let object: String` | [164](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L164) |
-| `FrameObjects.ChargeIntent.amount` | let | `let amount: Int` | [166](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L166) |
-| `FrameObjects.ChargeIntent.created` | let | `let created: Int` | [168](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L168) |
-| `FrameObjects.ChargeIntent.livemode` | let | `let livemode: Bool` | [172](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L172) |
-| `FrameObjects.ChargeIntent.requiresThreeDSecureChallenge` | var | `var requiresThreeDSecureChallenge: Bool` | [179](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L179) |
-| `FrameObjects.ChargeIntent.init` | init | `init (id: String, currency: String, latestCharge: FrameObjects.LatestCharge? = nil, customer: FrameObjects.Customer? = nil, account: FrameObjects.Account? = ni…` | [202](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L202) |
-| `FrameObjects.LatestCharge` | struct | `struct LatestCharge: Codable, Sendable, Equatable` | [234](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L234) |
-| `FrameObjects.LatestCharge.id` | let | `let id: String` | [236](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L236) |
-| `FrameObjects.LatestCharge.currency` | let | `let currency: String` | [238](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L238) |
-| `FrameObjects.LatestCharge.amountCaptured` | let | `let amountCaptured: Int` | [240](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L240) |
-| `FrameObjects.LatestCharge.amountRefunded` | let | `let amountRefunded: Int` | [242](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L242) |
-| `FrameObjects.LatestCharge.created` | let | `let created: Int` | [244](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L244) |
-| `FrameObjects.LatestCharge.updated` | let | `let updated: Int` | [246](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L246) |
-| `FrameObjects.LatestCharge.livemode` | let | `let livemode: Bool` | [248](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L248) |
-| `FrameObjects.LatestCharge.captured` | let | `let captured: Bool` | [250](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L250) |
-| `FrameObjects.LatestCharge.disputed` | let | `let disputed: Bool` | [252](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L252) |
-| `FrameObjects.LatestCharge.chargeIntent` | let | `let chargeIntent: String` | [254](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L254) |
-| `FrameObjects.LatestCharge.refunded` | let | `let refunded: Bool` | [256](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L256) |
-| `FrameObjects.LatestCharge.amount` | let | `let amount: Int` | [274](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsObjects.swift#L274) |
-
-</details>
-
-<details><summary><code>ChargeIntentsRequests.swift</code> — 19 symbols</summary>
-
-[`Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift`](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift)
-
-| Symbol | Kind | Declaration | Line |
-|--------|------|-------------|------|
-| `ChargeIntentsRequests` | class | `class ChargeIntentsRequests` | [14](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L14) |
-| `ChargeIntentsRequests.ConfirmChargeIntentOptions` | struct | `struct ConfirmChargeIntentOptions: Sendable` | [17](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L17) |
-| `ChargeIntentsRequests.ConfirmChargeIntentOptions.paymentMethod` | let | `let paymentMethod: String?` | [19](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L19) |
-| `ChargeIntentsRequests.ConfirmChargeIntentOptions.shipping` | let | `let shipping: FrameObjects.BillingAddress?` | [21](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L21) |
-| `ChargeIntentsRequests.ConfirmChargeIntentOptions.init` | init | `init (paymentMethod: String? = nil, shipping: FrameObjects.BillingAddress? = nil)` | [24](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L24) |
-| `ChargeIntentsRequests.CreateChargeIntentRequest` | struct | `struct CreateChargeIntentRequest: Encodable` | [60](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L60) |
-| `ChargeIntentsRequests.CreateChargeIntentRequest.init` | init | `init (amount: Int, currency: String, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, confirm: Bool, …` | [104](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L104) |
-| `ChargeIntentsRequests.UpdateChargeIntentRequest` | struct | `struct UpdateChargeIntentRequest: Encodable` | [133](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L133) |
-| `ChargeIntentsRequests.UpdateChargeIntentRequest.init` | init | `init (amount: Int? = nil, currency: String? = nil, customer: String? = nil, account: String? = nil, description: String? = nil, paymentMethod: String? = nil, c…` | [164](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L164) |
-| `ChargeIntentsRequests.CaptureChargeIntentRequest` | struct | `struct CaptureChargeIntentRequest: Encodable` | [184](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L184) |
-| `ChargeIntentsRequests.CaptureChargeIntentRequest.init` | init | `init (amountCapturedCents: Int)` | [191](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L191) |
-| `ChargeIntentsRequests.CustomerData` | struct | `struct CustomerData: Encodable` | [202](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L202) |
-| `ChargeIntentsRequests.CustomerData.init` | init | `init (name: String, email: String)` | [213](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L213) |
-| `ChargeIntentsRequests.PaymentMethodType` | enum | `enum PaymentMethodType: String, Encodable` | [220](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L220) |
-| `ChargeIntentsRequests.PaymentMethodType.card` | case | `case card` | [222](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L222) |
-| `ChargeIntentsRequests.PaymentMethodData` | struct | `struct PaymentMethodData: Encodable` | [226](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L226) |
-| `ChargeIntentsRequests.PaymentMethodData.init` | init | `init (attach: Bool?, type: PaymentMethodType, cardNumber: String, expMonth: String, expYear: String, cvc: String, billing: FrameObjects.BillingAddress?)` | [252](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L252) |
-| `ChargeIntentsRequests.FraudSignals` | struct | `struct FraudSignals: Encodable` | [272](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L272) |
-| `ChargeIntentsRequests.FraudSignals.init` | init | `init (clientIp: String?)` | [279](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsRequests.swift#L279) |
-
-</details>
-
-<details><summary><code>ChargeIntentsResponses.swift</code> — 2 symbols</summary>
-
-[`Sources/Frame/Networking/ChargeIntents/ChargeIntentsResponses.swift`](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsResponses.swift)
-
-| Symbol | Kind | Declaration | Line |
-|--------|------|-------------|------|
-| `ChargeIntentResponses` | class | `class ChargeIntentResponses` | [11](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsResponses.swift#L11) |
-| `ChargeIntentResponses.ListChargeIntentsResponse` | struct | `struct ListChargeIntentsResponse: Codable` | [13](../Sources/Frame/Networking/ChargeIntents/ChargeIntentsResponses.swift#L13) |
-
-</details>
-
-#### Networking/CheckoutSessions (11)
-
-<details><summary><code>CheckoutSessionRequests.swift</code> — 3 symbols</summary>
+<details><summary><code>CheckoutSessionRequests.swift</code> — 5 symbols</summary>
 
 [`Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift`](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift)
 
@@ -914,11 +732,13 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `CreateCheckoutSessionRequest` | struct | `struct CreateCheckoutSessionRequest: Codable, Sendable` | [7](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L7) |
 | `CreateCheckoutSessionRequest.accountId` | let | `let accountId: String` | [9](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L9) |
-| `CreateCheckoutSessionRequest.init` | init | `init (accountId: String)` | [17](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L17) |
+| `CreateCheckoutSessionRequest.amount` | let | `let amount: FrameObjects.TransferV2Money?` | [11](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L11) |
+| `CreateCheckoutSessionRequest.init` | init | `init (accountId: String, amount: FrameObjects.TransferV2Money? = nil)` | [22](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L22) |
+| `CreateCheckoutSessionRequest.encode` | func | `func encode(to encoder: Encoder) throws` | [27](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionRequests.swift#L27) |
 
 </details>
 
-<details><summary><code>CheckoutSessionResponses.swift</code> — 6 symbols</summary>
+<details><summary><code>CheckoutSessionResponses.swift</code> — 8 symbols</summary>
 
 [`Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift`](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift)
 
@@ -927,9 +747,11 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameCheckoutClientSecret` | class | `class FrameCheckoutClientSecret: @unchecked Sendable` | [7](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L7) |
 | `FrameCheckoutClientSecret.clientSecret` | var | `var clientSecret: String` | [9](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L9) |
 | `FrameCheckoutClientSecret.expiresAt` | var | `var expiresAt: Date` | [11](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L11) |
-| `FrameCheckoutClientSecret.isExpired` | var | `var isExpired: Bool` | [14](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L14) |
-| `FrameCheckoutClientSecret.init` | init | `init (clientSecret: String, expiresAt: Date)` | [20](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L20) |
-| `CheckoutSession` | struct | `struct CheckoutSession: Codable, Sendable` | [27](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L27) |
+| `FrameCheckoutClientSecret.amountCents` | var | `var amountCents: Int?` | [13](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L13) |
+| `FrameCheckoutClientSecret.amountCurrency` | var | `var amountCurrency: String?` | [15](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L15) |
+| `FrameCheckoutClientSecret.isExpired` | var | `var isExpired: Bool` | [18](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L18) |
+| `FrameCheckoutClientSecret.init` | init | `init (clientSecret: String, expiresAt: Date, amountCents: Int? = nil, amountCurrency: String? = nil)` | [24](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L24) |
+| `CheckoutSession` | struct | `struct CheckoutSession: Codable, Sendable` | [42](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionResponses.swift#L42) |
 
 </details>
 
@@ -940,7 +762,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `CheckoutSessionsAPI` | enum | `enum CheckoutSessionsAPI` | [8](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift#L8) |
-| `CheckoutSessionsAPI.createCheckoutSession` | func | `func createCheckoutSession(accountId: String) async throws -> (CheckoutSession?, NetworkingError?)` | [13](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift#L13) |
+| `CheckoutSessionsAPI.createCheckoutSession` | func | `func createCheckoutSession( accountId: String, amount: FrameObjects.TransferV2Money? = nil ) async throws -> (CheckoutSession?, NetworkingError?)` | [13](../Sources/Frame/Networking/CheckoutSessions/CheckoutSessionsAPI.swift#L13) |
 
 </details>
 
@@ -2096,89 +1918,223 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Transfers (48)
+#### Networking/TransfersV2 (164)
 
-<details><summary><code>TransferObjects.swift</code> — 28 symbols</summary>
+<details><summary><code>TransferV2ClientSecret.swift</code> — 10 symbols</summary>
 
-[`Sources/Frame/Networking/Transfers/TransferObjects.swift`](../Sources/Frame/Networking/Transfers/TransferObjects.swift)
+[`Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift`](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `FrameObjects.TransferStatus` | enum | `enum TransferStatus: String, Codable, Sendable` | [15](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L15) |
-| `FrameObjects.TransferStatus.pending` | case | `case pending` | [17](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L17) |
-| `FrameObjects.TransferStatus.incomplete` | case | `case incomplete` | [19](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L19) |
-| `FrameObjects.TransferStatus.requiresAccountOrCustomer` | case | `case requiresAccountOrCustomer =` | [21](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L21) |
-| `FrameObjects.TransferStatus.requiresPaymentMethod` | case | `case requiresPaymentMethod =` | [23](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L23) |
-| `FrameObjects.TransferStatus.requiresConfirmation` | case | `case requiresConfirmation =` | [25](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L25) |
-| `FrameObjects.TransferStatus.requiresThreeDSecure` | case | `case requiresThreeDSecure =` | [27](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L27) |
-| `FrameObjects.TransferStatus.requiresCapture` | case | `case requiresCapture =` | [29](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L29) |
-| `FrameObjects.TransferStatus.processing` | case | `case processing` | [31](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L31) |
-| `FrameObjects.TransferStatus.succeeded` | case | `case succeeded` | [33](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L33) |
-| `FrameObjects.TransferStatus.failed` | case | `case failed` | [35](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L35) |
-| `FrameObjects.TransferStatus.expired` | case | `case expired` | [37](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L37) |
-| `FrameObjects.TransferStatus.canceled` | case | `case canceled` | [39](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L39) |
-| `FrameObjects.TransferStatus.reversed` | case | `case reversed` | [41](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L41) |
-| `FrameObjects.TransferStatus.refunded` | case | `case refunded` | [43](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L43) |
-| `FrameObjects.TransferStatus.disputed` | case | `case disputed` | [45](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L45) |
-| `FrameObjects.TransferStatus.disputedWon` | case | `case disputedWon =` | [47](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L47) |
-| `FrameObjects.TransferStatus.disputedLost` | case | `case disputedLost =` | [49](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L49) |
-| `FrameObjects.TransferStatus.fraudReview` | case | `case fraudReview =` | [51](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L51) |
-| `FrameObjects.TransferStatus.fraudDeclined` | case | `case fraudDeclined =` | [53](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L53) |
-| `FrameObjects.TransferStatus.unknown` | case | `case unknown` | [55](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L55) |
-| `FrameObjects.TransferStatus.completed` | case | `case completed` | [61](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L61) |
-| `FrameObjects.TransferStatus.blocked` | case | `case blocked` | [66](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L66) |
-| `FrameObjects.TransferStatus.init` | init | `init (from decoder: Decoder) throws` | [69](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L69) |
-| `FrameObjects.Transfer` | struct | `struct Transfer: Codable, Sendable, Identifiable, Equatable` | [76](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L76) |
-| `FrameObjects.Transfer.id` | let | `let id: String` | [78](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L78) |
-| `FrameObjects.Transfer.amount` | let | `let amount: Int` | [87](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L87) |
-| `FrameObjects.Transfer.init` | init | `init (id: String, object: String? = nil, status: TransferStatus? = nil, amount: Int, currency: String? = nil, platformFee: Int? = nil, frameFee: Int? = nil, to…` | [166](../Sources/Frame/Networking/Transfers/TransferObjects.swift#L166) |
+| `FrameTransferV2Error` | enum | `enum FrameTransferV2Error: Error, Equatable` | [11](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L11) |
+| `FrameTransferV2Error.missingTransfer` | case | `case missingTransfer` | [13](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L13) |
+| `FrameTransferV2Error.missingThreeDSecureChallenge` | case | `case missingThreeDSecureChallenge` | [15](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L15) |
+| `FrameTransferV2Error.threeDSecureUnavailable` | case | `case threeDSecureUnavailable(underlying: Error?)` | [17](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L17) |
+| `FrameTransferV2Error.statusUnavailable` | case | `case statusUnavailable(attempts: Int, underlying: Error?)` | [19](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L19) |
+| `FrameTransferV2Error.== (lhs: FrameTransferV2Error, rhs: Fram` | func | `func == (lhs: FrameTransferV2Error, rhs: FrameTransferV2Error) -> Bool` | [21](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L21) |
+| `FrameTransferV2Outcome` | enum | `enum FrameTransferV2Outcome: Sendable, Equatable` | [36](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L36) |
+| `FrameTransferV2Outcome.succeeded` | case | `case succeeded(FrameObjects.TransferV2)` | [38](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L38) |
+| `FrameTransferV2Outcome.failed` | case | `case failed(FrameObjects.TransferV2, message: String?)` | [40](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L40) |
+| `FrameTransferV2Outcome.timedOut` | case | `case timedOut` | [42](../Sources/Frame/Networking/TransfersV2/TransferV2ClientSecret.swift#L42) |
 
 </details>
 
-<details><summary><code>TransferRequests.swift</code> — 11 symbols</summary>
+<details><summary><code>TransferV2Confirmation.swift</code> — 15 symbols</summary>
 
-[`Sources/Frame/Networking/Transfers/TransferRequests.swift`](../Sources/Frame/Networking/Transfers/TransferRequests.swift)
+[`Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift`](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `TransferRequests` | class | `class TransferRequests` | [11](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L11) |
-| `TransferRequests.CreateTransferRequest` | struct | `struct CreateTransferRequest: Codable` | [13](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L13) |
-| `TransferRequests.CreateTransferRequest.amount` | let | `let amount: Int` | [15](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L15) |
-| `TransferRequests.CreateTransferRequest.accountId` | let | `let accountId: String` | [18](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L18) |
-| `TransferRequests.CreateTransferRequest.currency` | let | `let currency: String?` | [21](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L21) |
-| `TransferRequests.CreateTransferRequest.sourcePaymentMethodId` | let | `let sourcePaymentMethodId: String?` | [24](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L24) |
-| `TransferRequests.CreateTransferRequest.destinationPaymentMethodId` | let | `let destinationPaymentMethodId: String?` | [27](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L27) |
-| `TransferRequests.CreateTransferRequest.description` | let | `let description: String?` | [30](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L30) |
-| `TransferRequests.CreateTransferRequest.metadata` | let | `let metadata: [String: String]?` | [33](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L33) |
-| `TransferRequests.CreateTransferRequest.confirm` | let | `let confirm: Bool?` | [40](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L40) |
-| `TransferRequests.CreateTransferRequest.init` | init | `init (amount: Int, accountId: String, currency: String? = nil, sourcePaymentMethodId: String? = nil, destinationPaymentMethodId: String? = nil, description: St…` | [60](../Sources/Frame/Networking/Transfers/TransferRequests.swift#L60) |
+| `FrameThreeDSecureChallengePresenting` | protocol | `protocol FrameThreeDSecureChallengePresenting: Sendable` | [14](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L14) |
+| `FrameThreeDSecureChallengeResult` | enum | `enum FrameThreeDSecureChallengeResult: Sendable, Equatable` | [20](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L20) |
+| `FrameThreeDSecureChallengeResult.completed` | case | `case completed` | [22](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L22) |
+| `FrameThreeDSecureChallengeResult.failed` | case | `case failed` | [24](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L24) |
+| `FrameThreeDSecureChallengeResult.unavailable` | case | `case unavailable` | [26](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L26) |
+| `TransferV2Confirmation` | struct | `struct TransferV2Confirmation: Sendable` | [30](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L30) |
+| `TransferV2Confirmation.PollingConfiguration` | struct | `struct PollingConfiguration: Sendable` | [33](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L33) |
+| `TransferV2Confirmation.PollingConfiguration.maxAttempts` | let | `let maxAttempts: Int` | [34](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L34) |
+| `TransferV2Confirmation.PollingConfiguration.interval` | let | `let interval: Duration` | [35](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L35) |
+| `TransferV2Confirmation.PollingConfiguration.init` | init | `init (maxAttempts: Int = 10, interval: Duration = .seconds(1))` | [37](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L37) |
+| `TransferV2Confirmation.PollingConfiguration.default` | let | `let `default` = PollingConfiguration()` | [42](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L42) |
+| `TransferV2Confirmation.TransferLoader` | typealias | `typealias TransferLoader = @Sendable (_ transferID: String) async throws -> FrameObjects.TransferV2?` | [45](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L45) |
+| `TransferV2Confirmation.Sleeper` | typealias | `typealias Sleeper = @Sendable (Duration) async throws -> Void` | [46](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L46) |
+| `TransferV2Confirmation.init` | init | `init (checkoutClientSecret: String? = nil, challengePresenter: FrameThreeDSecureChallengePresenting?, polling: PollingConfiguration = .default, confirmTransfer…` | [58](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L58) |
+| `TransferV2Confirmation.confirm` | func | `func confirm(transferId: String) async throws -> FrameTransferV2Outcome` | [89](../Sources/Frame/Networking/TransfersV2/TransferV2Confirmation.swift#L89) |
 
 </details>
 
-<details><summary><code>TransferResponses.swift</code> — 2 symbols</summary>
+<details><summary><code>TransferV2Objects.swift</code> — 36 symbols</summary>
 
-[`Sources/Frame/Networking/Transfers/TransferResponses.swift`](../Sources/Frame/Networking/Transfers/TransferResponses.swift)
+[`Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift`](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `TransferResponses` | class | `class TransferResponses` | [11](../Sources/Frame/Networking/Transfers/TransferResponses.swift#L11) |
-| `TransferResponses.ListTransfersResponse` | struct | `struct ListTransfersResponse: Codable` | [13](../Sources/Frame/Networking/Transfers/TransferResponses.swift#L13) |
+| `FrameObjects.TransferV2Status` | enum | `enum TransferV2Status: String, Codable, Sendable` | [15](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L15) |
+| `FrameObjects.TransferV2Status.pending` | case | `case pending` | [16](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L16) |
+| `FrameObjects.TransferV2Status.completed` | case | `case completed` | [17](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L17) |
+| `FrameObjects.TransferV2Status.failed` | case | `case failed` | [18](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L18) |
+| `FrameObjects.TransferV2Status.canceled` | case | `case canceled` | [19](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L19) |
+| `FrameObjects.TransferV2Status.reversed` | case | `case reversed` | [20](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L20) |
+| `FrameObjects.TransferV2Status.unknown` | case | `case unknown` | [21](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L21) |
+| `FrameObjects.TransferV2Status.init` | init | `init (from decoder: Decoder) throws` | [23](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L23) |
+| `FrameObjects.TransferV2Type` | enum | `enum TransferV2Type: String, Codable, Sendable` | [30](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L30) |
+| `FrameObjects.TransferV2Type.payment` | case | `case payment` | [31](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L31) |
+| `FrameObjects.TransferV2Type.payout` | case | `case payout` | [32](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L32) |
+| `FrameObjects.TransferV2Type.accountTransfer` | case | `case accountTransfer =` | [33](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L33) |
+| `FrameObjects.TransferV2Type.unknown` | case | `case unknown` | [34](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L34) |
+| `FrameObjects.TransferV2Type.init` | init | `init (from decoder: Decoder) throws` | [36](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L36) |
+| `FrameObjects.TransferV2Money` | struct | `struct TransferV2Money: Codable, Sendable, Equatable` | [43](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L43) |
+| `FrameObjects.TransferV2Money.value` | let | `let value: Int` | [45](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L45) |
+| `FrameObjects.TransferV2Money.init` | init | `init (value: Int, currency: String? = nil)` | [49](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L49) |
+| `FrameObjects.TransferV2Payment` | struct | `struct TransferV2Payment: Codable, Sendable, Equatable` | [56](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L56) |
+| `FrameObjects.TransferV2Payout` | struct | `struct TransferV2Payout: Codable, Sendable, Equatable` | [92](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L92) |
+| `FrameObjects.TransferV2AccountTransfer` | struct | `struct TransferV2AccountTransfer: Codable, Sendable, Equatable` | [107](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L107) |
+| `FrameObjects.TransferV2Shipping` | struct | `struct TransferV2Shipping: Codable, Sendable, Equatable` | [120](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L120) |
+| `FrameObjects.TransferV2Address` | struct | `struct TransferV2Address: Codable, Sendable, Equatable` | [134](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L134) |
+| `FrameObjects.TransferV2Address.init` | init | `init (line1: String? = nil, line2: String? = nil, city: String? = nil, state: String? = nil, postalCode: String? = nil, country: String? = nil)` | [142](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L142) |
+| `FrameObjects.TransferV2Endpoint` | struct | `struct TransferV2Endpoint: Codable, Sendable, Equatable` | [165](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L165) |
+| `FrameObjects.TransferV2AccountRef` | struct | `struct TransferV2AccountRef: Codable, Sendable, Equatable, Identifiable` | [177](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L177) |
+| `FrameObjects.TransferV2AccountRef.id` | let | `let id: String` | [178](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L178) |
+| `FrameObjects.TransferV2WalletRef` | struct | `struct TransferV2WalletRef: Codable, Sendable, Equatable, Identifiable` | [184](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L184) |
+| `FrameObjects.TransferV2WalletRef.id` | let | `let id: String` | [185](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L185) |
+| `FrameObjects.UseFrameSDK` | struct | `struct UseFrameSDK: Codable, Sendable, Equatable` | [195](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L195) |
+| `FrameObjects.UseFrameSDK.source` | let | `let source: String` | [197](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L197) |
+| `FrameObjects.UseFrameSDK.challengeURL` | var | `var challengeURL: URL?` | [204](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L204) |
+| `FrameObjects.UseFrameSDK.init` | init | `init (source: String, directoryServerName: String? = nil, challengeURL: URL? = nil)` | [208](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L208) |
+| `FrameObjects.TransferV2NextAction` | struct | `struct TransferV2NextAction: Codable, Sendable, Equatable` | [222](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L222) |
+| `FrameObjects.TransferV2` | struct | `struct TransferV2: Codable, Sendable, Identifiable, Equatable` | [238](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L238) |
+| `FrameObjects.TransferV2.id` | let | `let id: String` | [239](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L239) |
+| `FrameObjects.TransferV2.init` | init | `init (id: String, object: String? = nil, type: TransferV2Type? = nil, status: TransferV2Status? = nil, description: String? = nil, amount: TransferV2Money? = n…` | [263](../Sources/Frame/Networking/TransfersV2/TransferV2Objects.swift#L263) |
 
 </details>
 
-<details><summary><code>TransfersAPI.swift</code> — 7 symbols</summary>
+<details><summary><code>TransferV2Requests.swift</code> — 85 symbols</summary>
 
-[`Sources/Frame/Networking/Transfers/TransfersAPI.swift`](../Sources/Frame/Networking/Transfers/TransfersAPI.swift)
+[`Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift`](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `TransfersAPI` | class | `class TransfersAPI: TransfersProtocol, @unchecked Sendable` | [26](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L26) |
-| `TransfersAPI.createTransfer` | func | `func createTransfer(request: TransferRequests.CreateTransferRequest) async throws -> (FrameObjects.Transfer?, NetworkingError?)` | [57](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L57) |
-| `TransfersAPI.getTransferWith` | func | `func getTransferWith(transferId: String) async throws -> (FrameObjects.Transfer?, NetworkingError?)` | [82](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L82) |
-| `TransfersAPI.getTransfers` | func | `func getTransfers(perPage: Int? = nil, page: Int? = nil) async throws -> (TransferResponses.ListTransfersResponse?, NetworkingError?)` | [101](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L101) |
-| `TransfersAPI.createTransfer` | func | `func createTransfer(request: TransferRequests.CreateTransferRequest, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void)` | [120](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L120) |
-| `TransfersAPI.getTransferWith` | func | `func getTransferWith(transferId: String, completionHandler: @escaping @Sendable (FrameObjects.Transfer?, NetworkingError?) -> Void)` | [143](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L143) |
-| `TransfersAPI.getTransfers` | func | `func getTransfers(perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (TransferResponses.ListTransfersResponse?, NetworkingError?) ->…` | [162](../Sources/Frame/Networking/Transfers/TransfersAPI.swift#L162) |
+| `TransferV2Requests` | enum | `enum TransferV2Requests` | [11](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L11) |
+| `TransferV2Requests.MoneyAmount` | struct | `struct MoneyAmount: Codable, Sendable, Equatable` | [13](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L13) |
+| `TransferV2Requests.MoneyAmount.value` | let | `let value: Int` | [15](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L15) |
+| `TransferV2Requests.MoneyAmount.currency` | let | `let currency: String?` | [17](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L17) |
+| `TransferV2Requests.MoneyAmount.init` | init | `init (value: Int, currency: String? = )` | [20](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L20) |
+| `TransferV2Requests.Address` | struct | `struct Address: Codable, Sendable, Equatable` | [27](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L27) |
+| `TransferV2Requests.Address.line1` | let | `let line1: String?` | [28](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L28) |
+| `TransferV2Requests.Address.line2` | let | `let line2: String?` | [29](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L29) |
+| `TransferV2Requests.Address.city` | let | `let city: String?` | [30](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L30) |
+| `TransferV2Requests.Address.state` | let | `let state: String?` | [31](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L31) |
+| `TransferV2Requests.Address.postalCode` | let | `let postalCode: String?` | [32](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L32) |
+| `TransferV2Requests.Address.country` | let | `let country: String?` | [33](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L33) |
+| `TransferV2Requests.Address.init` | init | `init (line1: String? = nil, line2: String? = nil, city: String? = nil, state: String? = nil, postalCode: String? = nil, country: String? = nil)` | [35](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L35) |
+| `TransferV2Requests.NestedPaymentMethod` | struct | `struct NestedPaymentMethod: Codable, Sendable, Equatable` | [58](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L58) |
+| `TransferV2Requests.NestedPaymentMethod.accountId` | let | `let accountId: String?` | [59](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L59) |
+| `TransferV2Requests.NestedPaymentMethod.type` | let | `let type: String?` | [60](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L60) |
+| `TransferV2Requests.NestedPaymentMethod.cardNumber` | let | `let cardNumber: String?` | [61](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L61) |
+| `TransferV2Requests.NestedPaymentMethod.expMonth` | let | `let expMonth: Int?` | [62](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L62) |
+| `TransferV2Requests.NestedPaymentMethod.expYear` | let | `let expYear: Int?` | [63](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L63) |
+| `TransferV2Requests.NestedPaymentMethod.cvc` | let | `let cvc: String?` | [64](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L64) |
+| `TransferV2Requests.NestedPaymentMethod.accountNumber` | let | `let accountNumber: String?` | [65](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L65) |
+| `TransferV2Requests.NestedPaymentMethod.routingNumber` | let | `let routingNumber: String?` | [66](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L66) |
+| `TransferV2Requests.NestedPaymentMethod.accountType` | let | `let accountType: String?` | [67](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L67) |
+| `TransferV2Requests.NestedPaymentMethod.cashTag` | let | `let cashTag: String?` | [68](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L68) |
+| `TransferV2Requests.NestedPaymentMethod.email` | let | `let email: String?` | [69](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L69) |
+| `TransferV2Requests.NestedPaymentMethod.phoneNumber` | let | `let phoneNumber: String?` | [70](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L70) |
+| `TransferV2Requests.NestedPaymentMethod.handle` | let | `let handle: String?` | [71](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L71) |
+| `TransferV2Requests.NestedPaymentMethod.billing` | let | `let billing: Address?` | [72](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L72) |
+| `TransferV2Requests.NestedPaymentMethod.init` | init | `init (accountId: String? = nil, type: String? = nil, cardNumber: String? = nil, expMonth: Int? = nil, expYear: Int? = nil, cvc: String? = nil, accountNumber: S…` | [74](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L74) |
+| `TransferV2Requests.EndpointSlot` | struct | `struct EndpointSlot: Codable, Sendable, Equatable` | [120](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L120) |
+| `TransferV2Requests.EndpointSlot.accountId` | let | `let accountId: String?` | [121](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L121) |
+| `TransferV2Requests.EndpointSlot.paymentMethodId` | let | `let paymentMethodId: String?` | [122](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L122) |
+| `TransferV2Requests.EndpointSlot.walletId` | let | `let walletId: String?` | [123](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L123) |
+| `TransferV2Requests.EndpointSlot.rail` | let | `let rail: String?` | [124](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L124) |
+| `TransferV2Requests.EndpointSlot.speed` | let | `let speed: String?` | [125](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L125) |
+| `TransferV2Requests.EndpointSlot.paymentMethod` | let | `let paymentMethod: NestedPaymentMethod?` | [126](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L126) |
+| `TransferV2Requests.EndpointSlot.init` | init | `init (accountId: String? = nil, paymentMethodId: String? = nil, walletId: String? = nil, rail: String? = nil, speed: String? = nil, paymentMethod: NestedPaymen…` | [128](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L128) |
+| `TransferV2Requests.Shipping` | struct | `struct Shipping: Codable, Sendable, Equatable` | [152](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L152) |
+| `TransferV2Requests.Shipping.line1` | let | `let line1: String?` | [153](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L153) |
+| `TransferV2Requests.Shipping.line2` | let | `let line2: String?` | [154](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L154) |
+| `TransferV2Requests.Shipping.city` | let | `let city: String?` | [155](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L155) |
+| `TransferV2Requests.Shipping.state` | let | `let state: String?` | [156](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L156) |
+| `TransferV2Requests.Shipping.postalCode` | let | `let postalCode: String?` | [157](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L157) |
+| `TransferV2Requests.Shipping.country` | let | `let country: String?` | [158](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L158) |
+| `TransferV2Requests.Shipping.name` | let | `let name: String?` | [159](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L159) |
+| `TransferV2Requests.Shipping.phone` | let | `let phone: String?` | [160](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L160) |
+| `TransferV2Requests.Shipping.carrier` | let | `let carrier: String?` | [161](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L161) |
+| `TransferV2Requests.Shipping.trackingNumber` | let | `let trackingNumber: String?` | [162](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L162) |
+| `TransferV2Requests.Shipping.init` | init | `init (line1: String? = nil, line2: String? = nil, city: String? = nil, state: String? = nil, postalCode: String? = nil, country: String? = nil, name: String? =…` | [164](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L164) |
+| `TransferV2Requests.External3DS` | struct | `struct External3DS: Codable, Sendable, Equatable` | [196](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L196) |
+| `TransferV2Requests.External3DS.version` | let | `let version: String?` | [197](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L197) |
+| `TransferV2Requests.External3DS.transactionId` | let | `let transactionId: String?` | [198](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L198) |
+| `TransferV2Requests.External3DS.cryptogram` | let | `let cryptogram: String?` | [199](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L199) |
+| `TransferV2Requests.External3DS.electronicCommerceIndicator` | let | `let electronicCommerceIndicator: String?` | [200](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L200) |
+| `TransferV2Requests.External3DS.aresTransStatus` | let | `let aresTransStatus: String?` | [201](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L201) |
+| `TransferV2Requests.External3DS.init` | init | `init (version: String? = nil, transactionId: String? = nil, cryptogram: String? = nil, electronicCommerceIndicator: String? = nil, aresTransStatus: String? = n…` | [203](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L203) |
+| `TransferV2Requests.CardPaymentMethodOptions` | struct | `struct CardPaymentMethodOptions: Codable, Sendable, Equatable` | [224](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L224) |
+| `TransferV2Requests.CardPaymentMethodOptions.external3ds` | let | `let external3ds: External3DS?` | [225](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L225) |
+| `TransferV2Requests.CardPaymentMethodOptions.init` | init | `init (external3ds: External3DS? = nil)` | [227](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L227) |
+| `TransferV2Requests.PaymentMethodOptions` | struct | `struct PaymentMethodOptions: Codable, Sendable, Equatable` | [237](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L237) |
+| `TransferV2Requests.PaymentMethodOptions.card` | let | `let card: CardPaymentMethodOptions?` | [238](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L238) |
+| `TransferV2Requests.PaymentMethodOptions.init` | init | `init (card: CardPaymentMethodOptions? = nil)` | [240](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L240) |
+| `TransferV2Requests.CreateTransferRequest` | struct | `struct CreateTransferRequest: Codable, Sendable` | [246](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L246) |
+| `TransferV2Requests.CreateTransferRequest.amount` | let | `let amount: MoneyAmount` | [247](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L247) |
+| `TransferV2Requests.CreateTransferRequest.source` | let | `let source: EndpointSlot?` | [248](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L248) |
+| `TransferV2Requests.CreateTransferRequest.destination` | let | `let destination: EndpointSlot?` | [249](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L249) |
+| `TransferV2Requests.CreateTransferRequest.confirm` | let | `let confirm: Bool?` | [250](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L250) |
+| `TransferV2Requests.CreateTransferRequest.authorizationMode` | let | `let authorizationMode: String?` | [251](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L251) |
+| `TransferV2Requests.CreateTransferRequest.receiptEmail` | let | `let receiptEmail: String?` | [252](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L252) |
+| `TransferV2Requests.CreateTransferRequest.statementDescriptor` | let | `let statementDescriptor: String?` | [253](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L253) |
+| `TransferV2Requests.CreateTransferRequest.productId` | let | `let productId: String?` | [254](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L254) |
+| `TransferV2Requests.CreateTransferRequest.paymentLinkId` | let | `let paymentLinkId: String?` | [255](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L255) |
+| `TransferV2Requests.CreateTransferRequest.subscriptionId` | let | `let subscriptionId: String?` | [256](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L256) |
+| `TransferV2Requests.CreateTransferRequest.invoiceId` | let | `let invoiceId: String?` | [257](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L257) |
+| `TransferV2Requests.CreateTransferRequest.description` | let | `let description: String?` | [258](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L258) |
+| `TransferV2Requests.CreateTransferRequest.reference` | let | `let reference: String?` | [259](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L259) |
+| `TransferV2Requests.CreateTransferRequest.shipping` | let | `let shipping: Shipping?` | [260](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L260) |
+| `TransferV2Requests.CreateTransferRequest.paymentMethodOptions` | let | `let paymentMethodOptions: PaymentMethodOptions?` | [261](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L261) |
+| `TransferV2Requests.CreateTransferRequest.cartData` | let | `let cartData: [String: String]?` | [262](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L262) |
+| `TransferV2Requests.CreateTransferRequest.metadata` | let | `let metadata: [String: String]?` | [263](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L263) |
+| `TransferV2Requests.CreateTransferRequest.init` | init | `init (amount: MoneyAmount, source: EndpointSlot? = nil, destination: EndpointSlot? = nil, confirm: Bool? = nil, authorizationMode: String? = nil, receiptEmail:…` | [275](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L275) |
+| `TransferV2Requests.UpdateTransferRequest` | typealias | `typealias UpdateTransferRequest = CreateTransferRequest` | [327](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L327) |
+| `TransferV2Requests.AmountOnlyRequest` | struct | `struct AmountOnlyRequest: Codable, Sendable` | [330](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L330) |
+| `TransferV2Requests.AmountOnlyRequest.amount` | let | `let amount: MoneyAmount?` | [331](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L331) |
+| `TransferV2Requests.AmountOnlyRequest.init` | init | `init (amount: MoneyAmount? = nil)` | [333](../Sources/Frame/Networking/TransfersV2/TransferV2Requests.swift#L333) |
+
+</details>
+
+<details><summary><code>TransferV2Responses.swift</code> — 2 symbols</summary>
+
+[`Sources/Frame/Networking/TransfersV2/TransferV2Responses.swift`](../Sources/Frame/Networking/TransfersV2/TransferV2Responses.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `TransferV2Responses` | enum | `enum TransferV2Responses` | [11](../Sources/Frame/Networking/TransfersV2/TransferV2Responses.swift#L11) |
+| `TransferV2Responses.ListTransfersResponse` | struct | `struct ListTransfersResponse: Codable, Sendable` | [13](../Sources/Frame/Networking/TransfersV2/TransferV2Responses.swift#L13) |
+
+</details>
+
+<details><summary><code>TransfersV2API.swift</code> — 16 symbols</summary>
+
+[`Sources/Frame/Networking/TransfersV2/TransfersV2API.swift`](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `TransfersV2API` | class | `class TransfersV2API: TransfersV2Protocol, @unchecked Sendable` | [48](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L48) |
+| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, accountId: String? = nil ) async throws -> (FrameObjects…` | [85](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L85) |
+| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, checkoutClientSecret: String, accountId: String? = nil )…` | [98](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L98) |
+| `TransfersV2API.getTransferWith` | func | `func getTransferWith(transferId: String) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [133](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L133) |
+| `TransfersV2API.getTransfers` | func | `func getTransfers( perPage: Int? = nil, page: Int? = nil ) async throws -> (TransferV2Responses.ListTransfersResponse?, NetworkingError?)` | [143](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L143) |
+| `TransfersV2API.updateTransfer` | func | `func updateTransfer( transferId: String, request: TransferV2Requests.UpdateTransferRequest ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [164](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L164) |
+| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjec…` | [181](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L181) |
+| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, checkoutClientSecret: String ) async throws -> (FrameObject…` | [200](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L200) |
+| `TransfersV2API.getTransferWith` | func | `func getTransferWith( transferId: String, checkoutClientSecret: String ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [217](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L217) |
+| `TransfersV2API.captureTransfer` | func | `func captureTransfer( transferId: String, request: TransferV2Requests.AmountOnlyRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjects.T…` | [233](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L233) |
+| `TransfersV2API.voidTransfer` | func | `func voidTransfer( transferId: String, idempotencyKey: String? = nil ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [251](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L251) |
+| `TransfersV2API.refundTransfer` | func | `func refundTransfer( transferId: String, request: TransferV2Requests.AmountOnlyRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjects.Tr…` | [265](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L265) |
+| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, accountId: String? = nil, completionHandler: @escaping @…` | [284](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L284) |
+| `TransfersV2API.getTransferWith` | func | `func getTransferWith( transferId: String, completionHandler: @escaping @Sendable (FrameObjects.TransferV2?, NetworkingError?) -> Void )` | [302](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L302) |
+| `TransfersV2API.getTransfers` | func | `func getTransfers( perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (TransferV2Responses.ListTransfersResponse?, NetworkingError?)…` | [318](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L318) |
+| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, completionHandler: @escaping @Sendable (FrameObjects.Transf…` | [334](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L334) |
 
 </details>
 
@@ -2380,12 +2336,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameApplePayViewModel.FrameApplePayMode` | enum | `enum FrameApplePayMode` | [31](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L31) |
 | `FrameApplePayViewModel.FrameApplePayMode.charge` | case | `case charge(amount: Int, currency: String)` | [33](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L33) |
 | `FrameApplePayViewModel.FrameApplePayMode.addToOwner` | case | `case addToOwner` | [35](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L35) |
-| `FrameApplePayViewModel.FrameApplePayResult` | enum | `enum FrameApplePayResult` | [46](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L46) |
-| `FrameApplePayViewModel.FrameApplePayResult.charge` | case | `case charge(id: String)` | [48](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L48) |
-| `FrameApplePayViewModel.FrameApplePayResult.paymentMethod` | case | `case paymentMethod(FrameObjects.PaymentMethod)` | [50](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L50) |
-| `FrameApplePayViewModel.init` | init | `init (mode: FrameApplePayMode, owner: PaymentMethodOwner, completion: ((Result<FrameApplePayResult, Error>) -> Void)? = nil)` | [82](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L82) |
-| `FrameApplePayViewModel.paymentAuthorizationController` | func | `func paymentAuthorizationController( _ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment ) async -> PKPaymentAuthorizationRe…` | [161](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L161) |
-| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [271](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L271) |
+| `FrameApplePayViewModel.FrameApplePayResult` | enum | `enum FrameApplePayResult` | [42](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L42) |
+| `FrameApplePayViewModel.FrameApplePayResult.charge` | case | `case charge(id: String)` | [44](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L44) |
+| `FrameApplePayViewModel.FrameApplePayResult.paymentMethod` | case | `case paymentMethod(FrameObjects.PaymentMethod)` | [46](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L46) |
+| `FrameApplePayViewModel.init` | init | `init (mode: FrameApplePayMode, owner: PaymentMethodOwner, checkoutClientSecret: FrameCheckoutClientSecret? = nil, completion: ((Result<FrameApplePayResult, Err…` | [82](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L82) |
+| `FrameApplePayViewModel.paymentAuthorizationController` | func | `func paymentAuthorizationController( _ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment ) async -> PKPaymentAuthorizationRe…` | [166](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L166) |
+| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [275](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L275) |
 
 </details>
 
@@ -2395,12 +2351,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [474](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L474) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [476](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L476) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [478](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L478) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [481](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L481) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [483](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L483) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [488](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L488) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [472](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L472) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [474](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L474) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [476](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L476) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [479](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L479) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [481](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L481) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [486](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L486) |
 
 </details>
 
@@ -2433,7 +2389,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `FrameApplePayButton` | struct | `struct FrameApplePayButton: View` | [20](../Sources/Frame/Views/FrameApplePayButton.swift#L20) |
 | `FrameApplePayButton.init` | init | `init (mode: FrameApplePayViewModel.FrameApplePayMode, owner: FrameApplePayViewModel.PaymentMethodOwner, addCheckoutDivider: Bool = false, buttonType: PKPayment…` | [44](../Sources/Frame/Views/FrameApplePayButton.swift#L44) |
-| `FrameApplePayButton.body` | var | `var body: some View` | [67](../Sources/Frame/Views/FrameApplePayButton.swift#L67) |
+| `FrameApplePayButton.body` | var | `var body: some View` | [69](../Sources/Frame/Views/FrameApplePayButton.swift#L69) |
 
 </details>
 
@@ -2456,8 +2412,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FrameCheckoutView` | struct | `struct FrameCheckoutView: View` | [17](../Sources/Frame/Views/FrameCheckoutView.swift#L17) |
-| `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, account: FrameObjects.Account? = nil, paymentMethods: [FrameObjects.Pay…` | [52](../Sources/Frame/Views/FrameCheckoutView.swift#L52) |
-| `FrameCheckoutView.body` | var | `var body: some View` | [81](../Sources/Frame/Views/FrameCheckoutView.swift#L81) |
+| `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, account: FrameObjects.Account? = nil, paymentMethods: [FrameObjects.Pay…` | [54](../Sources/Frame/Views/FrameCheckoutView.swift#L54) |
+| `FrameCheckoutView.body` | var | `var body: some View` | [84](../Sources/Frame/Views/FrameCheckoutView.swift#L84) |
 
 </details>
 
@@ -2528,7 +2484,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 |--------|------|-------------|------|
 | `FrameThreeDSecureChallengePresenter` | class | `class FrameThreeDSecureChallengePresenter: NSObject` | [17](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L17) |
 | `FrameThreeDSecureChallengePresenter.init` | init | `init (presentingViewController: UIViewController? = nil)` | [31](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L31) |
-| `FrameThreeDSecureChallengePresenter.presentChallenge` | func | `func presentChallenge(_ challenge: FrameObjects.UseFrameSDK, for intent: FrameObjects.ChargeIntent) async -> FrameThreeDSecureChallengeResult` | [39](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L39) |
+| `FrameThreeDSecureChallengePresenter.presentChallenge` | func | `func presentChallenge(_ challenge: FrameObjects.UseFrameSDK) async -> FrameThreeDSecureChallengeResult` | [39](../Sources/Frame/Views/Elements/FrameThreeDSecureChallengePresenter.swift#L39) |
 
 </details>
 

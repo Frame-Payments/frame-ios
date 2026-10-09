@@ -9,6 +9,10 @@ public final class FrameCheckoutClientSecret: @unchecked Sendable {
     public var clientSecret: String
     /// When the token stops being accepted, as a Unix timestamp in seconds.
     public var expiresAt: Date
+    /// Locked amount in the smallest currency unit, when the session can create a transfer.
+    public var amountCents: Int?
+    /// Currency of ``amountCents``.
+    public var amountCurrency: String?
 
     /// `true` when ``expiresAt`` is now or earlier.
     public var isExpired: Bool { expiresAt <= Date() }
@@ -17,9 +21,20 @@ public final class FrameCheckoutClientSecret: @unchecked Sendable {
     /// - Parameters:
     ///   - clientSecret: The `chk_sess_…` token from `POST /v1/checkout_sessions`.
     ///   - expiresAt: The token's expiry.
-    public init(clientSecret: String, expiresAt: Date) {
+    public init(clientSecret: String, expiresAt: Date, amountCents: Int? = nil, amountCurrency: String? = nil) {
         self.clientSecret = clientSecret
         self.expiresAt = expiresAt
+        self.amountCents = amountCents
+        self.amountCurrency = amountCurrency
+    }
+
+    /// Keeps a later refresh transfer-capable when the host passed only the token and expiry.
+    func recordLockedAmountIfMissing(cents: Int, currency: String) {
+        guard amountCents == nil, cents != 0 else { return }
+        amountCents = cents
+        if amountCurrency?.isEmpty != false {
+            amountCurrency = currency
+        }
     }
 }
 
@@ -37,9 +52,11 @@ public struct CheckoutSession: Codable, Sendable {
     @Lenient public private(set) var expiresAt: Int?
     /// `true` for a live-mode session.
     @Lenient public private(set) var livemode: Bool?
+    /// Locked amount, present when the session can create and confirm a V2 transfer.
+    @Lenient public private(set) var amount: FrameObjects.TransferV2Money?
 
     enum CodingKeys: String, CodingKey {
-        case id, object, livemode
+        case id, object, livemode, amount
         case accountId = "account_id"
         case clientSecret = "client_secret"
         case expiresAt = "expires_at"

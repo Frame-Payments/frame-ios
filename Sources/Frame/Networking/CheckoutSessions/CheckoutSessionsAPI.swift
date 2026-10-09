@@ -10,9 +10,14 @@ public enum CheckoutSessionsAPI {
     ///
     /// - Parameter accountId: The account the token may read.
     /// - Returns: The session, and any networking error.
-    public static func createCheckoutSession(accountId: String) async throws -> (CheckoutSession?, NetworkingError?) {
+    public static func createCheckoutSession(
+        accountId: String,
+        amount: FrameObjects.TransferV2Money? = nil
+    ) async throws -> (CheckoutSession?, NetworkingError?) {
         let endpoint = CheckoutSessionEndpoints.createCheckoutSession
-        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(CreateCheckoutSessionRequest(accountId: accountId))
+        let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(
+            CreateCheckoutSessionRequest(accountId: accountId, amount: amount)
+        )
         // .secret is replaced by an active onboarding session. The mint only accepts sk_.
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
@@ -64,6 +69,11 @@ public enum CheckoutSessionsAPI {
         }
     }
 
+    /// A `chk_sess_…` that is still accepted. Refreshes `secret` in place when it has expired and a secret key is configured.
+    static func authorizationToken(accountId: String, secret: FrameCheckoutClientSecret) async -> String? {
+        await tokenForRead(accountId: accountId, secret: secret)
+    }
+
     private static func tokenForRead(accountId: String, secret: FrameCheckoutClientSecret) async -> String? {
         if !secret.isExpired, !secret.clientSecret.isEmpty {
             return secret.clientSecret
@@ -74,11 +84,18 @@ public enum CheckoutSessionsAPI {
     private static func refresh(accountId: String, secret: FrameCheckoutClientSecret) async -> String? {
         guard FrameNetworking.shared.hasSecretKey else { return nil }
         do {
-            let (session, error) = try await createCheckoutSession(accountId: accountId)
+            let lockedAmount = secret.amountCents.map {
+                FrameObjects.TransferV2Money(value: $0, currency: secret.amountCurrency)
+            }
+            let (session, error) = try await createCheckoutSession(accountId: accountId, amount: lockedAmount)
             guard error == nil, let clientSecret = session?.clientSecret, !clientSecret.isEmpty else { return nil }
             secret.clientSecret = clientSecret
             if let expiresAt = session?.expiresAt {
                 secret.expiresAt = Date(timeIntervalSince1970: TimeInterval(expiresAt))
+            }
+            if let amount = session?.amount {
+                secret.amountCents = amount.value
+                secret.amountCurrency = amount.currency
             }
             return clientSecret
         } catch {

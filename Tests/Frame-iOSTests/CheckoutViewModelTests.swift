@@ -479,6 +479,8 @@ final class CheckoutViewModelTests: XCTestCase {
             sequenced.authorizations.filter { $0.contains("sk_test_checkout") || $0.contains("chk_sess") },
             ["Bearer sk_test_checkout", "Bearer chk_sess_new", "Bearer chk_sess_new"]
         )
+        let refreshBody = String(data: sequenced.checkoutSessionBodies.first ?? Data(), encoding: .utf8)
+        XCTAssertTrue(refreshBody?.contains("\"value\":100") == true)
     }
 
     @MainActor func testCheckoutClientSecret_refreshesAfterUnauthorizedRead() async {
@@ -516,6 +518,7 @@ private final class SequencedCheckoutSession: URLSessionProtocol {
     let failFirstAccountRead: Bool
     private var didFailAccountRead = false
     private(set) var authorizations: [String] = []
+    private(set) var checkoutSessionBodies: [Data] = []
 
     init(failFirstAccountRead: Bool) {
         self.failFirstAccountRead = failFirstAccountRead
@@ -527,6 +530,7 @@ private final class SequencedCheckoutSession: URLSessionProtocol {
         let status: Int
         let body: Data
         if path == "/v1/checkout_sessions" {
+            checkoutSessionBodies.append(request.httpBody ?? Data())
             status = 200
             body = CheckoutViewModelTests.checkoutSessionJSON
         } else if path.hasSuffix("/payment_methods") {

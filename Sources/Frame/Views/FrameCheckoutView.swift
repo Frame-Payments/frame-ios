@@ -29,6 +29,8 @@ public struct FrameCheckoutView: View {
     let accountId: String
     /// The amount to charge, expressed in the currency's smallest unit (e.g. cents for USD).
     let paymentAmount: Int
+    /// Checkout session used for identity reads and V2 create/confirm.
+    private let checkoutClientSecret: FrameCheckoutClientSecret?
     /// Controls whether billing-address fields are shown, required, or hidden.
     let addressMode: FrameAddressMode
 
@@ -59,6 +61,7 @@ public struct FrameCheckoutView: View {
         self.accountId = accountId
         self.paymentAmount = paymentAmount
         self.addressMode = addressMode
+        self.checkoutClientSecret = checkoutClientSecret
         self.onResult = onResult
 
         _checkoutViewModel = StateObject(wrappedValue: FrameCheckoutViewModel(
@@ -177,9 +180,11 @@ public struct FrameCheckoutView: View {
     /// Apple Pay button that immediately initiates a charge when tapped.
     @ViewBuilder
     var applePayButton: some View {
-        FrameApplePayButton(mode: .charge(amount: paymentAmount, currency: "usd"),
+        FrameApplePayButton(mode: .charge(amount: paymentAmount,
+                                          currency: checkoutClientSecret?.amountCurrency ?? "usd"),
                             owner: .account(accountId),
-                            addCheckoutDivider: true) { result in
+                            addCheckoutDivider: true,
+                            checkoutClientSecret: checkoutClientSecret) { result in
             switch result {
             case .success(.charge(let transferId)):
                 didFinish = true
