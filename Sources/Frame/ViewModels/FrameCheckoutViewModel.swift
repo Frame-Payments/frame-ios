@@ -355,18 +355,14 @@ class FrameCheckoutViewModel: ObservableObject {
         }
         guard let paymentMethodId else { return nil }
 
-        // The server rejects the transfer outright without a live session for this account, so wait
-        // for one rather than racing SDK start-up.
-        try await SessionManager.shared.ensureSession(accountId: accountId)
-
-        // Deferred confirm: inline confirm rejects any charge that is not already settled.
-        let currency = checkoutClientSecret?.amountCurrency ?? "usd"
-        let request = TransferV2Requests.CreateTransferRequest(
-            amount: .init(value: amount, currency: currency),
-            source: .init(accountId: accountId, paymentMethodId: paymentMethodId),
+        // Source is the payment method only; it already belongs to the account.
+        var request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: amount, currency: checkoutClientSecret?.amountCurrency ?? "usd"),
+            source: .init(paymentMethodId: paymentMethodId),
             confirm: false,
             authorizationMode: "automatic"
         )
+        request.sonarSessionId = try await SessionManager.shared.ensureSession(accountId: accountId)
 
         let (transfer, transferError) = try await createCheckoutTransfer(request)
         if let transferError {

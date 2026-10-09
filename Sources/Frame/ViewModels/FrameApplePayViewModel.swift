@@ -212,16 +212,14 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     )
                     return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                 }
-                // The server rejects the transfer outright without a live session for this account.
-                try await SessionManager.shared.ensureSession(accountId: accountId)
-
                 // Apple Pay already carries a cryptogram — confirm inline (same as Android Google Pay).
-                let request = TransferV2Requests.CreateTransferRequest(
+                var request = TransferV2Requests.CreateTransferRequest(
                     amount: .init(value: amount, currency: currency),
-                    source: .init(accountId: accountId, paymentMethodId: paymentMethodId),
+                    source: .init(paymentMethodId: paymentMethodId),
                     confirm: true,
                     authorizationMode: "automatic"
                 )
+                request.sonarSessionId = try await SessionManager.shared.ensureSession(accountId: accountId)
                 let (transfer, transferError): (FrameObjects.TransferV2?, NetworkingError?)
                 if let checkoutClientSecret {
                     let token = await CheckoutSessionsAPI.authorizationToken(
