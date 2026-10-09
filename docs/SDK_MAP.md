@@ -2341,7 +2341,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameApplePayViewModel.FrameApplePayResult.paymentMethod` | case | `case paymentMethod(FrameObjects.PaymentMethod)` | [46](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L46) |
 | `FrameApplePayViewModel.init` | init | `init (mode: FrameApplePayMode, owner: PaymentMethodOwner, checkoutClientSecret: FrameCheckoutClientSecret? = nil, completion: ((Result<FrameApplePayResult, Err…` | [82](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L82) |
 | `FrameApplePayViewModel.paymentAuthorizationController` | func | `func paymentAuthorizationController( _ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment ) async -> PKPaymentAuthorizationRe…` | [163](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L163) |
-| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [271](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L271) |
+| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [269](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L269) |
 
 </details>
 
@@ -2351,12 +2351,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [472](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L472) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [474](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L474) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [476](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L476) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [479](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L479) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [481](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L481) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [486](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L486) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [468](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L468) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [470](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L470) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [472](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L472) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [475](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L475) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [477](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L477) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [482](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L482) |
 
 </details>
 
