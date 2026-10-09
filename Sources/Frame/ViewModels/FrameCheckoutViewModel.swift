@@ -356,13 +356,12 @@ class FrameCheckoutViewModel: ObservableObject {
         guard let paymentMethodId else { return nil }
 
         // Source is the payment method only; it already belongs to the account.
-        var request = TransferV2Requests.CreateTransferRequest(
+        let request = TransferV2Requests.CreateTransferRequest(
             amount: .init(value: amount, currency: checkoutClientSecret?.amountCurrency ?? "usd"),
             source: .init(paymentMethodId: paymentMethodId),
             confirm: false,
             authorizationMode: "automatic"
         )
-        request.sonarSessionId = try await SessionManager.shared.ensureSession(accountId: accountId)
 
         let (transfer, transferError) = try await createCheckoutTransfer(request)
         if let transferError {
@@ -405,9 +404,13 @@ class FrameCheckoutViewModel: ObservableObject {
                   !token.isEmpty else {
                 return (nil, .serverError(statusCode: 401, errorDescription: "Checkout client secret expired."))
             }
-            return try await TransfersV2API.createTransfer(request: request, checkoutClientSecret: token)
+            return try await TransfersV2API.createTransfer(
+                request: request,
+                checkoutClientSecret: token,
+                accountId: accountId
+            )
         }
-        return try await TransfersV2API.createTransfer(request: request)
+        return try await TransfersV2API.createTransfer(request: request, accountId: accountId)
     }
 
     /// Confirms a V2 transfer the API held back, running a 3D Secure challenge if needed.

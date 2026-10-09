@@ -213,13 +213,12 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     return PKPaymentAuthorizationResult(status: .failure, errors: nil)
                 }
                 // Apple Pay already carries a cryptogram — confirm inline (same as Android Google Pay).
-                var request = TransferV2Requests.CreateTransferRequest(
+                let request = TransferV2Requests.CreateTransferRequest(
                     amount: .init(value: amount, currency: currency),
                     source: .init(paymentMethodId: paymentMethodId),
                     confirm: true,
                     authorizationMode: "automatic"
                 )
-                request.sonarSessionId = try await SessionManager.shared.ensureSession(accountId: accountId)
                 let (transfer, transferError): (FrameObjects.TransferV2?, NetworkingError?)
                 if let checkoutClientSecret {
                     let token = await CheckoutSessionsAPI.authorizationToken(
@@ -234,10 +233,14 @@ extension FrameApplePayViewModel: PKPaymentAuthorizationControllerDelegate {
                     }
                     (transfer, transferError) = try await TransfersV2API.createTransfer(
                         request: request,
-                        checkoutClientSecret: token
+                        checkoutClientSecret: token,
+                        accountId: accountId
                     )
                 } else {
-                    (transfer, transferError) = try await TransfersV2API.createTransfer(request: request)
+                    (transfer, transferError) = try await TransfersV2API.createTransfer(
+                        request: request,
+                        accountId: accountId
+                    )
                 }
 
                 if let transfer {

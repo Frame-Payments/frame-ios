@@ -11,7 +11,8 @@ import Foundation
 protocol TransfersV2Protocol {
     static func createTransfer(
         request: TransferV2Requests.CreateTransferRequest,
-        idempotencyKey: String?
+        idempotencyKey: String?,
+        accountId: String?
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)
     static func getTransferWith(transferId: String) async throws -> (FrameObjects.TransferV2?, NetworkingError?)
     static func getTransfers(perPage: Int?, page: Int?) async throws -> (TransferV2Responses.ListTransfersResponse?, NetworkingError?)
@@ -46,18 +47,18 @@ protocol TransfersV2Protocol {
 /// show, and confirm authenticate with a `chk_sess_` token minted with a locked amount.
 public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
 
-    /// Attaches Sonar when the create has a payment-method source (charge-backed).
+    /// Attaches Sonar on a payment-method create. The account is the global one, or `accountId` when that is unset.
     private static func withSonarSession(
-        _ request: TransferV2Requests.CreateTransferRequest
+        _ request: TransferV2Requests.CreateTransferRequest,
+        accountId: String?
     ) async -> TransferV2Requests.CreateTransferRequest {
-        let accountId = request.source?.paymentMethod?.accountId
-            ?? request.source?.accountId
+        let resolved = FrameNetworking.shared.accountId ?? accountId
         let hasPaymentSource = request.source?.paymentMethodId != nil
             || request.source?.paymentMethod != nil
-        guard hasPaymentSource, let accountId, !accountId.isEmpty else { return request }
+        guard hasPaymentSource, let resolved, !resolved.isEmpty else { return request }
 
         var updated = request
-        updated.sonarSessionId = try? await SessionManager.shared.ensureSession(accountId: accountId)
+        updated.sonarSessionId = try? await SessionManager.shared.ensureSession(accountId: resolved)
         return updated
     }
 
@@ -83,9 +84,10 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
     /// Checkout should call ``createTransfer(request:idempotencyKey:checkoutClientSecret:)`` instead.
     public static func createTransfer(
         request: TransferV2Requests.CreateTransferRequest,
-        idempotencyKey: String? = nil
+        idempotencyKey: String? = nil,
+        accountId: String? = nil
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
-        try await createTransfer(request: request, idempotencyKey: idempotencyKey, auth: .secret)
+        try await createTransfer(request: request, idempotencyKey: idempotencyKey, accountId: accountId, auth: .secret)
     }
 
     /// Creates a V2 transfer as a checkout session (`Authorization: Bearer chk_sess_…`).
@@ -96,12 +98,14 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
     public static func createTransfer(
         request: TransferV2Requests.CreateTransferRequest,
         idempotencyKey: String? = nil,
-        checkoutClientSecret: String
+        checkoutClientSecret: String,
+        accountId: String? = nil
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
         guard !checkoutClientSecret.isEmpty else { return (nil, nil) }
         return try await createTransfer(
             request: request,
             idempotencyKey: idempotencyKey,
+            accountId: accountId,
             auth: .clientSecret(checkoutClientSecret)
         )
     }
@@ -109,11 +113,12 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
     private static func createTransfer(
         request: TransferV2Requests.CreateTransferRequest,
         idempotencyKey: String?,
+        accountId: String?,
         auth: FrameAuthMode
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
         let key = (idempotencyKey?.isEmpty == false) ? idempotencyKey! : UUID().uuidString
         let endpoint = TransferV2Endpoints.createTransfer(idempotencyKey: key)
-        let body = encodeBody(await withSonarSession(request))
+        let body = encodeBody(await withSonarSession(request, accountId: accountId))
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
             requestBody: body,
@@ -279,11 +284,12 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
     public static func createTransfer(
         request: TransferV2Requests.CreateTransferRequest,
         idempotencyKey: String? = nil,
+        accountId: String? = nil,
         completionHandler: @escaping @Sendable (FrameObjects.TransferV2?, NetworkingError?) -> Void
     ) {
         Task {
             do {
-                let result = try await createTransfer(request: request, idempotencyKey: idempotencyKey)
+                let result = try await createTransfer(request: request, idempotencyKey: idempotencyKey, accountId: accountId)
                 completionHandler(result.0, result.1)
             } catch {
                 completionHandler(nil, .unknownError)

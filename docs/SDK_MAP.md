@@ -2119,22 +2119,22 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `TransfersV2API` | class | `class TransfersV2API: TransfersV2Protocol, @unchecked Sendable` | [47](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L47) |
-| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil ) async throws -> (FrameObjects.TransferV2?, NetworkingEr…` | [84](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L84) |
-| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, checkoutClientSecret: String ) async throws -> (FrameObj…` | [96](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L96) |
-| `TransfersV2API.getTransferWith` | func | `func getTransferWith(transferId: String) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [128](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L128) |
-| `TransfersV2API.getTransfers` | func | `func getTransfers( perPage: Int? = nil, page: Int? = nil ) async throws -> (TransferV2Responses.ListTransfersResponse?, NetworkingError?)` | [138](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L138) |
-| `TransfersV2API.updateTransfer` | func | `func updateTransfer( transferId: String, request: TransferV2Requests.UpdateTransferRequest ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [159](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L159) |
-| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjec…` | [176](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L176) |
-| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, checkoutClientSecret: String ) async throws -> (FrameObject…` | [195](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L195) |
-| `TransfersV2API.getTransferWith` | func | `func getTransferWith( transferId: String, checkoutClientSecret: String ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [212](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L212) |
-| `TransfersV2API.captureTransfer` | func | `func captureTransfer( transferId: String, request: TransferV2Requests.AmountOnlyRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjects.T…` | [228](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L228) |
-| `TransfersV2API.voidTransfer` | func | `func voidTransfer( transferId: String, idempotencyKey: String? = nil ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [246](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L246) |
-| `TransfersV2API.refundTransfer` | func | `func refundTransfer( transferId: String, request: TransferV2Requests.AmountOnlyRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjects.Tr…` | [260](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L260) |
-| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, completionHandler: @escaping @Sendable (FrameObjects.Tra…` | [279](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L279) |
-| `TransfersV2API.getTransferWith` | func | `func getTransferWith( transferId: String, completionHandler: @escaping @Sendable (FrameObjects.TransferV2?, NetworkingError?) -> Void )` | [296](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L296) |
-| `TransfersV2API.getTransfers` | func | `func getTransfers( perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (TransferV2Responses.ListTransfersResponse?, NetworkingError?)…` | [312](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L312) |
-| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, completionHandler: @escaping @Sendable (FrameObjects.Transf…` | [328](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L328) |
+| `TransfersV2API` | class | `class TransfersV2API: TransfersV2Protocol, @unchecked Sendable` | [48](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L48) |
+| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, accountId: String? = nil ) async throws -> (FrameObjects…` | [85](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L85) |
+| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, checkoutClientSecret: String, accountId: String? = nil )…` | [98](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L98) |
+| `TransfersV2API.getTransferWith` | func | `func getTransferWith(transferId: String) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [133](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L133) |
+| `TransfersV2API.getTransfers` | func | `func getTransfers( perPage: Int? = nil, page: Int? = nil ) async throws -> (TransferV2Responses.ListTransfersResponse?, NetworkingError?)` | [143](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L143) |
+| `TransfersV2API.updateTransfer` | func | `func updateTransfer( transferId: String, request: TransferV2Requests.UpdateTransferRequest ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [164](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L164) |
+| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjec…` | [181](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L181) |
+| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, checkoutClientSecret: String ) async throws -> (FrameObject…` | [200](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L200) |
+| `TransfersV2API.getTransferWith` | func | `func getTransferWith( transferId: String, checkoutClientSecret: String ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [217](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L217) |
+| `TransfersV2API.captureTransfer` | func | `func captureTransfer( transferId: String, request: TransferV2Requests.AmountOnlyRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjects.T…` | [233](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L233) |
+| `TransfersV2API.voidTransfer` | func | `func voidTransfer( transferId: String, idempotencyKey: String? = nil ) async throws -> (FrameObjects.TransferV2?, NetworkingError?)` | [251](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L251) |
+| `TransfersV2API.refundTransfer` | func | `func refundTransfer( transferId: String, request: TransferV2Requests.AmountOnlyRequest? = nil, idempotencyKey: String? = nil ) async throws -> (FrameObjects.Tr…` | [265](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L265) |
+| `TransfersV2API.createTransfer` | func | `func createTransfer( request: TransferV2Requests.CreateTransferRequest, idempotencyKey: String? = nil, accountId: String? = nil, completionHandler: @escaping @…` | [284](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L284) |
+| `TransfersV2API.getTransferWith` | func | `func getTransferWith( transferId: String, completionHandler: @escaping @Sendable (FrameObjects.TransferV2?, NetworkingError?) -> Void )` | [302](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L302) |
+| `TransfersV2API.getTransfers` | func | `func getTransfers( perPage: Int? = nil, page: Int? = nil, completionHandler: @escaping @Sendable (TransferV2Responses.ListTransfersResponse?, NetworkingError?)…` | [318](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L318) |
+| `TransfersV2API.confirmTransfer` | func | `func confirmTransfer( transferId: String, request: TransferV2Requests.CreateTransferRequest? = nil, completionHandler: @escaping @Sendable (FrameObjects.Transf…` | [334](../Sources/Frame/Networking/TransfersV2/TransfersV2API.swift#L334) |
 
 </details>
 
@@ -2341,7 +2341,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameApplePayViewModel.FrameApplePayResult.paymentMethod` | case | `case paymentMethod(FrameObjects.PaymentMethod)` | [46](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L46) |
 | `FrameApplePayViewModel.init` | init | `init (mode: FrameApplePayMode, owner: PaymentMethodOwner, checkoutClientSecret: FrameCheckoutClientSecret? = nil, completion: ((Result<FrameApplePayResult, Err…` | [82](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L82) |
 | `FrameApplePayViewModel.paymentAuthorizationController` | func | `func paymentAuthorizationController( _ controller: PKPaymentAuthorizationController, didAuthorizePayment payment: PKPayment ) async -> PKPaymentAuthorizationRe…` | [163](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L163) |
-| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [271](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L271) |
+| `FrameApplePayViewModel.paymentAuthorizationControllerDidFinish` | func | `func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController)` | [272](../Sources/Frame/ViewModels/FrameApplePayViewModel.swift#L272) |
 
 </details>
 
@@ -2351,12 +2351,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [472](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L472) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [474](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L474) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [476](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L476) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [479](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L479) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [481](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L481) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [486](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L486) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [471](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L471) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [473](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L473) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [475](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L475) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [478](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L478) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [480](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L480) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [485](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L485) |
 
 </details>
 
