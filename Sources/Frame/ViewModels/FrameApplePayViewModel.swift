@@ -87,6 +87,9 @@ public class FrameApplePayViewModel: NSObject, ObservableObject {
         self.owner = owner
         self.checkoutClientSecret = checkoutClientSecret
         self.completion = completion
+        if case .charge(let amount, let currency) = mode {
+            checkoutClientSecret?.recordLockedAmountIfMissing(cents: amount, currency: currency)
+        }
     }
 
     /// Checks whether the device is capable of making Apple Pay payments on a supported network.

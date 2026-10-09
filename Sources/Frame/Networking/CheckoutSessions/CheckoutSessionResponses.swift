@@ -27,6 +27,15 @@ public final class FrameCheckoutClientSecret: @unchecked Sendable {
         self.amountCents = amountCents
         self.amountCurrency = amountCurrency
     }
+
+    /// Keeps a later refresh transfer-capable when the host passed only the token and expiry.
+    func recordLockedAmountIfMissing(cents: Int, currency: String) {
+        guard amountCents == nil, cents != 0 else { return }
+        amountCents = cents
+        if amountCurrency?.isEmpty != false {
+            amountCurrency = currency
+        }
+    }
 }
 
 /// The checkout session returned by `POST /v1/checkout_sessions`.

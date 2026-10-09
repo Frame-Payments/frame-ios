@@ -102,6 +102,7 @@ class FrameCheckoutViewModel: ObservableObject {
         self.usesSuppliedAccount = account != nil
         self.usesSuppliedPaymentMethods = paymentMethods != nil
         self.checkoutClientSecret = checkoutClientSecret
+        checkoutClientSecret?.recordLockedAmountIfMissing(cents: amount, currency: "usd")
         if let account {
             applyAccount(account)
         }
