@@ -72,8 +72,10 @@ public struct FrameSelectPayoutMethodView: View {
             .refreshesSonarSession(accountId: viewModel.accountId)
             .onAppear {
                 viewModel.beginOnboardingSession(clientSecret: onboardingClientSecret)
-                // Seeds `primaryPayoutMethodId`; onboarding gets this from its container.
-                Task { await viewModel.checkExistingAccount() }
+                Task {
+                    await viewModel.checkExistingAccount()
+                    await viewModel.loadExistingPaymentMethods()
+                }
             }
             .onDisappear {
                 // Plaid Link covering this view fires .onDisappear without the user dismissing us;

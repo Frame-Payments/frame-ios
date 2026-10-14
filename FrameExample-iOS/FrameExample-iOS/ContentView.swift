@@ -20,16 +20,9 @@ struct ContentView: View {
     @ObservedObject var viewModel: ContentViewModel = ContentViewModel()
     @Environment(\.frameTheme) var theme
 
-    @State var showCheckoutView: Bool = false
-    @State var checkoutClientSecret: FrameCheckoutClientSecret?
+    @State private var presentedCheckout: ExampleCheckoutSession?
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
-    
-    @State var showCustomersView: Bool = false
-    @State var showPaymentMethodsView: Bool = false
-    @State var showSubscriptionsView: Bool = false
-    @State var showRefundsView: Bool = false
-    @State var showSubscriptionPhases: Bool = false
     @State var showOnboardingSheet: Bool = false
     @State var applePayResult: String? = nil
 
@@ -79,22 +72,6 @@ struct ContentView: View {
                     }
                 }
                 .padding(.horizontal)
-                Divider()
-                allCustomersButton
-                    .disabled(viewModel.customers.isEmpty)
-                    .opacity(viewModel.customers.isEmpty ? 0.3 : 1)
-                allPaymentMethodsButton
-                    .disabled(viewModel.paymentMethods.isEmpty)
-                    .opacity(viewModel.paymentMethods.isEmpty ? 0.3 : 1)
-                allSubscriptionsButton
-                    .disabled(viewModel.subscriptions.isEmpty)
-                    .opacity(viewModel.subscriptions.isEmpty ? 0.3 : 1)
-                allRefundsButton
-                    .disabled(viewModel.refunds.isEmpty)
-                    .opacity(viewModel.refunds.isEmpty ? 0.3 : 1)
-                allSubscriptionPhasesButton
-                    .disabled(viewModel.subscriptionPhases.isEmpty)
-                    .opacity(viewModel.subscriptionPhases.isEmpty ? 0.3 : 1)
             }
         }
         .padding()
@@ -130,12 +107,12 @@ struct ContentView: View {
             }
             }
         })
-        .sheet(isPresented: $showCheckoutView) {
-            FrameCartView(accountId: viewModel.accountId,
+        .sheet(item: $presentedCheckout) { checkout in
+            FrameCartView(accountId: checkout.accountId,
                           cartItems: exampleCartItems,
                           shippingAmountInCents: exampleShippingCents,
                           cartViewTitle: "Messina Clothing",
-                          checkoutClientSecret: checkoutClientSecret,
+                          checkoutClientSecret: checkout.clientSecret,
                           onResult: { result in
                 switch result {
                     case .completed(let id):
@@ -177,135 +154,6 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
             }
         })
-        .sheet(isPresented: $showCustomersView) {
-            customersScrollView
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showPaymentMethodsView) {
-            paymentMethodScrollView
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showSubscriptionsView, content: {
-            subscriptionsScrollView
-                .presentationDragIndicator(.visible)
-        })
-        .sheet(isPresented: $showRefundsView) {
-            refundsScrollView
-                .presentationDragIndicator(.visible)
-        }
-    }
-    
-    var customersScrollView: some View {
-        ScrollView {
-            VStack {
-                Text("Customers")
-                    .font(.title)
-                    .padding()
-                ForEach(viewModel.customers) { customer in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Name: \(customer.name)")
-                                .font(.headline)
-                                .multilineTextAlignment(.leading)
-                            Text("Email: \(customer.email ?? "")")
-                            Text("Phone: \(customer.phone ?? "Not Found")")
-                        }
-                        Spacer()
-                    }
-                    Divider()
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-        }
-    }
-    
-    var paymentMethodScrollView: some View {
-        ScrollView {
-            VStack {
-                Text("Payment Methods")
-                    .font(.title)
-                    .padding()
-                ForEach(viewModel.paymentMethods) { method in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("**Payment Method ID:** \n\(method.id)")
-                            Text("**Customer ID:** \n\(method.customerId ?? "")")
-                        }
-                        Spacer()
-                    }
-                    Divider()
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-        }
-    }
-    
-    var subscriptionsScrollView: some View {
-        ScrollView {
-            VStack {
-                Text("Subscriptions")
-                    .font(.title)
-                    .padding()
-                ForEach(viewModel.subscriptions) { subscription in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("**Subscription ID:** \n\(subscription.id)")
-                            Text("**Customer ID:** \n\(subscription.customer ?? "")")
-                        }
-                        Spacer()
-                    }
-                    Divider()
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-        }
-    }
-    
-    var subscriptionPhasesScrollView: some View {
-        ScrollView {
-            VStack {
-                Text("Subscription Phases")
-                    .font(.title)
-                    .padding()
-                ForEach(viewModel.subscriptionPhases) { subscriptionPhase in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("**Subscription Phase ID:** \n\(subscriptionPhase.id)")
-                            Text("**Pricing Type:** \n\(subscriptionPhase.pricingType?.rawValue ?? "")")
-                        }
-                        Spacer()
-                    }
-                    Divider()
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-        }
-    }
-    
-    var refundsScrollView: some View {
-        ScrollView {
-            VStack {
-                Text("Refunds")
-                    .font(.title)
-                    .padding()
-                ForEach(viewModel.refunds) { refund in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("**Refund ID:** \n\(refund.id)")
-                            Text("**Charge Intent ID:** \n\(refund.chargeIntent ?? "")")
-                        }
-                        Spacer()
-                    }
-                    Divider()
-                }
-                Spacer()
-            }
-            .padding(.horizontal)
-        }
     }
     
     var onboardingButton: some View {
@@ -346,8 +194,7 @@ struct ContentView: View {
                 viewModel.accountId = accountId
                 // A session without a locked amount cannot create a transfer.
                 if let secret = await viewModel.mintCheckoutClientSecret(accountId: accountId, amountCents: exampleCartTotal) {
-                    self.checkoutClientSecret = secret
-                    self.showCheckoutView = true
+                    self.presentedCheckout = ExampleCheckoutSession(accountId: accountId, clientSecret: secret)
                 }
             }
         } label: {
@@ -414,86 +261,6 @@ struct ContentView: View {
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
-    
-    var allCustomersButton: some View {
-        Button {
-            self.showCustomersView = true
-        } label: {
-            Text("View All Customers")
-                .font(.headline)
-                .foregroundColor(theme.colors.primaryButtonText)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(height: 45.0)
-        .frame(maxWidth: .infinity)
-        .background(theme.colors.primaryButton)
-        .cornerRadius(10.0)
-        .padding([.horizontal, .bottom])
-    }
-    
-    var allPaymentMethodsButton: some View {
-        Button {
-            self.showPaymentMethodsView = true
-        } label: {
-            Text("View All Payment Methods")
-                .font(.headline)
-                .foregroundColor(theme.colors.primaryButtonText)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(height: 45.0)
-        .frame(maxWidth: .infinity)
-        .background(theme.colors.primaryButton)
-        .cornerRadius(10.0)
-        .padding([.horizontal, .bottom])
-    }
-    
-    var allSubscriptionsButton: some View {
-        Button {
-//            self.showCheckoutView = true
-        } label: {
-            Text("View All Subscriptions")
-                .font(.headline)
-                .foregroundColor(theme.colors.primaryButtonText)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(height: 45.0)
-        .frame(maxWidth: .infinity)
-        .background(theme.colors.primaryButton)
-        .cornerRadius(10.0)
-        .padding([.horizontal, .bottom])
-    }
-    
-    var allRefundsButton: some View {
-        Button {
-            self.showRefundsView = true
-        } label: {
-            Text("View All Refunds")
-                .font(.headline)
-                .foregroundColor(theme.colors.primaryButtonText)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(height: 45.0)
-        .frame(maxWidth: .infinity)
-        .background(theme.colors.primaryButton)
-        .cornerRadius(10.0)
-        .padding([.horizontal, .bottom])
-    }
-    
-    var allSubscriptionPhasesButton: some View {
-        Button {
-            self.showSubscriptionPhases = true
-        } label: {
-            Text("View All Subscription Phases")
-                .font(.headline)
-                .foregroundColor(theme.colors.primaryButtonText)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .frame(height: 45.0)
-        .frame(maxWidth: .infinity)
-        .background(theme.colors.primaryButton)
-        .cornerRadius(10.0)
-        .padding([.horizontal, .bottom])
-    }
 }
 
 #Preview {
@@ -503,4 +270,11 @@ struct ContentView: View {
 #Preview("Dark") {
     ContentView()
         .preferredColorScheme(.dark)
+}
+
+/// Cart sheet value. The token travels with the presentation so checkout cannot open without it.
+private struct ExampleCheckoutSession: Identifiable {
+    let id = UUID()
+    let accountId: String
+    let clientSecret: FrameCheckoutClientSecret
 }

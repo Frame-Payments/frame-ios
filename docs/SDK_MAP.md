@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1612 public symbols** across 141 files in 2 modules.
+**1613 public symbols** across 141 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -50,13 +50,13 @@ regeneration, so architectural notes belong there.
 | Actors | 1 |
 | Type aliases | 9 |
 | Initializers | 126 |
-| Methods | 277 |
+| Methods | 278 |
 | Properties (var) | 232 |
 | Properties (let) | 328 |
 | Enum cases | 304 |
-| **Total** | **1612** |
+| **Total** | **1613** |
 
-### `Frame` — 1440 public symbols
+### `Frame` — 1441 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -1332,7 +1332,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/PaymentMethods (108)
+#### Networking/PaymentMethods (109)
 
 <details><summary><code>ApplePayAPI.swift</code> — 3 symbols</summary>
 
@@ -1462,7 +1462,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>PaymentMethodsAPI.swift</code> — 25 symbols</summary>
+<details><summary><code>PaymentMethodsAPI.swift</code> — 26 symbols</summary>
 
 [`Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift`](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift)
 
@@ -1473,26 +1473,27 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `PaymentMethodsAPI.getPaymentMethodWith` | func | `func getPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [76](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L76) |
 | `PaymentMethodsAPI.getPaymentMethodsWithCustomer` | func | `func getPaymentMethodsWithCustomer(customerId: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, Networkin…` | [95](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L95) |
 | `PaymentMethodsAPI.getPaymentMethodsWithAccount` | func | `func getPaymentMethodsWithAccount(accountId: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingE…` | [117](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L117) |
-| `PaymentMethodsAPI.createCardPaymentMethod` | func | `func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true) async throws -> (FrameObjects.PaymentMetho…` | [141](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L141) |
-| `PaymentMethodsAPI.createACHPaymentMethod` | func | `func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [173](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L173) |
-| `PaymentMethodsAPI.updatePaymentMethodWith` | func | `func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, N…` | [191](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L191) |
-| `PaymentMethodsAPI.attachPaymentMethodWith` | func | `func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, N…` | [211](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L211) |
-| `PaymentMethodsAPI.detachPaymentMethodWith` | func | `func detachPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [229](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L229) |
-| `PaymentMethodsAPI.blockPaymentMethodWith` | func | `func blockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [246](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L246) |
-| `PaymentMethodsAPI.unblockPaymentMethodWith` | func | `func unblockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [263](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L263) |
-| `PaymentMethodsAPI.connectPlaidBankAccount` | func | `func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [279](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L279) |
-| `PaymentMethodsAPI.getPaymentMethods` | func | `func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, Netwo…` | [300](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L300) |
-| `PaymentMethodsAPI.getPaymentMethodWith` | func | `func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [318](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L318) |
-| `PaymentMethodsAPI.getPaymentMethodsWithCustomer` | func | `func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingEr…` | [336](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L336) |
-| `PaymentMethodsAPI.getPaymentMethodsWithAccount` | func | `func getPaymentMethodsWithAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingErro…` | [354](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L354) |
-| `PaymentMethodsAPI.createCardPaymentMethod` | func | `func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (Fr…` | [375](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L375) |
-| `PaymentMethodsAPI.createACHPaymentMethod` | func | `func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, N…` | [417](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L417) |
-| `PaymentMethodsAPI.updatePaymentMethodWith` | func | `func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [436](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L436) |
-| `PaymentMethodsAPI.attachPaymentMethodWith` | func | `func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [456](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L456) |
-| `PaymentMethodsAPI.detachPaymentMethodWith` | func | `func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [475](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L475) |
-| `PaymentMethodsAPI.blockPaymentMethodWith` | func | `func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [493](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L493) |
-| `PaymentMethodsAPI.unblockPaymentMethodWith` | func | `func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [511](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L511) |
-| `PaymentMethodsAPI.connectPlaidBankAccount` | func | `func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?,…` | [528](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L528) |
+| `PaymentMethodsAPI.getPaymentMethodsWithAccount` | func | `func getPaymentMethodsWithAccount(accountId: String, clientSecret: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethods…` | [131](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L131) |
+| `PaymentMethodsAPI.createCardPaymentMethod` | func | `func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true) async throws -> (FrameObjects.PaymentMetho…` | [160](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L160) |
+| `PaymentMethodsAPI.createACHPaymentMethod` | func | `func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [192](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L192) |
+| `PaymentMethodsAPI.updatePaymentMethodWith` | func | `func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, N…` | [210](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L210) |
+| `PaymentMethodsAPI.attachPaymentMethodWith` | func | `func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest) async throws -> (FrameObjects.PaymentMethod?, N…` | [230](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L230) |
+| `PaymentMethodsAPI.detachPaymentMethodWith` | func | `func detachPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [248](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L248) |
+| `PaymentMethodsAPI.blockPaymentMethodWith` | func | `func blockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [265](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L265) |
+| `PaymentMethodsAPI.unblockPaymentMethodWith` | func | `func unblockPaymentMethodWith(paymentMethodId: String) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [282](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L282) |
+| `PaymentMethodsAPI.connectPlaidBankAccount` | func | `func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest) async throws -> (FrameObjects.PaymentMethod?, NetworkingError?)` | [298](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L298) |
+| `PaymentMethodsAPI.getPaymentMethods` | func | `func getPaymentMethods(page: Int? = nil, perPage: Int? = nil, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, Netwo…` | [319](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L319) |
+| `PaymentMethodsAPI.getPaymentMethodWith` | func | `func getPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [337](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L337) |
+| `PaymentMethodsAPI.getPaymentMethodsWithCustomer` | func | `func getPaymentMethodsWithCustomer(customerId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingEr…` | [355](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L355) |
+| `PaymentMethodsAPI.getPaymentMethodsWithAccount` | func | `func getPaymentMethodsWithAccount(accountId: String, completionHandler: @escaping @Sendable (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingErro…` | [373](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L373) |
+| `PaymentMethodsAPI.createCardPaymentMethod` | func | `func createCardPaymentMethod(request: PaymentMethodRequest.CreateCardPaymentMethodRequest, encryptData: Bool = true, completionHandler: @escaping @Sendable (Fr…` | [394](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L394) |
+| `PaymentMethodsAPI.createACHPaymentMethod` | func | `func createACHPaymentMethod(request: PaymentMethodRequest.CreateACHPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, N…` | [436](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L436) |
+| `PaymentMethodsAPI.updatePaymentMethodWith` | func | `func updatePaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.UpdatePaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [455](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L455) |
+| `PaymentMethodsAPI.attachPaymentMethodWith` | func | `func attachPaymentMethodWith(paymentMethodId: String, request: PaymentMethodRequest.AttachPaymentMethodRequest, completionHandler: @escaping @Sendable (FrameOb…` | [475](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L475) |
+| `PaymentMethodsAPI.detachPaymentMethodWith` | func | `func detachPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [494](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L494) |
+| `PaymentMethodsAPI.blockPaymentMethodWith` | func | `func blockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [512](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L512) |
+| `PaymentMethodsAPI.unblockPaymentMethodWith` | func | `func unblockPaymentMethodWith(paymentMethodId: String, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?, NetworkingError?) -> Void)` | [530](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L530) |
+| `PaymentMethodsAPI.connectPlaidBankAccount` | func | `func connectPlaidBankAccount(request: PaymentMethodRequest.ConnectPlaidBankAccountRequest, completionHandler: @escaping @Sendable (FrameObjects.PaymentMethod?,…` | [547](../Sources/Frame/Networking/PaymentMethods/PaymentMethodsAPI.swift#L547) |
 
 </details>
 
@@ -2351,12 +2352,12 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [472](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L472) |
-| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [474](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L474) |
-| `AvailableCountry.displayName` | let | `let displayName: String` | [476](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L476) |
-| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [479](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L479) |
-| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [481](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L481) |
-| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [486](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L486) |
+| `AvailableCountry` | struct | `struct AvailableCountry: Hashable` | [435](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L435) |
+| `AvailableCountry.alpha2Code` | let | `let alpha2Code: String` | [437](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L437) |
+| `AvailableCountry.displayName` | let | `let displayName: String` | [439](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L439) |
+| `AvailableCountry.defaultCountry` | let | `let defaultCountry: AvailableCountry = AvailableCountry(alpha2Code: , displayName: )` | [442](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L442) |
+| `AvailableCountry.restrictedCountries` | let | `let restrictedCountries: [String] = [ , , , , ,` | [444](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L444) |
+| `AvailableCountry.allCountries` | let | `let allCountries: [AvailableCountry] =` | [449](../Sources/Frame/ViewModels/FrameCheckoutViewModel.swift#L449) |
 
 </details>
 

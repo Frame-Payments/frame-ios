@@ -130,6 +130,10 @@ class OnboardingContainerViewModel: ObservableObject {
     /// secret or a self-minted one — and is therefore responsible for ending it on completion/dismiss.
     private(set) var ownsOnboardingSession = false
 
+    /// Onboarding-session token (`onb_sess_…`) for account-scoped reads. The payment-method list
+    /// does not accept a publishable key.
+    private var onboardingClientSecret: String?
+
     /// Set once this flow has torn its session down, so a mint already in flight doesn't install a
     /// token afterwards — one that lands post-teardown has nothing left to end it.
     private var hasEndedOnboardingSession = false
@@ -201,6 +205,9 @@ class OnboardingContainerViewModel: ObservableObject {
             }
 
             self.existingAccountHasTOS = account?.termsOfService?.acceptedAt != nil
+            if let account {
+                self.primaryPayoutMethodId = account.payoutPaymentMethodId
+            }
 
             guard updateCapabilies else { return }
             if let capabilities = account?.capabilities {
@@ -268,6 +275,7 @@ class OnboardingContainerViewModel: ObservableObject {
     /// owns the session, so it's ended when the flow completes or is dismissed. The host mints
     /// that token with a secret key. A publishable key cannot create one.
     func beginOnboardingSession(clientSecret: String) {
+        onboardingClientSecret = clientSecret
         FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
         ownsOnboardingSession = true
     }
@@ -282,6 +290,7 @@ class OnboardingContainerViewModel: ObservableObject {
         guard ownsOnboardingSession else { return }
         FrameNetworking.shared.endOnboardingSession()
         ownsOnboardingSession = false
+        onboardingClientSecret = nil
     }
 
     // Create new individual account if no ID was previously provided to start onboarding.
@@ -619,9 +628,32 @@ class OnboardingContainerViewModel: ObservableObject {
         showProveOTPEntry = false
     }
     
-    /// Saved methods are not listed with a client credential. Methods added in this session stay
-    /// on `paymentMethods` and `payoutMethods`.
-    func loadExistingPaymentMethods() async {}
+    /// Loads this account's saved methods with the onboarding client secret and splits them into
+    /// `paymentMethods` (cards) and `payoutMethods` (bank accounts).
+    func loadExistingPaymentMethods() async {
+        guard let accountId, let onboardingClientSecret, !onboardingClientSecret.isEmpty else { return }
+
+        do {
+            let (paymentMethodResponse, error) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(
+                accountId: accountId,
+                clientSecret: onboardingClientSecret
+            )
+            if let error {
+                reportSavedPaymentMethodsLoadFailure(error)
+            }
+            if let methods = paymentMethodResponse?.data {
+                self.paymentMethods = methods.filter { $0.card != nil }
+                self.payoutMethods = methods.filter { $0.ach != nil }
+            }
+        } catch {
+            reportSavedPaymentMethodsLoadFailure(error)
+        }
+    }
+
+    private func reportSavedPaymentMethodsLoadFailure(_ error: Error) {
+        AccountEventEmitter.emit(name: .savedPaymentMethodsLoadFailed, screen: .paymentMethod, detail: "\(error)")
+        FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
+    }
 
     // Add new payment method to customer object
     func addNewPaymentMethod() async {
