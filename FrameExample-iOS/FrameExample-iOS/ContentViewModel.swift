@@ -19,6 +19,8 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     var accountId: String = "ENTER_AN_ACCOUNT_ID"
     
     init() {
+        // Unit tests launch this app as their host. Skip setup so it doesn't hit the network mid-run.
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         // The SDK is publishable-key first: pass your publishable key (pk_) here. Secret keys
         // grant full merchant privileges and must not ship in an app binary — serve sk_ from your
         // backend. This example sets a secret key only to mint session tokens without a backend;
