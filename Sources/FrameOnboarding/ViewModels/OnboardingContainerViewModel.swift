@@ -639,16 +639,20 @@ class OnboardingContainerViewModel: ObservableObject {
                 clientSecret: onboardingClientSecret
             )
             if let error {
-                AccountEventEmitter.emit(name: .savedPaymentMethodsLoadFailed, screen: .paymentMethod, detail: "\(error)")
+                reportSavedPaymentMethodsLoadFailure(error)
             }
-            reportError(error)
             if let methods = paymentMethodResponse?.data {
                 self.paymentMethods = methods.filter { $0.card != nil }
                 self.payoutMethods = methods.filter { $0.ach != nil }
             }
-        } catch let error {
-            print(error)
+        } catch {
+            reportSavedPaymentMethodsLoadFailure(error)
         }
+    }
+
+    private func reportSavedPaymentMethodsLoadFailure(_ error: Error) {
+        AccountEventEmitter.emit(name: .savedPaymentMethodsLoadFailed, screen: .paymentMethod, detail: "\(error)")
+        FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
     }
 
     // Add new payment method to customer object
