@@ -61,12 +61,14 @@ public struct EncryptedPaymentCardInput: PaymentCardInputStyle {
                             Rectangle()
                                 .fill(borderColor)
                                 .frame(width: borderWidth)
+                                .padding(.bottom, borderWidth)
                             configuration.cvcField
                                 .frame(maxWidth: .infinity)
                                 .padding(.leading)
                                 .padding(.trailing)
                         }
-                        .frame(height: rowHeight)
+                        // Absorbs the inner rule's height so the rows fit inside the outer border.
+                        .frame(height: rowHeight - borderWidth)
                     }
                 }
                 // Full-size probe: Evervault fields are SwiftUI TextFields that sit as siblings

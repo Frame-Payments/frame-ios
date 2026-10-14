@@ -15,41 +15,6 @@ final class CheckoutViewModelTests: XCTestCase {
                                                                            httpVersion: nil,
                                                                            headerFields: nil), error: nil)
 
-    @MainActor func testLoadAccountPaymentMethods() async {
-        FrameNetworking.shared.asyncURLSession = session
-
-        // Nil accountId — no fetch, options stay nil.
-        let viewModel = FrameCheckoutViewModel(accountId: nil, amount: 100)
-        await viewModel.loadAccountPaymentMethods()
-        XCTAssertNil(viewModel.accountPaymentOptions)
-
-        // Without a secret key, a populated list response is ignored.
-        FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout")
-        let paymentMethod = FrameObjects.PaymentMethod(id: "1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [paymentMethod])
-        session.data = try? JSONEncoder().encode(response)
-        let viewModelTwo = FrameCheckoutViewModel(accountId: "1", amount: 100)
-        await viewModelTwo.loadAccountPaymentMethods()
-        XCTAssertNil(viewModelTwo.accountPaymentOptions)
-        XCTAssertTrue(viewModelTwo.didLoadAccountPaymentMethods)
-    }
-
-    @MainActor func testLoadAccountPaymentMethods_selectsFirstWhenSecretKeyIsConfigured() async {
-        FrameNetworking.shared.asyncURLSession = session
-        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let pm2 = FrameObjects.PaymentMethod(id: "pm_2", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1, pm2])
-        session.data = try? JSONEncoder().encode(response)
-        FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout", secretKey: "sk_test_checkout")
-        defer { FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout") }
-
-        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
-        await vm.loadAccountPaymentMethods()
-        XCTAssertEqual(vm.accountPaymentOptions?.map(\.id), ["pm_1", "pm_2"])
-        XCTAssertEqual(vm.selectedAccountPaymentOption?.id, "pm_1")
-        XCTAssertTrue(vm.didLoadAccountPaymentMethods)
-    }
-
     @MainActor func testSuppliedAccountAndPaymentMethods_areUsedWithoutASecretKey() async {
         FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout")
         FrameNetworking.shared.asyncURLSession = session
@@ -385,58 +350,6 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNotNil(vm.fieldErrors[.zip])
     }
 
-    @MainActor func testLoadAccountPaymentMethods_doesNotSelectFromAListResponse() async {
-        FrameNetworking.shared.asyncURLSession = session
-        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let pm2 = FrameObjects.PaymentMethod(id: "pm_2", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1, pm2])
-        session.data = try? JSONEncoder().encode(response)
-
-        FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout")
-        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
-        await vm.loadAccountPaymentMethods()
-        XCTAssertNil(vm.selectedAccountPaymentOption)
-        XCTAssertTrue(vm.didLoadAccountPaymentMethods)
-    }
-
-    @MainActor func testLoadAccountPaymentMethods_doesNotAutoSelectWhenEmpty() async {
-        FrameNetworking.shared.asyncURLSession = session
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [])
-        session.data = try? JSONEncoder().encode(response)
-
-        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
-        await vm.loadAccountPaymentMethods()
-        XCTAssertNil(vm.selectedAccountPaymentOption)
-    }
-
-    @MainActor func testLoadAccountPaymentMethods_respectsExistingSelection() async {
-        FrameNetworking.shared.asyncURLSession = session
-        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1])
-        session.data = try? JSONEncoder().encode(response)
-
-        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
-        let preselected = FrameObjects.PaymentMethod(id: "user_choice", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        vm.selectedAccountPaymentOption = preselected
-        await vm.loadAccountPaymentMethods()
-        XCTAssertEqual(vm.selectedAccountPaymentOption?.id, "user_choice")
-    }
-
-    @MainActor func testLoadAccountPaymentMethods_doesNotAutoSelectWhenUserHasStartedTypingCard() async {
-        FrameNetworking.shared.asyncURLSession = session
-        let pm1 = FrameObjects.PaymentMethod(id: "pm_1", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
-        let response = PaymentMethodResponses.ListPaymentMethodsResponse(meta: nil, data: [pm1])
-        session.data = try? JSONEncoder().encode(response)
-
-        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
-        var typed = PaymentCardData()
-        typed.card.number = "4242"
-        vm.cardData = typed
-        await vm.loadAccountPaymentMethods()
-        // Late-arriving response must not yank input out from under a user mid-type.
-        XCTAssertNil(vm.selectedAccountPaymentOption)
-    }
-
     @MainActor func testClearNewCardFieldErrors_clearsOnlyNewCardKeys() {
         let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, addressMode: .required)
         vm.fieldErrors = [
@@ -458,6 +371,41 @@ final class CheckoutViewModelTests: XCTestCase {
         XCTAssertNil(vm.fieldErrors[.state])
         XCTAssertNil(vm.fieldErrors[.zip])
         XCTAssertNil(vm.fieldErrors[.country])
+    }
+
+    @MainActor func testCheckoutClientSecret_setAfterInitLoadsProfileAndCards() async {
+        let sequenced = SequencedCheckoutSession(failFirstAccountRead: false)
+        FrameNetworking.shared.asyncURLSession = sequenced
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout", secretKey: "sk_test_checkout")
+        defer { FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout") }
+
+        let secret = FrameCheckoutClientSecret(clientSecret: "chk_sess_live", expiresAt: Date(timeIntervalSince1970: 2_000_000_000))
+        let vm = FrameCheckoutViewModel(accountId: "acc_1", amount: 100)
+        vm.setCheckoutClientSecret(secret)
+        await vm.loadAccountDetails()
+
+        XCTAssertEqual(vm.customerName, "Ada Lovelace")
+        XCTAssertEqual(vm.customerEmail, "ada@example.com")
+        XCTAssertEqual(vm.accountPaymentOptions?.map(\.id), ["pm_1"])
+        XCTAssertEqual(vm.selectedAccountPaymentOption?.id, "pm_1")
+    }
+
+    @MainActor func testCheckoutClientSecret_doesNotReplaceExistingSelectionOrTypedCard() async {
+        let sequenced = SequencedCheckoutSession(failFirstAccountRead: false)
+        FrameNetworking.shared.asyncURLSession = sequenced
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout", secretKey: "sk_test_checkout")
+        defer { FrameNetworking.shared.initialize(publishableKey: "pk_test_checkout") }
+        let secret = FrameCheckoutClientSecret(clientSecret: "chk_sess_live", expiresAt: Date(timeIntervalSince1970: 2_000_000_000))
+
+        let preselected = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, checkoutClientSecret: secret)
+        preselected.selectedAccountPaymentOption = FrameObjects.PaymentMethod(id: "user_choice", type: .card, object: "", created: 0, updated: 0, livemode: false, status: .active)
+        await preselected.loadAccountDetails()
+        XCTAssertEqual(preselected.selectedAccountPaymentOption?.id, "user_choice")
+
+        let typing = FrameCheckoutViewModel(accountId: "acc_1", amount: 100, checkoutClientSecret: secret)
+        typing.cardData.card.number = "4242"
+        await typing.loadAccountDetails()
+        XCTAssertNil(typing.selectedAccountPaymentOption)
     }
 
     @MainActor func testCheckoutClientSecret_refreshesWhenExpiredThenLoadsProfileAndCards() async {

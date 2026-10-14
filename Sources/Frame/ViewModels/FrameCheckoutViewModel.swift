@@ -34,7 +34,7 @@ class FrameCheckoutViewModel: ObservableObject {
 
     /// Saved payment methods available to the current account, or `nil` while loading.
     @Published var accountPaymentOptions: [FrameObjects.PaymentMethod]?
-    /// True once `loadAccountPaymentMethods` has returned. The view defers rendering the
+    /// True once the checkout-token reads have returned. The view defers rendering the
     /// new-card section until this flips, so returning users don't see the Card/Billing
     /// block flash visible before the auto-selection of their first saved method.
     @Published var didLoadAccountPaymentMethods: Bool = false
@@ -76,7 +76,7 @@ class FrameCheckoutViewModel: ObservableObject {
     /// The host already supplied the saved-method list, so checkout does not fetch it.
     private let usesSuppliedPaymentMethods: Bool
     /// Checkout token for the redacted account and saved-card reads. Refreshed in place when it expires.
-    private let checkoutClientSecret: FrameCheckoutClientSecret?
+    private var checkoutClientSecret: FrameCheckoutClientSecret?
 
     /// Creates a new checkout view-model.
     ///
@@ -84,10 +84,8 @@ class FrameCheckoutViewModel: ObservableObject {
     ///   - accountId: The Frame account ID for the payer, or `nil` for guest checkout.
     ///   - amount: Charge amount in the smallest currency unit (e.g. cents for USD).
     ///   - addressMode: Whether the billing address is `.required`, `.optional`, or `.hidden`.
-    ///   - account: Account fetched on the host's backend. Prefills name and email. When `nil`
-    ///     and a secret key is configured, checkout fetches the account itself.
-    ///   - paymentMethods: Saved methods fetched on the host's backend. When `nil` and a secret
-    ///     key is configured, checkout fetches the list itself.
+    ///   - account: Account fetched on the host's backend. Prefills name and email.
+    ///   - paymentMethods: Saved methods fetched on the host's backend. Skips the checkout-token list.
     ///   - checkoutClientSecret: `chk_sess_` token from `POST /v1/checkout_sessions`. When set,
     ///     checkout reads the name, email, and saved cards with it instead of the secret key.
     init(accountId: String?,
@@ -111,57 +109,22 @@ class FrameCheckoutViewModel: ObservableObject {
         }
     }
 
-    /// Prefills name and email from a supplied account, a checkout client secret, or account GET
-    /// when a secret key is configured. A publishable key cannot read the profile.
+    /// Stores `secret` for the account and saved-card reads. Called on appear because the view-model can be created before the token exists.
+    func setCheckoutClientSecret(_ secret: FrameCheckoutClientSecret?) {
+        guard let secret, !secret.clientSecret.isEmpty else { return }
+        checkoutClientSecret = secret
+        secret.recordLockedAmountIfMissing(cents: amount, currency: "usd")
+    }
+
+    /// Prefills name and email, and loads saved cards, with the checkout client secret.
     func loadAccountDetails() async {
         FrameNetworking.shared.setAccountIdIfUnset(accountId)
         AccountEventEmitter.emit(name: .checkoutStarted, screen: .paymentSheet)
-        if checkoutClientSecret != nil {
-            await loadWithCheckoutClientSecret()
+        guard checkoutClientSecret != nil else {
+            didLoadAccountPaymentMethods = true
             return
         }
-        if !usesSuppliedAccount {
-            await fetchAccountProfile()
-        }
-        await loadAccountPaymentMethods()
-    }
-
-    /// Uses the supplied saved-method list, or fetches it when a secret key is configured.
-    /// A publishable key cannot list payment methods, so checkout stays on card entry.
-    func loadAccountPaymentMethods() async {
-        if usesSuppliedPaymentMethods {
-            self.didLoadAccountPaymentMethods = true
-            return
-        }
-        guard FrameNetworking.shared.hasSecretKey, let accountId, !accountId.isEmpty else {
-            self.didLoadAccountPaymentMethods = true
-            return
-        }
-        do {
-            let (response, error) = try await AccountsAPI.getPaymentMethodsForAccount(accountId: accountId)
-            if let error {
-                FrameToastCenter.shared.show(error.toastMessage())
-            }
-            applyPaymentMethods(response?.data ?? [])
-        } catch {
-            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
-        }
-        self.didLoadAccountPaymentMethods = true
-    }
-
-    private func fetchAccountProfile() async {
-        guard FrameNetworking.shared.hasSecretKey, let accountId, !accountId.isEmpty else { return }
-        do {
-            let (response, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
-            if let error {
-                FrameToastCenter.shared.show(error.toastMessage())
-            }
-            if let response {
-                applyAccount(response)
-            }
-        } catch {
-            FrameToastCenter.shared.show((error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again.")
-        }
+        await loadWithCheckoutClientSecret()
     }
 
     private func loadWithCheckoutClientSecret() async {

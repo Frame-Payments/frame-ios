@@ -115,10 +115,29 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
     ///   - forTesting: Pass `true` to suppress Sift fraud-signal collection during tests.
     /// - Returns: A tuple containing the decoded list response and an optional ``NetworkingError``.
     public static func getPaymentMethodsWithAccount(accountId: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
-      guard !accountId.isEmpty else { return (nil, nil) }
+        try await listPaymentMethods(accountId: accountId, forTesting: forTesting, auth: .publishable)
+    }
+
+    /// Retrieves payment methods for an account using its onboarding client secret.
+    ///
+    /// `GET /v1/accounts/{id}/payment_methods` does not accept a publishable key. Pass the
+    /// onboarding-session token (`onb_sess_…`) minted for this account.
+    ///
+    /// - Parameters:
+    ///   - accountId: The unique identifier of the account.
+    ///   - clientSecret: The onboarding-session token (`onb_sess_…`) that scopes this read.
+    ///   - forTesting: Pass `true` to suppress Sift fraud-signal collection during tests.
+    /// - Returns: A tuple containing the decoded list response and an optional ``NetworkingError``.
+    public static func getPaymentMethodsWithAccount(accountId: String, clientSecret: String, forTesting: Bool = false) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
+        guard !clientSecret.isEmpty else { return (nil, nil) }
+        return try await listPaymentMethods(accountId: accountId, forTesting: forTesting, auth: .clientSecret(clientSecret))
+    }
+
+    private static func listPaymentMethods(accountId: String, forTesting: Bool, auth: FrameAuthMode) async throws -> (PaymentMethodResponses.ListPaymentMethodsResponse?, NetworkingError?) {
+        guard !accountId.isEmpty else { return (nil, nil) }
         let endpoint = PaymentMethodEndpoints.getPaymentMethodsWithAccount(accountId: accountId)
 
-        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
+        let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: auth)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             if !forTesting {
                 // Redundancy incase no Customer API calls are ever made.
