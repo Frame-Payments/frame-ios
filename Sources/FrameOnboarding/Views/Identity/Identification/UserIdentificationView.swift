@@ -82,7 +82,8 @@ struct UserIdentificationView: View {
         ))
         self._customerInfoVM = StateObject(wrappedValue: CustomerInformationViewModel(
             identity: onboardingContainerViewModel.createdCustomerIdentity,
-            phoneCountry: onboardingContainerViewModel.phoneCountry
+            phoneCountry: onboardingContainerViewModel.phoneCountry,
+            collectsFullSSN: onboardingContainerViewModel.accountType == .business
         ))
     }
     

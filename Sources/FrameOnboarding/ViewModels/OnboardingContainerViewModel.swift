@@ -95,6 +95,9 @@ class OnboardingContainerViewModel: ObservableObject {
 
     @Published var beneficialOwners: [BeneficialOwners.Owner] = []
 
+    /// Owner written from personal info. A later submit updates this record even if the email changed.
+    private var submittedBusinessOwnerId: String?
+
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
     @Published var paymentMethodVerification: ThreeDSecureVerification?
@@ -1293,21 +1296,30 @@ class OnboardingContainerViewModel: ObservableObject {
             invite: false
         )
         do {
-            let (owners, listError) = try await BeneficialOwnersAPI.list(accountId: accountId)
-            if listError != nil {
-                reportError(listError)
-                return false
-            }
-            let existing = owners?.data?.first {
-                $0.email?.caseInsensitiveCompare(identity.email) == .orderedSame
-            }
-            let error: NetworkingError?
-            if let existing {
-                (_, error) = try await BeneficialOwnersAPI.update(accountId: accountId, ownerId: existing.id, request: request)
+            let existingId: String?
+            if let submittedBusinessOwnerId {
+                existingId = submittedBusinessOwnerId
             } else {
-                (_, error) = try await BeneficialOwnersAPI.create(accountId: accountId, request: request)
+                let (owners, listError) = try await BeneficialOwnersAPI.list(accountId: accountId)
+                if listError != nil {
+                    reportError(listError)
+                    return false
+                }
+                existingId = owners?.data?.first {
+                    $0.email?.caseInsensitiveCompare(identity.email) == .orderedSame
+                }?.id
+            }
+            let written: BeneficialOwners.Owner?
+            let error: NetworkingError?
+            if let existingId {
+                (written, error) = try await BeneficialOwnersAPI.update(accountId: accountId, ownerId: existingId, request: request)
+            } else {
+                (written, error) = try await BeneficialOwnersAPI.create(accountId: accountId, request: request)
             }
             reportError(error)
+            if error == nil {
+                submittedBusinessOwnerId = written?.id ?? existingId
+            }
             return error == nil
         } catch {
             print(error)
@@ -1344,7 +1356,9 @@ class OnboardingContainerViewModel: ObservableObject {
             samePhysicalAndLegalAddress: samePhysicalAddress,
             physicalAddress: samePhysicalAddress ? nil : physicalAddress
         )
+        let termsOfService = FrameObjects.AccountTermsOfService(token: termsOfServiceToken, ipAddress: SiftManager.getIPAddress(), acceptedAt: formatter.string(from: Date()))
         let request = AccountRequest.UpdateAccountRequest(
+            termsOfService: existingAccountHasTOS ? nil : termsOfService,
             profile: AccountRequest.UpdateAccountProfile(business: business, individual: nil)
         )
         do {

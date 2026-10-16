@@ -46,7 +46,6 @@ public struct CustomerInformationView: View {
          headerTitle: String = "Legal name") {
         self.viewModel = viewModel
         self.onboardingContainerViewModel = onboardingContainerViewModel
-        viewModel.collectsFullSSN = onboardingContainerViewModel.accountType == .business
         self._headerTitle = State(initialValue: headerTitle)
     }
 

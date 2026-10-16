@@ -50,12 +50,15 @@ public final class CustomerInformationViewModel: ObservableObject {
     /// - Parameters:
     ///   - identity: The initial customer identity values; defaults to an empty request.
     ///   - phoneCountry: The initial phone country selection; defaults to `.default`.
+    ///   - collectsFullSSN: Business owners enter all 9 digits. Individuals enter the last four.
     public init(identity: CustomerIdentityRequest.CreateCustomerIdentityRequest = CustomerIdentityRequest.CreateCustomerIdentityRequest(
                     firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
                     ssn: "", address: FrameObjects.BillingAddress(postalCode: "")),
-                phoneCountry: PhoneCountrySelection = .default) {
+                phoneCountry: PhoneCountrySelection = .default,
+                collectsFullSSN: Bool = false) {
         self.identity = identity
         self.phoneCountry = phoneCountry
+        self.collectsFullSSN = collectsFullSSN
     }
 
     /// Validates all form fields, populates ``errors``, and returns whether the form is valid.

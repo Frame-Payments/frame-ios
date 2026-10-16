@@ -355,22 +355,22 @@ public class AccountRequest {
             self.physicalAddress = physicalAddress
         }
 
-        /// Encodes a business profile update. The two address-mode fields are omitted when unset so an older caller does not send JSON null and clear them.
+        /// Omits unset fields. `encode` would send JSON null and clear values this call did not mean to change.
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(legalBusinessName, forKey: .legalBusinessName)
-            try container.encode(doingBusinessAs, forKey: .doingBusinessAs)
-            try container.encode(dba, forKey: .dba)
-            try container.encode(businessType, forKey: .businessType)
-            try container.encode(email, forKey: .email)
-            try container.encode(website, forKey: .website)
-            try container.encode(description, forKey: .description)
-            try container.encode(phoneNumber, forKey: .phoneNumber)
-            try container.encode(phoneCountryCode, forKey: .phoneCountryCode)
-            try container.encode(address, forKey: .address)
-            try container.encode(ein, forKey: .ein)
-            try container.encode(mcc, forKey: .mcc)
-            try container.encode(naics, forKey: .naics)
+            try container.encodeIfPresent(legalBusinessName, forKey: .legalBusinessName)
+            try container.encodeIfPresent(doingBusinessAs, forKey: .doingBusinessAs)
+            try container.encodeIfPresent(dba, forKey: .dba)
+            try container.encodeIfPresent(businessType, forKey: .businessType)
+            try container.encodeIfPresent(email, forKey: .email)
+            try container.encodeIfPresent(website, forKey: .website)
+            try container.encodeIfPresent(description, forKey: .description)
+            try container.encodeIfPresent(phoneNumber, forKey: .phoneNumber)
+            try container.encodeIfPresent(phoneCountryCode, forKey: .phoneCountryCode)
+            try container.encodeIfPresent(address, forKey: .address)
+            try container.encodeIfPresent(ein, forKey: .ein)
+            try container.encodeIfPresent(mcc, forKey: .mcc)
+            try container.encodeIfPresent(naics, forKey: .naics)
             try container.encodeIfPresent(samePhysicalAndLegalAddress, forKey: .samePhysicalAndLegalAddress)
             try container.encodeIfPresent(physicalAddress, forKey: .physicalAddress)
         }
