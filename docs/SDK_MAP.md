@@ -39,24 +39,24 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1613 public symbols** across 141 files in 2 modules.
+**1655 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 70 |
-| Structs | 191 |
-| Enums | 69 |
+| Structs | 194 |
+| Enums | 71 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 9 |
-| Initializers | 126 |
-| Methods | 278 |
-| Properties (var) | 232 |
-| Properties (let) | 328 |
-| Enum cases | 304 |
-| **Total** | **1613** |
+| Initializers | 127 |
+| Methods | 287 |
+| Properties (var) | 256 |
+| Properties (let) | 329 |
+| Enum cases | 306 |
+| **Total** | **1655** |
 
-### `Frame` — 1441 public symbols
+### `Frame` — 1480 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -391,7 +391,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Accounts (161)
+#### Networking/Accounts (199)
 
 <details><summary><code>AccountObjects.swift</code> — 59 symbols</summary>
 
@@ -461,7 +461,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>AccountRequests.swift</code> — 75 symbols</summary>
+<details><summary><code>AccountRequests.swift</code> — 78 symbols</summary>
 
 [`Sources/Frame/Networking/Accounts/AccountRequests.swift`](../Sources/Frame/Networking/Accounts/AccountRequests.swift)
 
@@ -531,17 +531,20 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `AccountRequest.UpdateBusinessAccount.ein` | var | `var ein: String?` | [296](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L296) |
 | `AccountRequest.UpdateBusinessAccount.mcc` | var | `var mcc: String?` | [298](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L298) |
 | `AccountRequest.UpdateBusinessAccount.naics` | var | `var naics: String?` | [300](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L300) |
-| `AccountRequest.UpdateBusinessAccount.init` | init | `init ( legalBusinessName: String? = nil, doingBusinessAs: String? = nil, dba: String? = nil, businessType: String? = nil, email: String? = nil, website: String…` | [318](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L318) |
-| `AccountRequest.UpdateAccountRequest` | struct | `struct UpdateAccountRequest: Codable` | [359](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L359) |
-| `AccountRequest.UpdateAccountRequest.accountType` | var | `var accountType: FrameObjects.AccountType?` | [361](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L361) |
-| `AccountRequest.UpdateAccountRequest.externalId` | var | `var externalId: String?` | [363](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L363) |
-| `AccountRequest.UpdateAccountRequest.termsOfService` | var | `var termsOfService: FrameObjects.AccountTermsOfService?` | [365](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L365) |
-| `AccountRequest.UpdateAccountRequest.metadata` | var | `var metadata: [String: String]?` | [367](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L367) |
-| `AccountRequest.UpdateAccountRequest.profile` | var | `var profile: UpdateAccountProfile?` | [369](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L369) |
-| `AccountRequest.UpdateAccountRequest.init` | init | `init (accountType: FrameObjects.AccountType? = nil, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : S…` | [379](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L379) |
-| `AccountRequest.ElectPayoutMethodRequest` | struct | `struct ElectPayoutMethodRequest: Codable, Sendable, Equatable` | [396](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L396) |
-| `AccountRequest.ElectPayoutMethodRequest.paymentMethodId` | let | `let paymentMethodId: String` | [398](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L398) |
-| `AccountRequest.ElectPayoutMethodRequest.init` | init | `init (paymentMethodId: String)` | [403](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L403) |
+| `AccountRequest.UpdateBusinessAccount.samePhysicalAndLegalAddress` | var | `var samePhysicalAndLegalAddress: Bool?` | [302](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L302) |
+| `AccountRequest.UpdateBusinessAccount.physicalAddress` | var | `var physicalAddress: FrameObjects.BillingAddress?` | [304](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L304) |
+| `AccountRequest.UpdateBusinessAccount.init` | init | `init ( legalBusinessName: String? = nil, doingBusinessAs: String? = nil, dba: String? = nil, businessType: String? = nil, email: String? = nil, website: String…` | [324](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L324) |
+| `AccountRequest.UpdateBusinessAccount.encode` | func | `func encode(to encoder: Encoder) throws` | [359](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L359) |
+| `AccountRequest.UpdateAccountRequest` | struct | `struct UpdateAccountRequest: Codable` | [391](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L391) |
+| `AccountRequest.UpdateAccountRequest.accountType` | var | `var accountType: FrameObjects.AccountType?` | [393](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L393) |
+| `AccountRequest.UpdateAccountRequest.externalId` | var | `var externalId: String?` | [395](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L395) |
+| `AccountRequest.UpdateAccountRequest.termsOfService` | var | `var termsOfService: FrameObjects.AccountTermsOfService?` | [397](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L397) |
+| `AccountRequest.UpdateAccountRequest.metadata` | var | `var metadata: [String: String]?` | [399](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L399) |
+| `AccountRequest.UpdateAccountRequest.profile` | var | `var profile: UpdateAccountProfile?` | [401](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L401) |
+| `AccountRequest.UpdateAccountRequest.init` | init | `init (accountType: FrameObjects.AccountType? = nil, externalId: String? = nil, termsOfService: FrameObjects.AccountTermsOfService? = nil, metadata: [String : S…` | [411](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L411) |
+| `AccountRequest.ElectPayoutMethodRequest` | struct | `struct ElectPayoutMethodRequest: Codable, Sendable, Equatable` | [428](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L428) |
+| `AccountRequest.ElectPayoutMethodRequest.paymentMethodId` | let | `let paymentMethodId: String` | [430](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L430) |
+| `AccountRequest.ElectPayoutMethodRequest.init` | init | `init (paymentMethodId: String)` | [435](../Sources/Frame/Networking/Accounts/AccountRequests.swift#L435) |
 
 </details>
 
@@ -587,6 +590,50 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `AccountsAPI.unrestrictAccount` | func | `func unrestrictAccount(accountId: String, completionHandler: @escaping @Sendable (FrameObjects.Account?, NetworkingError?) -> Void)` | [411](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L411) |
 | `AccountsAPI.getPlaidLinkToken` | func | `func getPlaidLinkToken(accountId: String, completionHandler: @escaping @Sendable (AccountResponses.PlaidLinkTokenResponse?, NetworkingError?) -> Void)` | [428](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L428) |
 | `AccountsAPI.electPayoutMethod` | func | `func electPayoutMethod(accountId: String, request: AccountRequest.ElectPayoutMethodRequest, completionHandler: @escaping @Sendable (FrameObjects.Account?, Netw…` | [446](../Sources/Frame/Networking/Accounts/AccountsAPI.swift#L446) |
+
+</details>
+
+<details><summary><code>BeneficialOwnersAPI.swift</code> — 35 symbols</summary>
+
+[`Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift`](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `BeneficialOwners` | enum | `enum BeneficialOwners` | [4](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L4) |
+| `BeneficialOwners.Owner` | struct | `struct Owner: Codable, Identifiable, Equatable, Sendable` | [6](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L6) |
+| `BeneficialOwners.Owner.id` | let | `let id: String` | [8](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L8) |
+| `BeneficialOwners.Owner.status` | var | `var status: String?` | [10](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L10) |
+| `BeneficialOwners.Owner.firstName` | var | `var firstName: String?` | [12](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L12) |
+| `BeneficialOwners.Owner.lastName` | var | `var lastName: String?` | [14](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L14) |
+| `BeneficialOwners.Owner.email` | var | `var email: String?` | [16](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L16) |
+| `BeneficialOwners.Owner.roles` | var | `var roles: [String]?` | [18](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L18) |
+| `BeneficialOwners.ListResponse` | struct | `struct ListResponse: Codable, Sendable` | [28](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L28) |
+| `BeneficialOwners.ListResponse.data` | var | `var data: [Owner]?` | [30](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L30) |
+| `BeneficialOwners.WriteRequest` | struct | `struct WriteRequest: Codable, Sendable` | [34](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L34) |
+| `BeneficialOwners.WriteRequest.firstName` | var | `var firstName: String?` | [36](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L36) |
+| `BeneficialOwners.WriteRequest.lastName` | var | `var lastName: String?` | [38](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L38) |
+| `BeneficialOwners.WriteRequest.email` | var | `var email: String?` | [40](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L40) |
+| `BeneficialOwners.WriteRequest.dob` | var | `var dob: String?` | [42](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L42) |
+| `BeneficialOwners.WriteRequest.ssn` | var | `var ssn: String?` | [44](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L44) |
+| `BeneficialOwners.WriteRequest.phoneNumber` | var | `var phoneNumber: String?` | [46](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L46) |
+| `BeneficialOwners.WriteRequest.phoneCountryCode` | var | `var phoneCountryCode: String?` | [48](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L48) |
+| `BeneficialOwners.WriteRequest.addressLine1` | var | `var addressLine1: String?` | [50](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L50) |
+| `BeneficialOwners.WriteRequest.addressLine2` | var | `var addressLine2: String?` | [52](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L52) |
+| `BeneficialOwners.WriteRequest.city` | var | `var city: String?` | [54](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L54) |
+| `BeneficialOwners.WriteRequest.state` | var | `var state: String?` | [56](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L56) |
+| `BeneficialOwners.WriteRequest.postalCode` | var | `var postalCode: String?` | [58](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L58) |
+| `BeneficialOwners.WriteRequest.country` | var | `var country: String?` | [60](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L60) |
+| `BeneficialOwners.WriteRequest.roles` | var | `var roles: [String]?` | [62](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L62) |
+| `BeneficialOwners.WriteRequest.invite` | var | `var invite: Bool?` | [64](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L64) |
+| `BeneficialOwners.WriteRequest.init` | init | `init ( firstName: String? = nil, lastName: String? = nil, email: String? = nil, dob: String? = nil, ssn: String? = nil, phoneNumber: String? = nil, phoneCountr…` | [67](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L67) |
+| `BeneficialOwners.WriteRequest.encode` | func | `func encode(to encoder: Encoder) throws` | [102](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L102) |
+| `BeneficialOwnersAPI` | enum | `enum BeneficialOwnersAPI` | [173](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L173) |
+| `BeneficialOwnersAPI.list` | func | `func list(accountId: String) async throws -> (BeneficialOwners.ListResponse?, NetworkingError?)` | [175](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L175) |
+| `BeneficialOwnersAPI.create` | func | `func create(accountId: String, request: BeneficialOwners.WriteRequest) async throws -> (BeneficialOwners.Owner?, NetworkingError?)` | [183](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L183) |
+| `BeneficialOwnersAPI.update` | func | `func update(accountId: String, ownerId: String, request: BeneficialOwners.WriteRequest) async throws -> (BeneficialOwners.Owner?, NetworkingError?)` | [188](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L188) |
+| `BeneficialOwnersAPI.destroy` | func | `func destroy(accountId: String, ownerId: String) async throws -> NetworkingError?` | [193](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L193) |
+| `BeneficialOwnersAPI.confirm` | func | `func confirm(accountId: String) async throws -> NetworkingError?` | [200](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L200) |
+| `BeneficialOwnersAPI.resendInvite` | func | `func resendInvite(accountId: String, ownerId: String) async throws -> NetworkingError?` | [207](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L207) |
 
 </details>
 
@@ -2249,7 +2296,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Validation (28)
+#### Validation (29)
 
 <details><summary><code>AddressSubregions.swift</code> — 12 symbols</summary>
 
@@ -2283,7 +2330,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>Validators.swift</code> — 14 symbols</summary>
+<details><summary><code>Validators.swift</code> — 15 symbols</summary>
 
 [`Sources/Frame/Validation/Validators.swift`](../Sources/Frame/Validation/Validators.swift)
 
@@ -2297,12 +2344,13 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `Validators.validateCard` | func | `func validateCard(_ data: PaymentCardData) -> String?` | [66](../Sources/Frame/Validation/Validators.swift#L66) |
 | `Validators.validateCardExpiry` | func | `func validateCardExpiry(month: String, year: String) -> String?` | [76](../Sources/Frame/Validation/Validators.swift#L76) |
 | `Validators.validateSSNLast4` | func | `func validateSSNLast4(_ value: String) -> String?` | [93](../Sources/Frame/Validation/Validators.swift#L93) |
-| `Validators.validateRoutingNumberUS` | func | `func validateRoutingNumberUS(_ value: String) -> String?` | [103](../Sources/Frame/Validation/Validators.swift#L103) |
-| `Validators.validateAccountNumberUS` | func | `func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String?` | [123](../Sources/Frame/Validation/Validators.swift#L123) |
-| `Validators.validateDateOfBirth` | func | `func validateDateOfBirth(year: String, month: String, day: String, minAge: Int = 18, maxAge: Int = 120) -> String?` | [138](../Sources/Frame/Validation/Validators.swift#L138) |
-| `Validators.validatePostalCode` | func | `func validatePostalCode(_ value: String, countryCode: String) -> String?` | [196](../Sources/Frame/Validation/Validators.swift#L196) |
-| `Validators.validateSubregion` | func | `func validateSubregion(_ value: String, countryCode: String) -> String?` | [208](../Sources/Frame/Validation/Validators.swift#L208) |
-| `Validators.validatePhoneE164` | func | `func validatePhoneE164(_ raw: String, regionCode: String) -> String?` | [226](../Sources/Frame/Validation/Validators.swift#L226) |
+| `Validators.validateSSN` | func | `func validateSSN(_ value: String) -> String?` | [103](../Sources/Frame/Validation/Validators.swift#L103) |
+| `Validators.validateRoutingNumberUS` | func | `func validateRoutingNumberUS(_ value: String) -> String?` | [113](../Sources/Frame/Validation/Validators.swift#L113) |
+| `Validators.validateAccountNumberUS` | func | `func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String?` | [133](../Sources/Frame/Validation/Validators.swift#L133) |
+| `Validators.validateDateOfBirth` | func | `func validateDateOfBirth(year: String, month: String, day: String, minAge: Int = 18, maxAge: Int = 120) -> String?` | [148](../Sources/Frame/Validation/Validators.swift#L148) |
+| `Validators.validatePostalCode` | func | `func validatePostalCode(_ value: String, countryCode: String) -> String?` | [206](../Sources/Frame/Validation/Validators.swift#L206) |
+| `Validators.validateSubregion` | func | `func validateSubregion(_ value: String, countryCode: String) -> String?` | [218](../Sources/Frame/Validation/Validators.swift#L218) |
+| `Validators.validatePhoneE164` | func | `func validatePhoneE164(_ raw: String, regionCode: String) -> String?` | [236](../Sources/Frame/Validation/Validators.swift#L236) |
 
 </details>
 
@@ -2613,7 +2661,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-### `FrameOnboarding` — 172 public symbols
+### `FrameOnboarding` — 175 public symbols
 
 Onboarding product: the capability-driven identity/payment verification flow, its screens, and the onboarding-only APIs (3DS, IDV, phone OTP, geocompliance).
 
@@ -2801,7 +2849,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `CustomerInformationView` | struct | `struct CustomerInformationView: View` | [13](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L13) |
+| `CustomerInformationView` | struct | `struct CustomerInformationView: View` | [12](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L12) |
 | `CustomerInformationView.body` | var | `var body: some View` | [62](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L62) |
 
 </details>
@@ -2891,7 +2939,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-#### ViewModels (44)
+#### ViewModels (45)
 
 <details><summary><code>BankAccountViewModel.swift</code> — 9 symbols</summary>
 
@@ -2937,7 +2985,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 
 </details>
 
-<details><summary><code>CustomerInformationViewModel.swift</code> — 18 symbols</summary>
+<details><summary><code>CustomerInformationViewModel.swift</code> — 19 symbols</summary>
 
 [`Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift`](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift)
 
@@ -2957,16 +3005,17 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `CustomerInformationViewModel.phoneCountry` | var | `var phoneCountry: PhoneCountrySelection` | [36](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L36) |
 | `CustomerInformationViewModel.errors` | var | `var errors: [Field: String] = [:]` | [38](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L38) |
 | `CustomerInformationViewModel.skipSSN` | var | `var skipSSN: Bool = false` | [43](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L43) |
-| `CustomerInformationViewModel.init` | init | `init (identity: CustomerIdentityRequest.CreateCustomerIdentityRequest = CustomerIdentityRequest.CreateCustomerIdentityRequest( firstName: , lastName: , dateOfB…` | [50](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L50) |
-| `CustomerInformationViewModel.validate` | func | `func validate() -> Bool` | [62](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L62) |
-| `CustomerInformationViewModel.errorBinding` | func | `func errorBinding(_ field: Field) -> Binding<String?>` | [100](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L100) |
-| `CustomerInformationViewModel.firstDateOfBirthError` | var | `var firstDateOfBirthError: String?` | [109](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L109) |
+| `CustomerInformationViewModel.collectsFullSSN` | var | `var collectsFullSSN: Bool = false` | [46](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L46) |
+| `CustomerInformationViewModel.init` | init | `init (identity: CustomerIdentityRequest.CreateCustomerIdentityRequest = CustomerIdentityRequest.CreateCustomerIdentityRequest( firstName: , lastName: , dateOfB…` | [53](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L53) |
+| `CustomerInformationViewModel.validate` | func | `func validate() -> Bool` | [65](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L65) |
+| `CustomerInformationViewModel.errorBinding` | func | `func errorBinding(_ field: Field) -> Binding<String?>` | [103](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L103) |
+| `CustomerInformationViewModel.firstDateOfBirthError` | var | `var firstDateOfBirthError: String?` | [112](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L112) |
 
 </details>
 
-#### Views (10)
+#### Views (12)
 
-<details><summary><code>OnboardingContainerView.swift</code> — 10 symbols</summary>
+<details><summary><code>OnboardingContainerView.swift</code> — 12 symbols</summary>
 
 [`Sources/FrameOnboarding/Views/OnboardingContainerView.swift`](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift)
 
@@ -2978,10 +3027,12 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `OnboardingFlow.confirmPaymentMethod` | case | `case confirmPaymentMethod = 1` | [25](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L25) |
 | `OnboardingFlow.confirmBankAccount` | case | `case confirmBankAccount = 2` | [27](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L27) |
 | `OnboardingFlow.verificationSubmitted` | case | `case verificationSubmitted = 3` | [29](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L29) |
-| `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [44](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L44) |
-| `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [68](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L68) |
-| `OnboardingContainerView.init` | init | `init (clientSecret: String, accountId: String? = nil, requiredCapabilities: [FrameObjects.Capabilities] = [], showIntroScreen: Bool = false, showCompletionScre…` | [109](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L109) |
-| `OnboardingContainerView.body` | var | `var body: some View` | [144](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L144) |
+| `OnboardingFlow.businessDetails` | case | `case businessDetails = 4` | [31](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L31) |
+| `OnboardingFlow.ownersAndControllers` | case | `case ownersAndControllers = 5` | [33](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L33) |
+| `FrameObjects.onboardingStep` | var | `var onboardingStep: OnboardingFlow` | [86](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L86) |
+| `OnboardingContainerView` | struct | `struct OnboardingContainerView: View` | [110](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L110) |
+| `OnboardingContainerView.init` | init | `init (clientSecret: String, accountId: String? = nil, accountType: FrameObjects.AccountType = .individual, requiredCapabilities: [FrameObjects.Capabilities] = …` | [152](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L152) |
+| `OnboardingContainerView.body` | var | `var body: some View` | [177](../Sources/FrameOnboarding/Views/OnboardingContainerView.swift#L177) |
 
 </details>
 
