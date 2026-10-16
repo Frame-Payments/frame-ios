@@ -40,8 +40,10 @@ public enum BeneficialOwners {
         public var email: String?
         /// Date of birth, `YYYY-MM-DD`.
         public var dob: String?
-        /// Social Security number. Business onboarding sends all 9 digits.
+        /// Social Security number. All 9 digits, used when the platform requires a full SSN.
         public var ssn: String?
+        /// Last four digits of the Social Security number. Business personal info sends this.
+        public var ssnLastFour: String?
         /// Phone number, without the country code.
         public var phoneNumber: String?
         /// Phone country calling code.
@@ -70,6 +72,7 @@ public enum BeneficialOwners {
             email: String? = nil,
             dob: String? = nil,
             ssn: String? = nil,
+            ssnLastFour: String? = nil,
             phoneNumber: String? = nil,
             phoneCountryCode: String? = nil,
             addressLine1: String? = nil,
@@ -86,6 +89,7 @@ public enum BeneficialOwners {
             self.email = email
             self.dob = dob
             self.ssn = ssn
+            self.ssnLastFour = ssnLastFour
             self.phoneNumber = phoneNumber
             self.phoneCountryCode = phoneCountryCode
             self.addressLine1 = addressLine1
@@ -106,6 +110,7 @@ public enum BeneficialOwners {
             try container.encodeIfPresent(email, forKey: .email)
             try container.encodeIfPresent(dob, forKey: .dob)
             try container.encodeIfPresent(ssn, forKey: .ssn)
+            try container.encodeIfPresent(ssnLastFour, forKey: .ssnLastFour)
             try container.encodeIfPresent(phoneNumber, forKey: .phoneNumber)
             try container.encodeIfPresent(phoneCountryCode, forKey: .phoneCountryCode)
             try container.encodeIfPresent(addressLine1, forKey: .addressLine1)
@@ -120,6 +125,7 @@ public enum BeneficialOwners {
 
         enum CodingKeys: String, CodingKey {
             case email, dob, ssn, state, country, roles, invite
+            case ssnLastFour = "ssn_last_four"
             case firstName = "first_name"
             case lastName = "last_name"
             case phoneNumber = "phone_number"

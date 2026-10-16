@@ -1283,7 +1283,7 @@ class OnboardingContainerViewModel: ObservableObject {
             lastName: identity.lastName.nonEmpty,
             email: identity.email.nonEmpty,
             dob: identity.dateOfBirth.nonEmpty,
-            ssn: skipsSSNEntry ? nil : identity.ssn.nonEmpty,
+            ssnLastFour: skipsSSNEntry ? nil : identity.ssn.nonEmpty,
             phoneNumber: identity.phoneNumber.nonEmpty,
             phoneCountryCode: phoneCountry.dialCode,
             addressLine1: address.addressLine1?.nonEmpty,
