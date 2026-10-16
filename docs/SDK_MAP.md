@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1655 public symbols** across 142 files in 2 modules.
+**1656 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -51,12 +51,12 @@ regeneration, so architectural notes belong there.
 | Type aliases | 9 |
 | Initializers | 127 |
 | Methods | 287 |
-| Properties (var) | 256 |
+| Properties (var) | 257 |
 | Properties (let) | 329 |
 | Enum cases | 306 |
-| **Total** | **1655** |
+| **Total** | **1656** |
 
-### `Frame` — 1480 public symbols
+### `Frame` — 1481 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -391,7 +391,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Networking/Accounts (199)
+#### Networking/Accounts (200)
 
 <details><summary><code>AccountObjects.swift</code> — 59 symbols</summary>
 
@@ -593,7 +593,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>BeneficialOwnersAPI.swift</code> — 35 symbols</summary>
+<details><summary><code>BeneficialOwnersAPI.swift</code> — 36 symbols</summary>
 
 [`Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift`](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift)
 
@@ -615,25 +615,26 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `BeneficialOwners.WriteRequest.email` | var | `var email: String?` | [40](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L40) |
 | `BeneficialOwners.WriteRequest.dob` | var | `var dob: String?` | [42](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L42) |
 | `BeneficialOwners.WriteRequest.ssn` | var | `var ssn: String?` | [44](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L44) |
-| `BeneficialOwners.WriteRequest.phoneNumber` | var | `var phoneNumber: String?` | [46](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L46) |
-| `BeneficialOwners.WriteRequest.phoneCountryCode` | var | `var phoneCountryCode: String?` | [48](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L48) |
-| `BeneficialOwners.WriteRequest.addressLine1` | var | `var addressLine1: String?` | [50](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L50) |
-| `BeneficialOwners.WriteRequest.addressLine2` | var | `var addressLine2: String?` | [52](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L52) |
-| `BeneficialOwners.WriteRequest.city` | var | `var city: String?` | [54](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L54) |
-| `BeneficialOwners.WriteRequest.state` | var | `var state: String?` | [56](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L56) |
-| `BeneficialOwners.WriteRequest.postalCode` | var | `var postalCode: String?` | [58](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L58) |
-| `BeneficialOwners.WriteRequest.country` | var | `var country: String?` | [60](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L60) |
-| `BeneficialOwners.WriteRequest.roles` | var | `var roles: [String]?` | [62](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L62) |
-| `BeneficialOwners.WriteRequest.invite` | var | `var invite: Bool?` | [64](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L64) |
-| `BeneficialOwners.WriteRequest.init` | init | `init ( firstName: String? = nil, lastName: String? = nil, email: String? = nil, dob: String? = nil, ssn: String? = nil, phoneNumber: String? = nil, phoneCountr…` | [67](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L67) |
-| `BeneficialOwners.WriteRequest.encode` | func | `func encode(to encoder: Encoder) throws` | [102](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L102) |
-| `BeneficialOwnersAPI` | enum | `enum BeneficialOwnersAPI` | [173](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L173) |
-| `BeneficialOwnersAPI.list` | func | `func list(accountId: String) async throws -> (BeneficialOwners.ListResponse?, NetworkingError?)` | [175](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L175) |
-| `BeneficialOwnersAPI.create` | func | `func create(accountId: String, request: BeneficialOwners.WriteRequest) async throws -> (BeneficialOwners.Owner?, NetworkingError?)` | [183](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L183) |
-| `BeneficialOwnersAPI.update` | func | `func update(accountId: String, ownerId: String, request: BeneficialOwners.WriteRequest) async throws -> (BeneficialOwners.Owner?, NetworkingError?)` | [188](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L188) |
-| `BeneficialOwnersAPI.destroy` | func | `func destroy(accountId: String, ownerId: String) async throws -> NetworkingError?` | [193](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L193) |
-| `BeneficialOwnersAPI.confirm` | func | `func confirm(accountId: String) async throws -> NetworkingError?` | [200](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L200) |
-| `BeneficialOwnersAPI.resendInvite` | func | `func resendInvite(accountId: String, ownerId: String) async throws -> NetworkingError?` | [207](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L207) |
+| `BeneficialOwners.WriteRequest.ssnLastFour` | var | `var ssnLastFour: String?` | [46](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L46) |
+| `BeneficialOwners.WriteRequest.phoneNumber` | var | `var phoneNumber: String?` | [48](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L48) |
+| `BeneficialOwners.WriteRequest.phoneCountryCode` | var | `var phoneCountryCode: String?` | [50](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L50) |
+| `BeneficialOwners.WriteRequest.addressLine1` | var | `var addressLine1: String?` | [52](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L52) |
+| `BeneficialOwners.WriteRequest.addressLine2` | var | `var addressLine2: String?` | [54](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L54) |
+| `BeneficialOwners.WriteRequest.city` | var | `var city: String?` | [56](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L56) |
+| `BeneficialOwners.WriteRequest.state` | var | `var state: String?` | [58](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L58) |
+| `BeneficialOwners.WriteRequest.postalCode` | var | `var postalCode: String?` | [60](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L60) |
+| `BeneficialOwners.WriteRequest.country` | var | `var country: String?` | [62](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L62) |
+| `BeneficialOwners.WriteRequest.roles` | var | `var roles: [String]?` | [64](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L64) |
+| `BeneficialOwners.WriteRequest.invite` | var | `var invite: Bool?` | [66](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L66) |
+| `BeneficialOwners.WriteRequest.init` | init | `init ( firstName: String? = nil, lastName: String? = nil, email: String? = nil, dob: String? = nil, ssn: String? = nil, ssnLastFour: String? = nil, phoneNumber…` | [69](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L69) |
+| `BeneficialOwners.WriteRequest.encode` | func | `func encode(to encoder: Encoder) throws` | [106](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L106) |
+| `BeneficialOwnersAPI` | enum | `enum BeneficialOwnersAPI` | [179](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L179) |
+| `BeneficialOwnersAPI.list` | func | `func list(accountId: String) async throws -> (BeneficialOwners.ListResponse?, NetworkingError?)` | [181](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L181) |
+| `BeneficialOwnersAPI.create` | func | `func create(accountId: String, request: BeneficialOwners.WriteRequest) async throws -> (BeneficialOwners.Owner?, NetworkingError?)` | [189](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L189) |
+| `BeneficialOwnersAPI.update` | func | `func update(accountId: String, ownerId: String, request: BeneficialOwners.WriteRequest) async throws -> (BeneficialOwners.Owner?, NetworkingError?)` | [194](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L194) |
+| `BeneficialOwnersAPI.destroy` | func | `func destroy(accountId: String, ownerId: String) async throws -> NetworkingError?` | [199](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L199) |
+| `BeneficialOwnersAPI.confirm` | func | `func confirm(accountId: String) async throws -> NetworkingError?` | [206](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L206) |
+| `BeneficialOwnersAPI.resendInvite` | func | `func resendInvite(accountId: String, ownerId: String) async throws -> NetworkingError?` | [213](../Sources/Frame/Networking/Accounts/BeneficialOwnersAPI.swift#L213) |
 
 </details>
 
