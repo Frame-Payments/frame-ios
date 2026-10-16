@@ -96,6 +96,16 @@ public enum Validators {
         return isValid ? nil : "Enter last 4 digits of SSN"
     }
 
+    /// Validates that a string is a full 9-digit Social Security number.
+    ///
+    /// - Parameter value: The SSN, digits only.
+    /// - Returns: An error message if the value is empty or not exactly 9 digits, or `nil` if valid.
+    public static func validateSSN(_ value: String) -> String? {
+        if value.isEmpty { return "SSN is required" }
+        let isValid = value.count == 9 && value.allSatisfy { $0.isNumber }
+        return isValid ? nil : "Enter a 9-digit Social Security number"
+    }
+
     /// Validates that a string is a valid 9-digit US ABA routing number using the standard checksum algorithm.
     ///
     /// - Parameter value: The routing number string to validate.

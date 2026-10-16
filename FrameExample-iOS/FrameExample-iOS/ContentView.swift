@@ -24,9 +24,11 @@ struct ContentView: View {
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
+    @State private var businessOnboarding: BusinessOnboardingLaunch?
     @State var applePayResult: String? = nil
 
     let requiredCapabilities: [FrameObjects.Capabilities] = [.kycPrefill, .geoCompliance, .ageVerification]
+    let businessCapabilities: [FrameObjects.Capabilities] = [.phoneVerification, .geoCompliance]
     private let exampleCartItems: [ExampleCartItem] = [
         ExampleCartItem(id: "1",
                         imageURL: "https://img.kwcdn.com/product/fancy/5048db00-f41b-47e6-9268-2c0e3d2629e2.jpg?imageView2/2/w/800/q/70/format/webp",
@@ -56,6 +58,7 @@ struct ContentView: View {
                 addPaymentMethodButton
                 selectPayoutMethodButton
                 onboardingButton
+                businessOnboardingButton
                 
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
@@ -107,6 +110,24 @@ struct ContentView: View {
             }
             }
         })
+        .sheet(item: $businessOnboarding) { launch in
+            OnboardingContainerView(clientSecret: launch.clientSecret,
+                                    accountId: launch.accountId,
+                                    accountType: .business,
+                                    requiredCapabilities: businessCapabilities) { result in
+                switch result {
+                case .completed(let id):
+                    FrameToastCenter.shared.show("Business onboarding completed: \(id)")
+                case .finishedUnverified(let id, let outcome):
+                    FrameToastCenter.shared.show("Business onboarding finished unverified: \(id) \(outcome)")
+                case .cancelled:
+                    return
+                case .failed(let error):
+                    FrameToastCenter.shared.show(error.localizedDescription)
+                }
+            }
+            .presentationDragIndicator(.visible)
+        }
         .sheet(item: $presentedCheckout) { checkout in
             FrameCartView(accountId: checkout.accountId,
                           cartItems: exampleCartItems,
@@ -180,6 +201,35 @@ struct ContentView: View {
         .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding()
+    }
+
+    var businessOnboardingButton: some View {
+        Button {
+            // Example app has no backend. Production apps create the business account and mint
+            // POST /v1/onboarding_sessions on their server with sk_, then pass the client secret in.
+            Task {
+                let created = await viewModel.createEmptyBusinessAccount(capabilities: businessCapabilities)
+                guard let accountId = created.accountId else {
+                    FrameToastCenter.shared.show(created.errorMessage ?? "Could not create a business account.")
+                    return
+                }
+                guard let clientSecret = await viewModel.mintOnboardingClientSecret(accountId: accountId, publish: false) else {
+                    FrameToastCenter.shared.show("Could not mint an onboarding client secret.")
+                    return
+                }
+                businessOnboarding = BusinessOnboardingLaunch(accountId: accountId, clientSecret: clientSecret)
+            }
+        } label: {
+            Text("Show Business Onboarding")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
     }
     
     var cartButton: some View {
@@ -270,6 +320,13 @@ struct ContentView: View {
 #Preview("Dark") {
     ContentView()
         .preferredColorScheme(.dark)
+}
+
+/// Business onboarding sheet value. The account and its `onb_sess_…` token travel together.
+private struct BusinessOnboardingLaunch: Identifiable {
+    let id = UUID()
+    let accountId: String
+    let clientSecret: String
 }
 
 /// Cart sheet value. The token travels with the presentation so checkout cannot open without it.

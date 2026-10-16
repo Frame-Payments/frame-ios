@@ -298,6 +298,10 @@ public class AccountRequest {
         public var mcc: String?
         /// The updated North American Industry Classification System code for the business.
         public var naics: String?
+        /// Whether the place of business is the legal address. When `false`, ``physicalAddress`` is required.
+        public var samePhysicalAndLegalAddress: Bool?
+        /// The place of business, when it differs from the legal address.
+        public var physicalAddress: FrameObjects.BillingAddress?
 
         /// Creates a business account update request.
         ///
@@ -315,6 +319,8 @@ public class AccountRequest {
         ///   - ein: The updated Employer Identification Number for the business.
         ///   - mcc: The updated Merchant Category Code for the business.
         ///   - naics: The updated North American Industry Classification System code for the business.
+        ///   - samePhysicalAndLegalAddress: Whether the place of business is the legal address.
+        ///   - physicalAddress: The place of business, when it differs from the legal address.
         public init(
             legalBusinessName: String? = nil,
             doingBusinessAs: String? = nil,
@@ -328,7 +334,9 @@ public class AccountRequest {
             address: FrameObjects.BillingAddress? = nil,
             ein: String? = nil,
             mcc: String? = nil,
-            naics: String? = nil
+            naics: String? = nil,
+            samePhysicalAndLegalAddress: Bool? = nil,
+            physicalAddress: FrameObjects.BillingAddress? = nil
         ) {
             self.legalBusinessName = legalBusinessName
             self.doingBusinessAs = doingBusinessAs
@@ -343,6 +351,28 @@ public class AccountRequest {
             self.ein = ein
             self.mcc = mcc
             self.naics = naics
+            self.samePhysicalAndLegalAddress = samePhysicalAndLegalAddress
+            self.physicalAddress = physicalAddress
+        }
+
+        /// Omits unset fields. `encode` would send JSON null and clear values this call did not mean to change.
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encodeIfPresent(legalBusinessName, forKey: .legalBusinessName)
+            try container.encodeIfPresent(doingBusinessAs, forKey: .doingBusinessAs)
+            try container.encodeIfPresent(dba, forKey: .dba)
+            try container.encodeIfPresent(businessType, forKey: .businessType)
+            try container.encodeIfPresent(email, forKey: .email)
+            try container.encodeIfPresent(website, forKey: .website)
+            try container.encodeIfPresent(description, forKey: .description)
+            try container.encodeIfPresent(phoneNumber, forKey: .phoneNumber)
+            try container.encodeIfPresent(phoneCountryCode, forKey: .phoneCountryCode)
+            try container.encodeIfPresent(address, forKey: .address)
+            try container.encodeIfPresent(ein, forKey: .ein)
+            try container.encodeIfPresent(mcc, forKey: .mcc)
+            try container.encodeIfPresent(naics, forKey: .naics)
+            try container.encodeIfPresent(samePhysicalAndLegalAddress, forKey: .samePhysicalAndLegalAddress)
+            try container.encodeIfPresent(physicalAddress, forKey: .physicalAddress)
         }
 
         enum CodingKeys: String, CodingKey {
@@ -352,6 +382,8 @@ public class AccountRequest {
             case businessType = "business_type"
             case phoneNumber = "phone_number"
             case phoneCountryCode = "phone_country_code"
+            case samePhysicalAndLegalAddress = "same_physical_and_legal_address"
+            case physicalAddress = "physical_address"
         }
     }
 

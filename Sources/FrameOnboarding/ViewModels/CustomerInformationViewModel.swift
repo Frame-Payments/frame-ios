@@ -42,17 +42,23 @@ public final class CustomerInformationViewModel: ObservableObject {
     /// submit. Kept in sync with the container view model.
     @Published public var skipSSN: Bool = false
 
+    /// When `true`, the form collects a 9-digit SSN. Individual onboarding collects the last four.
+    @Published public var collectsFullSSN: Bool = false
+
     /// Creates a new view model with optional pre-populated identity data and phone country.
     ///
     /// - Parameters:
     ///   - identity: The initial customer identity values; defaults to an empty request.
     ///   - phoneCountry: The initial phone country selection; defaults to `.default`.
+    ///   - collectsFullSSN: Business owners enter all 9 digits. Individuals enter the last four.
     public init(identity: CustomerIdentityRequest.CreateCustomerIdentityRequest = CustomerIdentityRequest.CreateCustomerIdentityRequest(
                     firstName: "", lastName: "", dateOfBirth: "", email: "", phoneNumber: "",
                     ssn: "", address: FrameObjects.BillingAddress(postalCode: "")),
-                phoneCountry: PhoneCountrySelection = .default) {
+                phoneCountry: PhoneCountrySelection = .default,
+                collectsFullSSN: Bool = false) {
         self.identity = identity
         self.phoneCountry = phoneCountry
+        self.collectsFullSSN = collectsFullSSN
     }
 
     /// Validates all form fields, populates ``errors``, and returns whether the form is valid.
@@ -85,7 +91,7 @@ public final class CustomerInformationViewModel: ObservableObject {
             next[.birthYear] = err
         }
 
-        if !skipSSN, let err = Validators.validateSSNLast4(identity.ssn) {
+        if !skipSSN, let err = collectsFullSSN ? Validators.validateSSN(identity.ssn) : Validators.validateSSNLast4(identity.ssn) {
             next[.ssn] = err
         }
 

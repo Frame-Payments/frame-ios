@@ -7,9 +7,8 @@ import SwiftUI
 import Frame
 
 /// A SwiftUI view that collects personal identity information from a customer,
-/// including name, email, phone number, date of birth, and the last four digits
-/// of their Social Security Number. Used during onboarding flows that require
-/// KYC (Know Your Customer) identity verification.
+/// including name, email, phone number, date of birth, and Social Security number.
+/// Used during onboarding flows that require KYC identity verification.
 public struct CustomerInformationView: View {
     @Environment(\.frameTheme) private var theme
 
@@ -94,6 +93,10 @@ public struct CustomerInformationView: View {
                                textContentType: .emailAddress,
                                inlineError: true)
             .padding(.horizontal)
+
+            if onboardingContainerViewModel.accountType == .business {
+                businessRolePicker
+            }
 
             Text("Phone number")
                 .font(theme.fonts.label)
@@ -248,9 +251,34 @@ public struct CustomerInformationView: View {
         }
     }
 
-    /// FrameOS-style last-4 SSN field with masked prefix addon.
+    /// Last four digits for an individual. A business owner enters the full 9-digit SSN.
     @ViewBuilder
     var socialSecurityView: some View {
+        if onboardingContainerViewModel.accountType == .business {
+            fullSocialSecurityView
+        } else {
+            lastFourSocialSecurityView
+        }
+    }
+
+    @ViewBuilder
+    var fullSocialSecurityView: some View {
+        Text("Social Security number")
+            .font(theme.fonts.label)
+            .foregroundStyle(theme.colors.textSecondary)
+            .padding(.horizontal)
+        ValidatedTextField(prompt: "000000000",
+                           text: $viewModel.identity.ssn,
+                           error: viewModel.errorBinding(.ssn),
+                           keyboardType: .numberPad,
+                           characterLimit: 9,
+                           inlineError: true)
+        .padding(.horizontal)
+    }
+
+    /// FrameOS-style last-4 SSN field with masked prefix addon.
+    @ViewBuilder
+    var lastFourSocialSecurityView: some View {
         Text("Last 4 digits of Social Security number")
             .font(theme.fonts.label)
             .foregroundStyle(theme.colors.textSecondary)
@@ -338,6 +366,47 @@ public struct CustomerInformationView: View {
                 .padding(.horizontal)
             }
             .padding(.horizontal)
+    }
+
+    private var businessRolePicker: some View {
+        VStack(alignment: .leading, spacing: theme.spacing.sectionGap) {
+            Text("Select your role")
+                .font(theme.fonts.label)
+                .foregroundStyle(theme.colors.textSecondary)
+            Menu {
+                ForEach(BusinessRole.allCases) { role in
+                    Button(role.label) {
+                        onboardingContainerViewModel.businessRole = role
+                        onboardingContainerViewModel.businessRoleError = nil
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(onboardingContainerViewModel.businessRole?.label ?? "Select your role")
+                        .font(theme.fonts.body)
+                        .foregroundStyle(onboardingContainerViewModel.businessRole == nil
+                                         ? theme.colors.textSecondary
+                                         : theme.colors.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(theme.colors.textSecondary)
+                }
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(theme.colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: theme.radii.medium)
+                        .stroke(theme.colors.surfaceStroke)
+                )
+            }
+            if let error = onboardingContainerViewModel.businessRoleError {
+                Text(error)
+                    .font(theme.fonts.caption)
+                    .foregroundStyle(theme.colors.error)
+            }
+        }
+        .padding(.horizontal)
     }
 }
 
