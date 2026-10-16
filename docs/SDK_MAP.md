@@ -2850,7 +2850,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `CustomerInformationView` | struct | `struct CustomerInformationView: View` | [12](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L12) |
-| `CustomerInformationView.body` | var | `var body: some View` | [62](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L62) |
+| `CustomerInformationView.body` | var | `var body: some View` | [61](../Sources/FrameOnboarding/Reusable/PaymentElements/CustomerInformationView.swift#L61) |
 
 </details>
 
@@ -3006,10 +3006,10 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 | `CustomerInformationViewModel.errors` | var | `var errors: [Field: String] = [:]` | [38](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L38) |
 | `CustomerInformationViewModel.skipSSN` | var | `var skipSSN: Bool = false` | [43](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L43) |
 | `CustomerInformationViewModel.collectsFullSSN` | var | `var collectsFullSSN: Bool = false` | [46](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L46) |
-| `CustomerInformationViewModel.init` | init | `init (identity: CustomerIdentityRequest.CreateCustomerIdentityRequest = CustomerIdentityRequest.CreateCustomerIdentityRequest( firstName: , lastName: , dateOfB…` | [53](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L53) |
-| `CustomerInformationViewModel.validate` | func | `func validate() -> Bool` | [65](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L65) |
-| `CustomerInformationViewModel.errorBinding` | func | `func errorBinding(_ field: Field) -> Binding<String?>` | [103](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L103) |
-| `CustomerInformationViewModel.firstDateOfBirthError` | var | `var firstDateOfBirthError: String?` | [112](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L112) |
+| `CustomerInformationViewModel.init` | init | `init (identity: CustomerIdentityRequest.CreateCustomerIdentityRequest = CustomerIdentityRequest.CreateCustomerIdentityRequest( firstName: , lastName: , dateOfB…` | [54](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L54) |
+| `CustomerInformationViewModel.validate` | func | `func validate() -> Bool` | [68](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L68) |
+| `CustomerInformationViewModel.errorBinding` | func | `func errorBinding(_ field: Field) -> Binding<String?>` | [106](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L106) |
+| `CustomerInformationViewModel.firstDateOfBirthError` | var | `var firstDateOfBirthError: String?` | [115](../Sources/FrameOnboarding/ViewModels/CustomerInformationViewModel.swift#L115) |
 
 </details>
 
