@@ -242,6 +242,13 @@ final class ValidatorsTests: XCTestCase {
         XCTAssertNil(Validators.validateSSNLast4("0000"))
     }
 
+    func testSSN_fullNumber() {
+        XCTAssertNil(Validators.validateSSN("123456788"))
+        XCTAssertNotNil(Validators.validateSSN("1234"))
+        XCTAssertNotNil(Validators.validateSSN("12345678a"))
+        XCTAssertNotNil(Validators.validateSSN(""))
+    }
+
     func testSSN_invalid() {
         XCTAssertNotNil(Validators.validateSSNLast4(""))
         XCTAssertNotNil(Validators.validateSSNLast4("123"))

@@ -27,16 +27,58 @@ public enum OnboardingFlow: Int, CaseIterable, Identifiable {
     case confirmBankAccount = 2
     /// Displays a confirmation screen after all verification steps are submitted.
     case verificationSubmitted = 3
+    /// Collects the legal entity for a business account.
+    case businessDetails = 4
+    /// Collects the business's owners and controllers.
+    case ownersAndControllers = 5
+
+    /// Order used to lay out a flow. Raw values stay stable for the original cases.
+    var sequence: Int {
+        switch self {
+        case .personalInformation: return 0
+        case .businessDetails: return 1
+        case .ownersAndControllers: return 2
+        case .confirmPaymentMethod: return 3
+        case .confirmBankAccount: return 4
+        case .verificationSubmitted: return 5
+        }
+    }
+
+    /// Steps for the account type the host asked to present, plus the capability screens.
+    static func steps(accountType: FrameObjects.AccountType,
+                      capabilities: [FrameObjects.Capabilities],
+                      showCompletionScreen: Bool) -> [OnboardingFlow] {
+        var collected = Set(capabilities.map(\.onboardingStep))
+        if collected.isEmpty {
+            collected.insert(.personalInformation)
+        }
+        if accountType == .business {
+            collected.formUnion([.personalInformation, .businessDetails, .ownersAndControllers])
+        }
+        collected.remove(.verificationSubmitted)
+        var ordered = collected.sorted { $0.sequence < $1.sequence }
+        if showCompletionScreen {
+            ordered.append(.verificationSubmitted)
+        }
+        return ordered
+    }
 
     /// The `screen` wire value used when a step is the last one reached, e.g. by ``onboarding_cancelled``.
     var accountEventScreenName: AccountEventScreen {
         switch self {
-        case .personalInformation: return .personalInformation
+        case .personalInformation, .businessDetails, .ownersAndControllers:
+            return .personalInformation
         case .confirmPaymentMethod: return .paymentMethod
         case .confirmBankAccount: return .payoutMethod
         case .verificationSubmitted: return .onboarding
         }
     }
+}
+
+struct OnboardingFlowError: LocalizedError {
+    let message: String
+
+    var errorDescription: String? { message }
 }
 
 extension FrameObjects.Capabilities {
@@ -102,12 +144,14 @@ public struct OnboardingContainerView: View {
     ///     (`POST /v1/onboarding_sessions`) and handed to your app. Required. While the flow is
     ///     active every onboarding request authenticates with this token, scoping it to a single account.
     ///   - accountId: An existing Frame account ID to pre-populate data for, or `nil` to create a new account during onboarding.
+    ///   - accountType: Which onboarding flow to present. `.business` requires an existing business account. Defaults to `.individual`.
     ///   - requiredCapabilities: The set of ``FrameObjects/Capabilities`` the user must satisfy; determines which steps are shown.
     ///   - showIntroScreen: Pass `true` to show the introductory splash before the first step. Defaults to `false`.
     ///   - showCompletionScreen: Pass `false` to omit the ``OnboardingFlow/verificationSubmitted`` confirmation screen. Defaults to `true`.
     ///   - onResult: Closure called with a ``FrameResult`` when the flow finishes or is cancelled.
     public init(clientSecret: String,
                 accountId: String? = nil,
+                accountType: FrameObjects.AccountType = .individual,
                 requiredCapabilities: [FrameObjects.Capabilities] = [],
                 showIntroScreen: Bool = false,
                 showCompletionScreen: Bool = true,
@@ -117,33 +161,28 @@ public struct OnboardingContainerView: View {
         self.showIntroScreen = showIntroScreen
         self.showCompletionScreen = showCompletionScreen
         self.onboardingContainerViewModel = OnboardingContainerViewModel(accountId: accountId,
-                                                                         requiredCapabilities: requiredCapabilities)
+                                                                         requiredCapabilities: requiredCapabilities,
+                                                                         accountType: accountType)
         onboardingContainerViewModel.showCompletionScreen = showCompletionScreen
 
-        if requiredCapabilities != [] {
-            // Map capabilites to onboarding flow steps
-            let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
-            var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
-            if showCompletionScreen {
-                onboardingArray.append(.verificationSubmitted)
-            }
-
-            onboardingContainerViewModel.progressiveSteps = [onboardingArray.first ?? .personalInformation]
-            onboardingContainerViewModel.onboardingFlow = onboardingArray
-            onboardingContainerViewModel.currentStep = onboardingArray.first ?? .personalInformation
-        } else {
-            onboardingContainerViewModel.progressiveSteps = [.personalInformation]
-            onboardingContainerViewModel.onboardingFlow = showCompletionScreen
-                ? [.personalInformation, .verificationSubmitted]
-                : [.personalInformation]
-            onboardingContainerViewModel.currentStep = .personalInformation
-        }
+        let onboardingArray = OnboardingFlow.steps(accountType: accountType,
+                                                   capabilities: requiredCapabilities,
+                                                   showCompletionScreen: showCompletionScreen)
+        onboardingContainerViewModel.progressiveSteps = [onboardingArray.first ?? .personalInformation]
+        onboardingContainerViewModel.onboardingFlow = onboardingArray
+        onboardingContainerViewModel.currentStep = onboardingArray.first ?? .personalInformation
     }
     
     /// The root view hierarchy: intro splash or the active step screen wrapped in a progress header.
     public var body: some View {
         VStack {
-            if startedOnboarding {
+            if let message = onboardingContainerViewModel.accountTypeMismatch {
+                accountTypeMismatchView(message)
+            } else if onboardingContainerViewModel.accountId != nil, !onboardingContainerViewModel.didCheckAccountType {
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else if startedOnboarding {
                 containerHeader
                 switch onboardingContainerViewModel.currentStep {
                 case .confirmPaymentMethod:
@@ -159,6 +198,14 @@ public struct OnboardingContainerView: View {
                                            continueToNextStep: $continueToNextStep,
                                            returnToPreviousStep: $returnToPreviousStep,
                                            showsContainerBackButton: canReturnFromCurrentStep)
+                case .businessDetails:
+                    BusinessDetailsView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                        continueToNextStep: $continueToNextStep,
+                                        returnToPreviousStep: $returnToPreviousStep)
+                case .ownersAndControllers:
+                    OwnersAndControllersView(onboardingContainerViewModel: onboardingContainerViewModel,
+                                             continueToNextStep: $continueToNextStep,
+                                             returnToPreviousStep: $returnToPreviousStep)
                 case .verificationSubmitted:
                     VerificationSubmittedView(continueToNextStep: $continueToNextStep,
                                               outcome: onboardingContainerViewModel.finalOutcome,
@@ -292,6 +339,23 @@ public struct OnboardingContainerView: View {
             return true
         }
         return showIntroScreen
+    }
+
+    private func accountTypeMismatchView(_ message: String) -> some View {
+        VStack(alignment: .leading, spacing: theme.spacing.formBlock) {
+            Spacer()
+            Text(message)
+                .font(theme.fonts.body)
+                .foregroundStyle(theme.colors.textPrimary)
+                .padding(.horizontal)
+            Spacer()
+            ContinueButton(buttonText: "Close") {
+                didFinish = true
+                onResult(.failed(OnboardingFlowError(message: message)))
+                dismiss()
+            }
+            .padding(.bottom)
+        }
     }
 
     /// A fixed-height header bar containing a segmented progress indicator for the onboarding steps.

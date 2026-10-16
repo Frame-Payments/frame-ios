@@ -298,6 +298,10 @@ public class AccountRequest {
         public var mcc: String?
         /// The updated North American Industry Classification System code for the business.
         public var naics: String?
+        /// Whether the place of business is the legal address. When `false`, ``physicalAddress`` is required.
+        public var samePhysicalAndLegalAddress: Bool?
+        /// The place of business, when it differs from the legal address.
+        public var physicalAddress: FrameObjects.BillingAddress?
 
         /// Creates a business account update request.
         ///
@@ -315,6 +319,8 @@ public class AccountRequest {
         ///   - ein: The updated Employer Identification Number for the business.
         ///   - mcc: The updated Merchant Category Code for the business.
         ///   - naics: The updated North American Industry Classification System code for the business.
+        ///   - samePhysicalAndLegalAddress: Whether the place of business is the legal address.
+        ///   - physicalAddress: The place of business, when it differs from the legal address.
         public init(
             legalBusinessName: String? = nil,
             doingBusinessAs: String? = nil,
@@ -328,7 +334,9 @@ public class AccountRequest {
             address: FrameObjects.BillingAddress? = nil,
             ein: String? = nil,
             mcc: String? = nil,
-            naics: String? = nil
+            naics: String? = nil,
+            samePhysicalAndLegalAddress: Bool? = nil,
+            physicalAddress: FrameObjects.BillingAddress? = nil
         ) {
             self.legalBusinessName = legalBusinessName
             self.doingBusinessAs = doingBusinessAs
@@ -343,6 +351,28 @@ public class AccountRequest {
             self.ein = ein
             self.mcc = mcc
             self.naics = naics
+            self.samePhysicalAndLegalAddress = samePhysicalAndLegalAddress
+            self.physicalAddress = physicalAddress
+        }
+
+        /// Encodes a business profile update. The two address-mode fields are omitted when unset so an older caller does not send JSON null and clear them.
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(legalBusinessName, forKey: .legalBusinessName)
+            try container.encode(doingBusinessAs, forKey: .doingBusinessAs)
+            try container.encode(dba, forKey: .dba)
+            try container.encode(businessType, forKey: .businessType)
+            try container.encode(email, forKey: .email)
+            try container.encode(website, forKey: .website)
+            try container.encode(description, forKey: .description)
+            try container.encode(phoneNumber, forKey: .phoneNumber)
+            try container.encode(phoneCountryCode, forKey: .phoneCountryCode)
+            try container.encode(address, forKey: .address)
+            try container.encode(ein, forKey: .ein)
+            try container.encode(mcc, forKey: .mcc)
+            try container.encode(naics, forKey: .naics)
+            try container.encodeIfPresent(samePhysicalAndLegalAddress, forKey: .samePhysicalAndLegalAddress)
+            try container.encodeIfPresent(physicalAddress, forKey: .physicalAddress)
         }
 
         enum CodingKeys: String, CodingKey {
@@ -352,6 +382,8 @@ public class AccountRequest {
             case businessType = "business_type"
             case phoneNumber = "phone_number"
             case phoneCountryCode = "phone_country_code"
+            case samePhysicalAndLegalAddress = "same_physical_and_legal_address"
+            case physicalAddress = "physical_address"
         }
     }
 

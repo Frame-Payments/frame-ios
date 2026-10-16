@@ -29,6 +29,44 @@ enum OnboardingFieldGroup {
     case phoneAuth
 }
 
+enum BusinessRole: String, CaseIterable, Identifiable {
+    case owner
+    case controller
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .owner: return "Owner (I own 25% or more of this business)"
+        case .controller: return "Controller"
+        }
+    }
+}
+
+enum BusinessStructure: String, CaseIterable, Identifiable {
+    case soleProprietorship = "sole_proprietorship"
+    case singleMemberLLC = "single_member_llc"
+    case multiMemberLLC = "multi_member_llc"
+    case privateCorporation = "private_corporation"
+    case publicCorporation = "public_corporation"
+    case privatePartnership = "private_partnership"
+    case nonProfit = "non_profit"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .soleProprietorship: return "Sole Proprietorship"
+        case .singleMemberLLC: return "Single Member LLC"
+        case .multiMemberLLC: return "Multi-member LLC"
+        case .privateCorporation: return "Private Corporation"
+        case .publicCorporation: return "Public Corporation"
+        case .privatePartnership: return "Private Partnership"
+        case .nonProfit: return "Non Profit"
+        }
+    }
+}
+
 @MainActor
 class OnboardingContainerViewModel: ObservableObject {
     @Published var onboardingFlow: [OnboardingFlow] = []
@@ -39,6 +77,23 @@ class OnboardingContainerViewModel: ObservableObject {
     /// The set the flow launched with. ``requiredCapabilities`` is drained as capabilities are
     /// satisfied, so it cannot answer what the flow set out to do.
     let originallyRequiredCapabilities: [FrameObjects.Capabilities]
+
+    /// The flow the host asked to present. Steps follow this, not the account fetched later.
+    let accountType: FrameObjects.AccountType
+
+    /// Set when the loaded account's type is not ``accountType``. The container stops on it.
+    @Published var accountTypeMismatch: String?
+
+    /// `true` once an existing account has been read, or immediately when there is no account to read.
+    @Published var didCheckAccountType: Bool
+
+    /// Role of the person filling out business personal info.
+    @Published var businessRole: BusinessRole?
+
+    /// Shown under the role picker when Continue is tapped with no role.
+    @Published var businessRoleError: String?
+
+    @Published var beneficialOwners: [BeneficialOwners.Owner] = []
 
     @Published var cardData = PaymentCardData()
     @Published var bankAccount = FrameObjects.BankAccount(accountType: .checking)
@@ -139,10 +194,17 @@ class OnboardingContainerViewModel: ObservableObject {
     private var hasEndedOnboardingSession = false
 
     init(accountId: String?,
-         requiredCapabilities: [FrameObjects.Capabilities]) {
+         requiredCapabilities: [FrameObjects.Capabilities],
+         accountType: FrameObjects.AccountType = .individual) {
         self.accountId = accountId
         self.requiredCapabilities = requiredCapabilities
         self.originallyRequiredCapabilities = requiredCapabilities
+        self.accountType = accountType
+        let missingAccount = accountId?.isEmpty != false
+        self.didCheckAccountType = missingAccount
+        if accountType == .business, missingAccount {
+            self.accountTypeMismatch = "Business onboarding needs an existing business account."
+        }
         FrameNetworking.shared.setAccountIdIfUnset(accountId)
     }
     
@@ -187,10 +249,19 @@ class OnboardingContainerViewModel: ObservableObject {
 
     // Load existing account object to show on account page.
     func checkExistingAccount(updateCapabilies: Bool = false) async {
-        guard let accountId else { return }
+        guard let accountId, !accountId.isEmpty else {
+            didCheckAccountType = true
+            return
+        }
+        defer { didCheckAccountType = true }
         do {
             let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
             reportError(error)
+
+            if let account, account.accountType != accountType {
+                accountTypeMismatch = "This onboarding is for \(Self.accountTypeArticle(accountType)) account. The account on this session is \(Self.accountTypeArticle(account.accountType)) account."
+                return
+            }
 
             // Capabilities and terms are not profile. `profile` on this GET is ignored: a
             // one-time prefill arrives on the phone-verification confirm instead.
@@ -260,13 +331,9 @@ class OnboardingContainerViewModel: ObservableObject {
     }
     
     func updateOnboardingFlow() {
-        let onboardingSet = Set(requiredCapabilities.map { $0.onboardingStep })
-        var onboardingArray = Array(onboardingSet).sorted(by: { $0.rawValue < $1.rawValue })
-        // Ran unconditionally before, so a host that opted out got the screen back on any rebuild.
-        if showCompletionScreen {
-            onboardingArray.append(.verificationSubmitted)
-        }
-        
+        let onboardingArray = OnboardingFlow.steps(accountType: accountType,
+                                                   capabilities: requiredCapabilities,
+                                                   showCompletionScreen: showCompletionScreen)
         self.onboardingFlow = onboardingArray
         self.currentStep = onboardingArray.first ?? .personalInformation
     }
@@ -856,9 +923,15 @@ class OnboardingContainerViewModel: ObservableObject {
     /// - Parameter viewController: The view controller to present the Persona UI from.
     /// - Returns: How the step ended — see ``StepResult``.
     func submitPersonalInformation(from viewController: UIViewController) async -> StepResult {
-        let account = accountId == nil
-            ? await createIndividualAccount()
-            : await updateExistingIndividualAccount()
+        let account: FrameObjects.Account?
+        if accountType == .business {
+            guard await submitBusinessOwner() else { return .stay }
+            account = await reloadAccount()
+        } else {
+            account = accountId == nil
+                ? await createIndividualAccount()
+                : await updateExistingIndividualAccount()
+        }
 
         if let capabilities = account?.capabilities {
             self.identityDocumentRequired = Self.requiresIdentityDocument(capabilities)
@@ -1178,11 +1251,212 @@ class OnboardingContainerViewModel: ObservableObject {
         isPerformingAction = false
     }
 
+    func reloadAccount() async -> FrameObjects.Account? {
+        guard let accountId, !accountId.isEmpty else { return nil }
+        do {
+            let (account, error) = try await AccountsAPI.getAccountWith(accountId: accountId)
+            reportError(error)
+            return account
+        } catch {
+            print(error)
+            return nil
+        }
+    }
+
+    func submitBusinessOwner() async -> Bool {
+        guard let accountId, !accountId.isEmpty else { return false }
+        guard let businessRole else {
+            businessRoleError = "Select your role"
+            return false
+        }
+        businessRoleError = nil
+        guard beginAction() else { return false }
+        defer { endAction() }
+
+        let identity = createdCustomerIdentity
+        let address = identity.address
+        let request = BeneficialOwners.WriteRequest(
+            firstName: identity.firstName.nonEmpty,
+            lastName: identity.lastName.nonEmpty,
+            email: identity.email.nonEmpty,
+            dob: identity.dateOfBirth.nonEmpty,
+            ssn: skipsSSNEntry ? nil : identity.ssn.nonEmpty,
+            phoneNumber: identity.phoneNumber.nonEmpty,
+            phoneCountryCode: phoneCountry.dialCode,
+            addressLine1: address.addressLine1?.nonEmpty,
+            addressLine2: address.addressLine2?.nonEmpty,
+            city: address.city?.nonEmpty,
+            state: address.state?.nonEmpty,
+            postalCode: address.postalCode.nonEmpty,
+            country: address.country?.nonEmpty,
+            roles: [businessRole.rawValue],
+            invite: false
+        )
+        do {
+            let (owners, listError) = try await BeneficialOwnersAPI.list(accountId: accountId)
+            if listError != nil {
+                reportError(listError)
+                return false
+            }
+            let existing = owners?.data?.first {
+                $0.email?.caseInsensitiveCompare(identity.email) == .orderedSame
+            }
+            let error: NetworkingError?
+            if let existing {
+                (_, error) = try await BeneficialOwnersAPI.update(accountId: accountId, ownerId: existing.id, request: request)
+            } else {
+                (_, error) = try await BeneficialOwnersAPI.create(accountId: accountId, request: request)
+            }
+            reportError(error)
+            return error == nil
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
+    func submitBusinessDetails(legalName: String,
+                               structure: BusinessStructure?,
+                               category: BusinessCategory?,
+                               ein: String,
+                               email: String,
+                               website: String,
+                               legalAddress: FrameObjects.BillingAddress,
+                               samePhysicalAddress: Bool,
+                               physicalAddress: FrameObjects.BillingAddress) async -> StepResult {
+        guard let accountId, !accountId.isEmpty else { return .stay }
+        guard let structure, let category else { return .stay }
+        guard beginAction() else { return .stay }
+        defer { endAction() }
+
+        var site = website.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !site.isEmpty, site.range(of: "^[a-z][a-z0-9+.-]*://", options: [.regularExpression, .caseInsensitive]) == nil {
+            site = "https://\(site)"
+        }
+        let business = AccountRequest.UpdateBusinessAccount(
+            legalBusinessName: legalName,
+            businessType: structure.rawValue,
+            email: email,
+            website: site,
+            address: legalAddress,
+            ein: ein,
+            mcc: category.code,
+            samePhysicalAndLegalAddress: samePhysicalAddress,
+            physicalAddress: samePhysicalAddress ? nil : physicalAddress
+        )
+        let request = AccountRequest.UpdateAccountRequest(
+            profile: AccountRequest.UpdateAccountProfile(business: business, individual: nil)
+        )
+        do {
+            let (_, error) = try await AccountsAPI.updateAccountWith(accountId: accountId, request: request)
+            reportError(error)
+            return error == nil ? .advance : .stay
+        } catch {
+            print(error)
+            return .stay
+        }
+    }
+
+    func loadBeneficialOwners() async {
+        guard let accountId, !accountId.isEmpty else { return }
+        do {
+            let (owners, error) = try await BeneficialOwnersAPI.list(accountId: accountId)
+            reportError(error)
+            if error == nil {
+                beneficialOwners = owners?.data ?? []
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    func inviteBeneficialOwner(firstName: String, lastName: String, email: String, role: BusinessRole) async -> Bool {
+        guard let accountId, !accountId.isEmpty else { return false }
+        guard beginAction() else { return false }
+        defer { endAction() }
+        let request = BeneficialOwners.WriteRequest(
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            roles: [role.rawValue],
+            invite: true
+        )
+        do {
+            let (_, error) = try await BeneficialOwnersAPI.create(accountId: accountId, request: request)
+            reportError(error)
+            if error == nil {
+                await loadBeneficialOwners()
+            }
+            return error == nil
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
+    func resendBeneficialOwnerInvite(ownerId: String) async {
+        guard let accountId, !accountId.isEmpty else { return }
+        guard beginAction() else { return }
+        defer { endAction() }
+        do {
+            let error = try await BeneficialOwnersAPI.resendInvite(accountId: accountId, ownerId: ownerId)
+            reportError(error)
+            if error == nil {
+                await loadBeneficialOwners()
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    func removeBeneficialOwner(ownerId: String) async {
+        guard let accountId, !accountId.isEmpty else { return }
+        guard beginAction() else { return }
+        defer { endAction() }
+        do {
+            let error = try await BeneficialOwnersAPI.destroy(accountId: accountId, ownerId: ownerId)
+            reportError(error)
+            if error == nil {
+                await loadBeneficialOwners()
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    func confirmBeneficialOwners() async -> StepResult {
+        guard let accountId, !accountId.isEmpty else { return .stay }
+        guard beginAction() else { return .stay }
+        defer { endAction() }
+        do {
+            let error = try await BeneficialOwnersAPI.confirm(accountId: accountId)
+            reportError(error)
+            return error == nil ? .advance : .stay
+        } catch {
+            print(error)
+            return .stay
+        }
+    }
+
+    private static func accountTypeArticle(_ type: FrameObjects.AccountType) -> String {
+        switch type {
+        case .individual: return "an individual"
+        case .business: return "a business"
+        }
+    }
+
     /// Surface a networking failure as a toast. For server errors, the parsed
     /// `error_details.message` from the Frame envelope is shown when present. Onboarding API
     /// calls don't have a per-field inline error UI, so every failure routes through the toast.
     func reportError(_ error: NetworkingError?) {
         guard let error else { return }
         FrameToastCenter.shared.show(error.toastMessage())
+    }
+}
+
+private extension String {
+    var nonEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
