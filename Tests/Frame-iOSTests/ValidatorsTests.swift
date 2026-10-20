@@ -249,6 +249,14 @@ final class ValidatorsTests: XCTestCase {
         XCTAssertNotNil(Validators.validateSSN(""))
     }
 
+    func testWebsite_acceptsHostOrHTTPURL() {
+        XCTAssertEqual(Validators.validateWebsite(""), "Enter a website.")
+        XCTAssertEqual(Validators.validateWebsite("not a url"), "Enter a valid website.")
+        XCTAssertEqual(Validators.validateWebsite("https://"), "Enter a valid website.")
+        XCTAssertNil(Validators.validateWebsite("example.com"))
+        XCTAssertNil(Validators.validateWebsite("https://example.com"))
+    }
+
     func testEIN_rejectsPlaceholderAndAcceptsARealShape() {
         XCTAssertEqual(Validators.validateEIN("123456789"), "Enter a valid EIN.")
         XCTAssertEqual(Validators.validateEIN("12-3456789"), "Enter a valid EIN.")

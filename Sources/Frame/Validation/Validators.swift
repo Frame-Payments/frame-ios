@@ -49,6 +49,23 @@ public enum Validators {
             : nil
     }
 
+    /// Host-only values get `https://` the same way business-details submit does.
+    public static func validateWebsite(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "Enter a website." }
+        var site = trimmed
+        if site.range(of: "^[a-z][a-z0-9+.-]*://", options: [.regularExpression, .caseInsensitive]) == nil {
+            site = "https://\(site)"
+        }
+        guard let url = URL(string: site),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = url.host, host.contains(".") else {
+            return "Enter a valid website."
+        }
+        return nil
+    }
+
     /// Validates that a string is a 5-digit US ZIP code.
     ///
     /// - Parameter value: The ZIP code string to validate.

@@ -186,12 +186,12 @@ struct BusinessDetailsView: View {
             return
         }
         let digits = ein.filter(\.isNumber)
-        guard !website.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            fail("Enter a website.")
+        if let websiteError = Validators.validateWebsite(website) {
+            fail(websiteError)
             return
         }
-        guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            fail("Enter a business email.")
+        if let emailError = Validators.validateEmail(email) {
+            fail(emailError == "Email is required" ? "Enter a business email." : emailError)
             return
         }
         legalAddress.normalize()

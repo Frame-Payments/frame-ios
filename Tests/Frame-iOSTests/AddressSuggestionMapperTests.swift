@@ -178,6 +178,20 @@ final class AddressSuggestionMapperTests: XCTestCase {
         XCTAssertEqual(address.state, "TX")
     }
 
+    func testReadsCountryFromOtherAlpha3Codes() throws {
+        let feature = try feature(from: """
+        {"features": [{"properties": {
+            "address": "10 Downing Street",
+            "context": {
+                "place": {"name": "London"},
+                "country": {"country_code_alpha_3": "GBR"}
+            }
+        }}]}
+        """)
+
+        XCTAssertEqual(AddressSuggestionMapper.billingAddress(from: feature).country, "GB")
+    }
+
     func testMissingContextYieldsAddressLineOnly() throws {
         let feature = try feature(from: """
         {"features": [{"properties": {"address": "Somewhere"}}]}

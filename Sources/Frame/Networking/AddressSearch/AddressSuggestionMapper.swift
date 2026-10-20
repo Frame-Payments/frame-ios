@@ -72,10 +72,9 @@ enum AddressSuggestionMapper {
         if let code = country?.countryCode?.trimmingCharacters(in: .whitespacesAndNewlines), !code.isEmpty {
             return code.uppercased()
         }
-        switch country?.countryCodeAlpha3?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
-        case "USA": return "US"
-        case "CAN": return "CA"
-        default: return nil
-        }
+        let raw = country?.countryCodeAlpha3?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !raw.isEmpty else { return nil }
+        let resolved = Locale(identifier: "und_\(raw)").region?.identifier.uppercased()
+        return resolved?.count == 2 ? resolved : nil
     }
 }
