@@ -1261,15 +1261,19 @@ class OnboardingContainerViewModel: ObservableObject {
             reportError(error)
             return account
         } catch {
-            print(error)
+            reportCaughtError(error)
             return nil
         }
     }
 
     func submitBusinessOwner() async -> Bool {
-        guard let accountId, !accountId.isEmpty else { return false }
+        guard let accountId, !accountId.isEmpty else {
+            reportUserError("Business onboarding needs an existing business account.")
+            return false
+        }
         guard let businessRole else {
             businessRoleError = "Select your role"
+            reportUserError("Select your role.")
             return false
         }
         businessRoleError = nil
@@ -1322,7 +1326,7 @@ class OnboardingContainerViewModel: ObservableObject {
             }
             return error == nil
         } catch {
-            print(error)
+            reportCaughtError(error)
             return false
         }
     }
@@ -1336,8 +1340,14 @@ class OnboardingContainerViewModel: ObservableObject {
                                legalAddress: FrameObjects.BillingAddress,
                                samePhysicalAddress: Bool,
                                physicalAddress: FrameObjects.BillingAddress) async -> StepResult {
-        guard let accountId, !accountId.isEmpty else { return .stay }
-        guard let structure, let category else { return .stay }
+        guard let accountId, !accountId.isEmpty else {
+            reportUserError("Business onboarding needs an existing business account.")
+            return .stay
+        }
+        guard let structure, let category else {
+            reportUserError("Select a business type and category.")
+            return .stay
+        }
         guard beginAction() else { return .stay }
         defer { endAction() }
 
@@ -1366,7 +1376,7 @@ class OnboardingContainerViewModel: ObservableObject {
             reportError(error)
             return error == nil ? .advance : .stay
         } catch {
-            print(error)
+            reportCaughtError(error)
             return .stay
         }
     }
@@ -1380,12 +1390,15 @@ class OnboardingContainerViewModel: ObservableObject {
                 beneficialOwners = owners?.data ?? []
             }
         } catch {
-            print(error)
+            reportCaughtError(error)
         }
     }
 
     func inviteBeneficialOwner(firstName: String, lastName: String, email: String, role: BusinessRole) async -> Bool {
-        guard let accountId, !accountId.isEmpty else { return false }
+        guard let accountId, !accountId.isEmpty else {
+            reportUserError("Business onboarding needs an existing business account.")
+            return false
+        }
         guard beginAction() else { return false }
         defer { endAction() }
         let request = BeneficialOwners.WriteRequest(
@@ -1403,13 +1416,16 @@ class OnboardingContainerViewModel: ObservableObject {
             }
             return error == nil
         } catch {
-            print(error)
+            reportCaughtError(error)
             return false
         }
     }
 
     func resendBeneficialOwnerInvite(ownerId: String) async {
-        guard let accountId, !accountId.isEmpty else { return }
+        guard let accountId, !accountId.isEmpty else {
+            reportUserError("Business onboarding needs an existing business account.")
+            return
+        }
         guard beginAction() else { return }
         defer { endAction() }
         do {
@@ -1419,12 +1435,15 @@ class OnboardingContainerViewModel: ObservableObject {
                 await loadBeneficialOwners()
             }
         } catch {
-            print(error)
+            reportCaughtError(error)
         }
     }
 
     func removeBeneficialOwner(ownerId: String) async {
-        guard let accountId, !accountId.isEmpty else { return }
+        guard let accountId, !accountId.isEmpty else {
+            reportUserError("Business onboarding needs an existing business account.")
+            return
+        }
         guard beginAction() else { return }
         defer { endAction() }
         do {
@@ -1434,12 +1453,15 @@ class OnboardingContainerViewModel: ObservableObject {
                 await loadBeneficialOwners()
             }
         } catch {
-            print(error)
+            reportCaughtError(error)
         }
     }
 
     func confirmBeneficialOwners() async -> StepResult {
-        guard let accountId, !accountId.isEmpty else { return .stay }
+        guard let accountId, !accountId.isEmpty else {
+            reportUserError("Business onboarding needs an existing business account.")
+            return .stay
+        }
         guard beginAction() else { return .stay }
         defer { endAction() }
         do {
@@ -1447,7 +1469,7 @@ class OnboardingContainerViewModel: ObservableObject {
             reportError(error)
             return error == nil ? .advance : .stay
         } catch {
-            print(error)
+            reportCaughtError(error)
             return .stay
         }
     }
@@ -1465,6 +1487,21 @@ class OnboardingContainerViewModel: ObservableObject {
     func reportError(_ error: NetworkingError?) {
         guard let error else { return }
         FrameToastCenter.shared.show(error.toastMessage())
+    }
+
+    /// Surface a user-facing failure that is not a `NetworkingError` — validation, a missing
+    /// account, or a thrown error the request helpers did not wrap.
+    func reportUserError(_ message: String) {
+        FrameToastCenter.shared.show("Error: \(message)")
+    }
+
+    private func reportCaughtError(_ error: Error) {
+        print(error)
+        if let networkingError = error as? NetworkingError {
+            reportError(networkingError)
+        } else {
+            reportUserError("Something went wrong. Please try again.")
+        }
     }
 }
 

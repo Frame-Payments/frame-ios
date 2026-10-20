@@ -96,6 +96,16 @@ final class BillingAddressViewModelTests: XCTestCase {
         XCTAssertEqual(vm.address.state, "Île-de-France")
     }
 
+    func testNormalize_resolvesFullStateNameToCode() {
+        let vm = BillingAddressViewModel(address: makeAddress(country: "US",
+                                                             state: "Texas",
+                                                             postal: "78701"),
+                                         mode: .usOnly)
+        vm.normalize()
+        XCTAssertEqual(vm.address.state, "TX")
+        XCTAssertTrue(vm.validate())
+    }
+
     func testValidateThenNormalize_lowercaseProvince_roundTrips() {
         let vm = BillingAddressViewModel(address: makeAddress(country: "CA",
                                                              state: "bc",

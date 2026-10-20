@@ -816,6 +816,12 @@ final class RiskErrorMessageTests: XCTestCase {
         XCTAssertFalse(toast(forServerMessage: "geo_compliance_vpn_detected").contains("geo_compliance"))
     }
 
+    func testEinEncryptedValidationIsTranslated() {
+        let raw = #"{"error_details":{"message":"Profile update failed: Validation failed: Ein encrypted If this number is correct, please contact support."}}"#
+        let message = NetworkingError.serverError(statusCode: 422, errorDescription: raw).toastMessage()
+        XCTAssertEqual(message, "Error: Enter a valid EIN.")
+    }
+
     func testUnrecognisedServerMessagesArePassedThrough() {
         XCTAssertEqual(toast(forServerMessage: "Card submitted is not a test card"),
                        "Error: Card submitted is not a test card")

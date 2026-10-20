@@ -239,6 +239,9 @@ extension NetworkingError {
         case "geo_compliance_vpn_detected":
             return "Please turn off your VPN or proxy and try again."
         default:
+            if message.localizedCaseInsensitiveContains("ein encrypted") {
+                return "Enter a valid EIN."
+            }
             return nil
         }
     }

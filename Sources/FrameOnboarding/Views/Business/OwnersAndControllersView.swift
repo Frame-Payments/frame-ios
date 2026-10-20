@@ -208,6 +208,7 @@ struct OwnersAndControllersView: View {
               !lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             formError = "Enter a name and email."
+            onboardingContainerViewModel.reportUserError("Enter a name and email.")
             return
         }
         formError = nil

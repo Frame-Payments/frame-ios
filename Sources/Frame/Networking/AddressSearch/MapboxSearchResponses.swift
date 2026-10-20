@@ -59,12 +59,17 @@ enum MapboxSearchResponses {
             /// The short code for the level, e.g. `US-CA` for a region or `US` for a country.
             /// Absent for levels that have no code, such as a city.
             let regionCode: String?
+            /// Alternate Mapbox field; some retrieve payloads send `US-CA` here and omit `region_code`.
+            let regionCodeFull: String?
             let countryCode: String?
+            let countryCodeAlpha3: String?
 
             enum CodingKeys: String, CodingKey {
                 case name
                 case regionCode = "region_code"
+                case regionCodeFull = "region_code_full"
                 case countryCode = "country_code"
+                case countryCodeAlpha3 = "country_code_alpha_3"
             }
         }
     }

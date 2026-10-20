@@ -88,15 +88,14 @@ struct BusinessDetailsView: View {
                     if !samePhysicalAddress {
                         BillingAddressDetailView(viewModel: physicalAddress, headerTitle: "Physical address")
                     }
-
-                    if let fieldError {
-                        Text(fieldError)
-                            .font(theme.fonts.caption)
-                            .foregroundStyle(theme.colors.error)
-                            .padding(.horizontal)
-                    }
                 }
                 .padding(.top, theme.spacing.sectionGap)
+            }
+            if let fieldError {
+                Text(fieldError)
+                    .font(theme.fonts.caption)
+                    .foregroundStyle(theme.colors.error)
+                    .padding(.horizontal)
             }
             ContinueButton(isLoading: $onboardingContainerViewModel.isPerformingAction) {
                 Task { await submit() }
@@ -171,32 +170,42 @@ struct BusinessDetailsView: View {
     private func submit() async {
         fieldError = nil
         guard !legalName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            fieldError = "Enter the legal business name."
+            fail("Enter the legal business name.")
             return
         }
         guard structure != nil else {
-            fieldError = "Select a business type."
+            fail("Select a business type.")
             return
         }
         guard category != nil else {
-            fieldError = "Select a business category."
+            fail("Select a business category.")
+            return
+        }
+        if let einError = Validators.validateEIN(ein) {
+            fail(einError)
             return
         }
         let digits = ein.filter(\.isNumber)
-        guard digits.count == 9 else {
-            fieldError = "Enter a 9-digit EIN."
-            return
-        }
         guard !website.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            fieldError = "Enter a website."
+            fail("Enter a website.")
             return
         }
         guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            fieldError = "Enter a business email."
+            fail("Enter a business email.")
             return
         }
-        guard legalAddress.validate() else { return }
-        if !samePhysicalAddress, !physicalAddress.validate() { return }
+        legalAddress.normalize()
+        guard legalAddress.validate() else {
+            fail(legalAddress.errors.values.first ?? "Enter the legal address.")
+            return
+        }
+        if !samePhysicalAddress {
+            physicalAddress.normalize()
+            guard physicalAddress.validate() else {
+                fail(physicalAddress.errors.values.first ?? "Enter the physical address.")
+                return
+            }
+        }
 
         let result = await onboardingContainerViewModel.submitBusinessDetails(
             legalName: legalName.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -212,5 +221,10 @@ struct BusinessDetailsView: View {
         if result == .advance {
             continueToNextStep = true
         }
+    }
+
+    private func fail(_ message: String) {
+        fieldError = message
+        onboardingContainerViewModel.reportUserError(message)
     }
 }

@@ -133,6 +133,51 @@ final class AddressSuggestionMapperTests: XCTestCase {
         )
     }
 
+    func testUsesRegionCodeFullWhenRegionCodeIsAbsent() throws {
+        let feature = try feature(from: """
+        {"features": [{"properties": {
+            "address": "1 Market Street",
+            "context": {
+                "region": {"name": "California", "region_code_full": "US-CA"},
+                "country": {"country_code": "us"}
+            }
+        }}]}
+        """)
+
+        XCTAssertEqual(AddressSuggestionMapper.billingAddress(from: feature).state, "CA")
+    }
+
+    func testResolvesStateNameWhenCountryCodeIsMissing() throws {
+        let feature = try feature(from: """
+        {"features": [{"properties": {
+            "address": "1 Congress Avenue",
+            "context": {
+                "place": {"name": "Austin"},
+                "region": {"name": "Texas"},
+                "postcode": {"name": "78701"}
+            }
+        }}]}
+        """)
+
+        XCTAssertEqual(AddressSuggestionMapper.billingAddress(from: feature).state, "TX")
+    }
+
+    func testReadsCountryFromAlpha3Code() throws {
+        let feature = try feature(from: """
+        {"features": [{"properties": {
+            "address": "1 Congress Avenue",
+            "context": {
+                "region": {"name": "Texas"},
+                "country": {"country_code_alpha_3": "USA"}
+            }
+        }}]}
+        """)
+
+        let address = AddressSuggestionMapper.billingAddress(from: feature)
+        XCTAssertEqual(address.country, "US")
+        XCTAssertEqual(address.state, "TX")
+    }
+
     func testMissingContextYieldsAddressLineOnly() throws {
         let feature = try feature(from: """
         {"features": [{"properties": {"address": "Somewhere"}}]}

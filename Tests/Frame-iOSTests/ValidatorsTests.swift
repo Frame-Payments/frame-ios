@@ -249,6 +249,13 @@ final class ValidatorsTests: XCTestCase {
         XCTAssertNotNil(Validators.validateSSN(""))
     }
 
+    func testEIN_rejectsPlaceholderAndAcceptsARealShape() {
+        XCTAssertEqual(Validators.validateEIN("123456789"), "Enter a valid EIN.")
+        XCTAssertEqual(Validators.validateEIN("12-3456789"), "Enter a valid EIN.")
+        XCTAssertEqual(Validators.validateEIN("1234"), "Enter a 9-digit EIN.")
+        XCTAssertNil(Validators.validateEIN("472839156"))
+    }
+
     func testSSN_invalid() {
         XCTAssertNotNil(Validators.validateSSNLast4(""))
         XCTAssertNotNil(Validators.validateSSNLast4("123"))
