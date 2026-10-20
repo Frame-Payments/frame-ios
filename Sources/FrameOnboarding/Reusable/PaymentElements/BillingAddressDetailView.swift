@@ -60,7 +60,12 @@ public struct BillingAddressDetailView: View {
         var next = viewModel.address
         if let line1 = address.addressLine1 { next.addressLine1 = line1 }
         if let city = address.city { next.city = city }
-        if let state = address.state { next.state = state }
+        if let state = address.state {
+            let country = allowsInternational
+                ? (address.country ?? selectedCountry.alpha2Code)
+                : "US"
+            next.state = AddressSubregions.resolve(state, countryCode: country) ?? state
+        }
         next.postalCode = address.postalCode
         viewModel.address = next
 
@@ -93,8 +98,9 @@ public struct BillingAddressDetailView: View {
 
     /// The display name for the currently selected subregion, or the field label when unset.
     private var subregionText: String {
-        let code = viewModel.address.state ?? ""
+        let raw = viewModel.address.state ?? ""
         let country = allowsInternational ? selectedCountry.alpha2Code : "US"
+        let code = AddressSubregions.resolve(raw, countryCode: country) ?? raw
         return AddressSubregions.subregion(forCode: code, countryCode: country)?.name ?? format.stateLabel
     }
 

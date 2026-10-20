@@ -45,9 +45,12 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
     /// - Important: This mint exists only because the example app has no backend. Production apps
     ///   mint `POST /v1/onboarding_sessions` on their server with `sk_` and pass the client secret in.
     ///   Creating a session authenticates with your secret key, which must never ship in an app binary.
-    /// - Parameter accountId: The existing Frame account to onboard.
+    /// - Parameters:
+    ///   - accountId: The existing Frame account to onboard.
+    ///   - publish: When `true` (default), stores the token for the individual demo sheets.
+    ///     Business onboarding passes `false` so it keeps its own token.
     /// - Returns: The `onb_sess_…` token, or `nil` if the request failed.
-    func mintOnboardingClientSecret(accountId: String) async -> String? {
+    func mintOnboardingClientSecret(accountId: String, publish: Bool = true) async -> String? {
         let request = OnboardingSessionRequest.CreateOnboardingSessionRequest(
             accountId: accountId,
             steps: [.idVerification, .geoCompliance, .paymentMethod]
@@ -55,7 +58,9 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         do {
             let (session, error) = try await OnboardingSessionsAPI.createOnboardingSession(request: request)
             if let clientSecret = session?.clientSecret, !clientSecret.isEmpty {
-                await MainActor.run { self.onboardingClientSecret = clientSecret }
+                if publish {
+                    await MainActor.run { self.onboardingClientSecret = clientSecret }
+                }
                 return clientSecret
             } else {
                 print("⚠️ Frame example: failed to mint onboarding session token. Error: \(String(describing: error))")
@@ -116,6 +121,34 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         } catch let error {
             print(error)
             return nil
+        }
+    }
+
+    /// Creates a business account with `sk_` so the example can open business onboarding.
+    /// The hosted flow requires an existing business account; it does not create one.
+    func createEmptyBusinessAccount(capabilities: [FrameObjects.Capabilities]) async -> (accountId: String?, errorMessage: String?) {
+        do {
+            let suffix = String(UUID().uuidString.prefix(8)).lowercased()
+            let business = AccountRequest.CreateBusinessAccount(
+                legalBusinessName: "Example Business",
+                businessType: "private_corporation",
+                email: "business-\(suffix)@example.com"
+            )
+            let profile = AccountRequest.CreateAccountProfile(business: business, individual: nil)
+            let request = AccountRequest.CreateAccountRequest(accountType: .business, profile: profile, capabilities: capabilities)
+            let (account, error) = try await AccountsAPI.createAccount(request: request)
+            if let error {
+                let message = error.toastMessage()
+                print("⚠️ Frame example: failed to create business account. Error: \(message)")
+                return (nil, message)
+            }
+            guard let accountId = account?.id else {
+                return (nil, "Could not create a business account.")
+            }
+            return (accountId, nil)
+        } catch {
+            print(error)
+            return (nil, error.localizedDescription)
         }
     }
 }

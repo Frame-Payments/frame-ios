@@ -17,7 +17,7 @@ enum AddressSuggestionMapper {
         let properties = feature.properties
         let context = properties.context
 
-        let countryCode = context?.country?.countryCode?.uppercased()
+        let countryCode = Self.countryCode(from: context?.country)
 
         return FrameObjects.BillingAddress(
             city: context?.place?.name,
@@ -45,16 +45,36 @@ enum AddressSuggestionMapper {
     ) -> String? {
         guard let region else { return nil }
 
-        if let code = region.regionCode?.split(separator: "-").last.map(String.init), !code.isEmpty {
+        let rawCode = region.regionCode ?? region.regionCodeFull
+        if let code = rawCode?.split(separator: "-").last.map(String.init), !code.isEmpty {
+            if let countryCode, let resolved = AddressSubregions.resolve(code, countryCode: countryCode) {
+                return resolved
+            }
             return code.uppercased()
         }
 
         guard let name = region.name else { return nil }
-        guard let countryCode, let subregions = AddressSubregions.subregions(forCountry: countryCode) else {
-            return name
+        if let countryCode, let resolved = AddressSubregions.resolve(name, countryCode: countryCode) {
+            return resolved
         }
+        if let resolved = AddressSubregions.resolve(name, countryCode: "US") {
+            return resolved
+        }
+        if let resolved = AddressSubregions.resolve(name, countryCode: "CA") {
+            return resolved
+        }
+        return name
+    }
 
-        let match = subregions.first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
-        return match?.code ?? name
+    private static func countryCode(
+        from country: MapboxSearchResponses.RetrieveResponse.Component?
+    ) -> String? {
+        if let code = country?.countryCode?.trimmingCharacters(in: .whitespacesAndNewlines), !code.isEmpty {
+            return code.uppercased()
+        }
+        let raw = country?.countryCodeAlpha3?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !raw.isEmpty else { return nil }
+        let resolved = Locale(identifier: "und_\(raw)").region?.identifier.uppercased()
+        return resolved?.count == 2 ? resolved : nil
     }
 }

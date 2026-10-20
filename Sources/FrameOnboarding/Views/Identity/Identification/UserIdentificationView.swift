@@ -379,6 +379,12 @@ struct UserIdentificationView: View {
                 guard infoOK, addressOK else {
                     AccountEventEmitter.emit(name: .profileValidationFailed, screen: .personalInformation,
                                              detail: "info valid: \(infoOK), address valid: \(addressOK)")
+                    if onboardingContainerViewModel.accountType == .business {
+                        let message = customerInfoVM.errors.values.first
+                            ?? personalAddressVM.errors.values.first
+                            ?? "Check the highlighted fields."
+                        onboardingContainerViewModel.reportUserError(message)
+                    }
                     return
                 }
                 personalAddressVM.normalize()

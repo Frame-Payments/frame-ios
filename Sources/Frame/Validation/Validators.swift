@@ -49,6 +49,23 @@ public enum Validators {
             : nil
     }
 
+    /// Host-only values get `https://` the same way business-details submit does.
+    public static func validateWebsite(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "Enter a website." }
+        var site = trimmed
+        if site.range(of: "^[a-z][a-z0-9+.-]*://", options: [.regularExpression, .caseInsensitive]) == nil {
+            site = "https://\(site)"
+        }
+        guard let url = URL(string: site),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = url.host, host.contains(".") else {
+            return "Enter a valid website."
+        }
+        return nil
+    }
+
     /// Validates that a string is a 5-digit US ZIP code.
     ///
     /// - Parameter value: The ZIP code string to validate.
@@ -95,6 +112,33 @@ public enum Validators {
         let isValid = value.count == 4 && value.allSatisfy { $0.isNumber }
         return isValid ? nil : "Enter last 4 digits of SSN"
     }
+
+    /// Validates that a string is a full 9-digit Social Security number.
+    ///
+    /// - Parameter value: The SSN, digits only.
+    /// - Returns: An error message if the value is empty or not exactly 9 digits, or `nil` if valid.
+    public static func validateSSN(_ value: String) -> String? {
+        if value.isEmpty { return "SSN is required" }
+        let isValid = value.count == 9 && value.allSatisfy { $0.isNumber }
+        return isValid ? nil : "Enter a 9-digit Social Security number"
+    }
+
+    /// Validates a US Employer Identification Number. Matches the API: 9 digits, and not a
+    /// sequential or repeating placeholder the server rejects as `ein_encrypted`.
+    public static func validateEIN(_ value: String) -> String? {
+        let digits = value.filter(\.isNumber)
+        if digits.count != 9 { return "Enter a 9-digit EIN." }
+        if invalidIdentificationNumbers.contains(digits) { return "Enter a valid EIN." }
+        return nil
+    }
+
+    /// Same 9-digit placeholders `InvalidNumbers` rejects for SSN and EIN.
+    private static let invalidIdentificationNumbers: Set<String> = [
+        "123456789", "987654321", "000000000",
+        "111111111", "222222222", "333333333", "444444444",
+        "555555555", "666666666", "777777777", "888888888", "999999999",
+        "246813579", "135792468", "369258147", "951357246", "864213579"
+    ]
 
     /// Validates that a string is a valid 9-digit US ABA routing number using the standard checksum algorithm.
     ///

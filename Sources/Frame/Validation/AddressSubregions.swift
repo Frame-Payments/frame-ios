@@ -125,9 +125,30 @@ public enum AddressSubregions {
         return subregions(forCountry: alpha2)?.first { $0.code == needle }
     }
 
-    /// Trims a subregion, upcasing it only for countries whose subregions are validated as codes.
+    /// Mapbox and typed input send a code (`TX`, `US-TX`) or a full name (`Texas`). The form
+    /// stores the two-letter code the picker and API both expect.
+    public static func resolve(_ value: String, countryCode alpha2: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if let byCode = subregion(forCode: trimmed, countryCode: alpha2) {
+            return byCode.code
+        }
+        let stripped = trimmed.split(separator: "-").last.map(String.init) ?? trimmed
+        if stripped.caseInsensitiveCompare(trimmed) != .orderedSame,
+           let byCode = subregion(forCode: stripped, countryCode: alpha2) {
+            return byCode.code
+        }
+        return subregions(forCountry: alpha2)?.first {
+            $0.name.caseInsensitiveCompare(trimmed) == .orderedSame
+        }?.code
+    }
+
+    /// Trims a subregion, resolving a name or prefixed code to the stored form.
     public static func normalize(_ value: String, countryCode alpha2: String) -> String {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let resolved = resolve(trimmed, countryCode: alpha2) {
+            return resolved
+        }
         return subregions(forCountry: alpha2) == nil ? trimmed : trimmed.uppercased()
     }
 }
