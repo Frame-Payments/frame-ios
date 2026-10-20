@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1658 public symbols** across 142 files in 2 modules.
+**1659 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -50,13 +50,13 @@ regeneration, so architectural notes belong there.
 | Actors | 1 |
 | Type aliases | 9 |
 | Initializers | 127 |
-| Methods | 289 |
+| Methods | 290 |
 | Properties (var) | 257 |
 | Properties (let) | 329 |
 | Enum cases | 306 |
-| **Total** | **1658** |
+| **Total** | **1659** |
 
-### `Frame` — 1483 public symbols
+### `Frame` — 1484 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -2297,7 +2297,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Validation (31)
+#### Validation (32)
 
 <details><summary><code>AddressSubregions.swift</code> — 13 symbols</summary>
 
@@ -2332,7 +2332,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>Validators.swift</code> — 16 symbols</summary>
+<details><summary><code>Validators.swift</code> — 17 symbols</summary>
 
 [`Sources/Frame/Validation/Validators.swift`](../Sources/Frame/Validation/Validators.swift)
 
@@ -2342,18 +2342,19 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `Validators.validateNonEmpty` | func | `func validateNonEmpty(_ value: String, fieldName: String) -> String?` | [22](../Sources/Frame/Validation/Validators.swift#L22) |
 | `Validators.validateFullName` | func | `func validateFullName(_ value: String) -> String?` | [32](../Sources/Frame/Validation/Validators.swift#L32) |
 | `Validators.validateEmail` | func | `func validateEmail(_ value: String) -> String?` | [43](../Sources/Frame/Validation/Validators.swift#L43) |
-| `Validators.validateZipUS` | func | `func validateZipUS(_ value: String) -> String?` | [56](../Sources/Frame/Validation/Validators.swift#L56) |
-| `Validators.validateCard` | func | `func validateCard(_ data: PaymentCardData) -> String?` | [66](../Sources/Frame/Validation/Validators.swift#L66) |
-| `Validators.validateCardExpiry` | func | `func validateCardExpiry(month: String, year: String) -> String?` | [76](../Sources/Frame/Validation/Validators.swift#L76) |
-| `Validators.validateSSNLast4` | func | `func validateSSNLast4(_ value: String) -> String?` | [93](../Sources/Frame/Validation/Validators.swift#L93) |
-| `Validators.validateSSN` | func | `func validateSSN(_ value: String) -> String?` | [103](../Sources/Frame/Validation/Validators.swift#L103) |
-| `Validators.validateEIN` | func | `func validateEIN(_ value: String) -> String?` | [111](../Sources/Frame/Validation/Validators.swift#L111) |
-| `Validators.validateRoutingNumberUS` | func | `func validateRoutingNumberUS(_ value: String) -> String?` | [130](../Sources/Frame/Validation/Validators.swift#L130) |
-| `Validators.validateAccountNumberUS` | func | `func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String?` | [150](../Sources/Frame/Validation/Validators.swift#L150) |
-| `Validators.validateDateOfBirth` | func | `func validateDateOfBirth(year: String, month: String, day: String, minAge: Int = 18, maxAge: Int = 120) -> String?` | [165](../Sources/Frame/Validation/Validators.swift#L165) |
-| `Validators.validatePostalCode` | func | `func validatePostalCode(_ value: String, countryCode: String) -> String?` | [223](../Sources/Frame/Validation/Validators.swift#L223) |
-| `Validators.validateSubregion` | func | `func validateSubregion(_ value: String, countryCode: String) -> String?` | [235](../Sources/Frame/Validation/Validators.swift#L235) |
-| `Validators.validatePhoneE164` | func | `func validatePhoneE164(_ raw: String, regionCode: String) -> String?` | [253](../Sources/Frame/Validation/Validators.swift#L253) |
+| `Validators.validateWebsite` | func | `func validateWebsite(_ value: String) -> String?` | [53](../Sources/Frame/Validation/Validators.swift#L53) |
+| `Validators.validateZipUS` | func | `func validateZipUS(_ value: String) -> String?` | [73](../Sources/Frame/Validation/Validators.swift#L73) |
+| `Validators.validateCard` | func | `func validateCard(_ data: PaymentCardData) -> String?` | [83](../Sources/Frame/Validation/Validators.swift#L83) |
+| `Validators.validateCardExpiry` | func | `func validateCardExpiry(month: String, year: String) -> String?` | [93](../Sources/Frame/Validation/Validators.swift#L93) |
+| `Validators.validateSSNLast4` | func | `func validateSSNLast4(_ value: String) -> String?` | [110](../Sources/Frame/Validation/Validators.swift#L110) |
+| `Validators.validateSSN` | func | `func validateSSN(_ value: String) -> String?` | [120](../Sources/Frame/Validation/Validators.swift#L120) |
+| `Validators.validateEIN` | func | `func validateEIN(_ value: String) -> String?` | [128](../Sources/Frame/Validation/Validators.swift#L128) |
+| `Validators.validateRoutingNumberUS` | func | `func validateRoutingNumberUS(_ value: String) -> String?` | [147](../Sources/Frame/Validation/Validators.swift#L147) |
+| `Validators.validateAccountNumberUS` | func | `func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String?` | [167](../Sources/Frame/Validation/Validators.swift#L167) |
+| `Validators.validateDateOfBirth` | func | `func validateDateOfBirth(year: String, month: String, day: String, minAge: Int = 18, maxAge: Int = 120) -> String?` | [182](../Sources/Frame/Validation/Validators.swift#L182) |
+| `Validators.validatePostalCode` | func | `func validatePostalCode(_ value: String, countryCode: String) -> String?` | [240](../Sources/Frame/Validation/Validators.swift#L240) |
+| `Validators.validateSubregion` | func | `func validateSubregion(_ value: String, countryCode: String) -> String?` | [252](../Sources/Frame/Validation/Validators.swift#L252) |
+| `Validators.validatePhoneE164` | func | `func validatePhoneE164(_ raw: String, regionCode: String) -> String?` | [270](../Sources/Frame/Validation/Validators.swift#L270) |
 
 </details>
 
