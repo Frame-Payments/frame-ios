@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1656 public symbols** across 142 files in 2 modules.
+**1658 public symbols** across 142 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -50,13 +50,13 @@ regeneration, so architectural notes belong there.
 | Actors | 1 |
 | Type aliases | 9 |
 | Initializers | 127 |
-| Methods | 287 |
+| Methods | 289 |
 | Properties (var) | 257 |
 | Properties (let) | 329 |
 | Enum cases | 306 |
-| **Total** | **1656** |
+| **Total** | **1658** |
 
-### `Frame` — 1481 public symbols
+### `Frame` — 1483 public symbols
 
 Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
 
@@ -128,10 +128,10 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `NetworkingError.isAssertionRejection` | var | `var isAssertionRejection: Bool` | [197](../Sources/Frame/Networking/CommonObjects.swift#L197) |
 | `NetworkingError.isTransport` | var | `var isTransport: Bool` | [207](../Sources/Frame/Networking/CommonObjects.swift#L207) |
 | `NetworkingError.toastMessage` | func | `func toastMessage(fallback: String = ) -> String` | [218](../Sources/Frame/Networking/CommonObjects.swift#L218) |
-| `FrameMetadata` | struct | `struct FrameMetadata: Codable` | [278](../Sources/Frame/Networking/CommonObjects.swift#L278) |
-| `FrameMetadata.page` | let | `let page: Int` | [280](../Sources/Frame/Networking/CommonObjects.swift#L280) |
-| `FrameMetadata.url` | let | `let url: String` | [283](../Sources/Frame/Networking/CommonObjects.swift#L283) |
-| `FrameMetadata.hasMore` | let | `let hasMore: Bool` | [286](../Sources/Frame/Networking/CommonObjects.swift#L286) |
+| `FrameMetadata` | struct | `struct FrameMetadata: Codable` | [281](../Sources/Frame/Networking/CommonObjects.swift#L281) |
+| `FrameMetadata.page` | let | `let page: Int` | [283](../Sources/Frame/Networking/CommonObjects.swift#L283) |
+| `FrameMetadata.url` | let | `let url: String` | [286](../Sources/Frame/Networking/CommonObjects.swift#L286) |
+| `FrameMetadata.hasMore` | let | `let hasMore: Bool` | [289](../Sources/Frame/Networking/CommonObjects.swift#L289) |
 
 </details>
 
@@ -2297,9 +2297,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Validation (29)
+#### Validation (31)
 
-<details><summary><code>AddressSubregions.swift</code> — 12 symbols</summary>
+<details><summary><code>AddressSubregions.swift</code> — 13 symbols</summary>
 
 [`Sources/Frame/Validation/AddressSubregions.swift`](../Sources/Frame/Validation/AddressSubregions.swift)
 
@@ -2316,7 +2316,8 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `AddressSubregions.subregions` | func | `func subregions(forCountry alpha2: String) -> [AddressSubregion]?` | [111](../Sources/Frame/Validation/AddressSubregions.swift#L111) |
 | `AddressSubregions.codes` | func | `func codes(forCountry alpha2: String) -> Set<String>?` | [118](../Sources/Frame/Validation/AddressSubregions.swift#L118) |
 | `AddressSubregions.subregion` | func | `func subregion(forCode code: String, countryCode alpha2: String) -> AddressSubregion?` | [123](../Sources/Frame/Validation/AddressSubregions.swift#L123) |
-| `AddressSubregions.normalize` | func | `func normalize(_ value: String, countryCode alpha2: String) -> String` | [129](../Sources/Frame/Validation/AddressSubregions.swift#L129) |
+| `AddressSubregions.resolve` | func | `func resolve(_ value: String, countryCode alpha2: String) -> String?` | [130](../Sources/Frame/Validation/AddressSubregions.swift#L130) |
+| `AddressSubregions.normalize` | func | `func normalize(_ value: String, countryCode alpha2: String) -> String` | [147](../Sources/Frame/Validation/AddressSubregions.swift#L147) |
 
 </details>
 
@@ -2331,7 +2332,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-<details><summary><code>Validators.swift</code> — 15 symbols</summary>
+<details><summary><code>Validators.swift</code> — 16 symbols</summary>
 
 [`Sources/Frame/Validation/Validators.swift`](../Sources/Frame/Validation/Validators.swift)
 
@@ -2346,12 +2347,13 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `Validators.validateCardExpiry` | func | `func validateCardExpiry(month: String, year: String) -> String?` | [76](../Sources/Frame/Validation/Validators.swift#L76) |
 | `Validators.validateSSNLast4` | func | `func validateSSNLast4(_ value: String) -> String?` | [93](../Sources/Frame/Validation/Validators.swift#L93) |
 | `Validators.validateSSN` | func | `func validateSSN(_ value: String) -> String?` | [103](../Sources/Frame/Validation/Validators.swift#L103) |
-| `Validators.validateRoutingNumberUS` | func | `func validateRoutingNumberUS(_ value: String) -> String?` | [113](../Sources/Frame/Validation/Validators.swift#L113) |
-| `Validators.validateAccountNumberUS` | func | `func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String?` | [133](../Sources/Frame/Validation/Validators.swift#L133) |
-| `Validators.validateDateOfBirth` | func | `func validateDateOfBirth(year: String, month: String, day: String, minAge: Int = 18, maxAge: Int = 120) -> String?` | [148](../Sources/Frame/Validation/Validators.swift#L148) |
-| `Validators.validatePostalCode` | func | `func validatePostalCode(_ value: String, countryCode: String) -> String?` | [206](../Sources/Frame/Validation/Validators.swift#L206) |
-| `Validators.validateSubregion` | func | `func validateSubregion(_ value: String, countryCode: String) -> String?` | [218](../Sources/Frame/Validation/Validators.swift#L218) |
-| `Validators.validatePhoneE164` | func | `func validatePhoneE164(_ raw: String, regionCode: String) -> String?` | [236](../Sources/Frame/Validation/Validators.swift#L236) |
+| `Validators.validateEIN` | func | `func validateEIN(_ value: String) -> String?` | [111](../Sources/Frame/Validation/Validators.swift#L111) |
+| `Validators.validateRoutingNumberUS` | func | `func validateRoutingNumberUS(_ value: String) -> String?` | [130](../Sources/Frame/Validation/Validators.swift#L130) |
+| `Validators.validateAccountNumberUS` | func | `func validateAccountNumberUS(_ value: String, min: Int = 4, max: Int = 17) -> String?` | [150](../Sources/Frame/Validation/Validators.swift#L150) |
+| `Validators.validateDateOfBirth` | func | `func validateDateOfBirth(year: String, month: String, day: String, minAge: Int = 18, maxAge: Int = 120) -> String?` | [165](../Sources/Frame/Validation/Validators.swift#L165) |
+| `Validators.validatePostalCode` | func | `func validatePostalCode(_ value: String, countryCode: String) -> String?` | [223](../Sources/Frame/Validation/Validators.swift#L223) |
+| `Validators.validateSubregion` | func | `func validateSubregion(_ value: String, countryCode: String) -> String?` | [235](../Sources/Frame/Validation/Validators.swift#L235) |
+| `Validators.validatePhoneE164` | func | `func validatePhoneE164(_ raw: String, regionCode: String) -> String?` | [253](../Sources/Frame/Validation/Validators.swift#L253) |
 
 </details>
 
@@ -2840,7 +2842,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 |--------|------|-------------|------|
 | `BillingAddressDetailView` | struct | `struct BillingAddressDetailView: View` | [18](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L18) |
 | `BillingAddressDetailView.init` | init | `init (viewModel: BillingAddressViewModel, headerTitle: String = , showHeaderText: Bool = true)` | [36](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L36) |
-| `BillingAddressDetailView.body` | var | `var body: some View` | [138](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L138) |
+| `BillingAddressDetailView.body` | var | `var body: some View` | [144](../Sources/FrameOnboarding/Reusable/PaymentElements/BillingAddressDetailView.swift#L144) |
 
 </details>
 
