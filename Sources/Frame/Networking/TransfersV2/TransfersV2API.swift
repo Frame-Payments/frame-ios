@@ -51,14 +51,14 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
     private static func withSonarSession(
         _ request: TransferV2Requests.CreateTransferRequest,
         accountId: String?
-    ) async -> TransferV2Requests.CreateTransferRequest {
+    ) async throws -> TransferV2Requests.CreateTransferRequest {
         let resolved = FrameNetworking.shared.accountId ?? accountId
         let hasPaymentSource = request.source?.paymentMethodId != nil
             || request.source?.paymentMethod != nil
         guard hasPaymentSource, let resolved, !resolved.isEmpty else { return request }
 
         var updated = request
-        updated.sonarSessionId = try? await SessionManager.shared.ensureSession(accountId: resolved)
+        updated.sonarSessionId = try await SessionManager.shared.ensureSession(accountId: resolved)
         return updated
     }
 
@@ -118,7 +118,7 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
     ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
         let key = (idempotencyKey?.isEmpty == false) ? idempotencyKey! : UUID().uuidString
         let endpoint = TransferV2Endpoints.createTransfer(idempotencyKey: key)
-        let body = encodeBody(await withSonarSession(request, accountId: accountId))
+        let body = encodeBody(try await withSonarSession(request, accountId: accountId))
         let (data, error) = try await FrameNetworking.shared.performDataTask(
             endpoint: endpoint,
             requestBody: body,
