@@ -252,4 +252,93 @@ final class TransfersV2APITests: XCTestCase {
         }
         XCTAssertEqual(transfer.id, "tr_v2_1")
     }
+
+    /// Swallowed `ensureSession` used to POST a charge with no shopper IP for Sift.
+    func testPaymentCreateFailsWhenSonarSessionCannotAttach() async {
+        let savedSession = FrameNetworking.shared.asyncURLSession
+        let recorder = MockURLAsyncSession(
+            data: try? JSONEncoder().encode(transferResponse),
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.framepayments.com/v2/transfers")!,
+                statusCode: 201,
+                httpVersion: nil,
+                headerFields: nil
+            ),
+            error: nil
+        )
+        FrameNetworking.shared.asyncURLSession = recorder
+        FingerprintManager.resetForTesting()
+        FingerprintManager.identificationOverride = { nil }
+
+        let accountId = "acc_fra7812_\(UUID().uuidString)"
+        UserDefaultsSessionStorage().clear(accountId: accountId)
+        if let existing = FrameNetworking.shared.accountId {
+            UserDefaultsSessionStorage().clear(accountId: existing)
+        }
+
+        defer {
+            FrameNetworking.shared.asyncURLSession = savedSession
+            FingerprintManager.resetForTesting()
+            UserDefaultsSessionStorage().clear(accountId: accountId)
+        }
+
+        do {
+            _ = try await TransfersV2API.createTransfer(
+                request: makeCreateRequest(),
+                accountId: accountId
+            )
+            XCTFail("Expected SessionManagerError when ensureSession cannot attach")
+        } catch let error as SessionManagerError {
+            XCTAssertEqual(error, .missingVisitorId)
+        } catch {
+            XCTFail("Expected SessionManagerError, got \(error)")
+        }
+
+        XCTAssertNotEqual(
+            recorder.lastRequest?.url?.path,
+            "/v2/transfers",
+            "Must not POST a session-less charge"
+        )
+    }
+
+    /// Payouts stay session-less even when an account is resolved, so a failed identify
+    /// must not fail the create.
+    func testPayoutCreateOmitsSonarSessionId() async throws {
+        let savedSession = FrameNetworking.shared.asyncURLSession
+        let recorder = MockURLAsyncSession(
+            data: try JSONEncoder().encode(transferResponse),
+            response: HTTPURLResponse(
+                url: URL(string: "https://api.framepayments.com/v2/transfers")!,
+                statusCode: 201,
+                httpVersion: nil,
+                headerFields: nil
+            ),
+            error: nil
+        )
+        FrameNetworking.shared.asyncURLSession = recorder
+        FingerprintManager.resetForTesting()
+        FingerprintManager.identificationOverride = { nil }
+
+        let accountId = "acc_fra7812_payout_\(UUID().uuidString)"
+        UserDefaultsSessionStorage().clear(accountId: accountId)
+        if let existing = FrameNetworking.shared.accountId {
+            UserDefaultsSessionStorage().clear(accountId: existing)
+        }
+
+        defer {
+            FrameNetworking.shared.asyncURLSession = savedSession
+            FingerprintManager.resetForTesting()
+            UserDefaultsSessionStorage().clear(accountId: accountId)
+        }
+
+        let request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: 5000, currency: "usd"),
+            destination: .init(paymentMethodId: "pm_1")
+        )
+        _ = try await TransfersV2API.createTransfer(request: request, accountId: accountId)
+
+        XCTAssertEqual(recorder.lastRequest?.url?.path, "/v2/transfers")
+        let body = try JSONSerialization.jsonObject(with: recorder.lastRequest?.httpBody ?? Data()) as? [String: Any]
+        XCTAssertNil(body?["sonar_session_id"])
+    }
 }
