@@ -325,10 +325,14 @@ public struct OnboardingContainerView: View {
             onboardingContainerViewModel.endOnboardingSessionIfOwned()
             if !didFinish {
                 didFinish = true
-                AccountEventEmitter.emit(name: .onboardingCancelled,
-                                         screen: onboardingContainerViewModel.currentStep.accountEventScreenName,
-                                         detail: "last step reached: \(onboardingContainerViewModel.currentStep)")
-                onResult(.cancelled)
+                if let message = onboardingContainerViewModel.accountTypeMismatch {
+                    onResult(.failed(OnboardingFlowError(message: message)))
+                } else {
+                    AccountEventEmitter.emit(name: .onboardingCancelled,
+                                             screen: onboardingContainerViewModel.currentStep.accountEventScreenName,
+                                             detail: "last step reached: \(onboardingContainerViewModel.currentStep)")
+                    onResult(.cancelled)
+                }
             }
         }
     }
