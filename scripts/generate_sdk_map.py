@@ -332,7 +332,7 @@ def collect() -> list[Symbol]:
 
 
 MODULE_BLURB = {
-    "Frame": "Core SDK: networking for every Frame API resource, checkout and cart UI, "
+    "Frame": "Core SDK: networking for every Frame API resource, checkout, cart, and deposit UI, "
              "theming, validation, and the Apple Pay surface.",
     "FrameOnboarding": "Onboarding product: the capability-driven identity/payment "
                        "verification flow, its screens, and the onboarding-only APIs "

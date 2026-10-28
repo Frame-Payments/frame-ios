@@ -5,10 +5,11 @@
 
 import Foundation
 
-/// Outcome of a Frame UI flow (checkout, cart, onboarding).
+/// Outcome of a Frame UI flow (checkout, cart, deposit, onboarding).
 ///
 /// `completed(id:)` carries the resource id produced by the flow:
-/// - `FrameCheckoutView` / `FrameCartView` → Transfer id
+/// - `FrameCheckoutView` / `FrameCartView` / `FrameDepositView` → Transfer id
+///   (`FrameDepositView` forwards the id from the checkout it pushes)
 /// - `OnboardingContainerView` → the selected PaymentMethod id, or empty string if the flow
 ///   completed without one
 public enum FrameResult {

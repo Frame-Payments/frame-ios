@@ -15,7 +15,7 @@ regeneration, so architectural notes belong there.
 
 | Module | Product | Purpose |
 |--------|---------|---------|
-| `Frame` | `Frame-iOS` | Networking for every API resource, checkout/cart UI, theming, validation, Apple Pay. |
+| `Frame` | `Frame-iOS` | Networking for every API resource, checkout/cart/deposit UI, theming, validation, Apple Pay. |
 | `FrameOnboarding` | `Frame-Onboarding` | Capability-driven onboarding flow, its screens, and onboarding-only APIs (3DS, IDV, phone OTP, geocompliance). |
 
 `FrameOnboarding` depends on `Frame`; the reverse is not true.
@@ -39,26 +39,26 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1659 public symbols** across 142 files in 2 modules.
+**1662 public symbols** across 143 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 70 |
-| Structs | 194 |
+| Structs | 195 |
 | Enums | 71 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 9 |
-| Initializers | 127 |
+| Initializers | 128 |
 | Methods | 290 |
-| Properties (var) | 257 |
+| Properties (var) | 258 |
 | Properties (let) | 329 |
 | Enum cases | 306 |
-| **Total** | **1659** |
+| **Total** | **1662** |
 
-### `Frame` — 1484 public symbols
+### `Frame` — 1487 public symbols
 
-Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
+Core SDK: networking for every Frame API resource, checkout, cart, and deposit UI, theming, validation, and the Apple Pay surface.
 
 #### (root) (3)
 
@@ -2207,18 +2207,18 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `FrameResult` | enum | `enum FrameResult` | [14](../Sources/Frame/Public/FrameResults.swift#L14) |
-| `FrameResult.completed` | case | `case completed(id: String)` | [19](../Sources/Frame/Public/FrameResults.swift#L19) |
-| `FrameResult.finishedUnverified` | case | `case finishedUnverified(id: String, outcome: OnboardingOutcome)` | [27](../Sources/Frame/Public/FrameResults.swift#L27) |
-| `FrameResult.cancelled` | case | `case cancelled` | [30](../Sources/Frame/Public/FrameResults.swift#L30) |
-| `FrameResult.failed` | case | `case failed(Error)` | [35](../Sources/Frame/Public/FrameResults.swift#L35) |
-| `FrameCheckoutError` | enum | `enum FrameCheckoutError: Error` | [39](../Sources/Frame/Public/FrameResults.swift#L39) |
-| `FrameCheckoutError.declined` | case | `case declined(message: String?)` | [41](../Sources/Frame/Public/FrameResults.swift#L41) |
-| `FrameCheckoutError.unresolved` | case | `case unresolved` | [46](../Sources/Frame/Public/FrameResults.swift#L46) |
-| `FrameCheckoutError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable` | [49](../Sources/Frame/Public/FrameResults.swift#L49) |
-| `FrameCheckoutError.toastMessage` | func | `func toastMessage() -> String` | [52](../Sources/Frame/Public/FrameResults.swift#L52) |
-| `FrameConfigurationError` | enum | `enum FrameConfigurationError: Error` | [65](../Sources/Frame/Public/FrameResults.swift#L65) |
-| `FrameConfigurationError.applePayMerchantIdNotConfigured` | case | `case applePayMerchantIdNotConfigured` | [67](../Sources/Frame/Public/FrameResults.swift#L67) |
+| `FrameResult` | enum | `enum FrameResult` | [15](../Sources/Frame/Public/FrameResults.swift#L15) |
+| `FrameResult.completed` | case | `case completed(id: String)` | [20](../Sources/Frame/Public/FrameResults.swift#L20) |
+| `FrameResult.finishedUnverified` | case | `case finishedUnverified(id: String, outcome: OnboardingOutcome)` | [28](../Sources/Frame/Public/FrameResults.swift#L28) |
+| `FrameResult.cancelled` | case | `case cancelled` | [31](../Sources/Frame/Public/FrameResults.swift#L31) |
+| `FrameResult.failed` | case | `case failed(Error)` | [36](../Sources/Frame/Public/FrameResults.swift#L36) |
+| `FrameCheckoutError` | enum | `enum FrameCheckoutError: Error` | [40](../Sources/Frame/Public/FrameResults.swift#L40) |
+| `FrameCheckoutError.declined` | case | `case declined(message: String?)` | [42](../Sources/Frame/Public/FrameResults.swift#L42) |
+| `FrameCheckoutError.unresolved` | case | `case unresolved` | [47](../Sources/Frame/Public/FrameResults.swift#L47) |
+| `FrameCheckoutError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable` | [50](../Sources/Frame/Public/FrameResults.swift#L50) |
+| `FrameCheckoutError.toastMessage` | func | `func toastMessage() -> String` | [53](../Sources/Frame/Public/FrameResults.swift#L53) |
+| `FrameConfigurationError` | enum | `enum FrameConfigurationError: Error` | [66](../Sources/Frame/Public/FrameResults.swift#L66) |
+| `FrameConfigurationError.applePayMerchantIdNotConfigured` | case | `case applePayMerchantIdNotConfigured` | [68](../Sources/Frame/Public/FrameResults.swift#L68) |
 
 </details>
 
@@ -2432,7 +2432,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Views (9)
+#### Views (12)
 
 <details><summary><code>FrameApplePayButton.swift</code> — 3 symbols</summary>
 
@@ -2467,6 +2467,18 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameCheckoutView` | struct | `struct FrameCheckoutView: View` | [17](../Sources/Frame/Views/FrameCheckoutView.swift#L17) |
 | `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, account: FrameObjects.Account? = nil, paymentMethods: [FrameObjects.Pay…` | [54](../Sources/Frame/Views/FrameCheckoutView.swift#L54) |
 | `FrameCheckoutView.body` | var | `var body: some View` | [84](../Sources/Frame/Views/FrameCheckoutView.swift#L84) |
+
+</details>
+
+<details><summary><code>FrameDepositView.swift</code> — 3 symbols</summary>
+
+[`Sources/Frame/Views/FrameDepositView.swift`](../Sources/Frame/Views/FrameDepositView.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `FrameDepositView` | struct | `struct FrameDepositView: View` | [14](../Sources/Frame/Views/FrameDepositView.swift#L14) |
+| `FrameDepositView.init` | init | `init ( accountId: String, minAmount: Int? = nil, maxAmount: Int? = nil, addressMode: FrameAddressMode = .required, mintCheckoutSession: @escaping (Int) async -…` | [38](../Sources/Frame/Views/FrameDepositView.swift#L38) |
+| `FrameDepositView.body` | var | `var body: some View` | [57](../Sources/Frame/Views/FrameDepositView.swift#L57) |
 
 </details>
 
