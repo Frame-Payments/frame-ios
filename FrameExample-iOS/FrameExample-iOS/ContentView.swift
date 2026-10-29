@@ -21,6 +21,7 @@ struct ContentView: View {
     @Environment(\.frameTheme) var theme
 
     @State private var presentedCheckout: ExampleCheckoutSession?
+    @State private var showDepositSheet = false
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
@@ -55,6 +56,7 @@ struct ContentView: View {
                 .padding()
             ScrollView {
                 cartButton
+                depositButton
                 addPaymentMethodButton
                 selectPayoutMethodButton
                 onboardingButton
@@ -148,6 +150,27 @@ struct ContentView: View {
                 }
             })
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showDepositSheet) {
+            FrameDepositView(
+                accountId: viewModel.accountId,
+                mintCheckoutSession: { cents in
+                    await viewModel.mintCheckoutClientSecret(accountId: viewModel.accountId, amountCents: cents)
+                },
+                onResult: { result in
+                    switch result {
+                    case .completed(let id):
+                        FrameToastCenter.shared.show("Deposit completed: \(id)")
+                    case .cancelled:
+                        FrameToastCenter.shared.show("Cancelled flow")
+                    case .failed(let error):
+                        FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
+                    }
+                }
+            )
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showAddPaymentMethodView, content: {
             if let clientSecret = viewModel.onboardingClientSecret {
@@ -259,6 +282,33 @@ struct ContentView: View {
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
+
+    var depositButton: some View {
+        Button {
+            // Amount is unknown until the keypad. FrameDepositView asks the host to mint
+            // POST /v1/checkout_sessions for the typed cents. This example has no backend,
+            // so that closure uses the secret key configured on the example.
+            Task {
+                let accountId = viewModel.accountId.isEmpty
+                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    : viewModel.accountId
+                viewModel.accountId = accountId
+                if !accountId.isEmpty {
+                    self.showDepositSheet = true
+                }
+            }
+        } label: {
+            Text("Deposit")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
     
     var addPaymentMethodButton: some View {
         Button {
@@ -335,3 +385,4 @@ private struct ExampleCheckoutSession: Identifiable {
     let accountId: String
     let clientSecret: FrameCheckoutClientSecret
 }
+

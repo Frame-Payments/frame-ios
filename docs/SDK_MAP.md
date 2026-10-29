@@ -15,7 +15,7 @@ regeneration, so architectural notes belong there.
 
 | Module | Product | Purpose |
 |--------|---------|---------|
-| `Frame` | `Frame-iOS` | Networking for every API resource, checkout/cart UI, theming, validation, Apple Pay. |
+| `Frame` | `Frame-iOS` | Networking for every API resource, checkout/cart/deposit UI, theming, validation, Apple Pay. |
 | `FrameOnboarding` | `Frame-Onboarding` | Capability-driven onboarding flow, its screens, and onboarding-only APIs (3DS, IDV, phone OTP, geocompliance). |
 
 `FrameOnboarding` depends on `Frame`; the reverse is not true.
@@ -39,26 +39,26 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1659 public symbols** across 142 files in 2 modules.
+**1663 public symbols** across 143 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
 | Classes | 70 |
-| Structs | 194 |
+| Structs | 195 |
 | Enums | 71 |
 | Protocols | 5 |
 | Actors | 1 |
 | Type aliases | 9 |
-| Initializers | 127 |
+| Initializers | 128 |
 | Methods | 290 |
-| Properties (var) | 257 |
+| Properties (var) | 259 |
 | Properties (let) | 329 |
 | Enum cases | 306 |
-| **Total** | **1659** |
+| **Total** | **1663** |
 
-### `Frame` — 1484 public symbols
+### `Frame` — 1488 public symbols
 
-Core SDK: networking for every Frame API resource, checkout and cart UI, theming, validation, and the Apple Pay surface.
+Core SDK: networking for every Frame API resource, checkout, cart, and deposit UI, theming, validation, and the Apple Pay surface.
 
 #### (root) (3)
 
@@ -2207,18 +2207,18 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
-| `FrameResult` | enum | `enum FrameResult` | [14](../Sources/Frame/Public/FrameResults.swift#L14) |
-| `FrameResult.completed` | case | `case completed(id: String)` | [19](../Sources/Frame/Public/FrameResults.swift#L19) |
-| `FrameResult.finishedUnverified` | case | `case finishedUnverified(id: String, outcome: OnboardingOutcome)` | [27](../Sources/Frame/Public/FrameResults.swift#L27) |
-| `FrameResult.cancelled` | case | `case cancelled` | [30](../Sources/Frame/Public/FrameResults.swift#L30) |
-| `FrameResult.failed` | case | `case failed(Error)` | [35](../Sources/Frame/Public/FrameResults.swift#L35) |
-| `FrameCheckoutError` | enum | `enum FrameCheckoutError: Error` | [39](../Sources/Frame/Public/FrameResults.swift#L39) |
-| `FrameCheckoutError.declined` | case | `case declined(message: String?)` | [41](../Sources/Frame/Public/FrameResults.swift#L41) |
-| `FrameCheckoutError.unresolved` | case | `case unresolved` | [46](../Sources/Frame/Public/FrameResults.swift#L46) |
-| `FrameCheckoutError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable` | [49](../Sources/Frame/Public/FrameResults.swift#L49) |
-| `FrameCheckoutError.toastMessage` | func | `func toastMessage() -> String` | [52](../Sources/Frame/Public/FrameResults.swift#L52) |
-| `FrameConfigurationError` | enum | `enum FrameConfigurationError: Error` | [65](../Sources/Frame/Public/FrameResults.swift#L65) |
-| `FrameConfigurationError.applePayMerchantIdNotConfigured` | case | `case applePayMerchantIdNotConfigured` | [67](../Sources/Frame/Public/FrameResults.swift#L67) |
+| `FrameResult` | enum | `enum FrameResult` | [15](../Sources/Frame/Public/FrameResults.swift#L15) |
+| `FrameResult.completed` | case | `case completed(id: String)` | [20](../Sources/Frame/Public/FrameResults.swift#L20) |
+| `FrameResult.finishedUnverified` | case | `case finishedUnverified(id: String, outcome: OnboardingOutcome)` | [28](../Sources/Frame/Public/FrameResults.swift#L28) |
+| `FrameResult.cancelled` | case | `case cancelled` | [31](../Sources/Frame/Public/FrameResults.swift#L31) |
+| `FrameResult.failed` | case | `case failed(Error)` | [36](../Sources/Frame/Public/FrameResults.swift#L36) |
+| `FrameCheckoutError` | enum | `enum FrameCheckoutError: Error` | [40](../Sources/Frame/Public/FrameResults.swift#L40) |
+| `FrameCheckoutError.declined` | case | `case declined(message: String?)` | [42](../Sources/Frame/Public/FrameResults.swift#L42) |
+| `FrameCheckoutError.unresolved` | case | `case unresolved` | [47](../Sources/Frame/Public/FrameResults.swift#L47) |
+| `FrameCheckoutError.threeDSecureUnavailable` | case | `case threeDSecureUnavailable` | [50](../Sources/Frame/Public/FrameResults.swift#L50) |
+| `FrameCheckoutError.toastMessage` | func | `func toastMessage() -> String` | [53](../Sources/Frame/Public/FrameResults.swift#L53) |
+| `FrameConfigurationError` | enum | `enum FrameConfigurationError: Error` | [66](../Sources/Frame/Public/FrameResults.swift#L66) |
+| `FrameConfigurationError.applePayMerchantIdNotConfigured` | case | `case applePayMerchantIdNotConfigured` | [68](../Sources/Frame/Public/FrameResults.swift#L68) |
 
 </details>
 
@@ -2238,9 +2238,9 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Theming (48)
+#### Theming (49)
 
-<details><summary><code>FrameTheme.swift</code> — 48 symbols</summary>
+<details><summary><code>FrameTheme.swift</code> — 49 symbols</summary>
 
 [`Sources/Frame/Theming/FrameTheme.swift`](../Sources/Frame/Theming/FrameTheme.swift)
 
@@ -2276,24 +2276,25 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameTheme.Colors.init` | init | `init ( primaryButton: Color = Color( , bundle: FrameResources.module), primaryButtonText: Color = .white, secondaryButton: Color = Color(.systemBackground), se…` | [116](../Sources/Frame/Theming/FrameTheme.swift#L116) |
 | `FrameTheme.Fonts` | struct | `struct Fonts: Equatable` | [161](../Sources/Frame/Theming/FrameTheme.swift#L161) |
 | `FrameTheme.Fonts.title` | var | `var title: Font` | [163](../Sources/Frame/Theming/FrameTheme.swift#L163) |
-| `FrameTheme.Fonts.heading` | var | `var heading: Font` | [165](../Sources/Frame/Theming/FrameTheme.swift#L165) |
-| `FrameTheme.Fonts.headline` | var | `var headline: Font` | [167](../Sources/Frame/Theming/FrameTheme.swift#L167) |
-| `FrameTheme.Fonts.body` | var | `var body: Font` | [169](../Sources/Frame/Theming/FrameTheme.swift#L169) |
-| `FrameTheme.Fonts.bodySmall` | var | `var bodySmall: Font` | [171](../Sources/Frame/Theming/FrameTheme.swift#L171) |
-| `FrameTheme.Fonts.label` | var | `var label: Font` | [173](../Sources/Frame/Theming/FrameTheme.swift#L173) |
-| `FrameTheme.Fonts.caption` | var | `var caption: Font` | [175](../Sources/Frame/Theming/FrameTheme.swift#L175) |
-| `FrameTheme.Fonts.button` | var | `var button: Font` | [177](../Sources/Frame/Theming/FrameTheme.swift#L177) |
-| `FrameTheme.Fonts.init` | init | `init ( title: Font? = nil, heading: Font? = nil, headline: Font? = nil, body: Font? = nil, bodySmall: Font? = nil, label: Font? = nil, caption: Font? = nil, bu…` | [201](../Sources/Frame/Theming/FrameTheme.swift#L201) |
-| `FrameTheme.Radii` | struct | `struct Radii: Equatable` | [227](../Sources/Frame/Theming/FrameTheme.swift#L227) |
-| `FrameTheme.Radii.small` | var | `var small: CGFloat` | [229](../Sources/Frame/Theming/FrameTheme.swift#L229) |
-| `FrameTheme.Radii.medium` | var | `var medium: CGFloat` | [231](../Sources/Frame/Theming/FrameTheme.swift#L231) |
-| `FrameTheme.Radii.large` | var | `var large: CGFloat` | [233](../Sources/Frame/Theming/FrameTheme.swift#L233) |
-| `FrameTheme.Radii.init` | init | `init (small: CGFloat = 8, medium: CGFloat = 10, large: CGFloat = 16)` | [241](../Sources/Frame/Theming/FrameTheme.swift#L241) |
-| `FrameTheme.Spacing` | struct | `struct Spacing: Equatable` | [249](../Sources/Frame/Theming/FrameTheme.swift#L249) |
-| `FrameTheme.Spacing.sectionTop` | var | `var sectionTop: CGFloat` | [251](../Sources/Frame/Theming/FrameTheme.swift#L251) |
-| `FrameTheme.Spacing.sectionGap` | var | `var sectionGap: CGFloat` | [253](../Sources/Frame/Theming/FrameTheme.swift#L253) |
-| `FrameTheme.Spacing.formBlock` | var | `var formBlock: CGFloat` | [255](../Sources/Frame/Theming/FrameTheme.swift#L255) |
-| `FrameTheme.Spacing.init` | init | `init (sectionTop: CGFloat = 16, sectionGap: CGFloat = 12, formBlock: CGFloat = 16)` | [258](../Sources/Frame/Theming/FrameTheme.swift#L258) |
+| `FrameTheme.Fonts.depositAmount` | var | `var depositAmount: Font` | [165](../Sources/Frame/Theming/FrameTheme.swift#L165) |
+| `FrameTheme.Fonts.heading` | var | `var heading: Font` | [167](../Sources/Frame/Theming/FrameTheme.swift#L167) |
+| `FrameTheme.Fonts.headline` | var | `var headline: Font` | [169](../Sources/Frame/Theming/FrameTheme.swift#L169) |
+| `FrameTheme.Fonts.body` | var | `var body: Font` | [171](../Sources/Frame/Theming/FrameTheme.swift#L171) |
+| `FrameTheme.Fonts.bodySmall` | var | `var bodySmall: Font` | [173](../Sources/Frame/Theming/FrameTheme.swift#L173) |
+| `FrameTheme.Fonts.label` | var | `var label: Font` | [175](../Sources/Frame/Theming/FrameTheme.swift#L175) |
+| `FrameTheme.Fonts.caption` | var | `var caption: Font` | [177](../Sources/Frame/Theming/FrameTheme.swift#L177) |
+| `FrameTheme.Fonts.button` | var | `var button: Font` | [179](../Sources/Frame/Theming/FrameTheme.swift#L179) |
+| `FrameTheme.Fonts.init` | init | `init ( title: Font? = nil, depositAmount: Font? = nil, heading: Font? = nil, headline: Font? = nil, body: Font? = nil, bodySmall: Font? = nil, label: Font? = n…` | [193](../Sources/Frame/Theming/FrameTheme.swift#L193) |
+| `FrameTheme.Radii` | struct | `struct Radii: Equatable` | [221](../Sources/Frame/Theming/FrameTheme.swift#L221) |
+| `FrameTheme.Radii.small` | var | `var small: CGFloat` | [223](../Sources/Frame/Theming/FrameTheme.swift#L223) |
+| `FrameTheme.Radii.medium` | var | `var medium: CGFloat` | [225](../Sources/Frame/Theming/FrameTheme.swift#L225) |
+| `FrameTheme.Radii.large` | var | `var large: CGFloat` | [227](../Sources/Frame/Theming/FrameTheme.swift#L227) |
+| `FrameTheme.Radii.init` | init | `init (small: CGFloat = 8, medium: CGFloat = 10, large: CGFloat = 16)` | [235](../Sources/Frame/Theming/FrameTheme.swift#L235) |
+| `FrameTheme.Spacing` | struct | `struct Spacing: Equatable` | [243](../Sources/Frame/Theming/FrameTheme.swift#L243) |
+| `FrameTheme.Spacing.sectionTop` | var | `var sectionTop: CGFloat` | [245](../Sources/Frame/Theming/FrameTheme.swift#L245) |
+| `FrameTheme.Spacing.sectionGap` | var | `var sectionGap: CGFloat` | [247](../Sources/Frame/Theming/FrameTheme.swift#L247) |
+| `FrameTheme.Spacing.formBlock` | var | `var formBlock: CGFloat` | [249](../Sources/Frame/Theming/FrameTheme.swift#L249) |
+| `FrameTheme.Spacing.init` | init | `init (sectionTop: CGFloat = 16, sectionGap: CGFloat = 12, formBlock: CGFloat = 16)` | [252](../Sources/Frame/Theming/FrameTheme.swift#L252) |
 
 </details>
 
@@ -2432,7 +2433,7 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 
 </details>
 
-#### Views (9)
+#### Views (12)
 
 <details><summary><code>FrameApplePayButton.swift</code> — 3 symbols</summary>
 
@@ -2467,6 +2468,18 @@ Core SDK: networking for every Frame API resource, checkout and cart UI, theming
 | `FrameCheckoutView` | struct | `struct FrameCheckoutView: View` | [17](../Sources/Frame/Views/FrameCheckoutView.swift#L17) |
 | `FrameCheckoutView.init` | init | `init (accountId: String, paymentAmount: Int, addressMode: FrameAddressMode = .required, account: FrameObjects.Account? = nil, paymentMethods: [FrameObjects.Pay…` | [54](../Sources/Frame/Views/FrameCheckoutView.swift#L54) |
 | `FrameCheckoutView.body` | var | `var body: some View` | [84](../Sources/Frame/Views/FrameCheckoutView.swift#L84) |
+
+</details>
+
+<details><summary><code>FrameDepositView.swift</code> — 3 symbols</summary>
+
+[`Sources/Frame/Views/FrameDepositView.swift`](../Sources/Frame/Views/FrameDepositView.swift)
+
+| Symbol | Kind | Declaration | Line |
+|--------|------|-------------|------|
+| `FrameDepositView` | struct | `struct FrameDepositView: View` | [14](../Sources/Frame/Views/FrameDepositView.swift#L14) |
+| `FrameDepositView.init` | init | `init ( accountId: String, minAmount: Int? = nil, maxAmount: Int? = nil, addressMode: FrameAddressMode = .required, mintCheckoutSession: @escaping (Int) async -…` | [38](../Sources/Frame/Views/FrameDepositView.swift#L38) |
+| `FrameDepositView.body` | var | `var body: some View` | [57](../Sources/Frame/Views/FrameDepositView.swift#L57) |
 
 </details>
 
