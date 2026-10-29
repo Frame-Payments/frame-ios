@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1662 public symbols** across 143 files in 2 modules.
+**1663 public symbols** across 143 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -51,12 +51,12 @@ regeneration, so architectural notes belong there.
 | Type aliases | 9 |
 | Initializers | 128 |
 | Methods | 290 |
-| Properties (var) | 258 |
+| Properties (var) | 259 |
 | Properties (let) | 329 |
 | Enum cases | 306 |
-| **Total** | **1662** |
+| **Total** | **1663** |
 
-### `Frame` — 1487 public symbols
+### `Frame` — 1488 public symbols
 
 Core SDK: networking for every Frame API resource, checkout, cart, and deposit UI, theming, validation, and the Apple Pay surface.
 
@@ -2238,9 +2238,9 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 
 </details>
 
-#### Theming (48)
+#### Theming (49)
 
-<details><summary><code>FrameTheme.swift</code> — 48 symbols</summary>
+<details><summary><code>FrameTheme.swift</code> — 49 symbols</summary>
 
 [`Sources/Frame/Theming/FrameTheme.swift`](../Sources/Frame/Theming/FrameTheme.swift)
 
@@ -2276,24 +2276,25 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 | `FrameTheme.Colors.init` | init | `init ( primaryButton: Color = Color( , bundle: FrameResources.module), primaryButtonText: Color = .white, secondaryButton: Color = Color(.systemBackground), se…` | [116](../Sources/Frame/Theming/FrameTheme.swift#L116) |
 | `FrameTheme.Fonts` | struct | `struct Fonts: Equatable` | [161](../Sources/Frame/Theming/FrameTheme.swift#L161) |
 | `FrameTheme.Fonts.title` | var | `var title: Font` | [163](../Sources/Frame/Theming/FrameTheme.swift#L163) |
-| `FrameTheme.Fonts.heading` | var | `var heading: Font` | [165](../Sources/Frame/Theming/FrameTheme.swift#L165) |
-| `FrameTheme.Fonts.headline` | var | `var headline: Font` | [167](../Sources/Frame/Theming/FrameTheme.swift#L167) |
-| `FrameTheme.Fonts.body` | var | `var body: Font` | [169](../Sources/Frame/Theming/FrameTheme.swift#L169) |
-| `FrameTheme.Fonts.bodySmall` | var | `var bodySmall: Font` | [171](../Sources/Frame/Theming/FrameTheme.swift#L171) |
-| `FrameTheme.Fonts.label` | var | `var label: Font` | [173](../Sources/Frame/Theming/FrameTheme.swift#L173) |
-| `FrameTheme.Fonts.caption` | var | `var caption: Font` | [175](../Sources/Frame/Theming/FrameTheme.swift#L175) |
-| `FrameTheme.Fonts.button` | var | `var button: Font` | [177](../Sources/Frame/Theming/FrameTheme.swift#L177) |
-| `FrameTheme.Fonts.init` | init | `init ( title: Font? = nil, heading: Font? = nil, headline: Font? = nil, body: Font? = nil, bodySmall: Font? = nil, label: Font? = nil, caption: Font? = nil, bu…` | [201](../Sources/Frame/Theming/FrameTheme.swift#L201) |
-| `FrameTheme.Radii` | struct | `struct Radii: Equatable` | [227](../Sources/Frame/Theming/FrameTheme.swift#L227) |
-| `FrameTheme.Radii.small` | var | `var small: CGFloat` | [229](../Sources/Frame/Theming/FrameTheme.swift#L229) |
-| `FrameTheme.Radii.medium` | var | `var medium: CGFloat` | [231](../Sources/Frame/Theming/FrameTheme.swift#L231) |
-| `FrameTheme.Radii.large` | var | `var large: CGFloat` | [233](../Sources/Frame/Theming/FrameTheme.swift#L233) |
-| `FrameTheme.Radii.init` | init | `init (small: CGFloat = 8, medium: CGFloat = 10, large: CGFloat = 16)` | [241](../Sources/Frame/Theming/FrameTheme.swift#L241) |
-| `FrameTheme.Spacing` | struct | `struct Spacing: Equatable` | [249](../Sources/Frame/Theming/FrameTheme.swift#L249) |
-| `FrameTheme.Spacing.sectionTop` | var | `var sectionTop: CGFloat` | [251](../Sources/Frame/Theming/FrameTheme.swift#L251) |
-| `FrameTheme.Spacing.sectionGap` | var | `var sectionGap: CGFloat` | [253](../Sources/Frame/Theming/FrameTheme.swift#L253) |
-| `FrameTheme.Spacing.formBlock` | var | `var formBlock: CGFloat` | [255](../Sources/Frame/Theming/FrameTheme.swift#L255) |
-| `FrameTheme.Spacing.init` | init | `init (sectionTop: CGFloat = 16, sectionGap: CGFloat = 12, formBlock: CGFloat = 16)` | [258](../Sources/Frame/Theming/FrameTheme.swift#L258) |
+| `FrameTheme.Fonts.depositAmount` | var | `var depositAmount: Font` | [165](../Sources/Frame/Theming/FrameTheme.swift#L165) |
+| `FrameTheme.Fonts.heading` | var | `var heading: Font` | [167](../Sources/Frame/Theming/FrameTheme.swift#L167) |
+| `FrameTheme.Fonts.headline` | var | `var headline: Font` | [169](../Sources/Frame/Theming/FrameTheme.swift#L169) |
+| `FrameTheme.Fonts.body` | var | `var body: Font` | [171](../Sources/Frame/Theming/FrameTheme.swift#L171) |
+| `FrameTheme.Fonts.bodySmall` | var | `var bodySmall: Font` | [173](../Sources/Frame/Theming/FrameTheme.swift#L173) |
+| `FrameTheme.Fonts.label` | var | `var label: Font` | [175](../Sources/Frame/Theming/FrameTheme.swift#L175) |
+| `FrameTheme.Fonts.caption` | var | `var caption: Font` | [177](../Sources/Frame/Theming/FrameTheme.swift#L177) |
+| `FrameTheme.Fonts.button` | var | `var button: Font` | [179](../Sources/Frame/Theming/FrameTheme.swift#L179) |
+| `FrameTheme.Fonts.init` | init | `init ( title: Font? = nil, depositAmount: Font? = nil, heading: Font? = nil, headline: Font? = nil, body: Font? = nil, bodySmall: Font? = nil, label: Font? = n…` | [193](../Sources/Frame/Theming/FrameTheme.swift#L193) |
+| `FrameTheme.Radii` | struct | `struct Radii: Equatable` | [221](../Sources/Frame/Theming/FrameTheme.swift#L221) |
+| `FrameTheme.Radii.small` | var | `var small: CGFloat` | [223](../Sources/Frame/Theming/FrameTheme.swift#L223) |
+| `FrameTheme.Radii.medium` | var | `var medium: CGFloat` | [225](../Sources/Frame/Theming/FrameTheme.swift#L225) |
+| `FrameTheme.Radii.large` | var | `var large: CGFloat` | [227](../Sources/Frame/Theming/FrameTheme.swift#L227) |
+| `FrameTheme.Radii.init` | init | `init (small: CGFloat = 8, medium: CGFloat = 10, large: CGFloat = 16)` | [235](../Sources/Frame/Theming/FrameTheme.swift#L235) |
+| `FrameTheme.Spacing` | struct | `struct Spacing: Equatable` | [243](../Sources/Frame/Theming/FrameTheme.swift#L243) |
+| `FrameTheme.Spacing.sectionTop` | var | `var sectionTop: CGFloat` | [245](../Sources/Frame/Theming/FrameTheme.swift#L245) |
+| `FrameTheme.Spacing.sectionGap` | var | `var sectionGap: CGFloat` | [247](../Sources/Frame/Theming/FrameTheme.swift#L247) |
+| `FrameTheme.Spacing.formBlock` | var | `var formBlock: CGFloat` | [249](../Sources/Frame/Theming/FrameTheme.swift#L249) |
+| `FrameTheme.Spacing.init` | init | `init (sectionTop: CGFloat = 16, sectionGap: CGFloat = 12, formBlock: CGFloat = 16)` | [252](../Sources/Frame/Theming/FrameTheme.swift#L252) |
 
 </details>
 

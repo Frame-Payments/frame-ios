@@ -137,7 +137,7 @@ public struct FrameDepositView: View {
     var amountDisplay: some View {
         VStack(spacing: theme.spacing.sectionGap) {
             Text(CurrencyFormatter.shared.convertCentsToCurrencyString(viewModel.typedCents))
-                .font(FrameFontRegistration.soehne(size: 72, postScriptName: FrameFontRegistration.Name.fett))
+                .font(theme.fonts.depositAmount)
                 .foregroundColor(theme.colors.textPrimary)
                 .frame(maxWidth: .infinity)
                 .minimumScaleFactor(0.4)

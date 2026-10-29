@@ -161,6 +161,8 @@ public struct FrameTheme: Equatable {
     public struct Fonts: Equatable {
         /// Font used for large display titles (e.g. page headers).
         public var title: Font
+        /// Font used for the typed amount on ``FrameDepositView``.
+        public var depositAmount: Font
         /// Font used for section headings within a page.
         public var heading: Font
         /// Font used for sub-section headlines and prominent labels.
@@ -176,21 +178,11 @@ public struct FrameTheme: Equatable {
         /// Font used for button labels.
         public var button: Font
 
-        /// Creates a ``Fonts`` scale, falling back to system-font equivalents for any omitted arguments.
-        ///
-        /// - Parameters:
-        ///   - title: Font for large display titles.
-        ///   - heading: Font for section headings.
-        ///   - headline: Font for sub-section headlines.
-        ///   - body: Font for standard body copy.
-        ///   - bodySmall: Font for smaller body copy.
-        ///   - label: Font for form-field and list-item labels.
-        ///   - caption: Font for captions and fine-print text.
-        ///   - button: Font for button labels.
         /// Creates a ``Fonts`` scale, falling back to bundled Soehne weights for any omitted arguments.
         ///
         /// - Parameters:
         ///   - title: Font for large display titles.
+        ///   - depositAmount: Font for the deposit amount display.
         ///   - heading: Font for section headings.
         ///   - headline: Font for sub-section headlines.
         ///   - body: Font for standard body copy.
@@ -200,6 +192,7 @@ public struct FrameTheme: Equatable {
         ///   - button: Font for button labels.
         public init(
             title: Font? = nil,
+            depositAmount: Font? = nil,
             heading: Font? = nil,
             headline: Font? = nil,
             body: Font? = nil,
@@ -210,6 +203,7 @@ public struct FrameTheme: Equatable {
         ) {
             FrameFontRegistration.registerIfNeeded()
             self.title = title ?? FrameFontRegistration.soehne(size: 28, postScriptName: FrameFontRegistration.Name.fett)
+            self.depositAmount = depositAmount ?? FrameFontRegistration.soehne(size: 72, postScriptName: FrameFontRegistration.Name.fett)
             self.heading = heading ?? FrameFontRegistration.soehne(size: 18, postScriptName: FrameFontRegistration.Name.dreiviertelfett)
             self.headline = headline ?? FrameFontRegistration.soehne(size: 17, postScriptName: FrameFontRegistration.Name.dreiviertelfett)
             self.body = body ?? FrameFontRegistration.soehne(size: 17, postScriptName: FrameFontRegistration.Name.buch)
