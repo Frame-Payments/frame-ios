@@ -335,7 +335,8 @@ public actor SessionManager {
     private func perform(endpoint: SonarSessionEndpoints, body: SessionRequestBody) async throws -> SessionId {
         do {
             let encoded = try FrameNetworking.shared.jsonEncoder.encode(body)
-            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishable)
+            // Charge sessions reject pyt_sess_; .publishable would 401 and clear the stored device session.
+            let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: encoded, auth: .publishableOnly)
 
             if let error { throw SessionManagerError.requestFailed(error) }
             guard let data else { throw SessionManagerError.requestFailed(.noData) }

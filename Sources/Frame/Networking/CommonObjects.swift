@@ -44,7 +44,8 @@ public enum FrameAuthMode: Sendable {
     /// Authenticate with a server-minted, per-object client secret used as a Bearer token.
     ///
     /// Covers the charge-intent / 3DS `client_secret` (`ci_<id>_secret_…`), the
-    /// onboarding-session token (`onb_sess_…`), and the checkout token (`chk_sess_…`).
+    /// onboarding-session token (`onb_sess_…`), the checkout token (`chk_sess_…`),
+    /// and the payout token (`pyt_sess_…`).
     case clientSecret(String)
 }
 

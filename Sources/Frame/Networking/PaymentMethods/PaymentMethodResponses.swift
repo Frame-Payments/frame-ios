@@ -13,5 +13,10 @@ public class PaymentMethodResponses {
         @Lenient public private(set) var meta: FrameMetadata?
         /// The array of payment methods returned by the API.
         @Lenient public private(set) var data: [FrameObjects.PaymentMethod]?
+
+        init(meta: FrameMetadata? = nil, data: [FrameObjects.PaymentMethod]? = nil) {
+            self.meta = meta
+            self.data = data
+        }
     }
 }

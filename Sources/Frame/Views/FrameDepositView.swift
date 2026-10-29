@@ -113,7 +113,7 @@ public struct FrameDepositView: View {
 
     var topHeaderBar: some View {
         HStack {
-            Text("Deposit")
+            Text("Deposit Funds")
                 .font(theme.fonts.headline)
                 .foregroundColor(theme.colors.textPrimary)
                 .padding(.horizontal)
@@ -200,7 +200,7 @@ public struct FrameDepositView: View {
     }
 
     private var amountCaption: String? {
-        let format = CurrencyFormatter.shared.convertCentsToCurrencyString
+        let format = { (cents: Int) in CurrencyFormatter.shared.convertCentsToCurrencyString(cents) }
         switch (viewModel.minAmount, viewModel.maxAmount) {
         case let (min?, max?):
             return "Minimum \(format(min)) · Maximum \(format(max))"

@@ -104,6 +104,41 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
 
+    /// Mints a payout client secret (`pyt_sess_…`) so the example can list banks and create a
+    /// payout. Returns the token, or `nil` when minting failed.
+    ///
+    /// - Important: This mint exists only because the example app has no backend. Production apps
+    ///   mint `POST /v1/payout_sessions` on their server with `sk_` and pass the client secret in.
+    /// - Parameters:
+    ///   - accountId: The account the payout is drawn from.
+    ///   - amountCents: Withdrawable balance used as the session amount cap.
+    ///   - currency: ISO 4217 currency of ``amountCents``.
+    /// - Returns: The payout token, expiry, and amount cap, or `nil` if the request failed.
+    func mintPayoutClientSecret(
+        accountId: String,
+        amountCents: Int,
+        currency: String = "usd"
+    ) async -> FramePayoutClientSecret? {
+        guard !accountId.isEmpty, amountCents > 0 else { return nil }
+        do {
+            let amount = FrameObjects.TransferV2Money(value: amountCents, currency: currency)
+            let (session, error) = try await PayoutSessionsAPI.createPayoutSession(accountId: accountId, amount: amount)
+            if let clientSecret = session?.clientSecret, !clientSecret.isEmpty, let expiresAt = session?.expiresAt {
+                return FramePayoutClientSecret(
+                    clientSecret: clientSecret,
+                    expiresAt: Date(timeIntervalSince1970: TimeInterval(expiresAt)),
+                    amountCents: session?.amount?.value ?? amountCents,
+                    amountCurrency: session?.amount?.currency ?? currency
+                )
+            }
+            print("⚠️ Frame example: failed to mint payout client secret. Error: \(String(describing: error))")
+            return nil
+        } catch {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+
     func createEmptyIndividualAccount(capabilities: [FrameObjects.Capabilities]) async -> String? {
         // Note: callers (e.g. sendOTPVerification) already hold the action guard. Don't double-guard.
         do {

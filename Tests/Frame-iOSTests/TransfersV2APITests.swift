@@ -219,6 +219,27 @@ final class TransfersV2APITests: XCTestCase {
         XCTAssertNil(body?["client_secret"])
     }
 
+    func testPayoutSessionCreateSendsSessionBearer() async throws {
+        FrameNetworking.shared.asyncURLSession = session
+        session.data = try JSONEncoder().encode(transferResponse)
+        let request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: 5000, currency: "usd"),
+            destination: .init(paymentMethodId: "pm_1")
+        )
+        let (_, _) = try await TransfersV2API.createTransfer(
+            request: request,
+            payoutClientSecret: "pyt_sess_live"
+        )
+        XCTAssertEqual(session.lastRequest?.value(forHTTPHeaderField: "Authorization"), "Bearer pyt_sess_live")
+        XCTAssertNotNil(session.lastRequest?.value(forHTTPHeaderField: "Idempotency-Key"))
+        let body = try JSONSerialization.jsonObject(with: session.lastRequest?.httpBody ?? Data()) as? [String: Any]
+        XCTAssertNil(body?["client_secret"])
+        XCTAssertNil(body?["source"])
+        XCTAssertNil(body?["sonar_session_id"])
+        let destination = body?["destination"] as? [String: Any]
+        XCTAssertEqual(destination?["payment_method_id"] as? String, "pm_1")
+    }
+
     func testCheckoutSessionConfirmOmitsIdempotencyKey() async throws {
         FrameNetworking.shared.asyncURLSession = session
         session.data = try JSONEncoder().encode(transferResponse)

@@ -30,9 +30,10 @@ public struct FrameSelectPayoutMethodView: View {
     /// Creates a standalone select-payout-method screen.
     ///
     /// - Parameters:
-    ///   - clientSecret: The onboarding-session token (`onb_sess_…`) minted by your server
-    ///     (`POST /v1/onboarding_sessions`). Required. Electing a payout method requires a caller
-    ///     scoped to the account, so this token — not a publishable key — authorizes the change.
+    ///   - clientSecret: An onboarding-session token (`onb_sess_…`) or payout-session token
+    ///     (`pyt_sess_…`) minted by your server. Required. Electing a payout method requires a
+    ///     caller scoped to the account, so this token — not a publishable key — authorizes the
+    ///     change.
     ///   - accountId: The Frame account ID whose payout method is being set.
     ///   - onResult: Closure called with a ``FrameResult`` when the screen finishes or is cancelled.
     ///     On `.completed` the associated ID is the newly elected payout method.

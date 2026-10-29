@@ -120,6 +120,25 @@ final class SealedSessionRequestTests: XCTestCase {
     }
 
     /// The shipping case: sealing is off, so the request is exactly what it is today.
+    /// `pyt_sess_` is not permitted on charge_sessions. A rewritten `.publishable` request
+    /// would 401 and clear the stored session. `.publishableOnly` keeps the publishable key.
+    func testPayoutSessionDoesNotAuthenticateSonarWithPayoutToken() async throws {
+        FrameNetworking.shared.initialize(publishableKey: "pk_test_sonar", secretKey: "sk_test_sonar")
+        FrameNetworking.shared.beginOnboardingSession(clientSecret: "pyt_sess_live")
+        defer {
+            FrameNetworking.shared.endOnboardingSession()
+            FrameNetworking.shared.initialize(publishableKey: "pk_test_sonar")
+        }
+
+        FingerprintManager.identificationOverride = {
+            FingerprintIdentification(visitorId: "visitor_1", sealedResult: nil)
+        }
+        _ = try? await manager.ensureSession(accountId: "acc_1")
+
+        XCTAssertTrue(network.authorizations.contains("Bearer pk_test_sonar"))
+        XCTAssertFalse(network.authorizations.contains(where: { $0.contains("pyt_sess_") }))
+    }
+
     func testLegacyPathIsUnchangedWhenNothingIsSealed() async throws {
         let body = try await createBody(for: FingerprintIdentification(visitorId: "visitor_1",
                                                                        sealedResult: nil))
@@ -389,12 +408,16 @@ private final class RecordingSessionStub: URLSessionProtocol, @unchecked Sendabl
 /// Serves Fingerprint configuration and a session id, recording the session request bodies.
 private final class BodyCapturingStub: URLSessionProtocol, @unchecked Sendable {
     private(set) var sessionBodies: [[String: Any]] = []
+    private(set) var authorizations: [String] = []
 
     var lastSessionBody: [String: Any]? { sessionBodies.last }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let path = request.url?.path ?? ""
         let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        if path.contains("/v1/charge_sessions") {
+            authorizations.append(request.value(forHTTPHeaderField: "Authorization") ?? "")
+        }
 
         if path == "/v1/config/fingerprint" {
             return (Data(#"{"api_key":"pk_test","region":"us","environment":"sealed"}"#.utf8), response)

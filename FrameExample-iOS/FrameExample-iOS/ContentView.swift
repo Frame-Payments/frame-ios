@@ -22,6 +22,7 @@ struct ContentView: View {
 
     @State private var presentedCheckout: ExampleCheckoutSession?
     @State private var showDepositSheet = false
+    @State private var presentedPayout: ExamplePayoutSession?
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
@@ -41,6 +42,8 @@ struct ContentView: View {
                         amountInCents: 25000)
     ]
     private let exampleShippingCents = 4000
+    /// Playground stand-in. Production hosts pass the withdrawable balance; the SDK does not fetch it.
+    private let examplePayoutAvailableCents = 5_000
     private var exampleCartTotal: Int {
         exampleCartItems.reduce(exampleShippingCents) { $0 + $1.amountInCents }
     }
@@ -57,6 +60,7 @@ struct ContentView: View {
             ScrollView {
                 cartButton
                 depositButton
+                payoutButton
                 addPaymentMethodButton
                 selectPayoutMethodButton
                 onboardingButton
@@ -172,6 +176,25 @@ struct ContentView: View {
             )
             .presentationDragIndicator(.visible)
         }
+        .sheet(item: $presentedPayout) { payout in
+            FramePayoutView(
+                accountId: payout.accountId,
+                clientSecret: payout.clientSecret,
+                onResult: { result in
+                    switch result {
+                    case .completed(let id):
+                        FrameToastCenter.shared.show("Payout completed: \(id)")
+                    case .cancelled:
+                        FrameToastCenter.shared.show("Cancelled flow")
+                    case .failed(let error):
+                        FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
+                    }
+                }
+            )
+            .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $showAddPaymentMethodView, content: {
             if let clientSecret = viewModel.onboardingClientSecret {
                 FrameAddPaymentMethodView(clientSecret: clientSecret, accountId: viewModel.accountId)
@@ -261,10 +284,8 @@ struct ContentView: View {
             // on their server with sk_ and pass the client secret in. Checkout refreshes an
             // expired token with the secret key configured on this example.
             Task {
-                let accountId = viewModel.accountId.isEmpty
-                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    : viewModel.accountId
-                viewModel.accountId = accountId
+                let accountId = await playgroundAccountId()
+                guard !accountId.isEmpty else { return }
                 // A session without a locked amount cannot create a transfer.
                 if let secret = await viewModel.mintCheckoutClientSecret(accountId: accountId, amountCents: exampleCartTotal) {
                     self.presentedCheckout = ExampleCheckoutSession(accountId: accountId, clientSecret: secret)
@@ -289,16 +310,45 @@ struct ContentView: View {
             // POST /v1/checkout_sessions for the typed cents. This example has no backend,
             // so that closure uses the secret key configured on the example.
             Task {
-                let accountId = viewModel.accountId.isEmpty
-                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    : viewModel.accountId
-                viewModel.accountId = accountId
+                let accountId = await playgroundAccountId()
                 if !accountId.isEmpty {
                     self.showDepositSheet = true
                 }
             }
         } label: {
-            Text("Deposit")
+            Text("Deposit Funds")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
+
+    var payoutButton: some View {
+        Button {
+            // Example app has no backend. Production apps mint POST /v1/payout_sessions
+            // on their server with sk_ and pass the client secret in.
+            Task {
+                let accountId = await playgroundAccountId()
+                guard !accountId.isEmpty else {
+                    FrameToastCenter.shared.show("Could not create an account to pay out.")
+                    return
+                }
+                if let secret = await viewModel.mintPayoutClientSecret(
+                    accountId: accountId,
+                    amountCents: examplePayoutAvailableCents
+                ) {
+                    self.presentedPayout = ExamplePayoutSession(accountId: accountId, clientSecret: secret)
+                } else {
+                    FrameToastCenter.shared.show("Could not start payout.")
+                }
+            }
+        } label: {
+            Text("Initiate Payout")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -361,6 +411,17 @@ struct ContentView: View {
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
     }
+
+    /// Uses a dashboard account id when one is set. The placeholder is not a UUID, so a new
+    /// account is created for playground taps that still have `ENTER_AN_ACCOUNT_ID`.
+    private func playgroundAccountId() async -> String {
+        if !viewModel.accountId.isEmpty && viewModel.accountId != "ENTER_AN_ACCOUNT_ID" {
+            return viewModel.accountId
+        }
+        let created = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+        viewModel.accountId = created
+        return created
+    }
 }
 
 #Preview {
@@ -384,5 +445,12 @@ private struct ExampleCheckoutSession: Identifiable {
     let id = UUID()
     let accountId: String
     let clientSecret: FrameCheckoutClientSecret
+}
+
+/// Payout sheet value. The token travels with the presentation so payout cannot open without it.
+private struct ExamplePayoutSession: Identifiable {
+    let id = UUID()
+    let accountId: String
+    let clientSecret: FramePayoutClientSecret
 }
 
