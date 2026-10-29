@@ -113,7 +113,7 @@ public struct FrameDepositView: View {
 
     var topHeaderBar: some View {
         HStack {
-            Text("Deposit")
+            Text("Deposit Funds")
                 .font(theme.fonts.headline)
                 .foregroundColor(theme.colors.textPrimary)
                 .padding(.horizontal)

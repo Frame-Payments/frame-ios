@@ -284,10 +284,8 @@ struct ContentView: View {
             // on their server with sk_ and pass the client secret in. Checkout refreshes an
             // expired token with the secret key configured on this example.
             Task {
-                let accountId = viewModel.accountId.isEmpty
-                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    : viewModel.accountId
-                viewModel.accountId = accountId
+                let accountId = await playgroundAccountId()
+                guard !accountId.isEmpty else { return }
                 // A session without a locked amount cannot create a transfer.
                 if let secret = await viewModel.mintCheckoutClientSecret(accountId: accountId, amountCents: exampleCartTotal) {
                     self.presentedCheckout = ExampleCheckoutSession(accountId: accountId, clientSecret: secret)
@@ -312,16 +310,13 @@ struct ContentView: View {
             // POST /v1/checkout_sessions for the typed cents. This example has no backend,
             // so that closure uses the secret key configured on the example.
             Task {
-                let accountId = viewModel.accountId.isEmpty
-                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    : viewModel.accountId
-                viewModel.accountId = accountId
+                let accountId = await playgroundAccountId()
                 if !accountId.isEmpty {
                     self.showDepositSheet = true
                 }
             }
         } label: {
-            Text("Deposit")
+            Text("Deposit Funds")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -338,10 +333,11 @@ struct ContentView: View {
             // Example app has no backend. Production apps mint POST /v1/payout_sessions
             // on their server with sk_ and pass the client secret in.
             Task {
-                let accountId = viewModel.accountId.isEmpty
-                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
-                    : viewModel.accountId
-                viewModel.accountId = accountId
+                let accountId = await playgroundAccountId()
+                guard !accountId.isEmpty else {
+                    FrameToastCenter.shared.show("Could not create an account to pay out.")
+                    return
+                }
                 if let secret = await viewModel.mintPayoutClientSecret(
                     accountId: accountId,
                     amountCents: examplePayoutAvailableCents
@@ -352,7 +348,7 @@ struct ContentView: View {
                 }
             }
         } label: {
-            Text("Payout")
+            Text("Initiate Payout")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -414,6 +410,17 @@ struct ContentView: View {
         .background(theme.colors.primaryButton)
         .cornerRadius(10.0)
         .padding([.horizontal, .bottom])
+    }
+
+    /// Uses a dashboard account id when one is set. The placeholder is not a UUID, so a new
+    /// account is created for playground taps that still have `ENTER_AN_ACCOUNT_ID`.
+    private func playgroundAccountId() async -> String {
+        if UUID(uuidString: viewModel.accountId) != nil {
+            return viewModel.accountId
+        }
+        let created = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+        viewModel.accountId = created
+        return created
     }
 }
 

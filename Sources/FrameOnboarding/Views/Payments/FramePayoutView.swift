@@ -58,7 +58,7 @@ public struct FramePayoutView: View {
     /// The amount screen. The bank picker is a sheet so it is not nested inside this stack.
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            PageHeaderView(useCloseButton: true, headerTitle: "Payout") {
+            PageHeaderView(useCloseButton: true, headerTitle: "Initiate Payout") {
                 guard !viewModel.isCreating else { return }
                 dismiss()
             }
