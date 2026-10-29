@@ -104,6 +104,31 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
 
+    /// Creates a payout with the example's secret key and returns the transfer id.
+    ///
+    /// - Important: Production apps do this on their server. `POST /v2/transfers` does not
+    ///   accept `onb_sess_` or `chk_sess_` for a payout, and there is no payout session type.
+    ///   Source is the account. Destination is the selected bank. The API infers `type: payout`.
+    func createExamplePayout(accountId: String, amountCents: Int, paymentMethodId: String) async -> String? {
+        guard !accountId.isEmpty, amountCents > 0, !paymentMethodId.isEmpty else { return nil }
+        let request = TransferV2Requests.CreateTransferRequest(
+            amount: .init(value: amountCents, currency: "usd"),
+            source: .init(accountId: accountId),
+            destination: .init(paymentMethodId: paymentMethodId)
+        )
+        do {
+            let (transfer, error) = try await TransfersV2API.createTransfer(request: request, accountId: accountId)
+            if let error {
+                print("⚠️ Frame example: payout create failed. Error: \(error.toastMessage())")
+                return nil
+            }
+            return transfer?.id
+        } catch {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+
     func createEmptyIndividualAccount(capabilities: [FrameObjects.Capabilities]) async -> String? {
         // Note: callers (e.g. sendOTPVerification) already hold the action guard. Don't double-guard.
         do {

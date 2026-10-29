@@ -22,6 +22,7 @@ struct ContentView: View {
 
     @State private var presentedCheckout: ExampleCheckoutSession?
     @State private var showDepositSheet = false
+    @State private var showPayoutSheet = false
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
@@ -41,6 +42,8 @@ struct ContentView: View {
                         amountInCents: 25000)
     ]
     private let exampleShippingCents = 4000
+    /// Playground stand-in. Production hosts pass the withdrawable balance; the SDK does not fetch it.
+    private let examplePayoutAvailableCents = 5_000
     private var exampleCartTotal: Int {
         exampleCartItems.reduce(exampleShippingCents) { $0 + $1.amountInCents }
     }
@@ -57,6 +60,7 @@ struct ContentView: View {
             ScrollView {
                 cartButton
                 depositButton
+                payoutButton
                 addPaymentMethodButton
                 selectPayoutMethodButton
                 onboardingButton
@@ -171,6 +175,35 @@ struct ContentView: View {
                 }
             )
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showPayoutSheet) {
+            if let clientSecret = viewModel.onboardingClientSecret {
+                FramePayoutView(
+                    accountId: viewModel.accountId,
+                    availableAmount: examplePayoutAvailableCents,
+                    clientSecret: clientSecret,
+                    createPayout: { cents, paymentMethodId in
+                        await viewModel.createExamplePayout(
+                            accountId: viewModel.accountId,
+                            amountCents: cents,
+                            paymentMethodId: paymentMethodId
+                        )
+                    },
+                    onResult: { result in
+                        switch result {
+                        case .completed(let id):
+                            FrameToastCenter.shared.show("Payout completed: \(id)")
+                        case .cancelled:
+                            FrameToastCenter.shared.show("Cancelled flow")
+                        case .failed(let error):
+                            FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                        case .finishedUnverified(_, let outcome):
+                            FrameToastCenter.shared.show("Finished unverified: \(outcome)")
+                        }
+                    }
+                )
+                .presentationDragIndicator(.visible)
+            }
         }
         .sheet(isPresented: $showAddPaymentMethodView, content: {
             if let clientSecret = viewModel.onboardingClientSecret {
@@ -299,6 +332,35 @@ struct ContentView: View {
             }
         } label: {
             Text("Deposit")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
+
+    var payoutButton: some View {
+        Button {
+            // The amount cap is a playground constant. Listing banks needs onb_sess_.
+            // Creating the payout needs sk_ on a server; this example calls the API
+            // directly because it has no backend.
+            Task {
+                let accountId = viewModel.accountId.isEmpty
+                    ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
+                    : viewModel.accountId
+                viewModel.accountId = accountId
+                if !accountId.isEmpty, await viewModel.mintOnboardingClientSecret(accountId: accountId) != nil {
+                    self.showPayoutSheet = true
+                } else {
+                    FrameToastCenter.shared.show("Could not start payout.")
+                }
+            }
+        } label: {
+            Text("Payout")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)

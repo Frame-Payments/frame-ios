@@ -16,7 +16,7 @@ regeneration, so architectural notes belong there.
 | Module | Product | Purpose |
 |--------|---------|---------|
 | `Frame` | `Frame-iOS` | Networking for every API resource, checkout/cart/deposit UI, theming, validation, Apple Pay. |
-| `FrameOnboarding` | `Frame-Onboarding` | Capability-driven onboarding flow, its screens, and onboarding-only APIs (3DS, IDV, phone OTP, geocompliance). |
+| `FrameOnboarding` | `Frame-Onboarding` | Capability-driven onboarding flow, its screens, the payout screen, and onboarding-only APIs (3DS, IDV, phone OTP, geocompliance). |
 
 `FrameOnboarding` depends on `Frame`; the reverse is not true.
 

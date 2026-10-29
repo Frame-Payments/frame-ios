@@ -11,7 +11,7 @@ class FrameDepositViewModel: ObservableObject {
     @Published var typedCents: Int = 0
     @Published var isMinting = false
 
-    static let quickAmounts = [1_000, 2_500, 5_000, 10_000]
+    static let quickAmounts = FrameAmountKeypad.quickAmounts
 
     let minAmount: Int?
     let maxAmount: Int?

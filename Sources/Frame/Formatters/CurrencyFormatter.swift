@@ -7,12 +7,12 @@
 
 import Foundation
 
-class CurrencyFormatter {
-    @MainActor static let shared = CurrencyFormatter()
+package class CurrencyFormatter {
+    @MainActor package static let shared = CurrencyFormatter()
     
     let formatter = NumberFormatter()
     
-    func convertCentsToCurrencyString(_ cents: Int) -> String {
+    package func convertCentsToCurrencyString(_ cents: Int) -> String {
         formatter.numberStyle = .currency
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2

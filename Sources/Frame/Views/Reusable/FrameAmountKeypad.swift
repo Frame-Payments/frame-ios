@@ -8,14 +8,22 @@ import SwiftUI
 /// Numeric keypad that edits an amount in the currency's smallest unit (cents).
 ///
 /// Digits append from the right (`1`, `2`, `3` → `123` cents / $1.23). Extra digits that would
-/// exceed `maxAmount` are ignored. Payout will reuse this control.
-struct FrameAmountKeypad: View {
+/// exceed `maxAmount` are ignored. Deposit and payout both use this control.
+package struct FrameAmountKeypad: View {
     @Environment(\.frameTheme) private var theme
 
-    @Binding var cents: Int
-    var maxAmount: Int? = nil
+    @Binding package var cents: Int
+    package var maxAmount: Int? = nil
 
-    static func append(digit: Int, to cents: Int, maxAmount: Int?) -> Int {
+    package init(cents: Binding<Int>, maxAmount: Int? = nil) {
+        self._cents = cents
+        self.maxAmount = maxAmount
+    }
+
+    /// Preset chips shared by deposit and payout. Amounts the keypad would reject stay disabled.
+    package static let quickAmounts = [1_000, 2_500, 5_000, 10_000]
+
+    package static func append(digit: Int, to cents: Int, maxAmount: Int?) -> Int {
         guard (0...9).contains(digit) else { return cents }
         if cents > (Int.max - digit) / 10 { return cents }
         let next = cents * 10 + digit
@@ -23,11 +31,11 @@ struct FrameAmountKeypad: View {
         return next
     }
 
-    static func delete(from cents: Int) -> Int {
+    package static func delete(from cents: Int) -> Int {
         cents / 10
     }
 
-    var body: some View {
+    package var body: some View {
         let keys: [Key] = [
             .digit(1), .digit(2), .digit(3),
             .digit(4), .digit(5), .digit(6),
