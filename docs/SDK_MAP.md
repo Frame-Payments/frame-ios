@@ -1602,7 +1602,7 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 | `PayoutSessionsAPI.createPayoutSession` | func | `func createPayoutSession( accountId: String, amount: FrameObjects.TransferV2Money ) async throws -> (PayoutSession?, NetworkingError?)` | [15](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L15) |
 | `PayoutSessionsAPI.loadAccount` | func | `func loadAccount(accountId: String, secret: FramePayoutClientSecret) async -> (String?, NetworkingError?)` | [42](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L42) |
 | `PayoutSessionsAPI.loadPaymentMethods` | func | `func loadPaymentMethods(accountId: String, secret: FramePayoutClientSecret) async -> ([FrameObjects.PaymentMethod], NetworkingError?)` | [60](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L60) |
-| `PayoutSessionsAPI.authorizationToken` | func | `func authorizationToken(accountId: String, secret: FramePayoutClientSecret) async -> String?` | [93](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L93) |
+| `PayoutSessionsAPI.authorizationToken` | func | `func authorizationToken(accountId: String, secret: FramePayoutClientSecret) async -> String?` | [99](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L99) |
 
 </details>
 
