@@ -49,7 +49,10 @@ public struct FramePayoutView: View {
         self.accountId = accountId
         self.clientSecret = clientSecret
         self.onResult = onResult
-        _viewModel = StateObject(wrappedValue: FramePayoutViewModel(availableAmount: clientSecret.amountCents))
+        _viewModel = StateObject(wrappedValue: FramePayoutViewModel(
+            availableAmount: clientSecret.amountCents,
+            currencyCode: clientSecret.amountCurrency
+        ))
     }
 
     /// The amount screen. The bank picker is a sheet so it is not nested inside this stack.
@@ -179,7 +182,7 @@ public struct FramePayoutView: View {
         return Button {
             viewModel.applyQuickAmount(cents)
         } label: {
-            Text("$\(cents / 100)")
+            Text(viewModel.formattedAmount(cents))
                 .font(theme.fonts.button)
                 .foregroundColor(textColor)
                 .frame(maxWidth: .infinity, minHeight: 44)
@@ -191,12 +194,13 @@ public struct FramePayoutView: View {
         }
         .buttonStyle(.plain)
         .disabled(!available || viewModel.isCreating)
-        .accessibilityLabel("Payout $\(cents / 100)")
+        .accessibilityLabel("Payout \(viewModel.formattedAmount(cents))")
     }
 
     private func presentBankPicker() {
         Task {
             _ = await PayoutSessionsAPI.authorizationToken(accountId: accountId, secret: clientSecret)
+            viewModel.updateAvailableAmount(clientSecret.amountCents, currencyCode: clientSecret.amountCurrency)
             showPayoutMethods = true
         }
     }
@@ -205,23 +209,21 @@ public struct FramePayoutView: View {
         viewModel.isLoadingMethods = true
         defer { viewModel.isLoadingMethods = false }
         let (methods, listError) = await PayoutSessionsAPI.loadPaymentMethods(accountId: accountId, secret: clientSecret)
-        let (primaryId, _) = await PayoutSessionsAPI.loadAccount(accountId: accountId, secret: clientSecret)
+        let (primaryId, accountError) = await PayoutSessionsAPI.loadAccount(accountId: accountId, secret: clientSecret)
         guard !didFinish else { return }
+        viewModel.updateAvailableAmount(clientSecret.amountCents, currencyCode: clientSecret.amountCurrency)
         if let listError {
             FrameToastCenter.shared.show(listError.toastMessage())
             if viewModel.didLoadMethods { return }
+        }
+        if let accountError {
+            FrameToastCenter.shared.show(accountError.toastMessage())
         }
         viewModel.applyLoadedMethods(methods, primaryId: primaryId)
     }
 
     private func submit() {
-        guard viewModel.canConfirm, !viewModel.isCreating, let methodId = viewModel.selectedPaymentMethod?.id else { return }
-        let cents = viewModel.typedCents
-        let fingerprint = "\(cents)|\(methodId)"
-        if submitIdempotencyFingerprint != fingerprint {
-            submitIdempotencyKey = UUID().uuidString
-            submitIdempotencyFingerprint = fingerprint
-        }
+        guard viewModel.canConfirm, !viewModel.isCreating, viewModel.selectedPaymentMethod?.id != nil else { return }
         viewModel.isCreating = true
         Task {
             defer { viewModel.isCreating = false }
@@ -229,6 +231,19 @@ public struct FramePayoutView: View {
                 guard !didFinish else { return }
                 FrameToastCenter.shared.show("Could not send this payout. Please try again.")
                 return
+            }
+            viewModel.updateAvailableAmount(clientSecret.amountCents, currencyCode: clientSecret.amountCurrency)
+            guard viewModel.canConfirm, let methodId = viewModel.selectedPaymentMethod?.id else {
+                if !didFinish {
+                    FrameToastCenter.shared.show("Could not send this payout. Please try again.")
+                }
+                return
+            }
+            let cents = viewModel.typedCents
+            let fingerprint = "\(cents)|\(methodId)"
+            if submitIdempotencyFingerprint != fingerprint {
+                submitIdempotencyKey = UUID().uuidString
+                submitIdempotencyFingerprint = fingerprint
             }
             let request = TransferV2Requests.CreateTransferRequest(
                 amount: .init(value: cents, currency: clientSecret.amountCurrency),

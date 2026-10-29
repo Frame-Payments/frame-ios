@@ -200,7 +200,7 @@ public struct FrameDepositView: View {
     }
 
     private var amountCaption: String? {
-        let format = CurrencyFormatter.shared.convertCentsToCurrencyString
+        let format = { (cents: Int) in CurrencyFormatter.shared.convertCentsToCurrencyString(cents) }
         switch (viewModel.minAmount, viewModel.maxAmount) {
         case let (min?, max?):
             return "Minimum \(format(min)) · Maximum \(format(max))"

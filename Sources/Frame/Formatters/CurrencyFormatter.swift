@@ -24,4 +24,20 @@ public class CurrencyFormatter {
         let total = Double(cents) / 100.0
         return formatter.string(from: total as NSNumber) ?? ""
     }
+
+    /// Formats `cents` as a currency string for `currencyCode` without changing the shared locale formatter.
+    /// - Parameters:
+    ///   - cents: Amount in the currency's smallest unit.
+    ///   - currencyCode: ISO 4217 code (for example `usd`).
+    /// - Returns: A currency string for that code.
+    public func convertCentsToCurrencyString(_ cents: Int, currencyCode: String) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        let code = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        formatter.currencyCode = code.isEmpty ? "USD" : code.uppercased()
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        let total = Double(cents) / 100.0
+        return formatter.string(from: total as NSNumber) ?? ""
+    }
 }

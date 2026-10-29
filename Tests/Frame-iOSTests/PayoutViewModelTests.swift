@@ -158,4 +158,36 @@ final class PayoutViewModelTests: XCTestCase {
         vm.applyLoadedMethods([bank("pm_a"), bank("pm_b")], primaryId: nil)
         XCTAssertNil(vm.selectedPaymentMethodId)
     }
+
+    @MainActor
+    func testUpdateAvailableAmountClampsTypedCents() {
+        let vm = FramePayoutViewModel(availableAmount: 5_000)
+        vm.typedCents = 5_000
+        vm.updateAvailableAmount(2_500)
+        XCTAssertEqual(vm.availableAmount, 2_500)
+        XCTAssertEqual(vm.typedCents, 2_500)
+        vm.updateAvailableAmount(10_000)
+        XCTAssertEqual(vm.availableAmount, 10_000)
+        XCTAssertEqual(vm.typedCents, 2_500)
+    }
+
+    @MainActor
+    func testSessionCurrencyFormatsAmounts() {
+        let vm = FramePayoutViewModel(availableAmount: 2_000, currencyCode: "gbp")
+        vm.typedCents = 1_000
+        XCTAssertFalse(vm.amountText.contains("$"))
+        XCTAssertFalse(vm.availableText.contains("$"))
+        XCTAssertFalse(vm.formattedAmount(1_000).contains("$"))
+        vm.updateAvailableAmount(1_500, currencyCode: "eur")
+        XCTAssertFalse(vm.availableText.contains("$"))
+        XCTAssertFalse(vm.amountText.contains("$"))
+    }
+
+    @MainActor
+    func testCurrencyCodeOverloadDoesNotMutateSharedFormatter() {
+        let shared = CurrencyFormatter.shared
+        let before = shared.convertCentsToCurrencyString(1_000)
+        _ = shared.convertCentsToCurrencyString(1_000, currencyCode: "gbp")
+        XCTAssertEqual(shared.convertCentsToCurrencyString(1_000), before)
+    }
 }

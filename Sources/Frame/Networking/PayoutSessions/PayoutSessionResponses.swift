@@ -14,6 +14,8 @@ public final class FramePayoutClientSecret: @unchecked Sendable {
     /// Currency of ``amountCents``.
     public var amountCurrency: String
 
+    private let refreshGate = PayoutSessionRefreshGate()
+
     /// `true` when ``expiresAt`` is now or earlier.
     public var isExpired: Bool { expiresAt <= Date() }
 
@@ -28,6 +30,26 @@ public final class FramePayoutClientSecret: @unchecked Sendable {
         self.expiresAt = expiresAt
         self.amountCents = amountCents
         self.amountCurrency = amountCurrency
+    }
+
+    /// One in-flight mint at a time; overlapping callers share that result.
+    func serializedRefresh(_ body: @escaping @Sendable () async -> String?) async -> String? {
+        await refreshGate.run(body)
+    }
+}
+
+private actor PayoutSessionRefreshGate {
+    private var task: Task<String?, Never>?
+
+    func run(_ body: @escaping @Sendable () async -> String?) async -> String? {
+        if let task {
+            return await task.value
+        }
+        let created = Task { await body() }
+        task = created
+        let token = await created.value
+        task = nil
+        return token
     }
 }
 

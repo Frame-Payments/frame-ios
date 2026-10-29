@@ -42,8 +42,11 @@ public enum PayoutSessionsAPI {
     public static func loadAccount(accountId: String, secret: FramePayoutClientSecret) async -> (String?, NetworkingError?) {
         let endpoint = PayoutSessionEndpoints.getAccount(accountId: accountId)
         let (data, error) = await authorizedData(accountId: accountId, secret: secret, endpoint: endpoint)
-        guard error == nil, let data, let account = decodeAccountResource(data) else {
+        guard error == nil, let data else {
             return (nil, error)
+        }
+        guard let account = decodeAccountResource(data) else {
+            return (nil, .decodingFailed)
         }
         return (account.payoutPaymentMethodId, nil)
     }
@@ -70,7 +73,9 @@ public enum PayoutSessionsAPI {
         do {
             let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(token))
             guard isUnauthorized(error) else { return (data, error) }
-            guard let refreshed = await refresh(accountId: accountId, secret: secret) else {
+            guard let refreshed = await secret.serializedRefresh({
+                await refresh(accountId: accountId, secret: secret)
+            }) else {
                 return (nil, error)
             }
             return try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(refreshed))
@@ -93,7 +98,9 @@ public enum PayoutSessionsAPI {
         if !secret.isExpired, !secret.clientSecret.isEmpty {
             return secret.clientSecret
         }
-        return await refresh(accountId: accountId, secret: secret)
+        return await secret.serializedRefresh {
+            await refresh(accountId: accountId, secret: secret)
+        }
     }
 
     private static func refresh(accountId: String, secret: FramePayoutClientSecret) async -> String? {

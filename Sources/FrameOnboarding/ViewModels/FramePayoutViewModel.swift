@@ -21,10 +21,12 @@ class FramePayoutViewModel: ObservableObject {
     static let quickAmounts = FrameAmountKeypad.quickAmounts
 
     /// Withdrawable balance in cents. Digits past this cap are ignored.
-    let availableAmount: Int
+    @Published private(set) var availableAmount: Int
+    private var currencyCode: String
 
-    init(availableAmount: Int) {
+    init(availableAmount: Int, currencyCode: String = "usd") {
         self.availableAmount = max(0, availableAmount)
+        self.currencyCode = currencyCode.isEmpty ? "usd" : currencyCode
     }
 
     var isAmountInRange: Bool {
@@ -42,11 +44,25 @@ class FramePayoutViewModel: ObservableObject {
     }
 
     var amountText: String {
-        CurrencyFormatter.shared.convertCentsToCurrencyString(typedCents)
+        formattedAmount(typedCents)
     }
 
     var availableText: String {
-        CurrencyFormatter.shared.convertCentsToCurrencyString(availableAmount)
+        formattedAmount(availableAmount)
+    }
+
+    func formattedAmount(_ cents: Int) -> String {
+        CurrencyFormatter.shared.convertCentsToCurrencyString(cents, currencyCode: currencyCode)
+    }
+
+    func updateAvailableAmount(_ amount: Int, currencyCode: String? = nil) {
+        availableAmount = max(0, amount)
+        if let currencyCode, !currencyCode.isEmpty {
+            self.currencyCode = currencyCode
+        }
+        if typedCents > availableAmount {
+            typedCents = availableAmount
+        }
     }
 
     func isQuickAmountAvailable(_ cents: Int) -> Bool {
