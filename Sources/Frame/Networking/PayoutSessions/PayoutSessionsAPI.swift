@@ -58,7 +58,7 @@ public enum PayoutSessionsAPI {
         let endpoint = PayoutSessionEndpoints.getPaymentMethods(accountId: accountId)
         let (data, error) = await authorizedData(accountId: accountId, secret: secret, endpoint: endpoint)
         guard error == nil, let data, let methods = decodeSessionPaymentMethods(data) else {
-            return ([], error)
+            return ([], error ?? .decodingFailed)
         }
         return (methods, nil)
     }
