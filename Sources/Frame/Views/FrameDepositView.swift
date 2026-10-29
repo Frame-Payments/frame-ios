@@ -61,6 +61,7 @@ public struct FrameDepositView: View {
                 Divider()
                 amountDisplay
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                quickAmountsRow
                 FrameAmountKeypad(cents: $viewModel.typedCents, maxAmount: viewModel.maxAmount)
                     .padding(.horizontal)
                     .allowsHitTesting(!viewModel.isMinting)
@@ -136,10 +137,10 @@ public struct FrameDepositView: View {
     var amountDisplay: some View {
         VStack(spacing: theme.spacing.sectionGap) {
             Text(CurrencyFormatter.shared.convertCentsToCurrencyString(viewModel.typedCents))
-                .font(theme.fonts.title)
+                .font(FrameFontRegistration.soehne(size: 72, postScriptName: FrameFontRegistration.Name.fett))
                 .foregroundColor(theme.colors.textPrimary)
                 .frame(maxWidth: .infinity)
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(0.4)
                 .lineLimit(1)
             if let amountCaption {
                 Text(amountCaption)
@@ -149,6 +150,53 @@ public struct FrameDepositView: View {
             }
         }
         .padding(.horizontal)
+    }
+
+    var quickAmountsRow: some View {
+        HStack(spacing: theme.spacing.sectionGap) {
+            ForEach(FrameDepositViewModel.quickAmounts, id: \.self) { cents in
+                quickAmountButton(cents)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom, theme.spacing.sectionGap)
+        .allowsHitTesting(!viewModel.isMinting)
+    }
+
+    func quickAmountButton(_ cents: Int) -> some View {
+        let available = viewModel.isQuickAmountAvailable(cents)
+        let selected = viewModel.typedCents == cents
+        let fill: Color = {
+            if !available { return theme.colors.disabledButton }
+            if selected { return theme.colors.primaryButton }
+            return theme.colors.surface
+        }()
+        let textColor: Color = {
+            if !available { return theme.colors.disabledButtonText }
+            if selected { return theme.colors.primaryButtonText }
+            return theme.colors.textPrimary
+        }()
+        let stroke: Color = {
+            if !available { return theme.colors.disabledButtonStroke }
+            if selected { return theme.colors.primaryButton }
+            return theme.colors.surfaceStroke
+        }()
+        return Button {
+            viewModel.applyQuickAmount(cents)
+        } label: {
+            Text("$\(cents / 100)")
+                .font(theme.fonts.button)
+                .foregroundColor(textColor)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(fill, in: RoundedRectangle(cornerRadius: theme.radii.medium))
+                .overlay(
+                    RoundedRectangle(cornerRadius: theme.radii.medium)
+                        .strokeBorder(stroke, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(!available || viewModel.isMinting)
+        .accessibilityLabel("Deposit $\(cents / 100)")
     }
 
     private var amountCaption: String? {

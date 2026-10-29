@@ -98,6 +98,27 @@ final class DepositViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testQuickAmountsApplyAndHonorBounds() {
+        XCTAssertEqual(FrameDepositViewModel.quickAmounts, [1_000, 2_500, 5_000, 10_000])
+
+        let vm = FrameDepositViewModel(minAmount: 2_500, maxAmount: 5_000)
+        XCTAssertFalse(vm.isQuickAmountAvailable(1_000))
+        XCTAssertTrue(vm.isQuickAmountAvailable(2_500))
+        XCTAssertTrue(vm.isQuickAmountAvailable(5_000))
+        XCTAssertFalse(vm.isQuickAmountAvailable(10_000))
+
+        vm.applyQuickAmount(1_000)
+        XCTAssertEqual(vm.typedCents, 0)
+
+        vm.applyQuickAmount(2_500)
+        XCTAssertEqual(vm.typedCents, 2_500)
+        XCTAssertTrue(vm.isAmountInRange)
+
+        vm.applyQuickAmount(10_000)
+        XCTAssertEqual(vm.typedCents, 2_500)
+    }
+
+    @MainActor
     func testAppendIgnoresDigitThatWouldOverflow() {
         let vm = FrameDepositViewModel()
         let saturated = (Int.max - 9) / 10 + 1
