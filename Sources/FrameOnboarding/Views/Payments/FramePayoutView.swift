@@ -245,7 +245,9 @@ public struct FramePayoutView: View {
                     if !didFinish {
                         FrameToastCenter.shared.show(error.toastMessage())
                     }
-                    if case .serverError = error {
+                    if case .serverError(let statusCode, _) = error,
+                       (400..<500).contains(statusCode),
+                       ![408, 409, 429].contains(statusCode) {
                         submitIdempotencyKey = nil
                         submitIdempotencyFingerprint = nil
                     }
