@@ -34,6 +34,11 @@ final class PayoutSessionTests: XCTestCase {
         XCTAssertEqual(account?.payoutPaymentMethodId, "pm_bank")
     }
 
+    func testAccountErrorBodyDoesNotBecomeAStub() {
+        let data = Data(#"{"error":{"message":"Invalid or expired client secret."}}"#.utf8)
+        XCTAssertNil(decodeAccountResource(data))
+    }
+
     func testDecodesStrippedPaymentMethodList() {
         let data = Data("""
         {"data":[{"id":"pm_1","object":"payment_method","type":"ach","status":"active","ach":{"account_type":"checking","last_four":"6789"}}]}
@@ -42,6 +47,16 @@ final class PayoutSessionTests: XCTestCase {
         XCTAssertEqual(methods?.map(\.id), ["pm_1"])
         XCTAssertEqual(methods?.first?.ach?.lastFour, "6789")
         XCTAssertNil(methods?.first?.card)
+    }
+
+    func testPaymentMethodErrorBodyDoesNotLookLikeAnEmptyList() {
+        let data = Data(#"{"error":{"message":"Invalid or expired client secret."}}"#.utf8)
+        XCTAssertNil(decodeSessionPaymentMethods(data))
+    }
+
+    func testEmptyPaymentMethodListStaysEmpty() {
+        let data = Data(#"{"data":[]}"#.utf8)
+        XCTAssertEqual(decodeSessionPaymentMethods(data), [])
     }
 
     func testBeginOnboardingSessionAcceptsPayoutSessionToken() async throws {

@@ -9,21 +9,33 @@ import SwiftUI
 ///
 /// Digits append from the right (`1`, `2`, `3` → `123` cents / $1.23). Extra digits that would
 /// exceed `maxAmount` are ignored. Deposit and payout both use this control.
-package struct FrameAmountKeypad: View {
+public struct FrameAmountKeypad: View {
     @Environment(\.frameTheme) private var theme
 
-    @Binding package var cents: Int
-    package var maxAmount: Int? = nil
+    /// Amount in cents. Digits append from the right.
+    @Binding public var cents: Int
+    /// Inclusive cap. Extra digits that would exceed it are ignored.
+    public var maxAmount: Int? = nil
 
-    package init(cents: Binding<Int>, maxAmount: Int? = nil) {
+    /// Creates a keypad bound to `cents`.
+    /// - Parameters:
+    ///   - cents: Amount in the currency's smallest unit.
+    ///   - maxAmount: Inclusive cap, or `nil` for no cap.
+    public init(cents: Binding<Int>, maxAmount: Int? = nil) {
         self._cents = cents
         self.maxAmount = maxAmount
     }
 
     /// Preset chips shared by deposit and payout. Amounts the keypad would reject stay disabled.
-    package static let quickAmounts = [1_000, 2_500, 5_000, 10_000]
+    public static let quickAmounts = [1_000, 2_500, 5_000, 10_000]
 
-    package static func append(digit: Int, to cents: Int, maxAmount: Int?) -> Int {
+    /// Appends `digit` to `cents`, ignoring the tap when the result would exceed `maxAmount`.
+    /// - Parameters:
+    ///   - digit: A single digit, 0 through 9.
+    ///   - cents: Current amount in the currency's smallest unit.
+    ///   - maxAmount: Inclusive cap, or `nil` for no cap.
+    /// - Returns: The updated amount.
+    public static func append(digit: Int, to cents: Int, maxAmount: Int?) -> Int {
         guard (0...9).contains(digit) else { return cents }
         if cents > (Int.max - digit) / 10 { return cents }
         let next = cents * 10 + digit
@@ -31,11 +43,15 @@ package struct FrameAmountKeypad: View {
         return next
     }
 
-    package static func delete(from cents: Int) -> Int {
+    /// Removes the least-significant digit from `cents`.
+    /// - Parameter cents: Current amount in the currency's smallest unit.
+    /// - Returns: The updated amount, or `0` when empty.
+    public static func delete(from cents: Int) -> Int {
         cents / 10
     }
 
-    package var body: some View {
+    /// The keypad grid.
+    public var body: some View {
         let keys: [Key] = [
             .digit(1), .digit(2), .digit(3),
             .digit(4), .digit(5), .digit(6),

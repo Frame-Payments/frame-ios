@@ -29,6 +29,8 @@ public struct FramePayoutView: View {
 
     @State private var showPayoutMethods = false
     @State private var didFinish = false
+    @State private var submitIdempotencyKey: String?
+    @State private var submitIdempotencyFingerprint: String?
 
     /// Creates a payout view for the given account.
     ///
@@ -50,52 +52,50 @@ public struct FramePayoutView: View {
         _viewModel = StateObject(wrappedValue: FramePayoutViewModel(availableAmount: clientSecret.amountCents))
     }
 
-    /// The amount screen, which pushes ``FrameSelectPayoutMethodView`` to pick or add a bank.
+    /// The amount screen. The bank picker is a sheet so it is not nested inside this stack.
     public var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 0) {
-                PageHeaderView(useCloseButton: true, headerTitle: "Payout") {
-                    dismiss()
-                }
-                amountDisplay
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                destinationRow
-                    .padding(.bottom, theme.spacing.sectionGap)
-                    .allowsHitTesting(!viewModel.isCreating && !viewModel.isLoadingMethods)
-                quickAmountsRow
-                FrameAmountKeypad(cents: $viewModel.typedCents, maxAmount: viewModel.availableAmount)
-                    .padding(.horizontal)
-                    .allowsHitTesting(!viewModel.isCreating)
-                ContinueButton(
-                    buttonText: "Payout \(viewModel.amountText)",
-                    enabled: .constant(viewModel.canConfirm),
-                    isLoading: $viewModel.isCreating,
-                    buttonAction: submit
-                )
+        VStack(alignment: .leading, spacing: 0) {
+            PageHeaderView(useCloseButton: true, headerTitle: "Payout") {
+                guard !viewModel.isCreating else { return }
+                dismiss()
             }
-            .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: $showPayoutMethods) {
-                FrameSelectPayoutMethodView(
-                    clientSecret: clientSecret.clientSecret,
-                    accountId: accountId
-                ) { result in
-                    if case .completed(let id) = result {
-                        viewModel.selectElected(id)
-                    }
-                    showPayoutMethods = false
-                    viewModel.isLoadingMethods = true
-                    Task { await loadMethods() }
-                }
-                .toolbar(.hidden, for: .navigationBar)
-            }
+            amountDisplay
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            destinationRow
+                .padding(.bottom, theme.spacing.sectionGap)
+                .allowsHitTesting(!viewModel.isCreating && !viewModel.isLoadingMethods)
+            quickAmountsRow
+            FrameAmountKeypad(cents: $viewModel.typedCents, maxAmount: viewModel.availableAmount)
+                .padding(.horizontal)
+                .allowsHitTesting(!viewModel.isCreating)
+            ContinueButton(
+                buttonText: "Payout \(viewModel.amountText)",
+                enabled: .constant(viewModel.canConfirm),
+                isLoading: $viewModel.isCreating,
+                buttonAction: submit
+            )
         }
+        .interactiveDismissDisabled(viewModel.isCreating)
         .refreshesSonarSession(accountId: accountId)
         .frameToastOverlay()
+        .sheet(isPresented: $showPayoutMethods) {
+            FrameSelectPayoutMethodView(
+                clientSecret: clientSecret.clientSecret,
+                accountId: accountId
+            ) { result in
+                if case .completed(let id) = result {
+                    viewModel.selectElected(id)
+                }
+                showPayoutMethods = false
+                viewModel.isLoadingMethods = true
+                Task { await loadMethods() }
+            }
+        }
         .onAppear {
             Task { await loadMethods() }
         }
         .onDisappear {
-            // On the NavigationStack, so pushing the bank picker does not fire this. Sheet dismiss does.
+            if viewModel.isCreating { return }
             if !didFinish {
                 didFinish = true
                 onResult(.cancelled)
@@ -141,17 +141,17 @@ public struct FramePayoutView: View {
                     .frame(maxWidth: .infinity, minHeight: 56)
             } else if let method = viewModel.selectedPaymentMethod {
                 FramePaymentMethodRow(paymentMethod: method, isSelected: true) {
-                    showPayoutMethods = true
+                    presentBankPicker()
                 }
                 .padding(.horizontal)
             } else if viewModel.payoutMethods.isEmpty {
                 MethodOptionRow(iconName: "connect-bank-account-icon", title: "Connect a bank account") {
-                    showPayoutMethods = true
+                    presentBankPicker()
                 }
                 .padding(.horizontal)
             } else {
                 MethodOptionRow(iconName: "connect-bank-account-icon", title: "Choose a bank account") {
-                    showPayoutMethods = true
+                    presentBankPicker()
                 }
                 .padding(.horizontal)
             }
@@ -194,6 +194,13 @@ public struct FramePayoutView: View {
         .accessibilityLabel("Payout $\(cents / 100)")
     }
 
+    private func presentBankPicker() {
+        Task {
+            _ = await PayoutSessionsAPI.authorizationToken(accountId: accountId, secret: clientSecret)
+            showPayoutMethods = true
+        }
+    }
+
     private func loadMethods() async {
         viewModel.isLoadingMethods = true
         defer { viewModel.isLoadingMethods = false }
@@ -202,6 +209,7 @@ public struct FramePayoutView: View {
         guard !didFinish else { return }
         if let listError {
             FrameToastCenter.shared.show(listError.toastMessage())
+            if viewModel.didLoadMethods { return }
         }
         viewModel.applyLoadedMethods(methods, primaryId: primaryId)
     }
@@ -209,6 +217,11 @@ public struct FramePayoutView: View {
     private func submit() {
         guard viewModel.canConfirm, !viewModel.isCreating, let methodId = viewModel.selectedPaymentMethod?.id else { return }
         let cents = viewModel.typedCents
+        let fingerprint = "\(cents)|\(methodId)"
+        if submitIdempotencyFingerprint != fingerprint {
+            submitIdempotencyKey = UUID().uuidString
+            submitIdempotencyFingerprint = fingerprint
+        }
         viewModel.isCreating = true
         Task {
             defer { viewModel.isCreating = false }
@@ -224,23 +237,31 @@ public struct FramePayoutView: View {
             do {
                 let (transfer, error) = try await TransfersV2API.createTransfer(
                     request: request,
+                    idempotencyKey: submitIdempotencyKey,
                     payoutClientSecret: token,
                     accountId: accountId
                 )
-                guard !didFinish else { return }
                 if let error {
-                    FrameToastCenter.shared.show(error.toastMessage())
+                    if !didFinish {
+                        FrameToastCenter.shared.show(error.toastMessage())
+                    }
+                    if case .serverError = error {
+                        submitIdempotencyKey = nil
+                        submitIdempotencyFingerprint = nil
+                    }
                     return
                 }
                 guard let transferId = transfer?.id, !transferId.isEmpty else {
-                    FrameToastCenter.shared.show("Could not send this payout. Please try again.")
+                    if !didFinish {
+                        FrameToastCenter.shared.show("Could not send this payout. Please try again.")
+                    }
                     return
                 }
                 didFinish = true
                 onResult(.completed(id: transferId))
                 dismiss()
             } catch {
-                guard !didFinish else { return }
+                if didFinish { return }
                 let message = (error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again."
                 FrameToastCenter.shared.show(message)
             }

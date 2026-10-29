@@ -142,8 +142,9 @@ func decodeSessionPaymentMethods(_ data: Data) -> [FrameObjects.PaymentMethod]? 
        let methods = list.data {
         return methods
     }
-    if let payload = try? FrameNetworking.shared.jsonDecoder.decode(CheckoutPaymentMethodList.self, from: data) {
-        return payload.data?.map { $0.paymentMethod() } ?? []
+    if let payload = try? FrameNetworking.shared.jsonDecoder.decode(CheckoutPaymentMethodList.self, from: data),
+       let methods = payload.data {
+        return methods.map { $0.paymentMethod() }
     }
     return nil
 }

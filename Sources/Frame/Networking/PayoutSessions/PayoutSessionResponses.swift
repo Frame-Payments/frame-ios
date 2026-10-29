@@ -58,17 +58,18 @@ public struct PayoutSession: Codable, Sendable {
 
 struct PayoutAccountPayload: Decodable {
     let id: String
+    let object: String
     let payoutPaymentMethodId: String?
 
     enum CodingKeys: String, CodingKey {
-        case id
+        case id, object
         case payoutPaymentMethodId = "payout_payment_method_id"
     }
 
     func account() -> FrameObjects.Account {
         FrameObjects.Account(
             id: id,
-            object: "account",
+            object: object,
             accountType: .individual,
             accountStatus: .active,
             payoutPaymentMethodId: payoutPaymentMethodId,
@@ -83,5 +84,9 @@ func decodeAccountResource(_ data: Data) -> FrameObjects.Account? {
     if let account = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
         return account
     }
-    return (try? FrameNetworking.shared.jsonDecoder.decode(PayoutAccountPayload.self, from: data))?.account()
+    guard let payload = try? FrameNetworking.shared.jsonDecoder.decode(PayoutAccountPayload.self, from: data),
+          payload.object == "account" else {
+        return nil
+    }
+    return payload.account()
 }

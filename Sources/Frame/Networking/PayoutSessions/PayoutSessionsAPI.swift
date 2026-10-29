@@ -34,7 +34,12 @@ public enum PayoutSessionsAPI {
     }
 
     /// Reads `payout_payment_method_id` for ``accountId`` with the payout session.
-    package static func loadAccount(accountId: String, secret: FramePayoutClientSecret) async -> (String?, NetworkingError?) {
+    ///
+    /// - Parameters:
+    ///   - accountId: The account the token may read.
+    ///   - secret: The payout session used as the Bearer token.
+    /// - Returns: The elected payout method id, if any, and any networking error.
+    public static func loadAccount(accountId: String, secret: FramePayoutClientSecret) async -> (String?, NetworkingError?) {
         let endpoint = PayoutSessionEndpoints.getAccount(accountId: accountId)
         let (data, error) = await authorizedData(accountId: accountId, secret: secret, endpoint: endpoint)
         guard error == nil, let data, let account = decodeAccountResource(data) else {
@@ -44,7 +49,12 @@ public enum PayoutSessionsAPI {
     }
 
     /// Lists payment methods on ``accountId`` with the payout session.
-    package static func loadPaymentMethods(accountId: String, secret: FramePayoutClientSecret) async -> ([FrameObjects.PaymentMethod], NetworkingError?) {
+    ///
+    /// - Parameters:
+    ///   - accountId: The account the token may read.
+    ///   - secret: The payout session used as the Bearer token.
+    /// - Returns: Saved methods, and any networking error.
+    public static func loadPaymentMethods(accountId: String, secret: FramePayoutClientSecret) async -> ([FrameObjects.PaymentMethod], NetworkingError?) {
         let endpoint = PayoutSessionEndpoints.getPaymentMethods(accountId: accountId)
         let (data, error) = await authorizedData(accountId: accountId, secret: secret, endpoint: endpoint)
         guard error == nil, let data, let methods = decodeSessionPaymentMethods(data) else {
@@ -70,7 +80,12 @@ public enum PayoutSessionsAPI {
     }
 
     /// A `pyt_sess_…` that is still accepted. Refreshes `secret` in place when it has expired and a secret key is configured.
-    package static func authorizationToken(accountId: String, secret: FramePayoutClientSecret) async -> String? {
+    ///
+    /// - Parameters:
+    ///   - accountId: The account the token was minted for.
+    ///   - secret: The payout session to read or refresh.
+    /// - Returns: A bearer token, or `nil` when the session is expired and cannot be refreshed.
+    public static func authorizationToken(accountId: String, secret: FramePayoutClientSecret) async -> String? {
         await tokenForRead(accountId: accountId, secret: secret)
     }
 
