@@ -415,7 +415,7 @@ struct ContentView: View {
     /// Uses a dashboard account id when one is set. The placeholder is not a UUID, so a new
     /// account is created for playground taps that still have `ENTER_AN_ACCOUNT_ID`.
     private func playgroundAccountId() async -> String {
-        if UUID(uuidString: viewModel.accountId) != nil {
+        if !viewModel.accountId.isEmpty && viewModel.accountId != "ENTER_AN_ACCOUNT_ID" {
             return viewModel.accountId
         }
         let created = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
