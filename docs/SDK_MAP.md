@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1695 public symbols** across 149 files in 2 modules.
+**1696 public symbols** across 149 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -50,13 +50,13 @@ regeneration, so architectural notes belong there.
 | Actors | 1 |
 | Type aliases | 9 |
 | Initializers | 132 |
-| Methods | 298 |
+| Methods | 299 |
 | Properties (var) | 268 |
 | Properties (let) | 333 |
 | Enum cases | 306 |
-| **Total** | **1695** |
+| **Total** | **1696** |
 
-### `Frame` — 1517 public symbols
+### `Frame` — 1518 public symbols
 
 Core SDK: networking for every Frame API resource, checkout, cart, and deposit UI, theming, validation, and the Apple Pay surface.
 
@@ -87,9 +87,9 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 
 </details>
 
-#### Formatters (3)
+#### Formatters (4)
 
-<details><summary><code>CurrencyFormatter.swift</code> — 3 symbols</summary>
+<details><summary><code>CurrencyFormatter.swift</code> — 4 symbols</summary>
 
 [`Sources/Frame/Formatters/CurrencyFormatter.swift`](../Sources/Frame/Formatters/CurrencyFormatter.swift)
 
@@ -98,6 +98,7 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 | `CurrencyFormatter` | class | `class CurrencyFormatter` | [11](../Sources/Frame/Formatters/CurrencyFormatter.swift#L11) |
 | `CurrencyFormatter.shared` | let | `let shared = CurrencyFormatter()` | [13](../Sources/Frame/Formatters/CurrencyFormatter.swift#L13) |
 | `CurrencyFormatter.convertCentsToCurrencyString` | func | `func convertCentsToCurrencyString(_ cents: Int) -> String` | [20](../Sources/Frame/Formatters/CurrencyFormatter.swift#L20) |
+| `CurrencyFormatter.convertCentsToCurrencyString` | func | `func convertCentsToCurrencyString(_ cents: Int, currencyCode: String) -> String` | [33](../Sources/Frame/Formatters/CurrencyFormatter.swift#L33) |
 
 </details>
 
@@ -1585,9 +1586,9 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 | `FramePayoutClientSecret.expiresAt` | var | `var expiresAt: Date` | [11](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L11) |
 | `FramePayoutClientSecret.amountCents` | var | `var amountCents: Int` | [13](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L13) |
 | `FramePayoutClientSecret.amountCurrency` | var | `var amountCurrency: String` | [15](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L15) |
-| `FramePayoutClientSecret.isExpired` | var | `var isExpired: Bool` | [18](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L18) |
-| `FramePayoutClientSecret.init` | init | `init (clientSecret: String, expiresAt: Date, amountCents: Int, amountCurrency: String = )` | [26](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L26) |
-| `PayoutSession` | struct | `struct PayoutSession: Codable, Sendable` | [35](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L35) |
+| `FramePayoutClientSecret.isExpired` | var | `var isExpired: Bool` | [20](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L20) |
+| `FramePayoutClientSecret.init` | init | `init (clientSecret: String, expiresAt: Date, amountCents: Int, amountCurrency: String = )` | [28](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L28) |
+| `PayoutSession` | struct | `struct PayoutSession: Codable, Sendable` | [57](../Sources/Frame/Networking/PayoutSessions/PayoutSessionResponses.swift#L57) |
 
 </details>
 
@@ -1600,8 +1601,8 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 | `PayoutSessionsAPI` | enum | `enum PayoutSessionsAPI` | [8](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L8) |
 | `PayoutSessionsAPI.createPayoutSession` | func | `func createPayoutSession( accountId: String, amount: FrameObjects.TransferV2Money ) async throws -> (PayoutSession?, NetworkingError?)` | [15](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L15) |
 | `PayoutSessionsAPI.loadAccount` | func | `func loadAccount(accountId: String, secret: FramePayoutClientSecret) async -> (String?, NetworkingError?)` | [42](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L42) |
-| `PayoutSessionsAPI.loadPaymentMethods` | func | `func loadPaymentMethods(accountId: String, secret: FramePayoutClientSecret) async -> ([FrameObjects.PaymentMethod], NetworkingError?)` | [57](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L57) |
-| `PayoutSessionsAPI.authorizationToken` | func | `func authorizationToken(accountId: String, secret: FramePayoutClientSecret) async -> String?` | [88](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L88) |
+| `PayoutSessionsAPI.loadPaymentMethods` | func | `func loadPaymentMethods(accountId: String, secret: FramePayoutClientSecret) async -> ([FrameObjects.PaymentMethod], NetworkingError?)` | [60](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L60) |
+| `PayoutSessionsAPI.authorizationToken` | func | `func authorizationToken(accountId: String, secret: FramePayoutClientSecret) async -> String?` | [93](../Sources/Frame/Networking/PayoutSessions/PayoutSessionsAPI.swift#L93) |
 
 </details>
 
@@ -3178,7 +3179,7 @@ Onboarding product: the capability-driven identity/payment verification flow, it
 |--------|------|-------------|------|
 | `FramePayoutView` | struct | `struct FramePayoutView: View` | [21](../Sources/FrameOnboarding/Views/Payments/FramePayoutView.swift#L21) |
 | `FramePayoutView.init` | init | `init ( accountId: String, clientSecret: FramePayoutClientSecret, onResult: @escaping (FrameResult) -> Void )` | [44](../Sources/FrameOnboarding/Views/Payments/FramePayoutView.swift#L44) |
-| `FramePayoutView.body` | var | `var body: some View` | [56](../Sources/FrameOnboarding/Views/Payments/FramePayoutView.swift#L56) |
+| `FramePayoutView.body` | var | `var body: some View` | [59](../Sources/FrameOnboarding/Views/Payments/FramePayoutView.swift#L59) |
 
 </details>
 
