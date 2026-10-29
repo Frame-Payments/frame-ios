@@ -22,7 +22,7 @@ struct ContentView: View {
 
     @State private var presentedCheckout: ExampleCheckoutSession?
     @State private var showDepositSheet = false
-    @State private var showPayoutSheet = false
+    @State private var presentedPayout: ExamplePayoutSession?
     @State var showAddPaymentMethodView: Bool = false
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
@@ -176,34 +176,24 @@ struct ContentView: View {
             )
             .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showPayoutSheet) {
-            if let clientSecret = viewModel.onboardingClientSecret {
-                FramePayoutView(
-                    accountId: viewModel.accountId,
-                    availableAmount: examplePayoutAvailableCents,
-                    clientSecret: clientSecret,
-                    createPayout: { cents, paymentMethodId in
-                        await viewModel.createExamplePayout(
-                            accountId: viewModel.accountId,
-                            amountCents: cents,
-                            paymentMethodId: paymentMethodId
-                        )
-                    },
-                    onResult: { result in
-                        switch result {
-                        case .completed(let id):
-                            FrameToastCenter.shared.show("Payout completed: \(id)")
-                        case .cancelled:
-                            FrameToastCenter.shared.show("Cancelled flow")
-                        case .failed(let error):
-                            FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
-                        case .finishedUnverified(_, let outcome):
-                            FrameToastCenter.shared.show("Finished unverified: \(outcome)")
-                        }
+        .sheet(item: $presentedPayout) { payout in
+            FramePayoutView(
+                accountId: payout.accountId,
+                clientSecret: payout.clientSecret,
+                onResult: { result in
+                    switch result {
+                    case .completed(let id):
+                        FrameToastCenter.shared.show("Payout completed: \(id)")
+                    case .cancelled:
+                        FrameToastCenter.shared.show("Cancelled flow")
+                    case .failed(let error):
+                        FrameToastCenter.shared.show("Failed: \(error.localizedDescription)")
+                    case .finishedUnverified(_, let outcome):
+                        FrameToastCenter.shared.show("Finished unverified: \(outcome)")
                     }
-                )
-                .presentationDragIndicator(.visible)
-            }
+                }
+            )
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showAddPaymentMethodView, content: {
             if let clientSecret = viewModel.onboardingClientSecret {
@@ -345,16 +335,18 @@ struct ContentView: View {
 
     var payoutButton: some View {
         Button {
-            // The amount cap is a playground constant. Listing banks needs onb_sess_.
-            // Creating the payout needs sk_ on a server; this example calls the API
-            // directly because it has no backend.
+            // Example app has no backend. Production apps mint POST /v1/payout_sessions
+            // on their server with sk_ and pass the client secret in.
             Task {
                 let accountId = viewModel.accountId.isEmpty
                     ? await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) ?? ""
                     : viewModel.accountId
                 viewModel.accountId = accountId
-                if !accountId.isEmpty, await viewModel.mintOnboardingClientSecret(accountId: accountId) != nil {
-                    self.showPayoutSheet = true
+                if let secret = await viewModel.mintPayoutClientSecret(
+                    accountId: accountId,
+                    amountCents: examplePayoutAvailableCents
+                ) {
+                    self.presentedPayout = ExamplePayoutSession(accountId: accountId, clientSecret: secret)
                 } else {
                     FrameToastCenter.shared.show("Could not start payout.")
                 }
@@ -446,5 +438,12 @@ private struct ExampleCheckoutSession: Identifiable {
     let id = UUID()
     let accountId: String
     let clientSecret: FrameCheckoutClientSecret
+}
+
+/// Payout sheet value. The token travels with the presentation so payout cannot open without it.
+private struct ExamplePayoutSession: Identifiable {
+    let id = UUID()
+    let accountId: String
+    let clientSecret: FramePayoutClientSecret
 }
 

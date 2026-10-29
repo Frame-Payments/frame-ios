@@ -32,9 +32,9 @@ public struct FrameAddPayoutMethodView: View {
     /// Creates a standalone add-payout-method screen.
     ///
     /// - Parameters:
-    ///   - clientSecret: The onboarding-session token (`onb_sess_…`) minted by your server
-    ///     (`POST /v1/onboarding_sessions`) and handed to your app. Required. While this screen is
-    ///     presented every request authenticates with this token, scoping it to a single account.
+    ///   - clientSecret: An onboarding-session token (`onb_sess_…`) or payout-session token
+    ///     (`pyt_sess_…`) minted by your server. Required. While this screen is presented every
+    ///     request authenticates with this token, scoping it to a single account.
     ///   - accountId: The Frame account ID the new payout method is attached to. Required — Plaid
     ///     Link cannot be opened without it.
     ///   - onResult: Closure called with a ``FrameResult`` when the screen finishes or is cancelled.

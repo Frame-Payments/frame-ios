@@ -183,22 +183,25 @@ public class FrameNetworking: ObservableObject {
     }
 
     /// Begins an onboarding session, binding all subsequent SDK requests to the given
-    /// onboarding-session client secret (`onb_sess_…`).
+    /// session client secret (`onb_sess_…` or `pyt_sess_…`).
     ///
-    /// The integrator's server creates the onboarding session (`POST /v1/onboarding_sessions`) and
-    /// hands the resulting `onb_sess_…` token to the app. While a session is active, every request
-    /// authenticates with this token instead of `pk_`/`sk_`, which scopes the flow to a single
-    /// account (a bare publishable key would allow cross-account access). Call
-    /// ``endOnboardingSession()`` when the onboarding flow completes or is dismissed.
+    /// The integrator's server mints the token (`POST /v1/onboarding_sessions` or
+    /// `POST /v1/payout_sessions`) and hands it to the app. While a session is active, every
+    /// request authenticates with this token instead of `pk_`/`sk_`, which scopes the flow to a
+    /// single account (a bare publishable key would allow cross-account access). Call
+    /// ``endOnboardingSession()`` when the flow completes or is dismissed.
     ///
-    /// - Parameter clientSecret: The onboarding-session token (`onb_sess_…`).
+    /// - Parameter clientSecret: An onboarding-session token (`onb_sess_…`) or payout-session
+    ///   token (`pyt_sess_…`). Do not pass a checkout token; `chk_sess_` cannot elect a bank or
+    ///   create a payout.
     public func beginOnboardingSession(clientSecret: String) {
-        if !clientSecret.hasPrefix("onb_sess_") {
+        if !clientSecret.hasPrefix("onb_sess_"), !clientSecret.hasPrefix("pyt_sess_") {
             warnOnce(&hasWarnedAboutOnboardingTokenPrefix,
                      "⚠️ Frame: beginOnboardingSession was called with a token that is not an onboarding-session "
-                     + "token (onb_sess_…). Onboarding requests authenticate with this value verbatim, so a publishable "
-                     + "key, secret key, or charge-intent client secret will not scope the flow to an account and may be "
-                     + "rejected. Mint the token from your backend via POST /v1/onboarding_sessions.")
+                     + "or payout-session token (onb_sess_… / pyt_sess_…). Requests authenticate with this value "
+                     + "verbatim, so a publishable key, secret key, checkout token, or charge-intent client secret "
+                     + "will not scope the flow to an account and may be rejected. Mint onb_sess_ via POST "
+                     + "/v1/onboarding_sessions or pyt_sess_ via POST /v1/payout_sessions.")
         }
         onboardingSessionToken = clientSecret
     }
@@ -277,7 +280,7 @@ public class FrameNetworking: ObservableObject {
     /// Set once the secret key has been used to authenticate a live request.
     private var hasWarnedAboutSecretKeyRequest = false
 
-    /// Set once a non-`onb_sess_` onboarding token warning has been emitted.
+    /// Set once a non-`onb_sess_` / non-`pyt_sess_` session token warning has been emitted.
     private var hasWarnedAboutOnboardingTokenPrefix = false
 
     private func warnSecretKeyMisuse(context: String) {

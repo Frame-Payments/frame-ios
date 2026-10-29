@@ -8,8 +8,7 @@ import Foundation
 
 /// Amount and destination state for ``FramePayoutView``.
 ///
-/// The host creates the transfer. This type only decides whether the typed cents and the
-/// selected bank are enough to ask.
+/// Decides whether the typed cents and the selected bank are enough to create the transfer.
 @MainActor
 class FramePayoutViewModel: ObservableObject {
     @Published var typedCents: Int = 0

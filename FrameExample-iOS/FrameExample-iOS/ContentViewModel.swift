@@ -104,25 +104,35 @@ class ContentViewModel: ObservableObject, @unchecked Sendable {
         }
     }
 
-    /// Creates a payout with the example's secret key and returns the transfer id.
+    /// Mints a payout client secret (`pyt_sess_…`) so the example can list banks and create a
+    /// payout. Returns the token, or `nil` when minting failed.
     ///
-    /// - Important: Production apps do this on their server. `POST /v2/transfers` does not
-    ///   accept `onb_sess_` or `chk_sess_` for a payout, and there is no payout session type.
-    ///   Source is the account. Destination is the selected bank. The API infers `type: payout`.
-    func createExamplePayout(accountId: String, amountCents: Int, paymentMethodId: String) async -> String? {
-        guard !accountId.isEmpty, amountCents > 0, !paymentMethodId.isEmpty else { return nil }
-        let request = TransferV2Requests.CreateTransferRequest(
-            amount: .init(value: amountCents, currency: "usd"),
-            source: .init(accountId: accountId),
-            destination: .init(paymentMethodId: paymentMethodId)
-        )
+    /// - Important: This mint exists only because the example app has no backend. Production apps
+    ///   mint `POST /v1/payout_sessions` on their server with `sk_` and pass the client secret in.
+    /// - Parameters:
+    ///   - accountId: The account the payout is drawn from.
+    ///   - amountCents: Withdrawable balance used as the session amount cap.
+    ///   - currency: ISO 4217 currency of ``amountCents``.
+    /// - Returns: The payout token, expiry, and amount cap, or `nil` if the request failed.
+    func mintPayoutClientSecret(
+        accountId: String,
+        amountCents: Int,
+        currency: String = "usd"
+    ) async -> FramePayoutClientSecret? {
+        guard !accountId.isEmpty, amountCents > 0 else { return nil }
         do {
-            let (transfer, error) = try await TransfersV2API.createTransfer(request: request, accountId: accountId)
-            if let error {
-                print("⚠️ Frame example: payout create failed. Error: \(error.toastMessage())")
-                return nil
+            let amount = FrameObjects.TransferV2Money(value: amountCents, currency: currency)
+            let (session, error) = try await PayoutSessionsAPI.createPayoutSession(accountId: accountId, amount: amount)
+            if let clientSecret = session?.clientSecret, !clientSecret.isEmpty, let expiresAt = session?.expiresAt {
+                return FramePayoutClientSecret(
+                    clientSecret: clientSecret,
+                    expiresAt: Date(timeIntervalSince1970: TimeInterval(expiresAt)),
+                    amountCents: session?.amount?.value ?? amountCents,
+                    amountCurrency: session?.amount?.currency ?? currency
+                )
             }
-            return transfer?.id
+            print("⚠️ Frame example: failed to mint payout client secret. Error: \(String(describing: error))")
+            return nil
         } catch {
             print(error.localizedDescription)
             return nil

@@ -123,7 +123,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
-        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+        if let data, let decodedResponse = decodeAccountResource(data) {
             if !forTesting {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
             }
@@ -219,8 +219,9 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
     /// is sent to. Only active ACH methods belonging to the account are accepted; cards are rejected.
     ///
     /// - Note: Requires a caller scoped to this account — an onboarding-session token
-    ///   (`onb_sess_…`, see ``FrameNetworking/beginOnboardingSession(clientSecret:)``) or a
-    ///   server-side secret key. A publishable key is rejected.
+    ///   (`onb_sess_…`) or payout-session token (`pyt_sess_…`, see
+    ///   ``FrameNetworking/beginOnboardingSession(clientSecret:)``) or a server-side secret key.
+    ///   A publishable key is rejected.
     /// - Parameters:
     ///   - accountId: The unique identifier of the account whose payout method is being elected.
     ///   - request: The payment method to elect.
@@ -231,7 +232,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
-        if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+        if let data, let decodedResponse = decodeAccountResource(data) {
             return (decodedResponse, error)
         } else {
             return (nil, error)
@@ -322,7 +323,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let endpoint = AccountEndpoints.getAccountWith(accountId: accountId)
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
-            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+            if let data, let decodedResponse = decodeAccountResource(data) {
                 SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
             } else {
@@ -449,7 +450,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let requestBody = try? FrameNetworking.shared.jsonEncoder.encode(request)
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
-            if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
+            if let data, let decodedResponse = decodeAccountResource(data) {
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

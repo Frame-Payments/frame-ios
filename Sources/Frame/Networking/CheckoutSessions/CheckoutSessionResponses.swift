@@ -129,3 +129,21 @@ struct CheckoutAchPayload: Decodable {
         case lastFour = "last_four"
     }
 }
+
+func decodeSessionPaymentMethod(_ data: Data) -> FrameObjects.PaymentMethod? {
+    if let method = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.PaymentMethod.self, from: data) {
+        return method
+    }
+    return (try? FrameNetworking.shared.jsonDecoder.decode(CheckoutPaymentMethodPayload.self, from: data))?.paymentMethod()
+}
+
+func decodeSessionPaymentMethods(_ data: Data) -> [FrameObjects.PaymentMethod]? {
+    if let list = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data),
+       let methods = list.data {
+        return methods
+    }
+    if let payload = try? FrameNetworking.shared.jsonDecoder.decode(CheckoutPaymentMethodList.self, from: data) {
+        return payload.data?.map { $0.paymentMethod() } ?? []
+    }
+    return nil
+}

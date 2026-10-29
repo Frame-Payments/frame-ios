@@ -8,36 +8,23 @@ import SwiftUI
 
 /// An amount-and-bank sheet for paying out to a saved ACH account.
 ///
-/// Present this view modally. The keypad is capped at `availableAmount`. Continue asks the
-/// host to create the payout and returns that transfer id. Dismissing this screen returns
-/// `.cancelled`. Closing the bank picker returns here.
+/// Present this view modally. The keypad is capped at the payout session amount. Continue
+/// creates `POST /v2/transfers` with the session token and returns that transfer id.
+/// Dismissing this screen returns `.cancelled`. Closing the bank picker returns here.
 ///
-/// `POST /v2/transfers` does not accept `onb_sess_` or `chk_sess_` for a payout. A checkout
-/// session can only create a payment, and it strips `destination`. There is no payout session
-/// type. The host creates the transfer on its server with `sk_` and returns the id:
+/// Mint `pyt_sess_` on the host with `POST /v1/payout_sessions` and the withdrawable balance
+/// as the amount cap. Do not mint `sk_` inside the SDK. A checkout session can only create a
+/// payment; an onboarding session cannot create a transfer.
 ///
-/// ```json
-/// {
-///   "amount": { "value": 5000, "currency": "usd" },
-///   "source": { "account_id": "acc_…" },
-///   "destination": { "payment_method_id": "pm_…" }
-/// }
-/// ```
-///
-/// The API treats account → payment method as a payout. Omit `sonar_session_id`; the API
-/// rejects it on payouts. Do not mint `sk_` inside the SDK.
-///
-/// The elected primary bank is prefilled when `GET /v1/accounts/:id` includes
-/// `payout_payment_method_id`. An onboarding session omits that field unless legacy client
-/// PII is enabled. A single saved bank is selected either way.
+/// The elected primary bank is prefilled from `payout_payment_method_id`. A single saved bank
+/// is selected either way.
 public struct FramePayoutView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.frameTheme) private var theme
     @StateObject private var viewModel: FramePayoutViewModel
 
     let accountId: String
-    let clientSecret: String
-    let createPayout: (Int, String) async -> String?
+    let clientSecret: FramePayoutClientSecret
     var onResult: (FrameResult) -> Void
 
     @State private var showPayoutMethods = false
@@ -47,25 +34,20 @@ public struct FramePayoutView: View {
     ///
     /// - Parameters:
     ///   - accountId: The Frame account the payout is drawn from (`source.account_id`).
-    ///   - availableAmount: Withdrawable balance in cents. The keypad ignores anything higher.
-    ///   - clientSecret: Onboarding-session token (`onb_sess_…`) used to list ACH methods and
-    ///     open the existing add-bank flow. Not used to create the transfer.
-    ///   - createPayout: Host creates `POST /v2/transfers` for these cents and this bank, then
-    ///     returns the transfer id. Return `nil` to leave the screen up.
+    ///   - clientSecret: Payout-session token (`pyt_sess_…`) from `POST /v1/payout_sessions`.
+    ///     Lists banks, opens the add-bank flow, and creates the transfer. The session amount
+    ///     is the keypad cap.
     ///   - onResult: Closure called exactly once with a ``FrameResult``. `.completed` carries
-    ///     the transfer id from `createPayout`.
+    ///     the created transfer id.
     public init(
         accountId: String,
-        availableAmount: Int,
-        clientSecret: String,
-        createPayout: @escaping (Int, String) async -> String?,
+        clientSecret: FramePayoutClientSecret,
         onResult: @escaping (FrameResult) -> Void
     ) {
         self.accountId = accountId
         self.clientSecret = clientSecret
-        self.createPayout = createPayout
         self.onResult = onResult
-        _viewModel = StateObject(wrappedValue: FramePayoutViewModel(availableAmount: availableAmount))
+        _viewModel = StateObject(wrappedValue: FramePayoutViewModel(availableAmount: clientSecret.amountCents))
     }
 
     /// The amount screen, which pushes ``FrameSelectPayoutMethodView`` to pick or add a bank.
@@ -94,7 +76,7 @@ public struct FramePayoutView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showPayoutMethods) {
                 FrameSelectPayoutMethodView(
-                    clientSecret: clientSecret,
+                    clientSecret: clientSecret.clientSecret,
                     accountId: accountId
                 ) { result in
                     if case .completed(let id) = result {
@@ -213,30 +195,15 @@ public struct FramePayoutView: View {
     }
 
     private func loadMethods() async {
-        // Hold the session only for this read. Leaving it up rewrites the host's secret-key create into onb_sess_.
         viewModel.isLoadingMethods = true
-        FrameNetworking.shared.beginOnboardingSession(clientSecret: clientSecret)
-        defer {
-            FrameNetworking.shared.endOnboardingSession()
-            viewModel.isLoadingMethods = false
+        defer { viewModel.isLoadingMethods = false }
+        let (methods, listError) = await PayoutSessionsAPI.loadPaymentMethods(accountId: accountId, secret: clientSecret)
+        let (primaryId, _) = await PayoutSessionsAPI.loadAccount(accountId: accountId, secret: clientSecret)
+        guard !didFinish else { return }
+        if let listError {
+            FrameToastCenter.shared.show(listError.toastMessage())
         }
-        do {
-            let (response, listError) = try await PaymentMethodsAPI.getPaymentMethodsWithAccount(
-                accountId: accountId,
-                clientSecret: clientSecret
-            )
-            let account = (try? await AccountsAPI.getAccountWith(accountId: accountId))?.0
-            guard !didFinish else { return }
-            if let listError {
-                FrameToastCenter.shared.show(listError.toastMessage())
-            }
-            viewModel.applyLoadedMethods(response?.data ?? [], primaryId: account?.payoutPaymentMethodId)
-        } catch {
-            guard !didFinish else { return }
-            viewModel.applyLoadedMethods([], primaryId: nil)
-            let message = (error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again."
-            FrameToastCenter.shared.show(message)
-        }
+        viewModel.applyLoadedMethods(methods, primaryId: primaryId)
     }
 
     private func submit() {
@@ -244,18 +211,39 @@ public struct FramePayoutView: View {
         let cents = viewModel.typedCents
         viewModel.isCreating = true
         Task {
-            // Drop any onboarding session first. While one is active, secret-key calls leave as onb_sess_.
-            FrameNetworking.shared.endOnboardingSession()
-            let transferId = await createPayout(cents, methodId)
-            viewModel.isCreating = false
-            guard !didFinish else { return }
-            guard let transferId, !transferId.isEmpty else {
+            defer { viewModel.isCreating = false }
+            guard let token = await PayoutSessionsAPI.authorizationToken(accountId: accountId, secret: clientSecret) else {
+                guard !didFinish else { return }
                 FrameToastCenter.shared.show("Could not send this payout. Please try again.")
                 return
             }
-            didFinish = true
-            onResult(.completed(id: transferId))
-            dismiss()
+            let request = TransferV2Requests.CreateTransferRequest(
+                amount: .init(value: cents, currency: clientSecret.amountCurrency),
+                destination: .init(paymentMethodId: methodId)
+            )
+            do {
+                let (transfer, error) = try await TransfersV2API.createTransfer(
+                    request: request,
+                    payoutClientSecret: token,
+                    accountId: accountId
+                )
+                guard !didFinish else { return }
+                if let error {
+                    FrameToastCenter.shared.show(error.toastMessage())
+                    return
+                }
+                guard let transferId = transfer?.id, !transferId.isEmpty else {
+                    FrameToastCenter.shared.show("Could not send this payout. Please try again.")
+                    return
+                }
+                didFinish = true
+                onResult(.completed(id: transferId))
+                dismiss()
+            } catch {
+                guard !didFinish else { return }
+                let message = (error as? NetworkingError)?.toastMessage() ?? "Error: Something went wrong. Please try again."
+                FrameToastCenter.shared.show(message)
+            }
         }
     }
 }
@@ -263,18 +251,22 @@ public struct FramePayoutView: View {
 #Preview {
     FramePayoutView(
         accountId: "",
-        availableAmount: 5_000,
-        clientSecret: "onb_sess_preview",
-        createPayout: { _, _ in nil }
+        clientSecret: FramePayoutClientSecret(
+            clientSecret: "pyt_sess_preview",
+            expiresAt: Date(timeIntervalSinceNow: 1_800),
+            amountCents: 5_000
+        )
     ) { _ in }
 }
 
 #Preview("Dark") {
     FramePayoutView(
         accountId: "",
-        availableAmount: 5_000,
-        clientSecret: "onb_sess_preview",
-        createPayout: { _, _ in nil }
+        clientSecret: FramePayoutClientSecret(
+            clientSecret: "pyt_sess_preview",
+            expiresAt: Date(timeIntervalSinceNow: 1_800),
+            amountCents: 5_000
+        )
     ) { _ in }
     .preferredColorScheme(.dark)
 }

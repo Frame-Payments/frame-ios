@@ -44,7 +44,8 @@ protocol TransfersV2Protocol {
 /// Manages transfer resources (`/v2/transfers`) in the Frame Payments SDK.
 ///
 /// Capture, void, refund, update, and list authenticate with the secret key. Checkout create,
-/// show, and confirm authenticate with a `chk_sess_` token minted with a locked amount.
+/// show, and confirm authenticate with a `chk_sess_` token minted with a locked amount. Payout
+/// create authenticates with a `pyt_sess_` token minted with an amount cap.
 public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
 
     /// Attaches Sonar on a payment-method create. The account is the global one, or `accountId` when that is unset.
@@ -107,6 +108,27 @@ public class TransfersV2API: TransfersV2Protocol, @unchecked Sendable {
             idempotencyKey: idempotencyKey,
             accountId: accountId,
             auth: .clientSecret(checkoutClientSecret)
+        )
+    }
+
+    /// Creates a V2 payout as a payout session (`Authorization: Bearer pyt_sess_…`).
+    ///
+    /// The session must have been minted with an amount cap. The request amount has to be in
+    /// `(0, cap]` in that currency; destination must be a payment method on the session account.
+    /// Source is injected by the API. Requires an `Idempotency-Key` (generated when
+    /// `idempotencyKey` is `nil`).
+    public static func createTransfer(
+        request: TransferV2Requests.CreateTransferRequest,
+        idempotencyKey: String? = nil,
+        payoutClientSecret: String,
+        accountId: String? = nil
+    ) async throws -> (FrameObjects.TransferV2?, NetworkingError?) {
+        guard !payoutClientSecret.isEmpty else { return (nil, nil) }
+        return try await createTransfer(
+            request: request,
+            idempotencyKey: idempotencyKey,
+            accountId: accountId,
+            auth: .clientSecret(payoutClientSecret)
         )
     }
 

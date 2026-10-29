@@ -188,8 +188,8 @@ class OnboardingContainerViewModel: ObservableObject {
     /// secret or a self-minted one — and is therefore responsible for ending it on completion/dismiss.
     private(set) var ownsOnboardingSession = false
 
-    /// Onboarding-session token (`onb_sess_…`) for account-scoped reads. The payment-method list
-    /// does not accept a publishable key.
+    /// Session token (`onb_sess_…` or `pyt_sess_…`) for account-scoped reads. The payment-method
+    /// list does not accept a publishable key.
     private var onboardingClientSecret: String?
 
     /// Set once this flow has torn its session down, so a mint already in flight doesn't install a

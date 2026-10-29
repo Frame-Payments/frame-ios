@@ -10,7 +10,7 @@ import Foundation
 /// `completed(id:)` carries the resource id produced by the flow:
 /// - `FrameCheckoutView` / `FrameCartView` / `FrameDepositView` → Transfer id
 ///   (`FrameDepositView` forwards the id from the checkout it pushes)
-/// - `FramePayoutView` → Transfer id returned by the host after it creates the payout
+/// - `FramePayoutView` → Transfer id created with the payout session token
 /// - `OnboardingContainerView` → the selected PaymentMethod id, or empty string if the flow
 ///   completed without one
 public enum FrameResult {
