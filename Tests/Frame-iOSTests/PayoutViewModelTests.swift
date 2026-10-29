@@ -190,4 +190,13 @@ final class PayoutViewModelTests: XCTestCase {
         _ = shared.convertCentsToCurrencyString(1_000, currencyCode: "gbp")
         XCTAssertEqual(shared.convertCentsToCurrencyString(1_000), before)
     }
+
+    @MainActor
+    func testZeroDecimalCurrencyDoesNotDivideByOneHundred() {
+        let yen = CurrencyFormatter.shared.convertCentsToCurrencyString(100, currencyCode: "jpy")
+        XCTAssertFalse(yen.contains("1.00"))
+        XCTAssertTrue(yen.contains("100"))
+        let dollars = CurrencyFormatter.shared.convertCentsToCurrencyString(1_000, currencyCode: "usd")
+        XCTAssertTrue(dollars.contains("10.00") || dollars.contains("10,00"))
+    }
 }

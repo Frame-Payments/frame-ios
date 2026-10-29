@@ -73,6 +73,12 @@ public enum PayoutSessionsAPI {
         do {
             let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .clientSecret(token))
             guard isUnauthorized(error) else { return (data, error) }
+            if secret.clientSecret != token, !secret.clientSecret.isEmpty {
+                return try await FrameNetworking.shared.performDataTask(
+                    endpoint: endpoint,
+                    auth: .clientSecret(secret.clientSecret)
+                )
+            }
             guard let refreshed = await secret.serializedRefresh({
                 await refresh(accountId: accountId, secret: secret)
             }) else {

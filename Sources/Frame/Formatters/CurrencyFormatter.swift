@@ -35,9 +35,10 @@ public class CurrencyFormatter {
         formatter.numberStyle = .currency
         let code = currencyCode.trimmingCharacters(in: .whitespacesAndNewlines)
         formatter.currencyCode = code.isEmpty ? "USD" : code.uppercased()
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        let total = Double(cents) / 100.0
+        let digits = max(formatter.maximumFractionDigits, 0)
+        formatter.minimumFractionDigits = digits
+        formatter.maximumFractionDigits = digits
+        let total = Double(cents) / pow(10, Double(digits))
         return formatter.string(from: total as NSNumber) ?? ""
     }
 }

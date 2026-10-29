@@ -232,7 +232,14 @@ public struct FramePayoutView: View {
                 FrameToastCenter.shared.show("Could not send this payout. Please try again.")
                 return
             }
+            let enteredCents = viewModel.typedCents
             viewModel.updateAvailableAmount(clientSecret.amountCents, currencyCode: clientSecret.amountCurrency)
+            if viewModel.typedCents != enteredCents {
+                if !didFinish {
+                    FrameToastCenter.shared.show("Available amount updated. Confirm to send \(viewModel.amountText).")
+                }
+                return
+            }
             guard viewModel.canConfirm, let methodId = viewModel.selectedPaymentMethod?.id else {
                 if !didFinish {
                     FrameToastCenter.shared.show("Could not send this payout. Please try again.")
