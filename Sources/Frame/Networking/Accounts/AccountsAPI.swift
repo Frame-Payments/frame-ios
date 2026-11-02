@@ -57,7 +57,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
             if !forTesting {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.siftAttributionId, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
             }
             return (decodedResponse, error)
         } else {
@@ -125,7 +125,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable)
         if let data, let decodedResponse = decodeAccountResource(data) {
             if !forTesting {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.siftAttributionId, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
             }
             return (decodedResponse, error)
         } else {
@@ -266,7 +266,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: data) {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.siftAttributionId, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)
@@ -324,7 +324,7 @@ public class AccountsAPI: AccountsProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = decodeAccountResource(data) {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.siftAttributionId, email: decodedResponse.profile?.individual?.email ?? decodedResponse.profile?.business?.email ?? "")
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

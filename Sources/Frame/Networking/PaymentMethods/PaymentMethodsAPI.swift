@@ -100,7 +100,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
             if !forTesting {
                 // Redundancy incase no Customer API calls are ever made.
-                SiftManager.collectLoginEvent(customerId: customerId, email: "")
+                SiftManager.collectLoginEvent(userId: customerId, email: "", overwrite: false)
             }
             return (decodedResponse, error)
         } else {
@@ -142,7 +142,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
         if let data, let methods = decodeSessionPaymentMethods(data) {
             if !forTesting {
                 // Redundancy incase no Customer API calls are ever made.
-                SiftManager.collectLoginEvent(customerId: accountId, email: "")
+                SiftManager.collectLoginEvent(userId: accountId, email: "", overwrite: false)
             }
             return (PaymentMethodResponses.ListPaymentMethodsResponse(data: methods), error)
         } else {
@@ -358,7 +358,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
-                SiftManager.collectLoginEvent(customerId: customerId, email: "")
+                SiftManager.collectLoginEvent(userId: customerId, email: "", overwrite: false)
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)
@@ -376,7 +376,7 @@ public class PaymentMethodsAPI: PaymentMethodProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, auth: .publishable) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(PaymentMethodResponses.ListPaymentMethodsResponse.self, from: data) {
-                SiftManager.collectLoginEvent(customerId: accountId, email: "")
+                SiftManager.collectLoginEvent(userId: accountId, email: "", overwrite: false)
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

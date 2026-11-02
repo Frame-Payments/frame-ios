@@ -26,6 +26,11 @@ public class SiftManager {
         case refund = "$refund"
     }
 
+    /// Last user id passed to Sift. Mirrored so tests can assert without the Sift SDK.
+    static var currentUserId: String?
+
+    private static let lock = NSLock()
+
     /// Fetches Sift credentials from the Frame configuration API and initialises
     /// the shared `Sift` instance, falling back to keychain-cached credentials
     /// when the network request is unavailable.
@@ -46,25 +51,37 @@ public class SiftManager {
         }
     }
 
-    /// Records a Sift `$login` event for the given customer.
+    /// Associates a Sift user id and records a `$login` event when the id is new or changes.
     ///
-    /// Call this as soon as customer identity is known (e.g. after sign-in).
-    /// The method is a no-op if a user ID has already been associated with the
-    /// current Sift session.
+    /// Prefer the account response's `sift_user_id` (identity id) over the Frame account id so
+    /// device data and server payment events share one Sift user.
     ///
     /// - Parameters:
-    ///   - customerId: The unique identifier of the authenticated customer.
-    ///   - email: The email address of the authenticated customer.
-    //Set the login event the first chance you get customer details.
-    class func collectLoginEvent(customerId: String, email: String) {
-        guard let sift = Sift.sharedInstance(), sift.userId == nil else { return }
-        sift.userId = customerId
+    ///   - userId: The Sift `$user_id` to attach (usually `sift_user_id`, else account or customer id).
+    ///   - email: The email address of the authenticated party.
+    ///   - overwrite: When `false`, leaves an already-set user id alone (redundancy call sites).
+    class func collectLoginEvent(userId: String, email: String, overwrite: Bool = true) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard !userId.isEmpty else { return }
+
+        if currentUserId == userId {
+            if let sift = Sift.sharedInstance(), sift.userId != userId {
+                sift.userId = userId
+            }
+            return
+        }
+        if currentUserId != nil && !overwrite { return }
+
+        currentUserId = userId
+        guard let sift = Sift.sharedInstance() else { return }
+        sift.userId = userId
 
         let event = SiftEvent()
         event.type = "$login"
         event.fields = ["$ip": getIPAddress() ?? "", "$user_email": email]
 
-        // Added event to queue and collect data
         sift.append(event)
         sift.collect()
         sift.upload()
