@@ -39,7 +39,11 @@ public enum CheckoutSessionsAPI {
             return (nil, error)
         }
         let email = payload.profile?.individual?.email ?? payload.profile?.business?.email ?? ""
-        SiftManager.collectLoginEvent(customerId: accountId, email: email)
+        if let siftUserId = payload.siftUserId, !siftUserId.isEmpty {
+            SiftManager.collectLoginEvent(userId: siftUserId, email: email)
+        } else {
+            SiftManager.collectLoginEvent(userId: payload.id ?? accountId, email: email, overwrite: false)
+        }
         return (payload.profile, nil)
     }
 

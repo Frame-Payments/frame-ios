@@ -49,7 +49,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
             if !forTesting {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.id, email: decodedResponse.email ?? "", overwrite: false)
             }
             return (decodedResponse, error)
         } else {
@@ -126,7 +126,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
         let (data, error) = try await FrameNetworking.shared.performDataTask(endpoint: endpoint)
         if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
             if !forTesting {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.id, email: decodedResponse.email ?? "", overwrite: false)
             }
             return (decodedResponse, error)
         } else {
@@ -199,7 +199,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint, requestBody: requestBody) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.id, email: decodedResponse.email ?? "", overwrite: false)
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)
@@ -275,7 +275,7 @@ public class CustomersAPI: CustomersProtocol, @unchecked Sendable {
 
         FrameNetworking.shared.performDataTask(endpoint: endpoint) { data, response, error in
             if let data, let decodedResponse = try? FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Customer.self, from: data) {
-                SiftManager.collectLoginEvent(customerId: decodedResponse.id, email: decodedResponse.email ?? "")
+                SiftManager.collectLoginEvent(userId: decodedResponse.id, email: decodedResponse.email ?? "", overwrite: false)
                 completionHandler(decodedResponse, error)
             } else {
                 completionHandler(nil, error)

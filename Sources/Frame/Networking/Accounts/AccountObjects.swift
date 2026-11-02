@@ -294,6 +294,8 @@ extension FrameObjects {
         public let accountStatus: AccountStatus
         /// Optional caller-supplied identifier for cross-referencing with external systems.
         @Lenient public private(set) var externalId: String?
+        /// Sift `$user_id` for this account. Prefer this over ``id`` when attributing device data to Sift.
+        @Lenient public private(set) var siftUserId: String?
         /// Arbitrary key-value pairs for storing additional information.
         @Lenient public private(set) var metadata: [String: String]?
         /// Terms-of-service acceptance record for the account.
@@ -320,6 +322,7 @@ extension FrameObjects {
         ///   - accountType: Individual or business classification.
         ///   - accountStatus: Current lifecycle status.
         ///   - externalId: Optional external reference identifier.
+        ///   - siftUserId: Optional Sift `$user_id` from the API.
         ///   - metadata: Optional arbitrary key-value metadata.
         ///   - termsOfService: Optional terms-of-service acceptance record.
         ///   - profile: Optional detailed profile for the account holder.
@@ -335,6 +338,7 @@ extension FrameObjects {
             accountType: AccountType,
             accountStatus: AccountStatus,
             externalId: String? = nil,
+            siftUserId: String? = nil,
             metadata: [String: String]? = nil,
             termsOfService: AccountTermsOfService? = nil,
             profile: AccountProfile? = nil,
@@ -350,6 +354,7 @@ extension FrameObjects {
             self.accountType = accountType
             self.accountStatus = accountStatus
             self.externalId = externalId
+            self.siftUserId = siftUserId
             self.metadata = metadata
             self.termsOfService = termsOfService
             self.profile = profile
@@ -361,11 +366,18 @@ extension FrameObjects {
             self.livemode = livemode
         }
 
+        /// Sift `$user_id` when the API sent a non-empty one; otherwise the account id.
+        public var siftAttributionId: String {
+            if let siftUserId, !siftUserId.isEmpty { return siftUserId }
+            return id
+        }
+
         public enum CodingKeys: String, CodingKey {
             case id, object, metadata, profile, livemode, capabilities, steps, created, updated
             case accountType = "type"
             case accountStatus = "status"
             case externalId = "external_id"
+            case siftUserId = "sift_user_id"
             case termsOfService = "terms_of_service"
             case payoutPaymentMethodId = "payout_payment_method_id"
         }

@@ -64,7 +64,14 @@ public struct CheckoutSession: Codable, Sendable {
 }
 
 struct CheckoutAccountPayload: Decodable {
+    let id: String?
+    let siftUserId: String?
     let profile: FrameObjects.AccountProfile?
+
+    enum CodingKeys: String, CodingKey {
+        case id, profile
+        case siftUserId = "sift_user_id"
+    }
 }
 
 struct CheckoutPaymentMethodList: Decodable {
