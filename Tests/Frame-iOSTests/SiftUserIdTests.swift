@@ -52,6 +52,26 @@ final class SiftUserIdTests: XCTestCase {
         XCTAssertEqual(account.siftAttributionId, "acc_123")
     }
 
+    func testSiftAttributionIdFallsBackWhenSiftUserIdIsEmpty() throws {
+        let json = """
+        {
+          "id": "acc_123",
+          "object": "account",
+          "type": "individual",
+          "status": "active",
+          "sift_user_id": "",
+          "created": 1,
+          "updated": 1,
+          "livemode": false
+        }
+        """.data(using: .utf8)!
+
+        let account = try FrameNetworking.shared.jsonDecoder.decode(FrameObjects.Account.self, from: json)
+
+        XCTAssertEqual(account.siftUserId, "")
+        XCTAssertEqual(account.siftAttributionId, "acc_123")
+    }
+
     func testCollectLoginEventUsesSiftUserIdAndAllowsOverwrite() {
         SiftManager.collectLoginEvent(userId: "acc_old", email: "a@example.com")
         XCTAssertEqual(SiftManager.currentUserId, "acc_old")

@@ -366,8 +366,11 @@ extension FrameObjects {
             self.livemode = livemode
         }
 
-        /// Sift `$user_id` when the API sent one; otherwise the account id.
-        public var siftAttributionId: String { siftUserId ?? id }
+        /// Sift `$user_id` when the API sent a non-empty one; otherwise the account id.
+        public var siftAttributionId: String {
+            if let siftUserId, !siftUserId.isEmpty { return siftUserId }
+            return id
+        }
 
         public enum CodingKeys: String, CodingKey {
             case id, object, metadata, profile, livemode, capabilities, steps, created, updated
