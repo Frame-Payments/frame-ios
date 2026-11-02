@@ -472,8 +472,8 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 | `FrameObjects.Account.livemode` | let | `let livemode: Bool` | [316](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L316) |
 | `FrameObjects.Account.init` | init | `init ( id: String, object: String, accountType: AccountType, accountStatus: AccountStatus, externalId: String? = nil, siftUserId: String? = nil, metadata: [Str…` | [335](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L335) |
 | `FrameObjects.Account.siftAttributionId` | var | `var siftAttributionId: String` | [370](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L370) |
-| `FrameObjects.AccountListResponse` | struct | `struct AccountListResponse: Codable, Sendable, Equatable` | [384](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L384) |
-| `FrameObjects.AccountListResponse.data` | let | `let data: [Account]` | [386](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L386) |
+| `FrameObjects.AccountListResponse` | struct | `struct AccountListResponse: Codable, Sendable, Equatable` | [387](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L387) |
+| `FrameObjects.AccountListResponse.data` | let | `let data: [Account]` | [389](../Sources/Frame/Networking/Accounts/AccountObjects.swift#L389) |
 
 </details>
 
