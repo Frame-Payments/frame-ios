@@ -1,5 +1,5 @@
 {
-  "originHash" : "71e51183352b0c46b5c278056d6a36590568fbfbed1264ee02b58158f5f9d6a5",
+  "originHash" : "67cec5c57cc58ac0b4904b317a7f196d27377d66a86e67acbfa09ab776f4a89d",
   "pins" : [
     {
       "identity" : "evervault-ios",
@@ -11,12 +11,12 @@
       }
     },
     {
-      "identity" : "fingerprintjs-pro-ios",
+      "identity" : "fingerprint-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/fingerprintjs/fingerprintjs-pro-ios",
+      "location" : "https://github.com/fingerprintjs/fingerprint-ios",
       "state" : {
-        "revision" : "21bcfcfd2e1bce943f668a7748f8a7e1154f0ac2",
-        "version" : "2.13.0"
+        "revision" : "233cec6c394a695e10f641166121fec2f123c3e8",
+        "version" : "4.2.0"
       }
     },
     {

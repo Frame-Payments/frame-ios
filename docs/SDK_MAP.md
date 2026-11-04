@@ -39,7 +39,7 @@ regeneration, so architectural notes belong there.
 
 ## Public API inventory
 
-**1697 public symbols** across 149 files in 2 modules.
+**1696 public symbols** across 149 files in 2 modules.
 
 | Kind | Count |
 |------|-------|
@@ -51,12 +51,12 @@ regeneration, so architectural notes belong there.
 | Type aliases | 9 |
 | Initializers | 132 |
 | Methods | 299 |
-| Properties (var) | 269 |
+| Properties (var) | 268 |
 | Properties (let) | 333 |
 | Enum cases | 306 |
-| **Total** | **1697** |
+| **Total** | **1696** |
 
-### `Frame` — 1519 public symbols
+### `Frame` — 1518 public symbols
 
 Core SDK: networking for every Frame API resource, checkout, cart, and deposit UI, theming, validation, and the Apple Pay surface.
 
@@ -102,7 +102,7 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 
 </details>
 
-#### Networking (76)
+#### Networking (75)
 
 <details><summary><code>CommonObjects.swift</code> — 37 symbols</summary>
 
@@ -164,15 +164,14 @@ Core SDK: networking for every Frame API resource, checkout, cart, and deposit U
 
 </details>
 
-<details><summary><code>FingerprintManager.swift</code> — 3 symbols</summary>
+<details><summary><code>FingerprintManager.swift</code> — 2 symbols</summary>
 
 [`Sources/Frame/Networking/FingerprintManager.swift`](../Sources/Frame/Networking/FingerprintManager.swift)
 
 | Symbol | Kind | Declaration | Line |
 |--------|------|-------------|------|
 | `FingerprintConfiguration` | enum | `enum FingerprintConfiguration` | [17](../Sources/Frame/Networking/FingerprintManager.swift#L17) |
-| `FingerprintConfiguration.extendedResponseFormat` | var | `var extendedResponseFormat: Bool = false` | [22](../Sources/Frame/Networking/FingerprintManager.swift#L22) |
-| `FingerprintConfiguration.allowUseOfLocationData` | var | `var allowUseOfLocationData: Bool = false` | [24](../Sources/Frame/Networking/FingerprintManager.swift#L24) |
+| `FingerprintConfiguration.allowUseOfLocationData` | var | `var allowUseOfLocationData: Bool = false` | [19](../Sources/Frame/Networking/FingerprintManager.swift#L19) |
 
 </details>
 
