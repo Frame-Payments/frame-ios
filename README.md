@@ -173,7 +173,7 @@ Card data is encrypted via [Evervault](https://evervault.com) before it ever lea
 A drop-in, capability-driven onboarding flow for KYC. Declare the verifications your product requires and `OnboardingContainerView` automatically builds and sequences the right steps — identity capture, document upload, phone verification, payment and payout method setup, and geolocation compliance.
 
 ### Fraud Detection
-Built-in device intelligence via Sift and FingerprintPro, wired up automatically when the SDK is initialized.
+Built-in device intelligence via Sift and Fingerprint, wired up automatically when the SDK is initialized.
 
 ---
 

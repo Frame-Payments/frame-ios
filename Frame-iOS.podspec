@@ -24,6 +24,6 @@ Pod::Spec.new do |s|
   s.dependency 'Frame-EvervaultCore', '~> 2.1.0-frame.3'
   s.dependency 'Frame-EvervaultInputs', '~> 2.1.0-frame.3'
   s.dependency 'Sift', '~> 2.2'
-  s.dependency 'FingerprintPro', '~> 2.15'
+  s.dependency 'Fingerprint-iOS', '~> 4.2'
   s.dependency 'PhoneNumberKit', '~> 4.2'
 end
