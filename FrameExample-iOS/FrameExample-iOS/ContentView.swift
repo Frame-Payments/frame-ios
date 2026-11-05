@@ -27,6 +27,7 @@ struct ContentView: View {
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
     @State private var businessOnboarding: BusinessOnboardingLaunch?
+    @State private var showOfficePicks = false
     @State var applePayResult: String? = nil
 
     let requiredCapabilities: [FrameObjects.Capabilities] = [.kycPrefill, .geoCompliance, .ageVerification]
@@ -65,6 +66,7 @@ struct ContentView: View {
                 selectPayoutMethodButton
                 onboardingButton
                 businessOnboardingButton
+                officePicksButton
                 
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
@@ -221,6 +223,12 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
             }
         })
+        .fullScreenCover(isPresented: $showOfficePicks) {
+            OfficePicksFlowView(
+                viewModel: viewModel,
+                requiredCapabilities: requiredCapabilities
+            )
+        }
     }
     
     var onboardingButton: some View {
@@ -401,6 +409,23 @@ struct ContentView: View {
             }
         } label: {
             Text("Set Primary Payout Method")
+                .font(.headline)
+                .foregroundColor(theme.colors.primaryButtonText)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(height: 45.0)
+        .frame(maxWidth: .infinity)
+        .background(theme.colors.primaryButton)
+        .cornerRadius(10.0)
+        .padding([.horizontal, .bottom])
+    }
+
+    var officePicksButton: some View {
+        Button {
+            // Dark-mode prediction-market shell that chains KYC → deposit after "Deposit Funds".
+            showOfficePicks = true
+        } label: {
+            Text("Office Picks")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)
