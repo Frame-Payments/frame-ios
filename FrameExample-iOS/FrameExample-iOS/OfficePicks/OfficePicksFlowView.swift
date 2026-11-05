@@ -118,31 +118,29 @@ struct OfficePicksFlowView: View {
     private func startDepositFlow() {
         guard !isPreparingDeposit else { return }
         isPreparingDeposit = true
-        Task {
-            defer { await MainActor.run { isPreparingDeposit = false } }
+        Task { @MainActor in
+            defer { isPreparingDeposit = false }
 
             let accountId: String
             if !viewModel.accountId.isEmpty && viewModel.accountId != "ENTER_AN_ACCOUNT_ID" {
                 accountId = viewModel.accountId
             } else {
                 guard let created = await viewModel.createEmptyIndividualAccount(capabilities: requiredCapabilities) else {
-                    await MainActor.run { FrameToastCenter.shared.show("Could not create an account for KYC.") }
+                    FrameToastCenter.shared.show("Could not create an account for KYC.")
                     return
                 }
                 accountId = created
-                await MainActor.run { viewModel.accountId = created }
+                viewModel.accountId = created
             }
 
             // Fresh onboarding session for this demo path (do not clobber the playground sheets).
             guard let secret = await viewModel.mintOnboardingClientSecret(accountId: accountId, publish: false) else {
-                await MainActor.run { FrameToastCenter.shared.show("Could not mint an onboarding client secret.") }
+                FrameToastCenter.shared.show("Could not mint an onboarding client secret.")
                 return
             }
 
-            await MainActor.run {
-                onboardingClientSecret = secret
-                showOnboardingSheet = true
-            }
+            onboardingClientSecret = secret
+            showOnboardingSheet = true
         }
     }
 }
@@ -188,7 +186,7 @@ private struct OfficePicksIntroView: View {
 
                 Text("Office Picks")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(OfficePicksTheme.primaryText)
                     .tracking(-0.5)
 
                 Text("Trade your takes on everyday office chaos — PRs, coffee runs, standups, and more.")
@@ -204,7 +202,7 @@ private struct OfficePicksIntroView: View {
             Button(action: onGetStarted) {
                 Text("Get Started")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(OfficePicksTheme.onAccent)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
                     .background(OfficePicksTheme.accent)
@@ -264,7 +262,7 @@ private struct OfficePicksMarketsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Office Picks")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(OfficePicksTheme.primaryText)
                 Text("Trending office markets")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(OfficePicksTheme.secondaryText)
@@ -299,7 +297,7 @@ private struct OfficePicksMarketsView: View {
                     } label: {
                         Text(category.title)
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(selectedCategory == category ? .black : OfficePicksTheme.secondaryText)
+                            .foregroundStyle(selectedCategory == category ? OfficePicksTheme.onAccent : OfficePicksTheme.secondaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
                             .background(selectedCategory == category ? OfficePicksTheme.accent : OfficePicksTheme.card)
@@ -329,7 +327,7 @@ private struct OfficePicksMarketsView: View {
                 HStack(spacing: 10) {
                     if isPreparingDeposit {
                         ProgressView()
-                            .tint(.black)
+                            .tint(OfficePicksTheme.onAccent)
                     } else {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 18, weight: .semibold))
@@ -337,7 +335,7 @@ private struct OfficePicksMarketsView: View {
                             .font(.system(size: 17, weight: .semibold))
                     }
                 }
-                .foregroundStyle(.black)
+                .foregroundStyle(OfficePicksTheme.onAccent)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
                 .background(OfficePicksTheme.accent)
@@ -374,7 +372,7 @@ private struct OfficePicksMarketCard: View {
 
             Text(market.question)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(OfficePicksTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(alignment: .center, spacing: 12) {
@@ -384,7 +382,7 @@ private struct OfficePicksMarketCard: View {
 
                 Text("\(market.yesCents)¢")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(OfficePicksTheme.primaryText)
                     .monospacedDigit()
             }
 
@@ -600,11 +598,15 @@ private struct OfficePickMarket: Identifiable {
 private enum OfficePicksTheme {
     static let background = Color(red: 0.04, green: 0.04, blue: 0.05)
     static let card = Color(red: 0.10, green: 0.10, blue: 0.12)
-    static let border = Color.white.opacity(0.08)
-    static let secondaryText = Color.white.opacity(0.62)
-    static let tertiaryText = Color.white.opacity(0.42)
+    /// Resolves to white under the flow’s forced dark color scheme.
+    static let primaryText = Color.primary
+    static let border = Color.primary.opacity(0.08)
+    static let secondaryText = Color.primary.opacity(0.62)
+    static let tertiaryText = Color.primary.opacity(0.42)
     /// Sharp mint accent — distinct from Kalshi green Yes buttons.
     static let accent = Color(red: 0.55, green: 0.96, blue: 0.72)
+    /// Text and icons drawn on top of `accent`.
+    static let onAccent = background
     static let yes = Color(red: 0.20, green: 0.84, blue: 0.50)
     static let no = Color(red: 0.96, green: 0.35, blue: 0.40)
 }
