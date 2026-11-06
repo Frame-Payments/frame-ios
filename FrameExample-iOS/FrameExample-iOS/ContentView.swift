@@ -27,7 +27,7 @@ struct ContentView: View {
     @State var showSelectPayoutMethodView: Bool = false
     @State var showOnboardingSheet: Bool = false
     @State private var businessOnboarding: BusinessOnboardingLaunch?
-    @State private var showOfficePicks = false
+    @State private var showInsiderTrading = false
     @State var applePayResult: String? = nil
 
     let requiredCapabilities: [FrameObjects.Capabilities] = [.kycPrefill, .geoCompliance, .ageVerification]
@@ -66,7 +66,7 @@ struct ContentView: View {
                 selectPayoutMethodButton
                 onboardingButton
                 businessOnboardingButton
-                officePicksButton
+                insiderTradingButton
                 
                 // Apple Pay button — only visible on devices that support Apple Pay
                 FrameApplePayButton(
@@ -223,8 +223,8 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
             }
         })
-        .fullScreenCover(isPresented: $showOfficePicks) {
-            OfficePicksFlowView(
+        .fullScreenCover(isPresented: $showInsiderTrading) {
+            InsiderTradingFlowView(
                 viewModel: viewModel,
                 requiredCapabilities: requiredCapabilities
             )
@@ -420,12 +420,12 @@ struct ContentView: View {
         .padding([.horizontal, .bottom])
     }
 
-    var officePicksButton: some View {
+    var insiderTradingButton: some View {
         Button {
             // Dark-mode prediction-market shell that chains KYC → deposit after "Deposit Funds".
-            showOfficePicks = true
+            showInsiderTrading = true
         } label: {
-            Text("Office Picks")
+            Text("Insider Trading")
                 .font(.headline)
                 .foregroundColor(theme.colors.primaryButtonText)
                 .frame(maxWidth: .infinity, alignment: .center)

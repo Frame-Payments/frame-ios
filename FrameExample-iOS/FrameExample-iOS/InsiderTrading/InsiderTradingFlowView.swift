@@ -1,5 +1,5 @@
 //
-//  OfficePicksFlowView.swift
+//  InsiderTradingFlowView.swift
 //  FrameExample-iOS
 //
 //  Demo prediction-market shell that showcases Frame KYC + deposit in dark mode.
@@ -9,8 +9,8 @@ import SwiftUI
 import Frame
 import FrameOnboarding
 
-/// End-to-end “Office Picks” playground flow: intro → fake markets → KYC → deposit.
-struct OfficePicksFlowView: View {
+/// End-to-end “Insider Trading” playground flow: intro → fake markets → KYC → deposit.
+struct InsiderTradingFlowView: View {
     @ObservedObject var viewModel: ContentViewModel
     let requiredCapabilities: [FrameObjects.Capabilities]
 
@@ -31,11 +31,11 @@ struct OfficePicksFlowView: View {
 
     var body: some View {
         ZStack {
-            OfficePicksTheme.background.ignoresSafeArea()
+            InsiderTradingTheme.background.ignoresSafeArea()
 
             switch step {
             case .intro:
-                OfficePicksIntroView {
+                InsiderTradingIntroView {
                     withAnimation(.easeInOut(duration: 0.28)) {
                         step = .markets
                     }
@@ -45,7 +45,7 @@ struct OfficePicksFlowView: View {
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
             case .markets:
-                OfficePicksMarketsView(
+                InsiderTradingMarketsView(
                     selectedCategory: $selectedCategory,
                     isPreparingDeposit: isPreparingDeposit,
                     onClose: { dismiss() },
@@ -147,7 +147,7 @@ struct OfficePicksFlowView: View {
 
 // MARK: - Intro
 
-private struct OfficePicksIntroView: View {
+private struct InsiderTradingIntroView: View {
     let onGetStarted: () -> Void
 
     var body: some View {
@@ -160,8 +160,8 @@ private struct OfficePicksIntroView: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    OfficePicksTheme.accent.opacity(0.35),
-                                    OfficePicksTheme.accent.opacity(0.0)
+                                    InsiderTradingTheme.accent.opacity(0.35),
+                                    InsiderTradingTheme.accent.opacity(0.0)
                                 ],
                                 center: .center,
                                 startRadius: 10,
@@ -172,26 +172,26 @@ private struct OfficePicksIntroView: View {
 
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 44, weight: .semibold))
-                        .foregroundStyle(OfficePicksTheme.accent)
+                        .foregroundStyle(InsiderTradingTheme.accent)
                         .padding(28)
                         .background(
                             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                .fill(OfficePicksTheme.card)
+                                .fill(InsiderTradingTheme.card)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                        .stroke(OfficePicksTheme.border, lineWidth: 1)
+                                        .stroke(InsiderTradingTheme.border, lineWidth: 1)
                                 )
                         )
                 }
 
-                Text("Office Picks")
+                Text("Insider Trading")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .foregroundStyle(OfficePicksTheme.primaryText)
+                    .foregroundStyle(InsiderTradingTheme.primaryText)
                     .tracking(-0.5)
 
                 Text("Trade your takes on everyday office chaos — PRs, coffee runs, standups, and more.")
                     .font(.system(size: 17, weight: .regular))
-                    .foregroundStyle(OfficePicksTheme.secondaryText)
+                    .foregroundStyle(InsiderTradingTheme.secondaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
                     .fixedSize(horizontal: false, vertical: true)
@@ -202,10 +202,10 @@ private struct OfficePicksIntroView: View {
             Button(action: onGetStarted) {
                 Text("Get Started")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(OfficePicksTheme.onAccent)
+                    .foregroundStyle(InsiderTradingTheme.onAccent)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
-                    .background(OfficePicksTheme.accent)
+                    .background(InsiderTradingTheme.accent)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding(.horizontal, 24)
@@ -213,7 +213,7 @@ private struct OfficePicksIntroView: View {
 
             Text("Demo markets · Frame KYC & deposit showcase")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(OfficePicksTheme.tertiaryText)
+                .foregroundStyle(InsiderTradingTheme.tertiaryText)
                 .padding(.bottom, 28)
         }
     }
@@ -221,7 +221,7 @@ private struct OfficePicksIntroView: View {
 
 // MARK: - Markets
 
-private struct OfficePicksMarketsView: View {
+private struct InsiderTradingMarketsView: View {
     @Binding var selectedCategory: MarketCategory
     let isPreparingDeposit: Bool
     let onClose: () -> Void
@@ -242,7 +242,7 @@ private struct OfficePicksMarketsView: View {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 12) {
                     ForEach(filteredMarkets) { market in
-                        OfficePicksMarketCard(market: market)
+                        InsiderTradingMarketCard(market: market)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -260,12 +260,12 @@ private struct OfficePicksMarketsView: View {
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Office Picks")
+                Text("Insider Trading")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(OfficePicksTheme.primaryText)
+                    .foregroundStyle(InsiderTradingTheme.primaryText)
                 Text("Trending office markets")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(OfficePicksTheme.secondaryText)
+                    .foregroundStyle(InsiderTradingTheme.secondaryText)
             }
 
             Spacer()
@@ -273,13 +273,13 @@ private struct OfficePicksMarketsView: View {
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(OfficePicksTheme.secondaryText)
+                    .foregroundStyle(InsiderTradingTheme.secondaryText)
                     .frame(width: 32, height: 32)
-                    .background(OfficePicksTheme.card)
+                    .background(InsiderTradingTheme.card)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(OfficePicksTheme.border, lineWidth: 1))
+                    .overlay(Circle().stroke(InsiderTradingTheme.border, lineWidth: 1))
             }
-            .accessibilityLabel("Close Office Picks")
+            .accessibilityLabel("Close Insider Trading")
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
@@ -297,14 +297,14 @@ private struct OfficePicksMarketsView: View {
                     } label: {
                         Text(category.title)
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(selectedCategory == category ? OfficePicksTheme.onAccent : OfficePicksTheme.secondaryText)
+                            .foregroundStyle(selectedCategory == category ? InsiderTradingTheme.onAccent : InsiderTradingTheme.secondaryText)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .background(selectedCategory == category ? OfficePicksTheme.accent : OfficePicksTheme.card)
+                            .background(selectedCategory == category ? InsiderTradingTheme.accent : InsiderTradingTheme.card)
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule()
-                                    .stroke(selectedCategory == category ? Color.clear : OfficePicksTheme.border, lineWidth: 1)
+                                    .stroke(selectedCategory == category ? Color.clear : InsiderTradingTheme.border, lineWidth: 1)
                             )
                     }
                     .buttonStyle(.plain)
@@ -317,7 +317,7 @@ private struct OfficePicksMarketsView: View {
     private var depositBar: some View {
         VStack(spacing: 0) {
             LinearGradient(
-                colors: [OfficePicksTheme.background.opacity(0), OfficePicksTheme.background],
+                colors: [InsiderTradingTheme.background.opacity(0), InsiderTradingTheme.background],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -327,7 +327,7 @@ private struct OfficePicksMarketsView: View {
                 HStack(spacing: 10) {
                     if isPreparingDeposit {
                         ProgressView()
-                            .tint(OfficePicksTheme.onAccent)
+                            .tint(InsiderTradingTheme.onAccent)
                     } else {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 18, weight: .semibold))
@@ -335,23 +335,23 @@ private struct OfficePicksMarketsView: View {
                             .font(.system(size: 17, weight: .semibold))
                     }
                 }
-                .foregroundStyle(OfficePicksTheme.onAccent)
+                .foregroundStyle(InsiderTradingTheme.onAccent)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(OfficePicksTheme.accent)
+                .background(InsiderTradingTheme.accent)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .disabled(isPreparingDeposit)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
-            .background(OfficePicksTheme.background)
+            .background(InsiderTradingTheme.background)
         }
     }
 }
 
 // MARK: - Market card (Kalshi / Polymarket inspired)
 
-private struct OfficePicksMarketCard: View {
+private struct InsiderTradingMarketCard: View {
     let market: OfficePickMarket
     @State private var flashSide: TradeSide?
 
@@ -361,28 +361,28 @@ private struct OfficePicksMarketCard: View {
                 Text(market.category.title.uppercased())
                     .font(.system(size: 11, weight: .bold))
                     .tracking(0.6)
-                    .foregroundStyle(OfficePicksTheme.accent)
+                    .foregroundStyle(InsiderTradingTheme.accent)
 
                 Spacer()
 
                 Text(market.volumeLabel)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(OfficePicksTheme.tertiaryText)
+                    .foregroundStyle(InsiderTradingTheme.tertiaryText)
             }
 
             Text(market.question)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(OfficePicksTheme.primaryText)
+                .foregroundStyle(InsiderTradingTheme.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(alignment: .center, spacing: 12) {
-                MiniSparkline(points: market.sparkline, tint: market.yesCents >= 50 ? OfficePicksTheme.yes : OfficePicksTheme.no)
+                MiniSparkline(points: market.sparkline, tint: market.yesCents >= 50 ? InsiderTradingTheme.yes : InsiderTradingTheme.no)
                     .frame(height: 36)
                     .frame(maxWidth: .infinity)
 
                 Text("\(market.yesCents)¢")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(OfficePicksTheme.primaryText)
+                    .foregroundStyle(InsiderTradingTheme.primaryText)
                     .monospacedDigit()
             }
 
@@ -390,7 +390,7 @@ private struct OfficePicksMarketCard: View {
                 TradeButton(
                     title: "Yes",
                     cents: market.yesCents,
-                    color: OfficePicksTheme.yes,
+                    color: InsiderTradingTheme.yes,
                     isFlashed: flashSide == .yes
                 ) {
                     flash(.yes)
@@ -399,7 +399,7 @@ private struct OfficePicksMarketCard: View {
                 TradeButton(
                     title: "No",
                     cents: market.noCents,
-                    color: OfficePicksTheme.no,
+                    color: InsiderTradingTheme.no,
                     isFlashed: flashSide == .no
                 ) {
                     flash(.no)
@@ -407,11 +407,11 @@ private struct OfficePicksMarketCard: View {
             }
         }
         .padding(16)
-        .background(OfficePicksTheme.card)
+        .background(InsiderTradingTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(OfficePicksTheme.border, lineWidth: 1)
+                .stroke(InsiderTradingTheme.border, lineWidth: 1)
         )
     }
 
@@ -595,7 +595,7 @@ private struct OfficePickMarket: Identifiable {
     ]
 }
 
-private enum OfficePicksTheme {
+private enum InsiderTradingTheme {
     static let background = Color(red: 0.04, green: 0.04, blue: 0.05)
     static let card = Color(red: 0.10, green: 0.10, blue: 0.12)
     /// Resolves to white under the flow’s forced dark color scheme.
@@ -611,8 +611,8 @@ private enum OfficePicksTheme {
     static let no = Color(red: 0.96, green: 0.35, blue: 0.40)
 }
 
-#Preview("Office Picks") {
-    OfficePicksFlowView(
+#Preview("Insider Trading") {
+    InsiderTradingFlowView(
         viewModel: ContentViewModel(),
         requiredCapabilities: [.kycPrefill, .geoCompliance, .ageVerification]
     )
