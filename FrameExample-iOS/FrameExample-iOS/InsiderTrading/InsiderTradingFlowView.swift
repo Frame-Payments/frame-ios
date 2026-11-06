@@ -48,7 +48,9 @@ struct InsiderTradingFlowView: View {
                 InsiderTradingMarketsView(
                     selectedCategory: $selectedCategory,
                     isPreparingDeposit: isPreparingDeposit,
-                    onClose: { dismiss() },
+                    onClose: {
+                        if !isPreparingDeposit { dismiss() }
+                    },
                     onDeposit: { startDepositFlow() }
                 )
                 .transition(.asymmetric(
@@ -58,6 +60,7 @@ struct InsiderTradingFlowView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .interactiveDismissDisabled(isPreparingDeposit)
         .frameToastOverlay()
         .sheet(isPresented: $showOnboardingSheet, onDismiss: {
             // Wait until KYC is fully dismissed before presenting deposit.
@@ -279,6 +282,7 @@ private struct InsiderTradingMarketsView: View {
                     .clipShape(Circle())
                     .overlay(Circle().stroke(InsiderTradingTheme.border, lineWidth: 1))
             }
+            .disabled(isPreparingDeposit)
             .accessibilityLabel("Close Insider Trading")
         }
         .padding(.horizontal, 16)
